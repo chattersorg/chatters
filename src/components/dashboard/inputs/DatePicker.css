@@ -4,6 +4,11 @@
   width: 100%;
 }
 
+/* Popper z-index fix */
+.react-datepicker-popper {
+  z-index: 50 !important;
+}
+
 /* Calendar Container */
 .custom-calendar {
   font-family: 'Plus Jakarta Sans', 'Geist', 'Gilroy', sans-serif !important;

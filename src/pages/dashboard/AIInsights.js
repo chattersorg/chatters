@@ -1,11 +1,33 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useVenue } from '../../context/VenueContext';
 import { supabase } from '../../utils/supabase';
 import usePageTitle from '../../hooks/usePageTitle';
-import { Sparkles, RefreshCw, AlertCircle, TrendingUp, TrendingDown, CheckCircle, AlertTriangle, Target } from 'lucide-react';
+import { Sparkles, RefreshCw, AlertCircle, TrendingUp, Calendar, Lightbulb, ChevronRight } from 'lucide-react';
 import dayjs from 'dayjs';
-import DatePicker from '../../components/dashboard/inputs/DatePicker';
-import { Button } from '../../components/ui/button';
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
+
+// Helper to get Monday of a given week
+function getWeekStart(date) {
+  const d = new Date(date);
+  const day = d.getDay();
+  const diff = d.getDate() - day + (day === 0 ? -6 : 1);
+  d.setDate(diff);
+  return d.toISOString().split('T')[0];
+}
+
+// Helper to get Sunday of a given week
+function getWeekEnd(weekStart) {
+  const d = new Date(weekStart);
+  d.setDate(d.getDate() + 6);
+  return d.toISOString().split('T')[0];
+}
+
+// Format week display
+function formatWeekDisplay(weekStart) {
+  const start = dayjs(weekStart);
+  const end = start.add(6, 'day');
+  return `${start.format('D MMM')} - ${end.format('D MMM YYYY')}`;
+}
 
 const AIInsights = () => {
   usePageTitle('AI Insights');
@@ -13,53 +35,69 @@ const AIInsights = () => {
 
   // State
   const [loading, setLoading] = useState(false);
-  const [insight, setInsight] = useState(null);
+  const [currentInsight, setCurrentInsight] = useState(null);
+  const [weeklyHistory, setWeeklyHistory] = useState([]);
+  const [selectedWeek, setSelectedWeek] = useState(null);
   const [error, setError] = useState(null);
-  const [dateFrom, setDateFrom] = useState(dayjs().subtract(7, 'day').format('YYYY-MM-DD'));
-  const [dateTo, setDateTo] = useState(dayjs().format('YYYY-MM-DD'));
-  const [lastGenerated, setLastGenerated] = useState(null);
+  const [timeframeWeeks, setTimeframeWeeks] = useState(8); // Default 8 weeks for graph
 
   // Get current venue name
   const currentVenue = allVenues.find(v => v.id === venueId);
   const venueName = currentVenue?.name || 'your venue';
 
-  // Load most recent insight for this venue on mount
-  useEffect(() => {
+  // Calculate current week start (Monday)
+  const currentWeekStart = getWeekStart(new Date());
+
+  // Load all insights for this venue
+  const loadInsights = useCallback(async () => {
     if (!venueId) return;
 
-    const loadLatestInsight = async () => {
-      try {
-        const { data, error } = await supabase
-          .from('ai_insights')
-          .select('*')
-          .eq('venue_id', venueId)
-          .order('created_at', { ascending: false })
-          .limit(1)
-          .single();
+    try {
+      const { data, error } = await supabase
+        .from('ai_insights')
+        .select('*')
+        .eq('venue_id', venueId)
+        .order('week_start', { ascending: false });
 
-        if (!error && data) {
-          // Update the date range to match the loaded insight
-          setDateFrom(data.date_from);
-          setDateTo(data.date_to);
-          setInsight({ ...data, cached: true });
-          setLastGenerated(new Date(data.created_at));
-        }
-      } catch (err) {
-        // No existing insight found - this is fine
+      if (error) throw error;
+
+      setWeeklyHistory(data || []);
+
+      // Set current insight to the most recent one or the current week
+      const currentWeekInsight = (data || []).find(
+        insight => insight.week_start === currentWeekStart
+      );
+
+      if (currentWeekInsight) {
+        setCurrentInsight(currentWeekInsight);
+        setSelectedWeek(currentWeekStart);
+      } else if (data && data.length > 0) {
+        // No insight for current week, show most recent
+        setCurrentInsight(data[0]);
+        setSelectedWeek(data[0].week_start);
+      } else {
+        setCurrentInsight(null);
+        setSelectedWeek(currentWeekStart);
       }
-    };
+    } catch (err) {
+      console.error('[AI Insights] Error loading insights:', err);
+    }
+  }, [venueId, currentWeekStart]);
 
-    loadLatestInsight();
-  }, [venueId]);
+  useEffect(() => {
+    loadInsights();
+  }, [loadInsights]);
 
-  // Generate AI Insights
-  const generateInsights = async () => {
+  // Generate insight for a specific week
+  const generateInsightForWeek = async (weekStart) => {
     if (!venueId) return;
 
     setLoading(true);
     setError(null);
 
     try {
+      const dateFrom = weekStart;
+      const dateTo = getWeekEnd(weekStart);
       const startDate = dayjs(dateFrom).startOf('day').toISOString();
       const endDate = dayjs(dateTo).endOf('day').toISOString();
 
@@ -98,7 +136,7 @@ const AIInsights = () => {
       const totalNPS = (npsData || []).length;
 
       if (totalFeedback === 0 && totalNPS === 0) {
-        setError('No feedback data available for the selected time period. Please try a different date range.');
+        setError('No feedback data available for this week. Please try a different week.');
         setLoading(false);
         return;
       }
@@ -116,6 +154,7 @@ const AIInsights = () => {
           venueId,
           dateFrom,
           dateTo,
+          weekStart,
         }),
       });
 
@@ -125,8 +164,11 @@ const AIInsights = () => {
       }
 
       const result = await response.json();
-      setInsight(result);
-      setLastGenerated(new Date());
+      setCurrentInsight(result);
+      setSelectedWeek(weekStart);
+
+      // Reload history to include new insight
+      await loadInsights();
 
     } catch (err) {
       console.error('[AI Insights] Error generating insights:', err);
@@ -136,132 +178,80 @@ const AIInsights = () => {
     }
   };
 
-  // Get AI Score color and icon
-  const getScoreColor = (score) => {
-    if (score >= 9) return { color: 'text-green-600', bg: 'bg-green-50', border: 'border-green-200', icon: TrendingUp };
-    if (score >= 7) return { color: 'text-blue-600', bg: 'bg-blue-50', border: 'border-blue-200', icon: CheckCircle };
-    if (score >= 5) return { color: 'text-yellow-600', bg: 'bg-yellow-50', border: 'border-yellow-200', icon: AlertTriangle };
-    if (score >= 3) return { color: 'text-orange-600', bg: 'bg-orange-50', border: 'border-orange-200', icon: AlertCircle };
-    return { color: 'text-red-600', bg: 'bg-red-50', border: 'border-red-200', icon: TrendingDown };
+  // Generate for current week if missing
+  const generateCurrentWeekInsight = () => {
+    generateInsightForWeek(currentWeekStart);
   };
 
-  // Render AI Score Segmented Bar
-  const AIScoreBar = ({ score }) => {
-    const { color, icon: Icon } = getScoreColor(score);
-
-    const getSegmentColor = (segmentIndex) => {
-      if (segmentIndex <= score) {
-        if (segmentIndex <= 2) return 'bg-red-500';
-        if (segmentIndex <= 4) return 'bg-orange-500';
-        if (segmentIndex <= 6) return 'bg-yellow-500';
-        if (segmentIndex <= 8) return 'bg-blue-500';
-        return 'bg-green-500';
-      }
-      return 'bg-gray-200';
-    };
-
-    return (
-      <div className="w-full">
-        <div className="flex items-center justify-between mb-2">
-          <span className="text-sm font-semibold text-gray-700">Overall Performance Score</span>
-          <div className="flex items-center gap-2">
-            <span className={`text-2xl font-bold ${color}`}>{score}</span>
-            <span className="text-sm text-gray-500">/ 10</span>
-            {Icon && <Icon className={`w-5 h-5 ${color}`} />}
-          </div>
-        </div>
-        <div className="flex gap-1">
-          {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((segment) => (
-            <div
-              key={segment}
-              className={`flex-1 h-4 rounded-sm ${getSegmentColor(segment)} transition-all duration-500`}
-              style={{ transitionDelay: `${segment * 50}ms` }}
-            />
-          ))}
-        </div>
-      </div>
-    );
+  // Select a week from history
+  const selectWeek = (insight) => {
+    setCurrentInsight(insight);
+    setSelectedWeek(insight.week_start);
   };
+
+  // Prepare graph data
+  const graphData = weeklyHistory
+    .slice(0, timeframeWeeks)
+    .reverse()
+    .map(insight => ({
+      week: dayjs(insight.week_start).format('D MMM'),
+      score: insight.ai_score,
+      fullDate: insight.week_start,
+    }));
+
+  // Check if current week has insight
+  const hasCurrentWeekInsight = weeklyHistory.some(
+    insight => insight.week_start === currentWeekStart
+  );
 
   return (
     <div className="space-y-6">
       {/* Page Header */}
       <div className="mb-2">
         <h1 className="text-2xl font-semibold text-gray-900">AI Insights</h1>
-        <p className="text-sm text-gray-500 mt-1">AI-powered analysis of your customer feedback and reviews</p>
+        <p className="text-sm text-gray-500 mt-1">Weekly AI-powered analysis of your customer feedback</p>
       </div>
 
-      {/* Controls Card */}
-      <div className="bg-white border border-gray-200 rounded-xl overflow-hidden">
-        <div className="px-6 py-4 border-b border-gray-100">
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-            <div>
-              <h3 className="text-base font-semibold text-gray-900">Generate Insights</h3>
-              <p className="text-sm text-gray-500 mt-1">Select a date range to analyse feedback</p>
+      {/* Error Message */}
+      {error && (
+        <div className="p-4 bg-red-50 border border-red-200 rounded-lg flex items-start gap-3">
+          <AlertCircle className="w-5 h-5 text-red-600 flex-shrink-0 mt-0.5" />
+          <div className="flex-1">
+            <h4 className="font-semibold text-red-900 mb-1">Error</h4>
+            <p className="text-sm text-red-700">{error}</p>
+          </div>
+        </div>
+      )}
+
+      {/* Generate Button if no current week insight */}
+      {!hasCurrentWeekInsight && !loading && (
+        <div className="bg-blue-50 border border-blue-200 rounded-xl p-6">
+          <div className="flex items-start gap-4">
+            <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0">
+              <Sparkles className="w-6 h-6 text-blue-600" />
             </div>
-            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3">
-              <div className="flex items-center gap-2">
-                <DatePicker
-                  value={dateFrom}
-                  onChange={(e) => setDateFrom(e.target.value)}
-                  max={dateTo}
-                />
-                <span className="text-gray-400 text-sm font-medium">to</span>
-                <DatePicker
-                  value={dateTo}
-                  onChange={(e) => setDateTo(e.target.value)}
-                  min={dateFrom}
-                  max={dayjs().format('YYYY-MM-DD')}
-                />
-              </div>
-              <Button
-                variant="primary"
-                onClick={generateInsights}
-                loading={loading}
+            <div className="flex-1">
+              <h3 className="text-lg font-semibold text-gray-900 mb-1">Generate This Week's Insights</h3>
+              <p className="text-sm text-gray-600 mb-4">
+                No insights have been generated for the week of {formatWeekDisplay(currentWeekStart)} yet.
+              </p>
+              <button
+                onClick={generateCurrentWeekInsight}
+                disabled={loading}
+                className="inline-flex items-center px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50"
               >
-                {loading ? (
-                  <>
-                    <RefreshCw className="w-4 h-4 animate-spin mr-2" />
-                    Generating...
-                  </>
-                ) : (
-                  <>
-                    <Sparkles className="w-4 h-4 mr-2" />
-                    Generate Insights
-                  </>
-                )}
-              </Button>
+                <Sparkles className="w-4 h-4 mr-2" />
+                Generate Insights
+              </button>
             </div>
           </div>
         </div>
+      )}
 
-        {/* Error Message */}
-        {error && (
-          <div className="p-4 m-6 bg-red-50 border border-red-200 rounded-lg flex items-start gap-3">
-            <AlertCircle className="w-5 h-5 text-red-600 flex-shrink-0 mt-0.5" />
-            <div className="flex-1">
-              <h4 className="font-semibold text-red-900 mb-1">Error</h4>
-              <p className="text-sm text-red-700">{error}</p>
-            </div>
-          </div>
-        )}
-
-        {/* Empty State */}
-        {!insight && !loading && !error && (
-          <div className="text-center py-12 px-6">
-            <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
-              <Sparkles className="w-8 h-8 text-gray-400" />
-            </div>
-            <h3 className="text-lg font-semibold text-gray-900 mb-2">No Insights Generated Yet</h3>
-            <p className="text-gray-600 max-w-md mx-auto text-sm">
-              Select a date range and click "Generate Insights" to analyse your customer feedback and discover actionable insights powered by AI.
-            </p>
-          </div>
-        )}
-
-        {/* Loading State */}
-        {loading && (
-          <div className="text-center py-12 px-6">
+      {/* Loading State */}
+      {loading && (
+        <div className="bg-white border border-gray-200 rounded-xl p-12">
+          <div className="text-center">
             <div className="w-16 h-16 bg-blue-50 rounded-full flex items-center justify-center mx-auto mb-4">
               <RefreshCw className="w-8 h-8 text-blue-600 animate-spin" />
             </div>
@@ -270,156 +260,230 @@ const AIInsights = () => {
               Our AI is reviewing your customer feedback. This usually takes a few seconds.
             </p>
           </div>
-        )}
-      </div>
+        </div>
+      )}
 
-      {/* Insight Results */}
-      {insight && !loading && (
-        <>
-          {/* Score Card */}
-          <div className="bg-white border border-gray-200 rounded-xl overflow-hidden">
-            <div className="p-6">
-              <AIScoreBar score={insight.ai_score} />
-              <div className="mt-3 flex items-center justify-between">
-                <p className="text-sm text-gray-600">
-                  Based on {insight.feedback_count} feedback submissions and {insight.nps_count} NPS responses
-                </p>
-                <div className="flex items-center gap-3">
-                  {insight.nps_score !== null && (
-                    <span className="text-sm font-medium text-gray-600">
-                      NPS: <span className={insight.nps_score >= 50 ? 'text-green-600' : insight.nps_score >= 0 ? 'text-yellow-600' : 'text-red-600'}>
-                        {insight.nps_score}
-                      </span>
-                    </span>
-                  )}
-                  {insight.cached && (
-                    <span className="px-2 py-1 text-xs font-medium text-blue-700 bg-blue-100 rounded-full">
-                      Cached
-                    </span>
-                  )}
+      {/* Main 3-Column Layout */}
+      {!loading && (currentInsight || weeklyHistory.length > 0) && (
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+          {/* Left Column: Action Items */}
+          <div className="lg:col-span-4">
+            <div className="bg-white border border-gray-200 rounded-xl overflow-hidden h-full">
+              <div className="px-6 py-4 border-b border-gray-100">
+                <div className="flex items-center gap-2">
+                  <Lightbulb className="w-5 h-5 text-amber-500" />
+                  <h3 className="text-base font-semibold text-gray-900">This Week's Focus</h3>
                 </div>
+                {currentInsight && (
+                  <p className="text-xs text-gray-500 mt-1">
+                    {formatWeekDisplay(currentInsight.week_start)}
+                  </p>
+                )}
+              </div>
+              <div className="p-4">
+                {currentInsight?.improvement_tips && currentInsight.improvement_tips.length > 0 ? (
+                  <ul className="space-y-3">
+                    {currentInsight.improvement_tips.map((tip, idx) => (
+                      <li key={idx} className="flex items-start gap-3 p-3 bg-gray-50 rounded-lg">
+                        <div className="flex-shrink-0 w-6 h-6 rounded-full bg-blue-600 flex items-center justify-center text-xs font-bold text-white">
+                          {idx + 1}
+                        </div>
+                        <span className="text-gray-700 text-sm leading-relaxed">{tip}</span>
+                      </li>
+                    ))}
+                  </ul>
+                ) : (
+                  <div className="text-center py-8 text-gray-500 text-sm">
+                    No improvement tips available. Generate insights to see your action items.
+                  </div>
+                )}
+
+                {/* Show AI Score Badge */}
+                {currentInsight?.ai_score && (
+                  <div className="mt-4 pt-4 border-t border-gray-100">
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm text-gray-600">AI Score</span>
+                      <div className="flex items-center gap-2">
+                        <span className={`text-2xl font-bold ${
+                          currentInsight.ai_score >= 7 ? 'text-green-600' :
+                          currentInsight.ai_score >= 5 ? 'text-yellow-600' :
+                          'text-red-600'
+                        }`}>
+                          {currentInsight.ai_score}
+                        </span>
+                        <span className="text-sm text-gray-500">/ 10</span>
+                      </div>
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
           </div>
 
-          {/* Improvement Tips */}
-          {insight.improvement_tips && insight.improvement_tips.length > 0 && (
-            <div className="bg-white border border-gray-200 rounded-xl overflow-hidden">
+          {/* Middle Column: Score Graph */}
+          <div className="lg:col-span-5">
+            <div className="bg-white border border-gray-200 rounded-xl overflow-hidden h-full">
               <div className="px-6 py-4 border-b border-gray-100">
-                <div className="flex items-center gap-2">
-                  <TrendingUp className="w-5 h-5 text-blue-600" />
-                  <h3 className="text-base font-semibold text-gray-900">How to Improve Your Score</h3>
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <TrendingUp className="w-5 h-5 text-blue-600" />
+                    <h3 className="text-base font-semibold text-gray-900">Score History</h3>
+                  </div>
+                  <select
+                    value={timeframeWeeks}
+                    onChange={(e) => setTimeframeWeeks(Number(e.target.value))}
+                    className="text-sm border border-gray-200 rounded-lg px-3 py-1.5 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  >
+                    <option value={4}>4 weeks</option>
+                    <option value={8}>8 weeks</option>
+                    <option value={12}>12 weeks</option>
+                  </select>
                 </div>
               </div>
-              <div className="p-6">
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {insight.improvement_tips.map((tip, idx) => (
-                    <div key={idx} className="flex items-start gap-3 p-4 bg-gray-50 rounded-lg">
-                      <div className="flex-shrink-0 w-6 h-6 rounded-full bg-blue-600 flex items-center justify-center text-xs font-bold text-white">
-                        {idx + 1}
+              <div className="p-4">
+                {graphData.length > 1 ? (
+                  <div className="h-64">
+                    <ResponsiveContainer width="100%" height="100%">
+                      <LineChart data={graphData} margin={{ top: 8, right: 8, bottom: 8, left: 0 }}>
+                        <CartesianGrid stroke="#e5e7eb" strokeDasharray="3 3" />
+                        <XAxis
+                          dataKey="week"
+                          stroke="#64748B"
+                          fontSize={12}
+                          tick={{ fill: '#64748B' }}
+                        />
+                        <YAxis
+                          domain={[0, 10]}
+                          stroke="#64748B"
+                          fontSize={12}
+                          tick={{ fill: '#64748B' }}
+                          width={32}
+                          ticks={[0, 2, 4, 6, 8, 10]}
+                        />
+                        <Tooltip
+                          contentStyle={{
+                            backgroundColor: 'white',
+                            border: '1px solid #e5e7eb',
+                            borderRadius: 8,
+                            fontSize: 12,
+                            fontWeight: 'bold',
+                            boxShadow: '0 4px 6px -1px rgba(0,0,0,0.1)',
+                          }}
+                          formatter={(value) => [`${value}/10`, 'AI Score']}
+                          labelFormatter={(label, payload) => {
+                            if (payload && payload[0]) {
+                              return `Week of ${formatWeekDisplay(payload[0].payload.fullDate)}`;
+                            }
+                            return label;
+                          }}
+                        />
+                        <Line
+                          type="monotone"
+                          dataKey="score"
+                          stroke="#2563eb"
+                          strokeWidth={3}
+                          dot={{ r: 4, fill: '#2563eb', strokeWidth: 0 }}
+                          activeDot={{ r: 6, fill: '#2563eb', strokeWidth: 2, stroke: 'white' }}
+                        />
+                      </LineChart>
+                    </ResponsiveContainer>
+                  </div>
+                ) : graphData.length === 1 ? (
+                  <div className="h-64 flex items-center justify-center">
+                    <div className="text-center">
+                      <div className={`text-5xl font-bold mb-2 ${
+                        graphData[0].score >= 7 ? 'text-green-600' :
+                        graphData[0].score >= 5 ? 'text-yellow-600' :
+                        'text-red-600'
+                      }`}>
+                        {graphData[0].score}
                       </div>
-                      <span className="text-gray-700 text-sm leading-relaxed">{tip}</span>
+                      <p className="text-sm text-gray-500">/ 10</p>
+                      <p className="text-xs text-gray-400 mt-2">
+                        Generate more weekly insights to see trends
+                      </p>
                     </div>
-                  ))}
-                </div>
+                  </div>
+                ) : (
+                  <div className="h-64 flex items-center justify-center text-gray-500 text-sm">
+                    No data available. Generate insights to see your score history.
+                  </div>
+                )}
               </div>
             </div>
-          )}
+          </div>
 
-          {/* Critical Insights Row */}
-          {insight.critical_insights && insight.critical_insights.length > 0 && (
-            <div className="bg-white border border-gray-200 rounded-xl overflow-hidden">
+          {/* Right Column: Weekly History */}
+          <div className="lg:col-span-3">
+            <div className="bg-white border border-gray-200 rounded-xl overflow-hidden h-full">
               <div className="px-6 py-4 border-b border-gray-100">
                 <div className="flex items-center gap-2">
-                  <AlertTriangle className="w-5 h-5 text-orange-600" />
-                  <h3 className="text-base font-semibold text-gray-900">Critical Insights</h3>
+                  <Calendar className="w-5 h-5 text-gray-600" />
+                  <h3 className="text-base font-semibold text-gray-900">Weekly History</h3>
                 </div>
               </div>
-              <div className="p-6">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {insight.critical_insights.map((item, idx) => (
-                    <div key={idx} className="flex items-start gap-3 p-4 bg-orange-50 border border-orange-100 rounded-lg">
-                      <span className="text-orange-600 flex-shrink-0 mt-0.5 text-lg">!</span>
+              <div className="divide-y divide-gray-100 max-h-80 overflow-y-auto">
+                {weeklyHistory.length > 0 ? (
+                  weeklyHistory.slice(0, 12).map((insight) => (
+                    <button
+                      key={insight.id}
+                      onClick={() => selectWeek(insight)}
+                      className={`w-full px-4 py-3 text-left hover:bg-gray-50 transition-colors flex items-center justify-between ${
+                        selectedWeek === insight.week_start ? 'bg-blue-50 border-l-2 border-l-blue-600' : ''
+                      }`}
+                    >
                       <div>
-                        <span className="font-medium text-gray-900 text-sm">{item.title}</span>
-                        <p className="text-gray-700 text-sm mt-1">{item.content}</p>
+                        <div className="text-sm font-medium text-gray-900">
+                          {dayjs(insight.week_start).format('D MMM')} - {dayjs(insight.week_start).add(6, 'day').format('D MMM')}
+                        </div>
+                        <div className="text-xs text-gray-500 mt-0.5">
+                          {insight.week_start === currentWeekStart ? 'This week' : dayjs(insight.week_start).format('YYYY')}
+                        </div>
                       </div>
-                    </div>
-                  ))}
-                </div>
+                      <div className="flex items-center gap-2">
+                        <span className={`text-lg font-bold ${
+                          insight.ai_score >= 7 ? 'text-green-600' :
+                          insight.ai_score >= 5 ? 'text-yellow-600' :
+                          'text-red-600'
+                        }`}>
+                          {insight.ai_score}
+                        </span>
+                        <ChevronRight className="w-4 h-4 text-gray-400" />
+                      </div>
+                    </button>
+                  ))
+                ) : (
+                  <div className="p-6 text-center text-gray-500 text-sm">
+                    No weekly insights yet. Generate your first insight to get started.
+                  </div>
+                )}
               </div>
             </div>
-          )}
-
-          {/* Strengths & Areas to Improve - Side by Side */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            {/* Strengths */}
-            {insight.strengths && insight.strengths.length > 0 && (
-              <div className="bg-white border border-gray-200 rounded-xl overflow-hidden">
-                <div className="px-6 py-4 border-b border-gray-100">
-                  <div className="flex items-center gap-2">
-                    <CheckCircle className="w-5 h-5 text-green-600" />
-                    <h3 className="text-base font-semibold text-gray-900">Strengths</h3>
-                  </div>
-                </div>
-                <div className="p-6">
-                  <ul className="space-y-3">
-                    {insight.strengths.map((strength, idx) => (
-                      <li key={idx} className="flex items-start gap-3 p-3 bg-green-50 border border-green-100 rounded-lg">
-                        <CheckCircle className="w-4 h-4 text-green-600 flex-shrink-0 mt-0.5" />
-                        <span className="text-gray-700 text-sm">{strength}</span>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              </div>
-            )}
-
-            {/* Areas for Improvement */}
-            {insight.areas_for_improvement && insight.areas_for_improvement.length > 0 && (
-              <div className="bg-white border border-gray-200 rounded-xl overflow-hidden">
-                <div className="px-6 py-4 border-b border-gray-100">
-                  <div className="flex items-center gap-2">
-                    <AlertCircle className="w-5 h-5 text-yellow-600" />
-                    <h3 className="text-base font-semibold text-gray-900">Areas to Improve</h3>
-                  </div>
-                </div>
-                <div className="p-6">
-                  <ul className="space-y-3">
-                    {insight.areas_for_improvement.map((area, idx) => (
-                      <li key={idx} className="flex items-start gap-3 p-3 bg-yellow-50 border border-yellow-100 rounded-lg">
-                        <AlertCircle className="w-4 h-4 text-yellow-600 flex-shrink-0 mt-0.5" />
-                        <span className="text-gray-700 text-sm">{area}</span>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              </div>
-            )}
           </div>
+        </div>
+      )}
 
-          {/* Recommended Action */}
-          {insight.actionable_recommendation && (
-            <div className="bg-white border border-gray-200 rounded-xl overflow-hidden">
-              <div className="px-6 py-4 border-b border-gray-100">
-                <div className="flex items-center gap-2">
-                  <Target className="w-5 h-5 text-blue-600" />
-                  <h3 className="text-base font-semibold text-gray-900">Recommended Action</h3>
-                </div>
-              </div>
-              <div className="p-6">
-                <p className="text-gray-700 leading-relaxed">{insight.actionable_recommendation}</p>
-              </div>
+      {/* Empty State */}
+      {!loading && !currentInsight && weeklyHistory.length === 0 && !hasCurrentWeekInsight && (
+        <div className="bg-white border border-gray-200 rounded-xl p-12">
+          <div className="text-center">
+            <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+              <Sparkles className="w-8 h-8 text-gray-400" />
             </div>
-          )}
-
-          {/* Metadata Footer */}
-          {lastGenerated && (
-            <div className="text-center text-xs text-gray-500">
-              Generated {dayjs(lastGenerated).format('MMM D, YYYY [at] h:mm A')}
-            </div>
-          )}
-        </>
+            <h3 className="text-lg font-semibold text-gray-900 mb-2">No Insights Generated Yet</h3>
+            <p className="text-gray-600 max-w-md mx-auto text-sm mb-6">
+              Get AI-powered weekly insights about your customer feedback. Insights are automatically generated each week to help you improve.
+            </p>
+            <button
+              onClick={generateCurrentWeekInsight}
+              disabled={loading}
+              className="inline-flex items-center px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50"
+            >
+              <Sparkles className="w-4 h-4 mr-2" />
+              Generate First Insights
+            </button>
+          </div>
+        </div>
       )}
     </div>
   );
