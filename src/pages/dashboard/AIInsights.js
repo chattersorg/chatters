@@ -24,7 +24,9 @@ function getWeekEnd(weekStart) {
 
 // Format week display
 function formatWeekDisplay(weekStart) {
+  if (!weekStart) return 'Unknown week';
   const start = dayjs(weekStart);
+  if (!start.isValid()) return 'Unknown week';
   const end = start.add(6, 'day');
   return `${start.format('D MMM')} - ${end.format('D MMM YYYY')}`;
 }
@@ -61,20 +63,22 @@ const AIInsights = () => {
 
       if (error) throw error;
 
-      setWeeklyHistory(data || []);
+      // Filter to only include entries with valid week_start
+      const validData = (data || []).filter(i => i.week_start);
+      setWeeklyHistory(validData);
 
       // Set current insight to the most recent one or the current week
-      const currentWeekInsight = (data || []).find(
+      const currentWeekInsight = validData.find(
         insight => insight.week_start === currentWeekStart
       );
 
       if (currentWeekInsight) {
         setCurrentInsight(currentWeekInsight);
         setSelectedWeek(currentWeekStart);
-      } else if (data && data.length > 0) {
+      } else if (validData.length > 0) {
         // No insight for current week, show most recent
-        setCurrentInsight(data[0]);
-        setSelectedWeek(data[0].week_start);
+        setCurrentInsight(validData[0]);
+        setSelectedWeek(validData[0].week_start);
       } else {
         setCurrentInsight(null);
         setSelectedWeek(currentWeekStart);
@@ -229,8 +233,9 @@ const AIInsights = () => {
   const canGoNext = selectedWeek && selectedWeek < currentWeekStart;
   const displayedWeek = selectedWeek || currentWeekStart;
 
-  // Prepare graph data
+  // Prepare graph data (filter out entries without valid week_start)
   const graphData = weeklyHistory
+    .filter(i => i.week_start)
     .slice(0, timeframeWeeks)
     .reverse()
     .map(insight => ({
@@ -499,7 +504,7 @@ const AIInsights = () => {
               </div>
               <div className="divide-y divide-gray-100 max-h-80 overflow-y-auto">
                 {weeklyHistory.length > 0 ? (
-                  weeklyHistory.slice(0, 12).map((insight) => (
+                  weeklyHistory.filter(i => i.week_start).slice(0, 12).map((insight) => (
                     <button
                       key={insight.id}
                       onClick={() => selectWeek(insight)}
