@@ -599,8 +599,8 @@ const CustomerFeedbackPage = () => {
             </div>
           )}
 
-          <div className="inline-block p-4 rounded-full mb-6" style={{ backgroundColor: `${primary}20` }}>
-            <AssistanceIcon className="w-12 h-12" style={{ color: primary }} />
+          <div className="mb-6">
+            <AssistanceIcon className="w-16 h-16 mx-auto" style={{ color: primary }} />
           </div>
 
           <h2 className="text-2xl font-bold mb-4" style={{ color: textColor }}>{formattedTitle}</h2>

@@ -611,9 +611,9 @@ const BrandingTab = ({
             >
               <div className="bg-white rounded-xl shadow-lg p-6 max-w-xs w-full">
                 <div className="flex flex-col items-center text-center">
-                  <div className="inline-block p-4 rounded-full mb-4" style={{ backgroundColor: `${primaryColor}20` }}>
+                  <div className="mb-4">
                     {React.createElement(getIconComponent(assistanceIcon), {
-                      className: "w-10 h-10",
+                      className: "w-12 h-12",
                       style: { color: primaryColor }
                     })}
                   </div>
