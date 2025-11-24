@@ -91,7 +91,7 @@ const CustomerFeedbackPage = () => {
         // Load venue data first (including feedback_hours, review links, NPS settings, branding colors, assistance message, and thank you message)
         const { data: venueData, error: venueError } = await supabase
           .from('venues')
-          .select('logo, primary_color, background_color, text_color, button_text_color, feedback_hours, google_review_link, tripadvisor_link, nps_enabled, assistance_title, assistance_message, assistance_icon, thank_you_title, thank_you_message, thank_you_icon')
+          .select('logo, primary_color, background_color, background_image, text_color, button_text_color, feedback_hours, google_review_link, tripadvisor_link, nps_enabled, assistance_title, assistance_message, assistance_icon, thank_you_title, thank_you_message, thank_you_icon')
           .eq('id', venueId);
 
         if (venueError) {
@@ -417,6 +417,22 @@ const CustomerFeedbackPage = () => {
     }
   };
 
+  // Helper function to get background style
+  const getBackgroundStyle = () => {
+    const backgroundImage = venue?.background_image;
+    const backgroundColor = venue?.background_color || '#ffffff';
+
+    if (backgroundImage) {
+      return {
+        backgroundImage: `url(${backgroundImage})`,
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+        backgroundRepeat: 'no-repeat'
+      };
+    }
+    return { backgroundColor };
+  };
+
   // Loading state
   if (loading) {
     return (
@@ -430,12 +446,11 @@ const CustomerFeedbackPage = () => {
 
   // Feedback unavailable state (outside of allowed hours)
   if (feedbackUnavailable) {
-    const background = venue?.background_color || '#ffffff';
     const textColor = venue?.text_color || '#111827';
 
     return (
-      <div className="min-h-screen flex items-center justify-center p-6" style={{ backgroundColor: background }}>
-        <div className="w-full max-w-md p-8 text-center">
+      <div className="min-h-screen flex items-center justify-center p-6" style={getBackgroundStyle()}>
+        <div className="w-full max-w-md p-8 bg-white rounded-2xl shadow-xl text-center">
           {venue?.logo && (
             <div className="mb-8">
               <img src={venue.logo} alt="Venue Logo" className="h-16 mx-auto" />
@@ -459,18 +474,20 @@ const CustomerFeedbackPage = () => {
   // Error state
   if (error) {
     return (
-      <div className="flex flex-col justify-center items-center min-h-screen text-custom-red text-lg space-y-4 p-6">
-        <div className="text-4xl">⚠️</div>
-        <div className="text-center max-w-md">
-          <div className="font-semibold mb-2">Unable to load feedback form</div>
-          <div className="text-sm text-gray-600 mb-2">{error}</div>
+      <div className="min-h-screen flex items-center justify-center p-6" style={getBackgroundStyle()}>
+        <div className="w-full max-w-md p-8 bg-white rounded-2xl shadow-xl text-center space-y-4">
+          <div className="text-4xl">⚠️</div>
+          <div>
+            <div className="font-semibold mb-2 text-lg text-custom-red">Unable to load feedback form</div>
+            <div className="text-sm text-gray-600 mb-4">{error}</div>
+          </div>
+          <button
+            onClick={() => window.location.reload()}
+            className="px-6 py-3 bg-custom-blue text-white rounded-lg hover:bg-custom-blue-hover transition-colors"
+          >
+            Retry
+          </button>
         </div>
-        <button 
-          onClick={() => window.location.reload()} 
-          className="px-6 py-3 bg-custom-blue text-white rounded-lg hover:bg-custom-blue-hover transition-colors"
-        >
-          Retry
-        </button>
       </div>
     );
   }
@@ -486,8 +503,8 @@ const CustomerFeedbackPage = () => {
 
     if (showReviewPrompt) {
       return (
-        <div className="min-h-screen flex items-center justify-center p-6" style={{ backgroundColor: background }}>
-          <div className="w-full max-w-md p-8 text-center">
+        <div className="min-h-screen flex items-center justify-center p-6" style={getBackgroundStyle()}>
+          <div className="w-full max-w-md p-8 bg-white rounded-2xl shadow-xl text-center">
             {venue?.logo && (
               <div className="mb-8">
                 <img src={venue.logo} alt="Venue Logo" className="h-16 mx-auto" />
@@ -548,10 +565,12 @@ const CustomerFeedbackPage = () => {
     const thankYouMessage = venue?.thank_you_message || 'Your response has been submitted successfully.';
 
     return (
-      <div className="flex flex-col justify-center items-center min-h-screen space-y-6 p-6" style={{ backgroundColor: background }}>
-        <ThankYouIcon className="w-16 h-16" style={{ color: primary }} strokeWidth={2} />
-        <div className="text-2xl font-bold text-center" style={{ color: textColor }}>{thankYouTitle}</div>
-        <div className="text-base text-center" style={{ color: textColor, opacity: 0.7 }}>{thankYouMessage}</div>
+      <div className="min-h-screen flex items-center justify-center p-6" style={getBackgroundStyle()}>
+        <div className="w-full max-w-md p-8 bg-white rounded-2xl shadow-xl text-center space-y-6">
+          <ThankYouIcon className="w-16 h-16 mx-auto" style={{ color: primary }} strokeWidth={2} />
+          <div className="text-2xl font-bold" style={{ color: textColor }}>{thankYouTitle}</div>
+          <div className="text-base" style={{ color: textColor, opacity: 0.7 }}>{thankYouMessage}</div>
+        </div>
       </div>
     );
   }
@@ -559,7 +578,6 @@ const CustomerFeedbackPage = () => {
   // Assistance requested state
   if (assistanceRequested) {
     const primary = venue?.primary_color || '#111827';
-    const background = venue?.background_color || '#ffffff';
     const textColor = venue?.text_color || '#111827';
 
     // Get custom assistance message settings with defaults
@@ -573,8 +591,8 @@ const CustomerFeedbackPage = () => {
     const formattedMessage = assistanceMessage.replace(/\{table\}/g, tableNumber);
 
     return (
-      <div className="min-h-screen flex items-center justify-center p-6" style={{ backgroundColor: background }}>
-        <div className="w-full max-w-md p-8 text-center">
+      <div className="min-h-screen flex items-center justify-center p-6" style={getBackgroundStyle()}>
+        <div className="w-full max-w-md p-8 bg-white rounded-2xl shadow-xl text-center">
           {venue?.logo && (
             <div className="mb-8">
               <img src={venue.logo} alt="Venue Logo" className="h-16 mx-auto" />
@@ -604,14 +622,15 @@ const CustomerFeedbackPage = () => {
   const buttonTextColor = venue.button_text_color || '#ffffff';
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center p-6" style={{ backgroundColor: background }}>
-      {venue.logo && (
-        <div className="mb-8 mt-4">
-          <img src={venue.logo} alt="Venue Logo" className="h-24 sm:h-28 md:h-32 mx-auto" />
-        </div>
-      )}
+    <div className="min-h-screen flex items-center justify-center p-6" style={getBackgroundStyle()}>
+      <div className="w-full max-w-md p-8 bg-white rounded-2xl shadow-xl">
+        {venue.logo && (
+          <div className="mb-8">
+            <img src={venue.logo} alt="Venue Logo" className="h-20 mx-auto" />
+          </div>
+        )}
 
-      <div className="w-full max-w-md p-6 text-center">
+        <div className="text-center">
         {!hasStarted ? (
           <div>
             <h2 className="text-2xl font-bold mb-6" style={{ color: textColor }}>Welcome!</h2>
@@ -812,6 +831,7 @@ const CustomerFeedbackPage = () => {
             </button>
           </div>
         )}
+        </div>
       </div>
 
       {/* Alert Modal */}
