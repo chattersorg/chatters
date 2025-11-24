@@ -168,11 +168,11 @@ const AIInsights = () => {
       }
 
       const result = await response.json();
-      console.log('[AI Insights] API response:', { saved: result.saved, cached: result.cached, id: result.id });
+      console.log('[AI Insights] API response:', { saved: result.saved, cached: result.cached, id: result.id, saveError: result.saveError });
 
       if (result.saved === false) {
-        console.error('[AI Insights] Insight was not saved to database');
-        setError('Insight generated but failed to save. Please try again.');
+        console.error('[AI Insights] Insight was not saved to database:', result.saveError);
+        setError(`Insight generated but failed to save: ${result.saveError || 'Unknown error'}`);
       }
 
       setCurrentInsight(result);
