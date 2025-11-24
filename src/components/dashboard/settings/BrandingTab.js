@@ -505,16 +505,30 @@ const BrandingTab = ({
           {/* Preview */}
           <div className="mt-4">
             <label className="block text-sm font-medium text-gray-700 mb-2">Preview</label>
-            <div className="p-4 rounded-lg border border-gray-200" style={{ backgroundColor: backgroundColor }}>
-              <p className="text-sm font-medium mb-3" style={{ color: textColor }}>
-                Feedback Page Preview
-              </p>
-              <button
-                className="px-4 py-2 rounded-lg text-sm font-semibold"
-                style={{ backgroundColor: primaryColor, color: buttonTextColor }}
-              >
-                Sample Button
-              </button>
+            <div
+              className="p-8 rounded-lg border border-gray-200 flex items-center justify-center min-h-[200px]"
+              style={
+                backgroundImage
+                  ? {
+                      backgroundImage: `url(${backgroundImage})`,
+                      backgroundSize: 'cover',
+                      backgroundPosition: 'center',
+                      backgroundRepeat: 'no-repeat'
+                    }
+                  : { backgroundColor: backgroundColor }
+              }
+            >
+              <div className="bg-white rounded-xl shadow-lg p-6 max-w-xs w-full">
+                <p className="text-sm font-medium mb-3" style={{ color: textColor }}>
+                  Feedback Page Preview
+                </p>
+                <button
+                  className="w-full px-4 py-2 rounded-lg text-sm font-semibold"
+                  style={{ backgroundColor: primaryColor, color: buttonTextColor }}
+                >
+                  Sample Button
+                </button>
+              </div>
             </div>
           </div>
         </div>
@@ -582,54 +596,68 @@ const BrandingTab = ({
           {/* Preview */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">Preview</label>
-            <div className="rounded-lg p-6 border border-gray-200" style={{ backgroundColor: backgroundColor }}>
-              <div className="flex flex-col items-center text-center">
-                <div className="inline-block p-4 rounded-full mb-4" style={{ backgroundColor: `${primaryColor}20` }}>
-                  {React.createElement(getIconComponent(assistanceIcon), {
-                    className: "w-10 h-10",
-                    style: { color: primaryColor }
-                  })}
+            <div
+              className="rounded-lg p-8 border border-gray-200 flex items-center justify-center min-h-[250px]"
+              style={
+                backgroundImage
+                  ? {
+                      backgroundImage: `url(${backgroundImage})`,
+                      backgroundSize: 'cover',
+                      backgroundPosition: 'center',
+                      backgroundRepeat: 'no-repeat'
+                    }
+                  : { backgroundColor: backgroundColor }
+              }
+            >
+              <div className="bg-white rounded-xl shadow-lg p-6 max-w-xs w-full">
+                <div className="flex flex-col items-center text-center">
+                  <div className="inline-block p-4 rounded-full mb-4" style={{ backgroundColor: `${primaryColor}20` }}>
+                    {React.createElement(getIconComponent(assistanceIcon), {
+                      className: "w-10 h-10",
+                      style: { color: primaryColor }
+                    })}
+                  </div>
+                  <h2 className="text-lg font-bold mb-2" style={{ color: textColor }}>
+                    {(assistanceTitle || 'Help is on the way!')
+                      .split(/(\{table\})/g)
+                      .map((part, index) =>
+                        part === '{table}' ? (
+                          <span
+                            key={index}
+                            className="inline-block px-2 py-0.5 rounded mx-1"
+                            style={{
+                              backgroundColor: '#fee2e2',
+                              color: '#991b1b',
+                              fontWeight: '600'
+                            }}
+                          >
+                            14
+                          </span>
+                        ) : part
+                      )
+                    }
+                  </h2>
+                  <p className="text-sm" style={{ color: textColor, opacity: 0.8 }}>
+                    {(assistanceMessage || 'We\'ve notified our team that you need assistance. Someone will be with you shortly.')
+                      .split(/(\{table\})/g)
+                      .map((part, index) =>
+                        part === '{table}' ? (
+                          <span
+                            key={index}
+                            className="inline-block px-2 py-0.5 rounded mx-1"
+                            style={{
+                              backgroundColor: '#fee2e2',
+                              color: '#991b1b',
+                              fontWeight: '600'
+                            }}
+                          >
+                            14
+                          </span>
+                        ) : part
+                      )
+                    }
+                  </p>
                 </div>
-                <h2 className="text-lg font-bold mb-2" style={{ color: textColor }}>
-                  {(assistanceTitle || 'Help is on the way!')
-                    .split(/(\{table\})/g)
-                    .map((part, index) =>
-                      part === '{table}' ? (
-                        <span
-                          key={index}
-                          className="inline-block px-2 py-0.5 rounded mx-1"
-                          style={{
-                            backgroundColor: '#fee2e2',
-                            color: '#991b1b',
-                            fontWeight: '600'
-                          }}
-                        >
-                          14
-                        </span>
-                      ) : part
-                    )
-                  }
-                </h2>
-                <p className="text-sm" style={{ color: textColor, opacity: 0.8 }}>
-                  {(assistanceMessage || 'We\'ve notified our team that you need assistance. Someone will be with you shortly.')
-                    .split(/(\{table\})/g)
-                    .map((part, index) =>
-                      part === '{table}' ? (
-                        <span
-                          key={index}
-                          className="inline-block px-2 py-0.5 rounded mx-1"
-                          style={{
-                            backgroundColor: '#fee2e2',
-                            color: '#991b1b',
-                            fontWeight: '600'
-                          }}
-                        >
-                          14
-                        </span>
-                      ) : part
-                    )
-                  }
-                </p>
               </div>
             </div>
           </div>
@@ -696,21 +724,35 @@ const BrandingTab = ({
           {/* Preview */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">Preview</label>
-            <div className="rounded-lg p-6 border border-gray-200" style={{ backgroundColor: backgroundColor }}>
-              <div className="flex flex-col items-center text-center">
-                <div className="mb-4">
-                  {React.createElement(getThankYouIconComponent(thankYouIcon), {
-                    className: "w-14 h-14",
-                    style: { color: primaryColor },
-                    strokeWidth: 2
-                  })}
+            <div
+              className="rounded-lg p-8 border border-gray-200 flex items-center justify-center min-h-[250px]"
+              style={
+                backgroundImage
+                  ? {
+                      backgroundImage: `url(${backgroundImage})`,
+                      backgroundSize: 'cover',
+                      backgroundPosition: 'center',
+                      backgroundRepeat: 'no-repeat'
+                    }
+                  : { backgroundColor: backgroundColor }
+              }
+            >
+              <div className="bg-white rounded-xl shadow-lg p-6 max-w-xs w-full">
+                <div className="flex flex-col items-center text-center">
+                  <div className="mb-4">
+                    {React.createElement(getThankYouIconComponent(thankYouIcon), {
+                      className: "w-14 h-14",
+                      style: { color: primaryColor },
+                      strokeWidth: 2
+                    })}
+                  </div>
+                  <h2 className="text-xl font-bold mb-2" style={{ color: textColor }}>
+                    {thankYouTitle || 'Thanks for your feedback!'}
+                  </h2>
+                  <p className="text-sm" style={{ color: textColor, opacity: 0.7 }}>
+                    {thankYouMessage || 'Your response has been submitted successfully.'}
+                  </p>
                 </div>
-                <h2 className="text-xl font-bold mb-2" style={{ color: textColor }}>
-                  {thankYouTitle || 'Thanks for your feedback!'}
-                </h2>
-                <p className="text-sm" style={{ color: textColor, opacity: 0.7 }}>
-                  {thankYouMessage || 'Your response has been submitted successfully.'}
-                </p>
               </div>
             </div>
           </div>
