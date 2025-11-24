@@ -126,6 +126,7 @@ const venueNavItems = [
       { label: 'Venue Details', path: '/settings/venue-details', icon: Building2 },
       { label: 'Feedback', path: '/settings/feedback', icon: MessageSquare },
       { label: 'Branding', path: '/settings/branding', icon: Palette },
+      { label: 'QR Code', path: '/feedback/qr', icon: QrCode },
       { label: 'Integrations', path: '/settings/integrations', icon: Activity }
     ]
   }
