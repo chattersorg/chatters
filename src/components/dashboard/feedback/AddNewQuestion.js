@@ -30,7 +30,7 @@ const AddNewQuestion = ({ newQuestion, onQuestionChange, onAddQuestion, question
       <div className="bg-white border border-gray-200 rounded-lg p-4 lg:p-6">
         <div className="space-y-4">
           <div>
-            <label htmlFor="new-question" className="block text-sm font-medium text-gray-700 mb-2">
+            <label htmlFor="new-question" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
               Question Text
             </label>
             <input
@@ -39,7 +39,7 @@ const AddNewQuestion = ({ newQuestion, onQuestionChange, onAddQuestion, question
               placeholder="Enter a new question..."
               value={newQuestion}
               onChange={onQuestionChange}
-              className="w-full px-3 py-2 border border-gray-200 rounded-md focus:outline-none focus:ring-2 focus:ring-black text-sm"
+              className="w-full px-3 py-2 border border-gray-200 dark:border-gray-700 dark:bg-gray-800 dark:text-white dark:placeholder-gray-400 rounded-md focus:outline-none focus:ring-2 focus:ring-black text-sm"
               maxLength={100}
             />
           </div>

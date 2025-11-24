@@ -416,19 +416,19 @@ const BrandingTab = ({
           <div className="grid grid-cols-2 gap-4">
             {/* Primary Color */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Primary</label>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Primary</label>
               <div className="flex items-center space-x-2">
                 <input
                   type="color"
                   value={primaryColor}
                   onChange={(e) => setPrimaryColor(e.target.value)}
-                  className="w-10 h-10 border border-gray-300 rounded-lg cursor-pointer flex-shrink-0"
+                  className="w-10 h-10 border border-gray-300 dark:border-gray-700 rounded-lg cursor-pointer flex-shrink-0"
                 />
                 <input
                   type="text"
                   value={primaryColor}
                   onChange={(e) => setPrimaryColor(e.target.value)}
-                  className="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-sm font-mono focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="flex-1 px-3 py-2 border border-gray-300 dark:border-gray-700 dark:bg-gray-800 dark:text-white dark:placeholder-gray-400 rounded-lg text-sm font-mono focus:outline-none focus:ring-2 focus:ring-blue-500"
                   placeholder="#000000"
                 />
               </div>
@@ -436,19 +436,19 @@ const BrandingTab = ({
 
             {/* Background Color */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Background</label>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Background</label>
               <div className="flex items-center space-x-2">
                 <input
                   type="color"
                   value={backgroundColor}
                   onChange={(e) => setBackgroundColor(e.target.value)}
-                  className="w-10 h-10 border border-gray-300 rounded-lg cursor-pointer flex-shrink-0"
+                  className="w-10 h-10 border border-gray-300 dark:border-gray-700 rounded-lg cursor-pointer flex-shrink-0"
                 />
                 <input
                   type="text"
                   value={backgroundColor}
                   onChange={(e) => setBackgroundColor(e.target.value)}
-                  className="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-sm font-mono focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="flex-1 px-3 py-2 border border-gray-300 dark:border-gray-700 dark:bg-gray-800 dark:text-white dark:placeholder-gray-400 rounded-lg text-sm font-mono focus:outline-none focus:ring-2 focus:ring-blue-500"
                   placeholder="#ffffff"
                 />
               </div>
@@ -456,19 +456,19 @@ const BrandingTab = ({
 
             {/* Text Color */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Text</label>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Text</label>
               <div className="flex items-center space-x-2">
                 <input
                   type="color"
                   value={textColor}
                   onChange={(e) => setTextColor(e.target.value)}
-                  className="w-10 h-10 border border-gray-300 rounded-lg cursor-pointer flex-shrink-0"
+                  className="w-10 h-10 border border-gray-300 dark:border-gray-700 rounded-lg cursor-pointer flex-shrink-0"
                 />
                 <input
                   type="text"
                   value={textColor}
                   onChange={(e) => setTextColor(e.target.value)}
-                  className="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-sm font-mono focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="flex-1 px-3 py-2 border border-gray-300 dark:border-gray-700 dark:bg-gray-800 dark:text-white dark:placeholder-gray-400 rounded-lg text-sm font-mono focus:outline-none focus:ring-2 focus:ring-blue-500"
                   placeholder="#111827"
                 />
               </div>
@@ -476,19 +476,19 @@ const BrandingTab = ({
 
             {/* Button Text Color */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Button Text</label>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Button Text</label>
               <div className="flex items-center space-x-2">
                 <input
                   type="color"
                   value={buttonTextColor}
                   onChange={(e) => setButtonTextColor(e.target.value)}
-                  className="w-10 h-10 border border-gray-300 rounded-lg cursor-pointer flex-shrink-0"
+                  className="w-10 h-10 border border-gray-300 dark:border-gray-700 rounded-lg cursor-pointer flex-shrink-0"
                 />
                 <input
                   type="text"
                   value={buttonTextColor}
                   onChange={(e) => setButtonTextColor(e.target.value)}
-                  className="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-sm font-mono focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="flex-1 px-3 py-2 border border-gray-300 dark:border-gray-700 dark:bg-gray-800 dark:text-white dark:placeholder-gray-400 rounded-lg text-sm font-mono focus:outline-none focus:ring-2 focus:ring-blue-500"
                   placeholder="#ffffff"
                 />
               </div>
@@ -679,25 +679,25 @@ const BrandingTab = ({
 
           {/* Title Input */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Title</label>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Title</label>
             <input
               type="text"
               value={thankYouTitle}
               onChange={(e) => setThankYouTitle(e.target.value)}
               placeholder="Thanks for your feedback!"
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 dark:bg-gray-800 dark:text-white dark:placeholder-gray-400 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
             />
           </div>
 
           {/* Message Input */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Message</label>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Message</label>
             <textarea
               value={thankYouMessage}
               onChange={(e) => setThankYouMessage(e.target.value)}
               placeholder="Your response has been submitted successfully."
               rows={3}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 resize-none"
+              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 dark:bg-gray-800 dark:text-white dark:placeholder-gray-400 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 resize-none"
             />
           </div>
 

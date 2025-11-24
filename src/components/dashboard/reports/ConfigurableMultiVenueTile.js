@@ -607,19 +607,19 @@ const ConfigurableMultiVenueTile = ({ metricType, position, onRemove, onChangeMe
 
   if (loading) {
     return (
-      <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
+      <div className="bg-white dark:bg-gray-900 rounded-xl shadow-sm p-6 border border-gray-100 dark:border-gray-800">
         <div className="animate-pulse space-y-3">
           <div className="flex items-center justify-between">
-            <div className="h-5 bg-gray-200 rounded w-40"></div>
+            <div className="h-5 bg-gray-200 dark:bg-gray-700 rounded w-40"></div>
             <div className="flex gap-2">
-              <div className="h-5 w-5 bg-gray-200 rounded"></div>
-              <div className="h-5 w-5 bg-gray-200 rounded"></div>
+              <div className="h-5 w-5 bg-gray-200 dark:bg-gray-700 rounded"></div>
+              <div className="h-5 w-5 bg-gray-200 dark:bg-gray-700 rounded"></div>
             </div>
           </div>
           <div className="space-y-2">
-            <div className="h-8 bg-gray-200 rounded"></div>
-            <div className="h-8 bg-gray-200 rounded"></div>
-            <div className="h-8 bg-gray-200 rounded"></div>
+            <div className="h-8 bg-gray-200 dark:bg-gray-700 rounded"></div>
+            <div className="h-8 bg-gray-200 dark:bg-gray-700 rounded"></div>
+            <div className="h-8 bg-gray-200 dark:bg-gray-700 rounded"></div>
           </div>
         </div>
       </div>
@@ -627,14 +627,14 @@ const ConfigurableMultiVenueTile = ({ metricType, position, onRemove, onChangeMe
   }
 
   return (
-    <div className={`bg-white rounded-xl shadow-sm p-6 border ${config.isComingSoon ? 'border-yellow-200 bg-yellow-50/30' : 'border-gray-100'}`}>
+    <div className={`bg-white dark:bg-gray-900 rounded-xl shadow-sm p-6 border ${config.isComingSoon ? 'border-yellow-200 bg-yellow-50/30 dark:border-yellow-800 dark:bg-yellow-900/20' : 'border-gray-100 dark:border-gray-800'}`}>
       {/* Header */}
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-2">
-          <Icon className={`w-5 h-5 ${config.isComingSoon ? 'text-yellow-600' : 'text-blue-600'}`} />
-          <h3 className="text-lg font-semibold text-gray-800">{config.title}</h3>
+          <Icon className={`w-5 h-5 ${config.isComingSoon ? 'text-yellow-600 dark:text-yellow-400' : 'text-blue-600 dark:text-blue-400'}`} />
+          <h3 className="text-lg font-semibold text-gray-800 dark:text-white">{config.title}</h3>
           {config.isComingSoon && (
-            <span className="px-2 py-0.5 text-xs font-medium bg-yellow-100 text-yellow-700 rounded-full">
+            <span className="px-2 py-0.5 text-xs font-medium bg-yellow-100 dark:bg-yellow-900/50 text-yellow-700 dark:text-yellow-400 rounded-full">
               Coming Soon
             </span>
           )}
@@ -642,17 +642,17 @@ const ConfigurableMultiVenueTile = ({ metricType, position, onRemove, onChangeMe
         <div className="flex items-center gap-2">
           <button
             onClick={onChangeMetric}
-            className="p-1.5 hover:bg-gray-100 rounded-lg transition-colors"
+            className="p-1.5 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors"
             title="Change metric"
           >
-            <Settings className="w-4 h-4 text-gray-600" />
+            <Settings className="w-4 h-4 text-gray-600 dark:text-gray-400" />
           </button>
           <button
             onClick={onRemove}
-            className="p-1.5 hover:bg-red-50 rounded-lg transition-colors"
+            className="p-1.5 hover:bg-red-50 dark:hover:bg-red-900/30 rounded-lg transition-colors"
             title="Remove tile"
           >
-            <X className="w-4 h-4 text-red-600" />
+            <X className="w-4 h-4 text-red-600 dark:text-red-400" />
           </button>
         </div>
       </div>
@@ -660,13 +660,13 @@ const ConfigurableMultiVenueTile = ({ metricType, position, onRemove, onChangeMe
       {/* Venue Breakdown */}
       {config.isComingSoon ? (
         <div className="text-center py-8">
-          <p className="text-sm text-gray-600 mb-2">This report is coming soon!</p>
-          <p className="text-xs text-gray-500">We're working on bringing you this analytics feature.</p>
+          <p className="text-sm text-gray-600 dark:text-gray-400 mb-2">This report is coming soon!</p>
+          <p className="text-xs text-gray-500 dark:text-gray-500">We're working on bringing you this analytics feature.</p>
         </div>
       ) : (
         <div className="space-y-2">
           {venueStats.length === 0 ? (
-            <div className="text-center py-8 text-gray-500">
+            <div className="text-center py-8 text-gray-500 dark:text-gray-400">
               <p className="text-sm">No data available</p>
             </div>
           ) : (
@@ -676,26 +676,26 @@ const ConfigurableMultiVenueTile = ({ metricType, position, onRemove, onChangeMe
                 return (
                   <div
                     key={stat.venueId}
-                    className="p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
+                    className="p-3 bg-gray-50 dark:bg-gray-800 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
                   >
                     <div className="flex items-center justify-between mb-2">
-                      <span className="text-sm font-medium text-gray-700">{stat.venueName}</span>
+                      <span className="text-sm font-medium text-gray-700 dark:text-gray-300">{stat.venueName}</span>
                       <div className="flex items-center gap-2">
                         <span className={`px-2 py-1 text-xs font-medium rounded ${stat.performanceColor}`}>
                           {stat.performanceLevel}
                         </span>
-                        <span className="text-lg font-bold text-gray-900">{stat.displayValue}</span>
+                        <span className="text-lg font-bold text-gray-900 dark:text-white">{stat.displayValue}</span>
                       </div>
                     </div>
                     {/* Progress bar */}
-                    <div className="w-full bg-gray-200 rounded-full h-2 overflow-hidden">
+                    <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2 overflow-hidden">
                       <div
                         className={`h-full ${stat.progressBarColor} transition-all duration-500`}
                         style={{ width: `${stat.value}%` }}
                       ></div>
                     </div>
                     <div className="flex justify-between mt-1">
-                      <span className="text-xs text-gray-500">
+                      <span className="text-xs text-gray-500 dark:text-gray-400">
                         {stat.resolvedCount} of {stat.totalCount} resolved
                       </span>
                     </div>
@@ -707,9 +707,9 @@ const ConfigurableMultiVenueTile = ({ metricType, position, onRemove, onChangeMe
               return (
                 <div
                   key={stat.venueId}
-                  className="flex items-center justify-between p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
+                  className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-800 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
                 >
-                  <span className="text-sm font-medium text-gray-700">{stat.venueName}</span>
+                  <span className="text-sm font-medium text-gray-700 dark:text-gray-300">{stat.venueName}</span>
                   <div className="flex items-center gap-2">
                     {stat.activityLevel && (
                       <span className={`px-2 py-1 text-xs font-medium rounded ${stat.activityColor}`}>
@@ -721,7 +721,7 @@ const ConfigurableMultiVenueTile = ({ metricType, position, onRemove, onChangeMe
                         {stat.performanceLevel}
                       </span>
                     )}
-                    <span className="text-sm font-semibold text-gray-900">{stat.displayValue}</span>
+                    <span className="text-sm font-semibold text-gray-900 dark:text-white">{stat.displayValue}</span>
                   </div>
                 </div>
               );

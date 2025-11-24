@@ -657,12 +657,12 @@ const VenueSettingsPage = () => {
             <form onSubmit={handleCreateVenueSubmit} className="space-y-6">
               {/* Venue Name */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">New Venue Name *</label>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">New Venue Name *</label>
                 <input
                   type="text"
                   value={newVenue.name}
                   onChange={(e) => setNewVenue(prev => ({ ...prev, name: e.target.value }))}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm lg:text-base"
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 dark:bg-gray-800 dark:text-white dark:placeholder-gray-400 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm lg:text-base"
                   placeholder="Enter the new venue name"
                   required
                 />
@@ -670,7 +670,7 @@ const VenueSettingsPage = () => {
 
               {/* Simplified Address for New Venue */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Address (Optional)</label>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Address (Optional)</label>
                 <div className="space-y-3">
                   <input
                     type="text"
@@ -680,7 +680,7 @@ const VenueSettingsPage = () => {
                       ...prev,
                       address: { ...prev.address, line1: e.target.value }
                     }))}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm lg:text-base"
+                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 dark:bg-gray-800 dark:text-white dark:placeholder-gray-400 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm lg:text-base"
                   />
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     <input
@@ -691,7 +691,7 @@ const VenueSettingsPage = () => {
                         ...prev,
                         address: { ...prev.address, city: e.target.value }
                       }))}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm lg:text-base"
+                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 dark:bg-gray-800 dark:text-white dark:placeholder-gray-400 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm lg:text-base"
                     />
                     <input
                       type="text"
@@ -701,7 +701,7 @@ const VenueSettingsPage = () => {
                         ...prev,
                         address: { ...prev.address, postalCode: e.target.value }
                       }))}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm lg:text-base"
+                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 dark:bg-gray-800 dark:text-white dark:placeholder-gray-400 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm lg:text-base"
                     />
                   </div>
                 </div>
