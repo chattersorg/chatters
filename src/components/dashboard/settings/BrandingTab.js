@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import { supabase } from '../../../utils/supabase';
-import { HandHeart, Bell, UserCheck, Sparkles, CheckCircle, ThumbsUp, Heart, Smile, PartyPopper, Star } from 'lucide-react';
 import { Button } from '../../ui/button';
 
 // Helper component to render text with {table} highlighted
@@ -317,31 +316,27 @@ const BrandingTab = ({
     }
   };
 
-  const iconOptions = [
-    { value: 'hand-heart', label: 'Hand Heart', icon: HandHeart },
-    { value: 'bell', label: 'Bell', icon: Bell },
-    { value: 'user-check', label: 'User Check', icon: UserCheck },
-    { value: 'sparkles', label: 'Sparkles', icon: Sparkles }
+  const emojiOptions = [
+    { value: '🙋', label: 'Hand Raised' },
+    { value: '👋', label: 'Waving Hand' },
+    { value: '🆘', label: 'SOS' },
+    { value: '💁', label: 'Person Tipping' },
+    { value: '🤝', label: 'Handshake' },
+    { value: '🔔', label: 'Bell' },
+    { value: '✋', label: 'Raised Hand' },
+    { value: '🚨', label: 'Alert' }
   ];
 
-  const thankYouIconOptions = [
-    { value: 'check-circle', label: 'Check Circle', icon: CheckCircle },
-    { value: 'thumbs-up', label: 'Thumbs Up', icon: ThumbsUp },
-    { value: 'heart', label: 'Heart', icon: Heart },
-    { value: 'smile', label: 'Smile', icon: Smile },
-    { value: 'party-popper', label: 'Party', icon: PartyPopper },
-    { value: 'star', label: 'Star', icon: Star }
+  const thankYouEmojiOptions = [
+    { value: '✅', label: 'Check Mark' },
+    { value: '👍', label: 'Thumbs Up' },
+    { value: '❤️', label: 'Heart' },
+    { value: '😊', label: 'Smile' },
+    { value: '🎉', label: 'Party' },
+    { value: '⭐', label: 'Star' },
+    { value: '🙏', label: 'Thank You' },
+    { value: '💯', label: 'Perfect' }
   ];
-
-  const getIconComponent = (iconValue) => {
-    const option = iconOptions.find(opt => opt.value === iconValue);
-    return option ? option.icon : HandHeart;
-  };
-
-  const getThankYouIconComponent = (iconValue) => {
-    const option = thankYouIconOptions.find(opt => opt.value === iconValue);
-    return option ? option.icon : CheckCircle;
-  };
 
   return (
     <div className="space-y-6">
@@ -543,27 +538,24 @@ const BrandingTab = ({
         message={assistanceUpdateMessage}
       >
         <div className="space-y-6">
-          {/* Icon Selection */}
+          {/* Emoji Selection */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-3">Icon</label>
+            <label className="block text-sm font-medium text-gray-700 mb-3">Emoji</label>
             <div className="grid grid-cols-4 gap-3">
-              {iconOptions.map((option) => {
-                const IconComponent = option.icon;
-                return (
-                  <button
-                    key={option.value}
-                    onClick={() => setAssistanceIcon(option.value)}
-                    className={`flex flex-col items-center justify-center p-3 rounded-lg border-2 transition-all ${
-                      assistanceIcon === option.value
-                        ? 'border-blue-500 bg-blue-50'
-                        : 'border-gray-200 hover:border-gray-300 hover:bg-gray-50'
-                    }`}
-                  >
-                    <IconComponent className="w-6 h-6 mb-1" style={{ color: assistanceIcon === option.value ? primaryColor : '#6b7280' }} />
-                    <span className="text-xs font-medium text-gray-700">{option.label}</span>
-                  </button>
-                );
-              })}
+              {emojiOptions.map((option) => (
+                <button
+                  key={option.value}
+                  onClick={() => setAssistanceIcon(option.value)}
+                  className={`flex flex-col items-center justify-center p-3 rounded-lg border-2 transition-all ${
+                    assistanceIcon === option.value
+                      ? 'border-blue-500 bg-blue-50'
+                      : 'border-gray-200 hover:border-gray-300 hover:bg-gray-50'
+                  }`}
+                >
+                  <div className="text-3xl mb-1">{option.value}</div>
+                  <span className="text-xs font-medium text-gray-700">{option.label}</span>
+                </button>
+              ))}
             </div>
           </div>
 
@@ -611,11 +603,8 @@ const BrandingTab = ({
             >
               <div className="bg-white rounded-xl shadow-lg p-6 max-w-xs w-full">
                 <div className="flex flex-col items-center text-center">
-                  <div className="mb-4">
-                    {React.createElement(getIconComponent(assistanceIcon), {
-                      className: "w-12 h-12",
-                      style: { color: primaryColor }
-                    })}
+                  <div className="text-5xl mb-4">
+                    {assistanceIcon || '🙋'}
                   </div>
                   <h2 className="text-lg font-bold mb-2" style={{ color: textColor }}>
                     {(assistanceTitle || 'Help is on the way!')
@@ -673,27 +662,24 @@ const BrandingTab = ({
         message={thankYouUpdateMessage}
       >
         <div className="space-y-6">
-          {/* Icon Selection */}
+          {/* Emoji Selection */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-3">Icon</label>
-            <div className="grid grid-cols-3 sm:grid-cols-6 gap-3">
-              {thankYouIconOptions.map((option) => {
-                const IconComponent = option.icon;
-                return (
-                  <button
-                    key={option.value}
-                    onClick={() => setThankYouIcon(option.value)}
-                    className={`flex flex-col items-center justify-center p-3 rounded-lg border-2 transition-all ${
-                      thankYouIcon === option.value
-                        ? 'border-blue-500 bg-blue-50'
-                        : 'border-gray-200 hover:border-gray-300 hover:bg-gray-50'
-                    }`}
-                  >
-                    <IconComponent className="w-6 h-6 mb-1" style={{ color: thankYouIcon === option.value ? primaryColor : '#6b7280' }} />
-                    <span className="text-xs font-medium text-gray-700">{option.label}</span>
-                  </button>
-                );
-              })}
+            <label className="block text-sm font-medium text-gray-700 mb-3">Emoji</label>
+            <div className="grid grid-cols-4 gap-3">
+              {thankYouEmojiOptions.map((option) => (
+                <button
+                  key={option.value}
+                  onClick={() => setThankYouIcon(option.value)}
+                  className={`flex flex-col items-center justify-center p-3 rounded-lg border-2 transition-all ${
+                    thankYouIcon === option.value
+                      ? 'border-blue-500 bg-blue-50'
+                      : 'border-gray-200 hover:border-gray-300 hover:bg-gray-50'
+                  }`}
+                >
+                  <div className="text-3xl mb-1">{option.value}</div>
+                  <span className="text-xs font-medium text-gray-700">{option.label}</span>
+                </button>
+              ))}
             </div>
           </div>
 
@@ -739,12 +725,8 @@ const BrandingTab = ({
             >
               <div className="bg-white rounded-xl shadow-lg p-6 max-w-xs w-full">
                 <div className="flex flex-col items-center text-center">
-                  <div className="mb-4">
-                    {React.createElement(getThankYouIconComponent(thankYouIcon), {
-                      className: "w-14 h-14",
-                      style: { color: primaryColor },
-                      strokeWidth: 2
-                    })}
+                  <div className="text-5xl mb-4">
+                    {thankYouIcon || '✅'}
                   </div>
                   <h2 className="text-xl font-bold mb-2" style={{ color: textColor }}>
                     {thankYouTitle || 'Thanks for your feedback!'}

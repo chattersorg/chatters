@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import { supabase } from '../../utils/supabase';
 import { v4 as uuidv4 } from 'uuid';
-import { HandHeart, Star, Bell, UserCheck, Sparkles, CheckCircle, ThumbsUp, Heart, Smile, PartyPopper } from 'lucide-react';
+import { Star } from 'lucide-react';
 import AlertModal from '../../components/ui/AlertModal';
 
 const CustomerFeedbackPage = () => {
@@ -26,29 +26,6 @@ const CustomerFeedbackPage = () => {
   const [hasStarted, setHasStarted] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // Helper function to get the icon component based on the icon name
-  const getAssistanceIcon = (iconName) => {
-    const icons = {
-      'hand-heart': HandHeart,
-      'bell': Bell,
-      'user-check': UserCheck,
-      'sparkles': Sparkles
-    };
-    return icons[iconName] || HandHeart; // Default to HandHeart if unknown
-  };
-
-  // Helper function to get the thank you icon component
-  const getThankYouIcon = (iconName) => {
-    const icons = {
-      'check-circle': CheckCircle,
-      'thumbs-up': ThumbsUp,
-      'heart': Heart,
-      'smile': Smile,
-      'party-popper': PartyPopper,
-      'star': Star
-    };
-    return icons[iconName] || CheckCircle; // Default to CheckCircle if unknown
-  };
 
   // Utility function to check if current time is within feedback hours
   const isFeedbackTimeAllowed = (feedbackHours) => {
@@ -560,14 +537,14 @@ const CustomerFeedbackPage = () => {
     }
 
     // Default success state for non-positive feedback or no review links
-    const ThankYouIcon = getThankYouIcon(venue?.thank_you_icon || 'check-circle');
+    const thankYouEmoji = venue?.thank_you_icon || '✅';
     const thankYouTitle = venue?.thank_you_title || 'Thanks for your feedback!';
     const thankYouMessage = venue?.thank_you_message || 'Your response has been submitted successfully.';
 
     return (
       <div className="min-h-screen flex items-center justify-center p-6" style={getBackgroundStyle()}>
         <div className="w-full max-w-md p-8 bg-white rounded-2xl shadow-xl text-center space-y-6">
-          <ThankYouIcon className="w-16 h-16 mx-auto" style={{ color: primary }} strokeWidth={2} />
+          <div className="text-6xl">{thankYouEmoji}</div>
           <div className="text-2xl font-bold" style={{ color: textColor }}>{thankYouTitle}</div>
           <div className="text-base" style={{ color: textColor, opacity: 0.7 }}>{thankYouMessage}</div>
         </div>
@@ -583,8 +560,7 @@ const CustomerFeedbackPage = () => {
     // Get custom assistance message settings with defaults
     const assistanceTitle = venue?.assistance_title || 'Help is on the way!';
     const assistanceMessage = venue?.assistance_message || 'We\'ve notified our team that you need assistance. Someone will be with you shortly.';
-    const assistanceIconName = venue?.assistance_icon || 'hand-heart';
-    const AssistanceIcon = getAssistanceIcon(assistanceIconName);
+    const assistanceEmoji = venue?.assistance_icon || '🙋';
 
     // Replace {table} placeholder with actual table number in both title and message
     const formattedTitle = assistanceTitle.replace(/\{table\}/g, tableNumber);
@@ -599,8 +575,8 @@ const CustomerFeedbackPage = () => {
             </div>
           )}
 
-          <div className="mb-6">
-            <AssistanceIcon className="w-16 h-16 mx-auto" style={{ color: primary }} />
+          <div className="text-6xl mb-6">
+            {assistanceEmoji}
           </div>
 
           <h2 className="text-2xl font-bold mb-4" style={{ color: textColor }}>{formattedTitle}</h2>
