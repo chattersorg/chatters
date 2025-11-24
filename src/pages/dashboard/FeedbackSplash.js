@@ -16,7 +16,7 @@ const FeedbackSplashPage = () => {
   const loadVenueData = async () => {
     const { data, error } = await supabase
       .from('venues')
-      .select('name, logo, primary_color, background_color, text_color, button_text_color, custom_links')
+      .select('name, logo, primary_color, background_color, text_color, button_text_color, custom_links, background_image')
       .eq('id', venueId)
       .single();
 
@@ -65,11 +65,21 @@ const FeedbackSplashPage = () => {
   const backgroundColor = venue.background_color || '#ffffff';
   const textColor = venue.text_color || '#111827';
   const buttonTextColor = venue.button_text_color || '#ffffff';
+  const backgroundImage = venue.background_image;
+
+  const backgroundStyle = backgroundImage
+    ? {
+        backgroundImage: `url(${backgroundImage})`,
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+        backgroundRepeat: 'no-repeat'
+      }
+    : { backgroundColor };
 
   return (
     <div
       className="min-h-screen flex items-center justify-center p-4"
-      style={{ backgroundColor }}
+      style={backgroundStyle}
     >
       <div className="w-full max-w-md">
         <div className="bg-white rounded-2xl shadow-xl p-8 space-y-6">

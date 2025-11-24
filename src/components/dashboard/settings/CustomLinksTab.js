@@ -108,6 +108,9 @@ const CustomLinksTab = ({ venueId }) => {
           Add links to your existing ordering, payment, and booking systems. Customers will see these options before leaving feedback,
           making your Chatters QR code the single entry point for all customer interactions.
         </p>
+        <p className="text-sm text-blue-800 mt-2">
+          <strong>Tip:</strong> Configure the splash page background image in <strong>Venue Settings → Branding</strong>.
+        </p>
       </div>
 
       <div className="space-y-4">

@@ -105,6 +105,7 @@ const SettingsCard = ({ title, description, children, onSave, loading, message }
 
 const BrandingTab = ({
   logo, setLogo,
+  backgroundImage, setBackgroundImage,
   primaryColor, setPrimaryColor,
   backgroundColor, setBackgroundColor,
   textColor, setTextColor,
@@ -119,6 +120,8 @@ const BrandingTab = ({
 }) => {
   const [logoLoading, setLogoLoading] = useState(false);
   const [logoMessage, setLogoMessage] = useState('');
+  const [backgroundImageLoading, setBackgroundImageLoading] = useState(false);
+  const [backgroundImageMessage, setBackgroundImageMessage] = useState('');
   const [colorsLoading, setColorsLoading] = useState(false);
   const [colorsMessage, setColorsMessage] = useState('');
   const [assistanceLoading, setAssistanceLoading] = useState(false);
@@ -174,6 +177,57 @@ const BrandingTab = ({
       setLogoMessage('Failed to update logo: ' + error.message);
     } finally {
       setLogoLoading(false);
+    }
+  };
+
+  const handleBackgroundImageUpload = async (e) => {
+    const file = e.target.files[0];
+    if (!file || !venueId) return;
+
+    setBackgroundImageLoading(true);
+    setBackgroundImageMessage('');
+
+    try {
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${venueId}-background.${fileExt}`;
+      const filePath = `${fileName}`;
+
+      const { error: deleteError } = await supabase.storage
+        .from('venue-logos')
+        .remove([filePath]);
+
+      if (deleteError && deleteError.message !== 'The resource was not found') {
+        throw new Error('Failed to delete existing background: ' + deleteError.message);
+      }
+
+      const { error: uploadError } = await supabase.storage
+        .from('venue-logos')
+        .upload(filePath, file);
+
+      if (uploadError) {
+        throw new Error('Failed to upload background: ' + uploadError.message);
+      }
+
+      const { data: { publicUrl } } = supabase.storage
+        .from('venue-logos')
+        .getPublicUrl(filePath);
+
+      const { error: updateError } = await supabase
+        .from('venues')
+        .update({ background_image: publicUrl })
+        .eq('id', venueId);
+
+      if (updateError) {
+        throw new Error('Failed to update background: ' + updateError.message);
+      }
+
+      setBackgroundImage(publicUrl);
+      setBackgroundImageMessage('Background image updated successfully!');
+    } catch (error) {
+      console.error('Error updating background:', error);
+      setBackgroundImageMessage('Failed to update background: ' + error.message);
+    } finally {
+      setBackgroundImageLoading(false);
     }
   };
 
@@ -319,6 +373,39 @@ const BrandingTab = ({
             />
             <p className="text-xs text-gray-500 mt-2">
               Square image, minimum 100x100px recommended
+            </p>
+          </div>
+        </div>
+      </SettingsCard>
+
+      {/* Background Image */}
+      <SettingsCard
+        title="Splash Page Background Image"
+        description="Upload a background image for your feedback splash page (optional)"
+        onSave={() => {}}
+        loading={backgroundImageLoading}
+        message={backgroundImageMessage}
+      >
+        <div className="flex items-center space-x-4">
+          {backgroundImage && (
+            <div className="flex-shrink-0">
+              <img
+                src={backgroundImage}
+                alt="Background"
+                className="w-32 h-20 object-cover rounded-lg border border-gray-200 shadow-sm"
+              />
+            </div>
+          )}
+          <div className="flex-1">
+            <input
+              type="file"
+              accept="image/*"
+              onChange={handleBackgroundImageUpload}
+              disabled={backgroundImageLoading}
+              className="w-full text-sm text-gray-600 file:mr-3 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-medium file:bg-[#2548CC] file:text-white hover:file:bg-[#1e3ba8] cursor-pointer disabled:opacity-50"
+            />
+            <p className="text-xs text-gray-500 mt-2">
+              Landscape image, 1920x1080px or larger recommended. Leave empty to use solid background color.
             </p>
           </div>
         </div>

@@ -10,6 +10,7 @@ const SettingsBrandingPage = () => {
 
   // State variables for BrandingTab
   const [logo, setLogo] = useState(null);
+  const [backgroundImage, setBackgroundImage] = useState(null);
   const [primaryColor, setPrimaryColor] = useState('#1890ff');
   const [backgroundColor, setBackgroundColor] = useState('#ffffff');
   const [textColor, setTextColor] = useState('#111827');
@@ -35,7 +36,7 @@ const SettingsBrandingPage = () => {
       // Fetch venue branding data
       const { data: venueData, error: venueError } = await supabase
         .from('venues')
-        .select('logo, primary_color, background_color, text_color, button_text_color, assistance_title, assistance_message, assistance_icon, thank_you_title, thank_you_message, thank_you_icon')
+        .select('logo, background_image, primary_color, background_color, text_color, button_text_color, assistance_title, assistance_message, assistance_icon, thank_you_title, thank_you_message, thank_you_icon')
         .eq('id', venueId)
         .single();
 
@@ -46,6 +47,7 @@ const SettingsBrandingPage = () => {
 
       // Set branding data
       setLogo(venueData.logo || null);
+      setBackgroundImage(venueData.background_image || null);
       setPrimaryColor(venueData.primary_color || '#1890ff');
       setBackgroundColor(venueData.background_color || '#ffffff');
       setTextColor(venueData.text_color || '#111827');
@@ -80,6 +82,8 @@ const SettingsBrandingPage = () => {
       <BrandingTab
         logo={logo}
         setLogo={setLogo}
+        backgroundImage={backgroundImage}
+        setBackgroundImage={setBackgroundImage}
         primaryColor={primaryColor}
         setPrimaryColor={setPrimaryColor}
         backgroundColor={backgroundColor}
