@@ -99,15 +99,6 @@ const CustomLinksTab = ({ venueId }) => {
     }
   };
 
-  const getIconForLinkType = (id) => {
-    const icons = {
-      menu: '📋',
-      order: '🍽️',
-      pay: '💳',
-      book: '📅'
-    };
-    return icons[id] || '🔗';
-  };
 
   return (
     <div className="space-y-6">
@@ -159,7 +150,6 @@ const CustomLinksTab = ({ venueId }) => {
 
                           <div className="flex-1 space-y-3">
                             <div className="flex items-center gap-3">
-                              <span className="text-2xl">{getIconForLinkType(link.id)}</span>
                               <input
                                 type="text"
                                 value={link.label}

@@ -29,8 +29,12 @@ const FeedbackSplashPage = () => {
 
     const enabledLinks = (data.custom_links || []).filter(link => link.enabled && link.url);
 
+    console.log('Venue data:', data);
+    console.log('Enabled links:', enabledLinks);
+
     // If no custom links are enabled, go straight to feedback
     if (enabledLinks.length === 0) {
+      console.log('No enabled links, redirecting to form');
       navigate(`/feedback/${venueId}/form`, { replace: true });
       return;
     }
@@ -62,16 +66,6 @@ const FeedbackSplashPage = () => {
   const textColor = venue.text_color || '#111827';
   const buttonTextColor = venue.button_text_color || '#ffffff';
 
-  const getIconForLinkType = (id) => {
-    const icons = {
-      menu: '📋',
-      order: '🍽️',
-      pay: '💳',
-      book: '📅'
-    };
-    return icons[id] || '🔗';
-  };
-
   return (
     <div
       className="min-h-screen flex items-center justify-center p-4"
@@ -101,16 +95,14 @@ const FeedbackSplashPage = () => {
             {/* Leave Feedback Button - Always First */}
             <button
               onClick={handleLeaveFeedback}
-              className="w-full py-4 px-6 rounded-xl font-medium text-lg transition-all duration-200 hover:scale-105 shadow-md hover:shadow-lg flex items-center justify-between"
+              className="w-full py-4 px-6 rounded-xl font-medium text-lg transition-all duration-200 hover:scale-105 shadow-md hover:shadow-lg flex items-center justify-center gap-3"
               style={{
                 backgroundColor: primaryColor,
                 color: buttonTextColor
               }}
             >
-              <span className="flex items-center gap-3">
-                <MessageSquare className="w-6 h-6" />
-                Leave Feedback
-              </span>
+              <MessageSquare className="w-6 h-6" />
+              Leave Feedback
             </button>
 
             {/* Custom Links */}
@@ -120,16 +112,13 @@ const FeedbackSplashPage = () => {
                 <button
                   key={link.id}
                   onClick={() => handleLinkClick(link.url)}
-                  className="w-full py-4 px-6 rounded-xl font-medium text-lg transition-all duration-200 hover:scale-105 border-2 hover:shadow-md flex items-center justify-between bg-white"
+                  className="w-full py-4 px-6 rounded-xl font-medium text-lg transition-all duration-200 hover:scale-105 border-2 hover:shadow-md flex items-center justify-center gap-3 bg-white"
                   style={{
                     borderColor: primaryColor,
                     color: textColor
                   }}
                 >
-                  <span className="flex items-center gap-3">
-                    <span className="text-2xl">{getIconForLinkType(link.id)}</span>
-                    {link.label}
-                  </span>
+                  {link.label}
                   <ExternalLinkIcon className="w-5 h-5 opacity-50" />
                 </button>
               ))}
