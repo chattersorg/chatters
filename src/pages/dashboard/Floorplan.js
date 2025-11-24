@@ -1,7 +1,6 @@
 // File: Floorplan.jsx
 import React, { useEffect, useRef, useState } from 'react';
 import { supabase } from '../../utils/supabase';
-import { ChartCard } from '../../components/dashboard/layout/ModernCard';
 import { v4 as uuidv4 } from 'uuid';
 import usePageTitle from '../../hooks/usePageTitle';
 import { useVenue } from '../../context/VenueContext';
@@ -272,21 +271,24 @@ const Floorplan = () => {
   }
 
   return (
-    <div className="w-full">
-      <ChartCard
-        title="Floor Plan"
-        subtitle="Manage your venue layout and table arrangements"
-        actions={
-          !editMode ? (
-            <button
-              onClick={handleToggleEdit}
-              className="px-4 py-2 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition-colors"
-            >
-              Edit Layout
-            </button>
-          ) : null
-        }
-      >
+    <div className="space-y-6">
+      {/* Page Header */}
+      <div className="mb-2 flex items-center justify-between">
+        <div>
+          <h1 className="text-2xl font-semibold text-gray-900">Floor Plan</h1>
+          <p className="text-sm text-gray-500 mt-1">Manage your venue layout and table arrangements</p>
+        </div>
+        {!editMode && (
+          <button
+            onClick={handleToggleEdit}
+            className="px-4 py-2 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition-colors"
+          >
+            Edit Layout
+          </button>
+        )}
+      </div>
+
+      <div className="bg-white border border-gray-200 rounded-xl overflow-hidden p-6">
         <div className="space-y-6">
           <EditControls
             editMode={editMode}
@@ -320,7 +322,7 @@ const Floorplan = () => {
             onTableResize={handleTableResize}
           />
         </div>
-      </ChartCard>
+      </div>
 
       {/* Exit Edit Confirmation Modal */}
       <ConfirmationModal
