@@ -84,7 +84,7 @@ const AIInsights = () => {
         setSelectedWeek(currentWeekStart);
       }
     } catch (err) {
-      console.error('[AI Insights] Error loading insights:', err);
+      // Error loading insights silently
     }
   }, [venueId, currentWeekStart]);
 
@@ -168,10 +168,8 @@ const AIInsights = () => {
       }
 
       const result = await response.json();
-      console.log('[AI Insights] API response:', { saved: result.saved, cached: result.cached, id: result.id, saveError: result.saveError });
 
       if (result.saved === false) {
-        console.error('[AI Insights] Insight was not saved to database:', result.saveError);
         setError(`Insight generated but failed to save: ${result.saveError || 'Unknown error'}`);
       }
 
@@ -185,12 +183,10 @@ const AIInsights = () => {
         .eq('venue_id', venueId)
         .order('week_start', { ascending: false });
 
-      console.log('[AI Insights] Reloaded history:', data?.length, 'insights');
       const validData = (data || []).filter(i => i.week_start);
       setWeeklyHistory(validData);
 
     } catch (err) {
-      console.error('[AI Insights] Error generating insights:', err);
       setError(err.message || 'Failed to generate insights. Please try again.');
     } finally {
       setLoading(false);
