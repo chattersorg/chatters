@@ -2,9 +2,8 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { useVenue } from '../../context/VenueContext';
 import { supabase } from '../../utils/supabase';
 import usePageTitle from '../../hooks/usePageTitle';
-import { Sparkles, RefreshCw, AlertCircle, TrendingUp, Calendar, Lightbulb, ChevronRight, ChevronLeft } from 'lucide-react';
+import { Sparkles, RefreshCw, AlertCircle, ChevronRight, ChevronLeft, ChevronDown, FileText, ThumbsUp, Target, TrendingUp, TrendingDown } from 'lucide-react';
 import dayjs from 'dayjs';
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 
 // Helper to get Monday of a given week
 function getWeekStart(date) {
@@ -41,7 +40,8 @@ const AIInsights = () => {
   const [weeklyHistory, setWeeklyHistory] = useState([]);
   const [selectedWeek, setSelectedWeek] = useState(null);
   const [error, setError] = useState(null);
-  const [timeframeWeeks, setTimeframeWeeks] = useState(8); // Default 8 weeks for graph
+  const [strengthsOpen, setStrengthsOpen] = useState(true);
+  const [opportunitiesOpen, setOpportunitiesOpen] = useState(true);
 
   // Get current venue name
   const currentVenue = allVenues.find(v => v.id === venueId);
@@ -240,21 +240,17 @@ const AIInsights = () => {
   const canGoNext = selectedWeek && selectedWeek < currentWeekStart;
   const displayedWeek = selectedWeek || currentWeekStart;
 
-  // Prepare graph data (filter out entries without valid week_start)
-  const graphData = weeklyHistory
-    .filter(i => i.week_start)
-    .slice(0, timeframeWeeks)
-    .reverse()
-    .map(insight => ({
-      week: dayjs(insight.week_start).format('D MMM'),
-      score: insight.ai_score,
-      fullDate: insight.week_start,
-    }));
+  // Get previous week's insight for comparison
+  const getPreviousWeekInsight = () => {
+    if (!currentInsight?.week_start) return null;
+    const prevWeekStart = dayjs(currentInsight.week_start).subtract(7, 'day').format('YYYY-MM-DD');
+    return weeklyHistory.find(i => i.week_start === prevWeekStart);
+  };
 
-  // Check if current week has insight
-  const hasCurrentWeekInsight = weeklyHistory.some(
-    insight => insight.week_start === currentWeekStart
-  );
+  const previousInsight = getPreviousWeekInsight();
+  const scoreDiff = currentInsight?.ai_score && previousInsight?.ai_score
+    ? currentInsight.ai_score - previousInsight.ai_score
+    : null;
 
   return (
     <div className="space-y-6">
@@ -351,199 +347,153 @@ const AIInsights = () => {
       )}
 
       {/* Main 3-Column Layout */}
-      {!loading && (currentInsight || weeklyHistory.length > 0) && (
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-          {/* Left Column: Action Items */}
-          <div className="lg:col-span-4">
+      {!loading && currentInsight && (
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          {/* Left Column: AI Summary */}
+          <div>
             <div className="bg-white border border-gray-200 rounded-xl overflow-hidden h-full">
               <div className="px-6 py-4 border-b border-gray-100">
                 <div className="flex items-center gap-2">
-                  <Lightbulb className="w-5 h-5 text-amber-500" />
-                  <h3 className="text-base font-semibold text-gray-900">This Week's Focus</h3>
+                  <FileText className="w-5 h-5 text-blue-600" />
+                  <h3 className="text-base font-semibold text-gray-900">AI Summary</h3>
                 </div>
-                {currentInsight && (
-                  <p className="text-xs text-gray-500 mt-1">
-                    {formatWeekDisplay(currentInsight.week_start)}
+              </div>
+              <div className="p-6">
+                {currentInsight?.actionable_recommendation ? (
+                  <p className="text-gray-700 text-sm leading-relaxed">
+                    {currentInsight.actionable_recommendation}
                   </p>
-                )}
-              </div>
-              <div className="p-4">
-                {currentInsight?.improvement_tips && currentInsight.improvement_tips.length > 0 ? (
-                  <ul className="space-y-3">
-                    {currentInsight.improvement_tips.map((tip, idx) => (
-                      <li key={idx} className="flex items-start gap-3 p-3 bg-gray-50 rounded-lg">
-                        <div className="flex-shrink-0 w-6 h-6 rounded-full bg-blue-600 flex items-center justify-center text-xs font-bold text-white">
-                          {idx + 1}
-                        </div>
-                        <span className="text-gray-700 text-sm leading-relaxed">{tip}</span>
-                      </li>
-                    ))}
-                  </ul>
                 ) : (
-                  <div className="text-center py-8 text-gray-500 text-sm">
-                    No improvement tips available. Generate insights to see your action items.
-                  </div>
-                )}
-
-                {/* Show AI Score Badge */}
-                {currentInsight?.ai_score && (
-                  <div className="mt-4 pt-4 border-t border-gray-100">
-                    <div className="flex items-center justify-between">
-                      <span className="text-sm text-gray-600">AI Score</span>
-                      <div className="flex items-center gap-2">
-                        <span className={`text-2xl font-bold ${
-                          currentInsight.ai_score >= 7 ? 'text-green-600' :
-                          currentInsight.ai_score >= 5 ? 'text-yellow-600' :
-                          'text-red-600'
-                        }`}>
-                          {currentInsight.ai_score}
-                        </span>
-                        <span className="text-sm text-gray-500">/ 10</span>
-                      </div>
-                    </div>
+                  <div className="text-center py-4 text-gray-500 text-sm">
+                    No summary available.
                   </div>
                 )}
               </div>
             </div>
           </div>
 
-          {/* Middle Column: Score Graph */}
-          <div className="lg:col-span-5">
-            <div className="bg-white border border-gray-200 rounded-xl overflow-hidden h-full">
-              <div className="px-6 py-4 border-b border-gray-100">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <TrendingUp className="w-5 h-5 text-blue-600" />
-                    <h3 className="text-base font-semibold text-gray-900">Score History</h3>
-                  </div>
-                  <select
-                    value={timeframeWeeks}
-                    onChange={(e) => setTimeframeWeeks(Number(e.target.value))}
-                    className="text-sm border border-gray-200 rounded-lg px-3 py-1.5 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  >
-                    <option value={4}>4 weeks</option>
-                    <option value={8}>8 weeks</option>
-                    <option value={12}>12 weeks</option>
-                  </select>
-                </div>
-              </div>
-              <div className="p-4">
-                {graphData.length > 1 ? (
-                  <div className="h-64">
-                    <ResponsiveContainer width="100%" height="100%">
-                      <LineChart data={graphData} margin={{ top: 8, right: 8, bottom: 8, left: 0 }}>
-                        <CartesianGrid stroke="#e5e7eb" strokeDasharray="3 3" />
-                        <XAxis
-                          dataKey="week"
-                          stroke="#64748B"
-                          fontSize={12}
-                          tick={{ fill: '#64748B' }}
-                        />
-                        <YAxis
-                          domain={[0, 10]}
-                          stroke="#64748B"
-                          fontSize={12}
-                          tick={{ fill: '#64748B' }}
-                          width={32}
-                          ticks={[0, 2, 4, 6, 8, 10]}
-                        />
-                        <Tooltip
-                          contentStyle={{
-                            backgroundColor: 'white',
-                            border: '1px solid #e5e7eb',
-                            borderRadius: 8,
-                            fontSize: 12,
-                            fontWeight: 'bold',
-                            boxShadow: '0 4px 6px -1px rgba(0,0,0,0.1)',
-                          }}
-                          formatter={(value) => [`${value}/10`, 'AI Score']}
-                          labelFormatter={(label, payload) => {
-                            if (payload && payload[0]) {
-                              return `Week of ${formatWeekDisplay(payload[0].payload.fullDate)}`;
-                            }
-                            return label;
-                          }}
-                        />
-                        <Line
-                          type="monotone"
-                          dataKey="score"
-                          stroke="#2563eb"
-                          strokeWidth={3}
-                          dot={{ r: 4, fill: '#2563eb', strokeWidth: 0 }}
-                          activeDot={{ r: 6, fill: '#2563eb', strokeWidth: 2, stroke: 'white' }}
-                        />
-                      </LineChart>
-                    </ResponsiveContainer>
-                  </div>
-                ) : graphData.length === 1 ? (
-                  <div className="h-64 flex items-center justify-center">
-                    <div className="text-center">
-                      <div className={`text-5xl font-bold mb-2 ${
-                        graphData[0].score >= 7 ? 'text-green-600' :
-                        graphData[0].score >= 5 ? 'text-yellow-600' :
-                        'text-red-600'
-                      }`}>
-                        {graphData[0].score}
-                      </div>
-                      <p className="text-sm text-gray-500">/ 10</p>
-                      <p className="text-xs text-gray-400 mt-2">
-                        Generate more weekly insights to see trends
-                      </p>
-                    </div>
-                  </div>
-                ) : (
-                  <div className="h-64 flex items-center justify-center text-gray-500 text-sm">
-                    No data available. Generate insights to see your score history.
-                  </div>
-                )}
-              </div>
-            </div>
-          </div>
-
-          {/* Right Column: Weekly History */}
-          <div className="lg:col-span-3">
+          {/* Middle Column: AI Score */}
+          <div>
             <div className="bg-white border border-gray-200 rounded-xl overflow-hidden h-full">
               <div className="px-6 py-4 border-b border-gray-100">
                 <div className="flex items-center gap-2">
-                  <Calendar className="w-5 h-5 text-gray-600" />
-                  <h3 className="text-base font-semibold text-gray-900">Weekly History</h3>
+                  <Sparkles className="w-5 h-5 text-blue-600" />
+                  <h3 className="text-base font-semibold text-gray-900">AI Score</h3>
                 </div>
               </div>
-              <div className="divide-y divide-gray-100 max-h-80 overflow-y-auto">
-                {weeklyHistory.length > 0 ? (
-                  weeklyHistory.filter(i => i.week_start).slice(0, 12).map((insight) => (
-                    <button
-                      key={insight.id}
-                      onClick={() => selectWeek(insight)}
-                      className={`w-full px-4 py-3 text-left hover:bg-gray-50 transition-colors flex items-center justify-between ${
-                        selectedWeek === insight.week_start ? 'bg-blue-50 border-l-2 border-l-blue-600' : ''
-                      }`}
-                    >
-                      <div>
-                        <div className="text-sm font-medium text-gray-900">
-                          {dayjs(insight.week_start).format('D MMM')} - {dayjs(insight.week_start).add(6, 'day').format('D MMM')}
-                        </div>
-                        <div className="text-xs text-gray-500 mt-0.5">
-                          {insight.week_start === currentWeekStart ? 'This week' : dayjs(insight.week_start).format('YYYY')}
-                        </div>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <span className={`text-lg font-bold ${
-                          insight.ai_score >= 7 ? 'text-green-600' :
-                          insight.ai_score >= 5 ? 'text-yellow-600' :
-                          'text-red-600'
-                        }`}>
-                          {insight.ai_score}
+              <div className="p-6 flex flex-col items-center justify-center">
+                {currentInsight?.ai_score != null ? (
+                  <>
+                    <div className={`text-6xl font-bold ${
+                      currentInsight.ai_score >= 7 ? 'text-green-600' :
+                      currentInsight.ai_score >= 5 ? 'text-yellow-600' :
+                      'text-red-600'
+                    }`}>
+                      {currentInsight.ai_score}
+                    </div>
+                    <p className="text-gray-500 text-sm mt-1">out of 10</p>
+
+                    {/* Score difference from last week */}
+                    {scoreDiff !== null && (
+                      <div className={`flex items-center gap-1 mt-3 px-3 py-1 rounded-full text-sm font-medium ${
+                        scoreDiff > 0 ? 'bg-green-50 text-green-700' :
+                        scoreDiff < 0 ? 'bg-red-50 text-red-700' :
+                        'bg-gray-50 text-gray-600'
+                      }`}>
+                        {scoreDiff > 0 ? (
+                          <TrendingUp className="w-4 h-4" />
+                        ) : scoreDiff < 0 ? (
+                          <TrendingDown className="w-4 h-4" />
+                        ) : null}
+                        <span>
+                          {scoreDiff > 0 ? '+' : ''}{scoreDiff} from last week
                         </span>
-                        <ChevronRight className="w-4 h-4 text-gray-400" />
                       </div>
-                    </button>
-                  ))
+                    )}
+                    {scoreDiff === null && previousInsight === null && (
+                      <p className="text-xs text-gray-400 mt-3">
+                        Generate more insights to see trends
+                      </p>
+                    )}
+                  </>
                 ) : (
-                  <div className="p-6 text-center text-gray-500 text-sm">
-                    No weekly insights yet. Generate your first insight to get started.
+                  <div className="text-center py-4 text-gray-500 text-sm">
+                    No score available.
                   </div>
                 )}
+              </div>
+            </div>
+          </div>
+
+          {/* Right Column: AI Insights (Strengths & Opportunities) */}
+          <div>
+            <div className="bg-white border border-gray-200 rounded-xl overflow-hidden h-full">
+              <div className="px-6 py-4 border-b border-gray-100">
+                <div className="flex items-center gap-2">
+                  <Target className="w-5 h-5 text-blue-600" />
+                  <h3 className="text-base font-semibold text-gray-900">AI Insights</h3>
+                </div>
+              </div>
+              <div className="divide-y divide-gray-100">
+                {/* Strengths Accordion */}
+                <div>
+                  <button
+                    onClick={() => setStrengthsOpen(!strengthsOpen)}
+                    className="w-full px-6 py-3 flex items-center justify-between hover:bg-gray-50 transition-colors"
+                  >
+                    <div className="flex items-center gap-2">
+                      <ThumbsUp className="w-4 h-4 text-green-600" />
+                      <span className="text-sm font-medium text-gray-900">Strengths</span>
+                    </div>
+                    <ChevronDown className={`w-4 h-4 text-gray-400 transition-transform ${strengthsOpen ? 'rotate-180' : ''}`} />
+                  </button>
+                  {strengthsOpen && (
+                    <div className="px-6 pb-4">
+                      {currentInsight?.strengths && currentInsight.strengths.length > 0 ? (
+                        <ul className="space-y-2">
+                          {currentInsight.strengths.map((strength, idx) => (
+                            <li key={idx} className="text-sm text-gray-600 flex items-start gap-2">
+                              <span className="text-green-500 mt-0.5">+</span>
+                              <span>{strength}</span>
+                            </li>
+                          ))}
+                        </ul>
+                      ) : (
+                        <p className="text-sm text-gray-500">No strengths identified.</p>
+                      )}
+                    </div>
+                  )}
+                </div>
+
+                {/* Opportunities Accordion */}
+                <div>
+                  <button
+                    onClick={() => setOpportunitiesOpen(!opportunitiesOpen)}
+                    className="w-full px-6 py-3 flex items-center justify-between hover:bg-gray-50 transition-colors"
+                  >
+                    <div className="flex items-center gap-2">
+                      <Target className="w-4 h-4 text-amber-600" />
+                      <span className="text-sm font-medium text-gray-900">Opportunities</span>
+                    </div>
+                    <ChevronDown className={`w-4 h-4 text-gray-400 transition-transform ${opportunitiesOpen ? 'rotate-180' : ''}`} />
+                  </button>
+                  {opportunitiesOpen && (
+                    <div className="px-6 pb-4">
+                      {currentInsight?.areas_for_improvement && currentInsight.areas_for_improvement.length > 0 ? (
+                        <ul className="space-y-2">
+                          {currentInsight.areas_for_improvement.map((area, idx) => (
+                            <li key={idx} className="text-sm text-gray-600 flex items-start gap-2">
+                              <span className="text-amber-500 mt-0.5">!</span>
+                              <span>{area}</span>
+                            </li>
+                          ))}
+                        </ul>
+                      ) : (
+                        <p className="text-sm text-gray-500">No opportunities identified.</p>
+                      )}
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
           </div>

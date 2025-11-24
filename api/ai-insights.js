@@ -19,13 +19,6 @@ function getWeekStart(date) {
   return d.toISOString().split('T')[0];
 }
 
-// Helper to get Sunday of a given week (end of week)
-function getWeekEnd(weekStart) {
-  const d = new Date(weekStart);
-  d.setDate(d.getDate() + 6);
-  return d.toISOString().split('T')[0];
-}
-
 export default async function handler(req, res) {
   // Only allow POST requests
   if (req.method !== 'POST') {
@@ -61,10 +54,18 @@ export default async function handler(req, res) {
     }
 
     // Initialize Supabase client
-    const supabase = createClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL,
-      process.env.SUPABASE_SERVICE_ROLE_KEY
-    );
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.REACT_APP_SUPABASE_URL;
+    const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+
+    if (!supabaseUrl || !supabaseServiceKey) {
+      console.error('[AI Insights] Missing Supabase credentials:', {
+        hasUrl: !!supabaseUrl,
+        hasServiceKey: !!supabaseServiceKey
+      });
+      return res.status(500).json({ error: 'Database not configured. Please contact support.' });
+    }
+
+    const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
     // Check if we already have an insight for this week
     const { data: existingInsight } = await supabase
