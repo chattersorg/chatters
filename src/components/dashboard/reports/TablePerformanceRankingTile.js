@@ -120,7 +120,7 @@ export default function TablePerformanceRankingTile({ venueId, timeframe = 'last
   const worst = rows[rows.length - 1];
 
   return (
-    <div className="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-sm border border-gray-100 dark:border-gray-700">
+    <div className="bg-white dark:bg-gray-900 rounded-xl p-4 shadow-sm border border-gray-100 dark:border-gray-800">
       {/* Header */}
       <div className="flex items-start justify-between gap-3 mb-2">
         <div>
@@ -137,7 +137,7 @@ export default function TablePerformanceRankingTile({ venueId, timeframe = 'last
       {loading ? (
         <div className="space-y-3">
           {Array.from({ length: 5 }).map((_, i) => (
-            <div key={i} className="h-14 bg-gray-100 dark:bg-gray-700 rounded-md animate-pulse" />
+            <div key={i} className="h-14 bg-gray-100 dark:bg-gray-800 rounded-md animate-pulse" />
           ))}
         </div>
       ) : noData ? (
@@ -149,7 +149,7 @@ export default function TablePerformanceRankingTile({ venueId, timeframe = 'last
           {rows.map((r, idx) => (
             <div
               key={r.table}
-              className="rounded-md border border-gray-100 dark:border-gray-700 p-3 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+              className="rounded-md border border-gray-100 dark:border-gray-800 p-3 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
               title={`Table ${r.table} • ${r.average}★ avg from ${r.totalFeedback} responses`}
             >
               <div className="grid grid-cols-3 gap-3 items-center">

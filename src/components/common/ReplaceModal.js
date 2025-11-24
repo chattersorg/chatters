@@ -30,7 +30,7 @@ const ReplaceModal = ({
         {questions.map((q) => (
           <div
             key={q.id}
-            className="bg-white dark:bg-gray-700 p-4 rounded-lg shadow-sm border border-gray-100 dark:border-gray-600 cursor-pointer hover:border-blue-500 dark:hover:border-blue-400 transition-colors duration-200"
+            className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow-sm border border-gray-100 dark:border-gray-700 cursor-pointer hover:border-blue-500 dark:hover:border-blue-400 transition-colors duration-200"
             onClick={() => onReplaceQuestion(q.id)}
           >
             <p className="text-gray-700 dark:text-gray-200">{q.question}</p>
@@ -39,7 +39,7 @@ const ReplaceModal = ({
       </div>
       <button
         onClick={onRequestClose}
-        className="mt-4 bg-gray-600 text-white px-6 py-2 rounded-lg hover:bg-gray-700 dark:bg-gray-700 dark:hover:bg-gray-600 transition-colors duration-200"
+        className="mt-4 bg-gray-600 text-white px-6 py-2 rounded-lg hover:bg-gray-700 dark:bg-gray-800 dark:hover:bg-gray-700 transition-colors duration-200"
       >
         Cancel
       </button>

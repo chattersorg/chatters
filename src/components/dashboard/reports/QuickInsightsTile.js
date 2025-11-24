@@ -183,8 +183,8 @@ const QuickInsightsTile = ({ venueId }) => {
         </CardHeader>
         <CardContent>
           <div className="animate-pulse space-y-3">
-            <div className="h-16 bg-gray-200 dark:bg-gray-700 rounded"></div>
-            <div className="h-16 bg-gray-200 dark:bg-gray-700 rounded"></div>
+            <div className="h-16 bg-gray-200 dark:bg-gray-800 rounded"></div>
+            <div className="h-16 bg-gray-200 dark:bg-gray-800 rounded"></div>
           </div>
         </CardContent>
       </Card>

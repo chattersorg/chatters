@@ -132,8 +132,8 @@ const ProfileTab = ({
   return (
     <div className="space-y-6">
       {/* Personal Information Card */}
-      <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl overflow-hidden">
-        <div className="px-6 py-4 border-b border-gray-100 dark:border-gray-700">
+      <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl overflow-hidden">
+        <div className="px-6 py-4 border-b border-gray-100 dark:border-gray-800">
           <h3 className="text-base font-semibold text-gray-900 dark:text-white">Personal Information</h3>
           <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">Update your name and email address</p>
         </div>
@@ -263,8 +263,8 @@ const ProfileTab = ({
       </div>
 
       {/* Appearance Card */}
-      <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl overflow-hidden">
-        <div className="px-6 py-4 border-b border-gray-100 dark:border-gray-700">
+      <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl overflow-hidden">
+        <div className="px-6 py-4 border-b border-gray-100 dark:border-gray-800">
           <h3 className="text-base font-semibold text-gray-900 dark:text-white">Appearance</h3>
           <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">Customize your dashboard appearance</p>
         </div>
@@ -278,7 +278,7 @@ const ProfileTab = ({
             <div className="lg:col-span-2">
               <button
                 onClick={toggleDarkMode}
-                className="flex items-center justify-between w-full sm:w-auto px-4 py-3 bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors"
+                className="flex items-center justify-between w-full sm:w-auto px-4 py-3 bg-gray-50 dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
               >
                 <div className="flex items-center gap-3">
                   {isDarkMode ? (
@@ -310,7 +310,7 @@ const ProfileTab = ({
       </div>
 
       {/* Password & Security Card */}
-      <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl overflow-hidden">
+      <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl overflow-hidden">
         <div className="px-6 py-4 border-b border-gray-100">
           <h3 className="text-base font-semibold text-gray-900">Password & Security</h3>
           <p className="text-sm text-gray-500 mt-1">Manage your password and security settings</p>

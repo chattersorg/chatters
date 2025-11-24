@@ -29,7 +29,7 @@ const BusinessImpactTab = ({
             <select
               value={timeframe}
               onChange={(e) => setTimeframe(e.target.value)}
-              className="px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-700 dark:text-white shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              className="px-3 py-2 text-sm border border-gray-300 dark:border-gray-700 rounded-md bg-white dark:bg-gray-800 text-gray-700 dark:text-white shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
             >
               <option value="today">Today</option>
               <option value="thisWeek">This Week</option>
@@ -48,7 +48,7 @@ const BusinessImpactTab = ({
           <GoogleRatingKPITile venueId={venueId} />
           <TripAdvisorRatingKPITile venueId={venueId} />
           {/* Placeholder tiles to match the 4-column grid shown in your image */}
-          <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-6 border border-gray-100 dark:border-gray-700">
+          <div className="bg-gray-50 dark:bg-gray-900 rounded-lg p-6 border border-gray-100 dark:border-gray-800">
             <div className="flex items-start justify-between mb-4">
               <div className="w-10 h-10 bg-purple-100 dark:bg-purple-900 rounded-lg flex items-center justify-center">
                 <div className="w-5 h-5 text-purple-600 dark:text-purple-400">⏱</div>
@@ -64,7 +64,7 @@ const BusinessImpactTab = ({
               Issue Resolution Time
             </div>
           </div>
-          <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-6 border border-gray-100 dark:border-gray-700">
+          <div className="bg-gray-50 dark:bg-gray-900 rounded-lg p-6 border border-gray-100 dark:border-gray-800">
             <div className="flex items-start justify-between mb-4">
               <div className="w-10 h-10 bg-green-100 dark:bg-green-900 rounded-lg flex items-center justify-center">
                 <div className="w-5 h-5 text-green-600 dark:text-green-400">📈</div>

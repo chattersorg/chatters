@@ -68,8 +68,8 @@ const AlertModal = ({
   };
 
   return (
-    <div className="fixed inset-0 bg-gray-500/75 dark:bg-gray-900/80 flex items-center justify-center z-50 p-4">
-      <div className="bg-white dark:bg-gray-800 rounded-lg w-full max-w-md border border-gray-200 dark:border-gray-700">
+    <div className="fixed inset-0 bg-gray-500/75 dark:bg-black/80 flex items-center justify-center z-50 p-4">
+      <div className="bg-white dark:bg-gray-900 rounded-lg w-full max-w-md border border-gray-200 dark:border-gray-800">
         <div className="p-4 lg:p-6">
           <div className="flex items-start gap-4 mb-6">
             <div className={`w-12 h-12 ${getIconBgClasses()} rounded-full flex items-center justify-center flex-shrink-0`}>

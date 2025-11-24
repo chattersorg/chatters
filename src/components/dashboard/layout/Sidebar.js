@@ -314,14 +314,14 @@ const Sidebar = ({ collapsed, setCollapsed }) => {
 
       {/* Sidebar */}
       <div
-        className={`fixed left-0 top-0 z-40 h-screen bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 transition-all duration-300 flex flex-col ${
+        className={`fixed left-0 top-0 z-40 h-screen bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-800 transition-all duration-300 flex flex-col ${
           collapsed
             ? '-translate-x-full lg:translate-x-0 lg:w-16'
             : 'translate-x-0 w-64'
         }`}
       >
         {/* Sidebar Header */}
-        <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700">
+        <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-800">
           {!collapsed && (
             <div className="flex flex-col gap-1">
               <img
@@ -334,7 +334,7 @@ const Sidebar = ({ collapsed, setCollapsed }) => {
           )}
           <button
             onClick={() => setCollapsed(!collapsed)}
-            className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors text-gray-700 dark:text-gray-300"
+            className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors text-gray-700 dark:text-gray-300"
           >
             {collapsed ? <Menu className="w-4 h-4" /> : <X className="w-4 h-4" />}
           </button>
@@ -347,7 +347,7 @@ const Sidebar = ({ collapsed, setCollapsed }) => {
               <div className="relative">
                 <button
                   onClick={() => setVenueDropdownOpen(!venueDropdownOpen)}
-                  className="w-full flex items-center justify-between px-3 py-2.5 rounded-lg bg-gray-50 dark:bg-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors border border-gray-200 dark:border-gray-600"
+                  className="w-full flex items-center justify-between px-3 py-2.5 rounded-lg bg-gray-50 dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors border border-gray-200 dark:border-gray-700"
                 >
                   <div className="flex items-center gap-2 min-w-0">
                     <Building2 className="w-5 h-5 text-gray-600 dark:text-gray-300 flex-shrink-0" />
@@ -356,7 +356,7 @@ const Sidebar = ({ collapsed, setCollapsed }) => {
                   <ChevronDown className={`w-4 h-4 text-gray-400 dark:text-gray-400 flex-shrink-0 transition-transform ${venueDropdownOpen ? 'rotate-180' : ''}`} />
                 </button>
                 {venueDropdownOpen && (
-                  <div className="absolute top-full left-0 right-0 mt-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg z-50 max-h-60 overflow-y-auto">
+                  <div className="absolute top-full left-0 right-0 mt-1 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-lg shadow-lg z-50 max-h-60 overflow-y-auto">
                     {allVenues.map((venue) => (
                       <button
                         key={venue.id}
@@ -364,7 +364,7 @@ const Sidebar = ({ collapsed, setCollapsed }) => {
                           setCurrentVenue(venue.id);
                           setVenueDropdownOpen(false);
                         }}
-                        className={`w-full flex items-center gap-2 px-3 py-2.5 text-sm hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors ${
+                        className={`w-full flex items-center gap-2 px-3 py-2.5 text-sm hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors ${
                           venue.id === venueId ? 'bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-400 font-medium' : 'text-gray-700 dark:text-gray-300'
                         }`}
                       >
@@ -377,7 +377,7 @@ const Sidebar = ({ collapsed, setCollapsed }) => {
                 )}
               </div>
             ) : (
-              <div className="flex items-center gap-2 px-3 py-2.5 rounded-lg bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600">
+              <div className="flex items-center gap-2 px-3 py-2.5 rounded-lg bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700">
                 <Building2 className="w-5 h-5 text-gray-600 dark:text-gray-300 flex-shrink-0" />
                 <span className="text-sm font-medium text-gray-900 dark:text-gray-100 truncate">{venueName}</span>
               </div>
@@ -401,8 +401,8 @@ const Sidebar = ({ collapsed, setCollapsed }) => {
                     onClick={() => toggleSubmenu(item.id)}
                     className={`w-full flex items-center justify-between px-3 py-2 rounded-lg transition-all duration-200 group ${
                       itemActive
-                        ? 'bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-gray-100 shadow-sm'
-                        : 'text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 hover:text-gray-900 dark:hover:text-gray-100'
+                        ? 'bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-gray-100 shadow-sm'
+                        : 'text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-gray-100'
                     }`}
                   >
                     <div className="flex items-center">
@@ -425,8 +425,8 @@ const Sidebar = ({ collapsed, setCollapsed }) => {
                     onClick={handleMobileLinkClick}
                     className={`flex items-center justify-between px-3 py-2 rounded-lg transition-all duration-200 group ${
                       itemActive
-                        ? 'bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-gray-100 shadow-sm'
-                        : 'text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 hover:text-gray-900 dark:hover:text-gray-100'
+                        ? 'bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-gray-100 shadow-sm'
+                        : 'text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-gray-100'
                     }`}
                     title={collapsed ? item.label : ''}
                   >
@@ -446,7 +446,7 @@ const Sidebar = ({ collapsed, setCollapsed }) => {
 
                 {/* Submenu Items */}
                 {showSubmenu && (
-                  <div className="ml-2 mt-1 space-y-1 border-l-2 border-gray-100 dark:border-gray-700 pl-4">
+                  <div className="ml-2 mt-1 space-y-1 border-l-2 border-gray-100 dark:border-gray-800 pl-4">
                     {item.subItems.map((subItem) => {
                       const SubIcon = subItem.icon;
                       return (
@@ -457,7 +457,7 @@ const Sidebar = ({ collapsed, setCollapsed }) => {
                           className={`flex items-center justify-between px-3 py-2 text-sm rounded-md transition-colors group ${
                             isActive(subItem.path)
                               ? 'bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-400 font-medium'
-                              : 'text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700 hover:text-gray-700 dark:hover:text-gray-300'
+                              : 'text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800 hover:text-gray-700 dark:hover:text-gray-300'
                           }`}
                         >
                           <div className="flex items-center">
@@ -481,7 +481,7 @@ const Sidebar = ({ collapsed, setCollapsed }) => {
           {/* Multi-Venue Section Divider */}
           {hasMultipleVenues && !collapsed && (
             <div className="my-4 px-3">
-              <div className="border-t border-gray-200 dark:border-gray-700 pt-4">
+              <div className="border-t border-gray-200 dark:border-gray-800 pt-4">
                 <p className="text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wider mb-2">
                   Multi Venue
                 </p>
@@ -503,8 +503,8 @@ const Sidebar = ({ collapsed, setCollapsed }) => {
                     onClick={() => toggleSubmenu(item.id)}
                     className={`w-full flex items-center justify-between px-3 py-2 rounded-lg transition-all duration-200 group ${
                       itemActive
-                        ? 'bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-gray-100 shadow-sm'
-                        : 'text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 hover:text-gray-900 dark:hover:text-gray-100'
+                        ? 'bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-gray-100 shadow-sm'
+                        : 'text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-gray-100'
                     }`}
                   >
                     <div className="flex items-center">
@@ -527,8 +527,8 @@ const Sidebar = ({ collapsed, setCollapsed }) => {
                     onClick={handleMobileLinkClick}
                     className={`flex items-center justify-between px-3 py-2 rounded-lg transition-all duration-200 group ${
                       itemActive
-                        ? 'bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-gray-100 shadow-sm'
-                        : 'text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 hover:text-gray-900 dark:hover:text-gray-100'
+                        ? 'bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-gray-100 shadow-sm'
+                        : 'text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-gray-100'
                     }`}
                     title={collapsed ? item.label : ''}
                   >
@@ -543,7 +543,7 @@ const Sidebar = ({ collapsed, setCollapsed }) => {
 
                 {/* Submenu Items */}
                 {showSubmenu && (
-                  <div className="ml-2 mt-1 space-y-1 border-l-2 border-gray-100 dark:border-gray-700 pl-4">
+                  <div className="ml-2 mt-1 space-y-1 border-l-2 border-gray-100 dark:border-gray-800 pl-4">
                     {item.subItems.map((subItem) => {
                       const SubIcon = subItem.icon;
                       return (
@@ -554,7 +554,7 @@ const Sidebar = ({ collapsed, setCollapsed }) => {
                           className={`flex items-center justify-between px-3 py-2 text-sm rounded-md transition-colors group ${
                             isActive(subItem.path)
                               ? 'bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-400 font-medium'
-                              : 'text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700 hover:text-gray-700 dark:hover:text-gray-300'
+                              : 'text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800 hover:text-gray-700 dark:hover:text-gray-300'
                           }`}
                         >
                           <div className="flex items-center">
@@ -572,7 +572,7 @@ const Sidebar = ({ collapsed, setCollapsed }) => {
         </nav>
 
         {/* Account Actions - Bottom of Sidebar */}
-        <div className="mt-auto p-2 border-t border-gray-200 dark:border-gray-700">
+        <div className="mt-auto p-2 border-t border-gray-200 dark:border-gray-800">
           {/* Account Settings Section */}
           {!collapsed && (
             <div className="mb-2">
@@ -589,7 +589,7 @@ const Sidebar = ({ collapsed, setCollapsed }) => {
                       className={`flex items-center px-3 py-2 text-sm rounded-lg transition-colors group ${
                         isActive(item.path)
                           ? 'bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-400 font-medium'
-                          : 'text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700 hover:text-gray-700 dark:hover:text-gray-300'
+                          : 'text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800 hover:text-gray-700 dark:hover:text-gray-300'
                       }`}
                     >
                       <ItemIcon className="w-4 h-4 mr-2" />
@@ -612,8 +612,8 @@ const Sidebar = ({ collapsed, setCollapsed }) => {
                     to={item.path}
                     className={`flex items-center px-3 py-2 rounded-lg transition-all duration-200 group ${
                       isActive(item.path)
-                        ? 'bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-gray-100 shadow-sm'
-                        : 'text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 hover:text-gray-900 dark:hover:text-gray-100'
+                        ? 'bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-gray-100 shadow-sm'
+                        : 'text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-gray-100'
                     }`}
                     title={item.label}
                   >

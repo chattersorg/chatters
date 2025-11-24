@@ -7,9 +7,9 @@ const ModernCard = ({
   className = '',
   padding = 'p-6',
   shadow = 'shadow-sm hover:shadow-md',
-  border = 'border border-gray-100 dark:border-gray-700',
+  border = 'border border-gray-100 dark:border-gray-800',
   rounded = 'rounded-xl',
-  background = 'bg-white dark:bg-gray-800',
+  background = 'bg-white dark:bg-gray-900',
   transition = 'transition-all duration-200'
 }) => {
   return (
@@ -91,7 +91,7 @@ const MetricCard = ({
 
       {/* Venue Breakdowns */}
       {hasBreakdowns && (
-        <div className="pt-3 border-t border-gray-200 dark:border-gray-700">
+        <div className="pt-3 border-t border-gray-200 dark:border-gray-800">
           <div className="space-y-2">
             <h4 className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide">
               By Venue
@@ -250,10 +250,10 @@ const ActivityCard = ({
         <div className="space-y-3">
           {[...Array(5)].map((_, i) => (
             <div key={i} className="animate-pulse flex items-center gap-3">
-              <div className="w-8 h-8 bg-gray-200 dark:bg-gray-700 rounded-full" />
+              <div className="w-8 h-8 bg-gray-200 dark:bg-gray-800 rounded-full" />
               <div className="flex-1">
-                <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-3/4 mb-1" />
-                <div className="h-3 bg-gray-200 dark:bg-gray-700 rounded w-1/2" />
+                <div className="h-4 bg-gray-200 dark:bg-gray-800 rounded w-3/4 mb-1" />
+                <div className="h-3 bg-gray-200 dark:bg-gray-800 rounded w-1/2" />
               </div>
             </div>
           ))}
@@ -261,7 +261,7 @@ const ActivityCard = ({
       ) : items.length > 0 ? (
         <div className="space-y-3">
           {items.map((item, index) => (
-            <div key={index} className="flex items-start gap-3 p-3 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
+            <div key={index} className="flex items-start gap-3 p-3 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
               {item}
             </div>
           ))}

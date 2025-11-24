@@ -19,8 +19,8 @@ const ActivityItem = ({ icon: Icon, title, description, timestamp, status, ratin
   };
 
   return (
-    <div className="flex items-start gap-4 p-4 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-lg transition-colors">
-      <div className={`p-2 rounded-lg bg-gray-100 dark:bg-gray-700 ${iconColors[status] || iconColors.neutral}`}>
+    <div className="flex items-start gap-4 p-4 hover:bg-gray-50 dark:hover:bg-gray-800 rounded-lg transition-colors">
+      <div className={`p-2 rounded-lg bg-gray-100 dark:bg-gray-800 ${iconColors[status] || iconColors.neutral}`}>
         <Icon className="w-4 h-4" />
       </div>
 
@@ -58,7 +58,7 @@ const ActivityItem = ({ icon: Icon, title, description, timestamp, status, ratin
 const RecentActivity = ({ activities, loading }) => {
   if (loading) {
     return (
-      <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-100 dark:border-gray-700 p-6">
+      <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-100 dark:border-gray-800 p-6">
         <div className="flex items-center gap-2 mb-4">
           <Clock className="w-5 h-5 text-gray-400" />
           <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Recent Activity</h3>
@@ -67,12 +67,12 @@ const RecentActivity = ({ activities, loading }) => {
         <div className="space-y-3">
           {[...Array(5)].map((_, i) => (
             <div key={i} className="flex items-start gap-4 p-4 animate-pulse">
-              <div className="w-8 h-8 bg-gray-200 dark:bg-gray-700 rounded-lg"></div>
+              <div className="w-8 h-8 bg-gray-200 dark:bg-gray-800 rounded-lg"></div>
               <div className="flex-1">
-                <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-3/4 mb-2"></div>
-                <div className="h-3 bg-gray-200 dark:bg-gray-700 rounded w-1/2"></div>
+                <div className="h-4 bg-gray-200 dark:bg-gray-800 rounded w-3/4 mb-2"></div>
+                <div className="h-3 bg-gray-200 dark:bg-gray-800 rounded w-1/2"></div>
               </div>
-              <div className="h-3 bg-gray-200 dark:bg-gray-700 rounded w-16"></div>
+              <div className="h-3 bg-gray-200 dark:bg-gray-800 rounded w-16"></div>
             </div>
           ))}
         </div>
@@ -132,7 +132,7 @@ const RecentActivity = ({ activities, loading }) => {
   });
 
   return (
-    <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-100 dark:border-gray-700 p-6">
+    <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-100 dark:border-gray-800 p-6">
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-2">
           <Clock className="w-5 h-5 text-gray-600 dark:text-gray-400" />

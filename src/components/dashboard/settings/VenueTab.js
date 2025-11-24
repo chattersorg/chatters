@@ -115,9 +115,9 @@ const VenueTab = ({
       <div className="space-y-6">
 
         {/* Section 1: Basic Information Card */}
-        <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl overflow-hidden">
+        <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl overflow-hidden">
           {/* Section Header */}
-          <div className="px-6 py-4 border-b border-gray-100 dark:border-gray-700">
+          <div className="px-6 py-4 border-b border-gray-100 dark:border-gray-800">
             <h3 className="text-base font-semibold text-gray-900 dark:text-gray-100">Basic Information</h3>
             <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">Venue name, address, and location details</p>
           </div>
@@ -137,7 +137,7 @@ const VenueTab = ({
                   type="text"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
                   placeholder="Enter your venue name"
                 />
               </div>
@@ -155,14 +155,14 @@ const VenueTab = ({
                   placeholder="Address Line 1"
                   value={address.line1}
                   onChange={(e) => setAddress({...address, line1: e.target.value})}
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500"
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500"
                 />
                 <input
                   type="text"
                   placeholder="Address Line 2 (Optional)"
                   value={address.line2}
                   onChange={(e) => setAddress({...address, line2: e.target.value})}
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500"
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500"
                 />
                 <div className="grid grid-cols-2 gap-3">
                   <input
@@ -170,14 +170,14 @@ const VenueTab = ({
                     placeholder="City"
                     value={address.city}
                     onChange={(e) => setAddress({...address, city: e.target.value})}
-                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500"
+                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500"
                   />
                   <input
                     type="text"
                     placeholder="Postal Code"
                     value={address.postalCode}
                     onChange={(e) => setAddress({...address, postalCode: e.target.value})}
-                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500"
+                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500"
                   />
                 </div>
               </div>
@@ -195,7 +195,7 @@ const VenueTab = ({
                   value={phone || ''}
                   onChange={(e) => setPhone(e.target.value)}
                   placeholder="+44 1234 567890"
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500"
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500"
                 />
               </div>
             </div>
@@ -212,14 +212,14 @@ const VenueTab = ({
                   value={website || ''}
                   onChange={(e) => setWebsite(e.target.value)}
                   placeholder="https://www.yourvenue.com"
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500"
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500"
                 />
               </div>
             </div>
           </div>
 
           {/* Card Save Action */}
-          <div className="px-6 py-4 border-t border-gray-100 dark:border-gray-700">
+          <div className="px-6 py-4 border-t border-gray-100 dark:border-gray-800">
             <div className="flex items-center justify-between">
               <div className="text-xs text-gray-500 dark:text-gray-400">
                 Changes are saved per venue
@@ -245,9 +245,9 @@ const VenueTab = ({
         </div>
 
         {/* Section 2: Custom Links Card */}
-        <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl overflow-hidden">
+        <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl overflow-hidden">
           {/* Section Header */}
-          <div className="px-6 py-4 border-b border-gray-100 dark:border-gray-700">
+          <div className="px-6 py-4 border-b border-gray-100 dark:border-gray-800">
             <h3 className="text-base font-semibold text-gray-900 dark:text-gray-100">Custom Action Links</h3>
             <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">Create a central hub for all customer interactions</p>
           </div>
@@ -271,7 +271,7 @@ const VenueTab = ({
               <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300">Action Links</h4>
               <button
                 onClick={addCustomLink}
-                className="flex items-center gap-2 px-3 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md hover:bg-gray-50 dark:hover:bg-gray-600"
+                className="flex items-center gap-2 px-3 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-md hover:bg-gray-50 dark:hover:bg-gray-700"
               >
                 <Plus className="w-4 h-4" />
                 Add Custom Link
@@ -293,8 +293,8 @@ const VenueTab = ({
                           <div
                             ref={provided.innerRef}
                             {...provided.draggableProps}
-                            className={`bg-gray-50 dark:bg-gray-700 border rounded-lg p-4 ${
-                              snapshot.isDragging ? 'shadow-lg' : 'border-gray-200 dark:border-gray-600'
+                            className={`bg-gray-50 dark:bg-gray-800 border rounded-lg p-4 ${
+                              snapshot.isDragging ? 'shadow-lg' : 'border-gray-200 dark:border-gray-700'
                             }`}
                           >
                             <div className="flex items-start gap-3">
@@ -312,7 +312,7 @@ const VenueTab = ({
                                     value={link.label}
                                     onChange={(e) => updateLink(link.id, 'label', e.target.value)}
                                     placeholder="Button Label"
-                                    className="flex-1 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-transparent bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500"
+                                    className="flex-1 px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-md focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-transparent bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500"
                                   />
                                   <button
                                     onClick={() => toggleEnabled(link.id)}
@@ -342,14 +342,14 @@ const VenueTab = ({
                                     value={link.url}
                                     onChange={(e) => updateLink(link.id, 'url', e.target.value)}
                                     placeholder="https://example.com/your-venue"
-                                    className="flex-1 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-transparent text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500"
+                                    className="flex-1 px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-md focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-transparent text-sm bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500"
                                   />
                                   {link.url && (
                                     <a
                                       href={link.url}
                                       target="_blank"
                                       rel="noopener noreferrer"
-                                      className="p-2 text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-600 rounded-md"
+                                      className="p-2 text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-md"
                                       title="Test link"
                                     >
                                       <ExternalLink className="w-4 h-4" />
@@ -370,7 +370,7 @@ const VenueTab = ({
           </div>
 
           {/* Card Save Action */}
-          <div className="px-6 py-4 border-t border-gray-100 dark:border-gray-700">
+          <div className="px-6 py-4 border-t border-gray-100 dark:border-gray-800">
             <div className="flex items-center justify-between">
               <div className="text-xs text-gray-500 dark:text-gray-400">
                 Changes are saved per venue

@@ -66,18 +66,20 @@
 - Only ESLint warnings (unused vars, missing deps)
 - All dark mode functionality working
 
-## Color Scheme (Dark Mode Gray - not complete black)
-- Background: `bg-gray-900` (main app background)
-- Cards: `bg-gray-800` (card backgrounds)
-- Secondary: `bg-gray-700` (dropdowns, hover states)
-- Borders: `border-gray-700`
+## Color Scheme (Significantly Darker - Black Backgrounds)
+- Background: `bg-black` (pure black main app background)
+- Cards: `bg-gray-900` (very dark gray card backgrounds)
+- Secondary: `bg-gray-800` (dark gray dropdowns, hover states)
+- Borders: `border-gray-800` (darker borders)
+- Border Secondary: `border-gray-700`
 - Text Primary: `text-white`
 - Text Secondary: `text-gray-300`
 - Text Tertiary: `text-gray-400`
 - Text Muted: `text-gray-500`
-- Hover states: `hover:bg-gray-700`
-- Table headers: `bg-gray-700 text-gray-100`
-- Input fields: `bg-gray-700 border-gray-600`
+- Hover states: `hover:bg-gray-800` (darker hover)
+- Hover Secondary: `hover:bg-gray-700`
+- Table headers: `bg-gray-800 text-gray-100`
+- Input fields: `bg-gray-800 border-gray-700`
 
 ## Pattern Used Throughout
 ```jsx

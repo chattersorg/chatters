@@ -111,24 +111,24 @@ const FeedbackTab = ({ feedbackSessions, assistanceRequests, dateFilter }) => {
   return (
     <div className="max-w-none">
       {/* Feedback Table */}
-      <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm overflow-hidden">
+      <div className="bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-800 shadow-sm overflow-hidden">
         <div className="overflow-x-auto">
           <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-            <thead className="bg-gray-50 dark:bg-gray-700">
+            <thead className="bg-gray-50 dark:bg-gray-800">
               <tr>
-                <th className="px-4 py-2 text-left text-xs font-semibold text-gray-600 dark:text-gray-100 uppercase tracking-wider border-r border-gray-200 dark:border-gray-700">
+                <th className="px-4 py-2 text-left text-xs font-semibold text-gray-600 dark:text-gray-100 uppercase tracking-wider border-r border-gray-200 dark:border-gray-800">
                   Date
                 </th>
-                <th className="px-3 py-2 text-center text-xs font-semibold text-gray-600 dark:text-gray-100 uppercase tracking-wider border-r border-gray-200 dark:border-gray-700">
+                <th className="px-3 py-2 text-center text-xs font-semibold text-gray-600 dark:text-gray-100 uppercase tracking-wider border-r border-gray-200 dark:border-gray-800">
                   Feedback Left
                 </th>
-                <th className="px-3 py-2 text-center text-xs font-semibold text-gray-600 dark:text-gray-100 uppercase tracking-wider border-r border-gray-200 dark:border-gray-700">
+                <th className="px-3 py-2 text-center text-xs font-semibold text-gray-600 dark:text-gray-100 uppercase tracking-wider border-r border-gray-200 dark:border-gray-800">
                   Avg Rating
                 </th>
-                <th className="px-3 py-2 text-center text-xs font-semibold text-gray-600 dark:text-gray-100 uppercase tracking-wider border-r border-gray-200 dark:border-gray-700">
+                <th className="px-3 py-2 text-center text-xs font-semibold text-gray-600 dark:text-gray-100 uppercase tracking-wider border-r border-gray-200 dark:border-gray-800">
                   Assistance Requests
                 </th>
-                <th className="px-3 py-2 text-center text-xs font-semibold text-gray-600 dark:text-gray-100 uppercase tracking-wider border-r border-gray-200 dark:border-gray-700">
+                <th className="px-3 py-2 text-center text-xs font-semibold text-gray-600 dark:text-gray-100 uppercase tracking-wider border-r border-gray-200 dark:border-gray-800">
                   Response Rate
                 </th>
                 <th className="px-3 py-2 text-center text-xs font-semibold text-gray-600 dark:text-gray-100 uppercase tracking-wider">
@@ -136,7 +136,7 @@ const FeedbackTab = ({ feedbackSessions, assistanceRequests, dateFilter }) => {
                 </th>
               </tr>
             </thead>
-            <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-100 dark:divide-gray-700">
+            <tbody className="bg-white dark:bg-gray-900 divide-y divide-gray-100 dark:divide-gray-700">
               {feedbackData.length === 0 ? (
                 <tr>
                   <td colSpan="6" className="px-6 py-8 text-center text-gray-500 dark:text-gray-400">
@@ -153,21 +153,21 @@ const FeedbackTab = ({ feedbackSessions, assistanceRequests, dateFilter }) => {
                 feedbackData.map((day, index) => (
                   <tr
                     key={day.date}
-                    className={`hover:bg-blue-50 dark:hover:bg-gray-700 transition-colors duration-150 ${
-                      index % 2 === 0 ? 'bg-white dark:bg-gray-800' : 'bg-gray-50 dark:bg-gray-800'
+                    className={`hover:bg-blue-50 dark:hover:bg-gray-800 transition-colors duration-150 ${
+                      index % 2 === 0 ? 'bg-white dark:bg-gray-900' : 'bg-gray-50 dark:bg-gray-900'
                     }`}
                   >
-                    <td className="px-4 py-3 whitespace-nowrap border-r border-gray-100 dark:border-gray-700">
+                    <td className="px-4 py-3 whitespace-nowrap border-r border-gray-100 dark:border-gray-800">
                       <div className="text-sm font-medium text-gray-900 dark:text-white">
                         {day.displayDate}
                       </div>
                     </td>
-                    <td className="px-3 py-3 whitespace-nowrap text-center border-r border-gray-100 dark:border-gray-700">
+                    <td className="px-3 py-3 whitespace-nowrap text-center border-r border-gray-100 dark:border-gray-800">
                       <div className="text-sm font-semibold text-gray-900 dark:text-white">
                         {day.totalSessions}
                       </div>
                     </td>
-                    <td className="px-3 py-3 whitespace-nowrap text-center border-r border-gray-100 dark:border-gray-700">
+                    <td className="px-3 py-3 whitespace-nowrap text-center border-r border-gray-100 dark:border-gray-800">
                       <div className={`inline-flex items-center px-2 py-1 rounded text-xs font-medium ${
                         day.averageRating === 'N/A'
                           ? 'bg-gray-100 text-gray-600'
@@ -180,12 +180,12 @@ const FeedbackTab = ({ feedbackSessions, assistanceRequests, dateFilter }) => {
                         {day.averageRating}
                       </div>
                     </td>
-                    <td className="px-3 py-3 whitespace-nowrap text-center border-r border-gray-100 dark:border-gray-700">
+                    <td className="px-3 py-3 whitespace-nowrap text-center border-r border-gray-100 dark:border-gray-800">
                       <div className="text-sm font-semibold text-gray-900 dark:text-white">
                         {day.assistanceRequests}
                       </div>
                     </td>
-                    <td className="px-3 py-3 whitespace-nowrap text-center border-r border-gray-100 dark:border-gray-700">
+                    <td className="px-3 py-3 whitespace-nowrap text-center border-r border-gray-100 dark:border-gray-800">
                       <div className={`inline-flex items-center px-2 py-1 rounded text-xs font-medium ${
                         parseInt(day.responseRate) >= 80
                           ? 'bg-green-100 text-green-700'
@@ -214,7 +214,7 @@ const FeedbackTab = ({ feedbackSessions, assistanceRequests, dateFilter }) => {
       {/* Summary Stats */}
       {feedbackData.length > 0 && (
         <div className="mt-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          <div className="bg-white dark:bg-gray-800 p-4 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm">
+          <div className="bg-white dark:bg-gray-900 p-4 rounded-lg border border-gray-200 dark:border-gray-800 shadow-sm">
             <div className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1">
               Total Days
             </div>
@@ -223,7 +223,7 @@ const FeedbackTab = ({ feedbackSessions, assistanceRequests, dateFilter }) => {
             </div>
           </div>
 
-          <div className="bg-white dark:bg-gray-800 p-4 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm">
+          <div className="bg-white dark:bg-gray-900 p-4 rounded-lg border border-gray-200 dark:border-gray-800 shadow-sm">
             <div className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1">
               Total Feedback
             </div>
@@ -232,7 +232,7 @@ const FeedbackTab = ({ feedbackSessions, assistanceRequests, dateFilter }) => {
             </div>
           </div>
 
-          <div className="bg-white dark:bg-gray-800 p-4 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm">
+          <div className="bg-white dark:bg-gray-900 p-4 rounded-lg border border-gray-200 dark:border-gray-800 shadow-sm">
             <div className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1">
               Avg Daily Feedback
             </div>
@@ -244,7 +244,7 @@ const FeedbackTab = ({ feedbackSessions, assistanceRequests, dateFilter }) => {
             </div>
           </div>
 
-          <div className="bg-white dark:bg-gray-800 p-4 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm">
+          <div className="bg-white dark:bg-gray-900 p-4 rounded-lg border border-gray-200 dark:border-gray-800 shadow-sm">
             <div className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1">
               Overall Response Rate
             </div>

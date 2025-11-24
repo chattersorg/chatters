@@ -4,7 +4,7 @@ const FeedbackTableCard = ({ feedback, onToggleActioned }) => {
   const [isExpanded, setIsExpanded] = useState(false);
 
   return (
-    <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 mb-4">
+    <div className="bg-white dark:bg-gray-900 rounded-lg shadow-md p-6 mb-4">
       <div className="flex justify-between items-center">
         <div>
           <h3 className="text-lg font-bold text-gray-900 dark:text-white">Table {feedback.table_number}</h3>
@@ -44,7 +44,7 @@ const FeedbackTableCard = ({ feedback, onToggleActioned }) => {
           className={`p-2 rounded-full ${
             feedback.is_actioned
               ? 'bg-green-500 text-white'
-              : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600'
+              : 'bg-gray-200 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-700'
           }`}
         >
           ✓

@@ -226,7 +226,7 @@ const ModernHeader = ({ sidebarCollapsed, setSidebarCollapsed, trialInfo }) => {
 
   return (
     <header
-      className={`fixed top-0 right-0 z-30 h-16 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 transition-all duration-300 ${
+      className={`fixed top-0 right-0 z-30 h-16 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800 transition-all duration-300 ${
         sidebarCollapsed ? 'lg:left-16 left-0' : 'lg:left-64 left-0'
       }`}
     >
@@ -234,7 +234,7 @@ const ModernHeader = ({ sidebarCollapsed, setSidebarCollapsed, trialInfo }) => {
         {/* Mobile Menu Button */}
         <button
           onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
-          className="lg:hidden p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+          className="lg:hidden p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
         >
           <Menu className="w-5 h-5 text-gray-600 dark:text-gray-300" />
         </button>
@@ -274,7 +274,7 @@ const ModernHeader = ({ sidebarCollapsed, setSidebarCollapsed, trialInfo }) => {
             variant="outline"
             size="sm"
             onClick={handleOpenKiosk}
-            className="hidden md:flex items-center gap-2 px-3 py-2 text-sm border border-gray-200 dark:border-gray-600 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors text-gray-700 dark:text-gray-300"
+            className="hidden md:flex items-center gap-2 px-3 py-2 text-sm border border-gray-200 dark:border-gray-700 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors text-gray-700 dark:text-gray-300"
           >
             <span>Kiosk</span>
             <ExternalLink className="w-4 h-4" />

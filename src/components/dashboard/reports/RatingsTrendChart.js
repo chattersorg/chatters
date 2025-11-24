@@ -169,7 +169,7 @@ export default function RatingsTrendChart({ venueId, timeframe = 'last30' }) {
 
   if (loading) {
     return (
-      <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-6">
+      <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-lg p-6">
         <h3 className="text-base font-semibold text-gray-900 dark:text-white mb-4">Ratings Trend Over Time</h3>
         <div className="h-64 flex items-center justify-center">
           <div className="text-gray-500 dark:text-gray-400">Loading ratings data...</div>
@@ -180,7 +180,7 @@ export default function RatingsTrendChart({ venueId, timeframe = 'last30' }) {
 
   if (data.length === 0) {
     return (
-      <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-6">
+      <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-lg p-6">
         <h3 className="text-base font-semibold text-gray-900 dark:text-white mb-4">Ratings Trend Over Time</h3>
         <div className="h-64 flex items-center justify-center">
           <div className="text-gray-500 dark:text-gray-400">No ratings data available for this time period</div>
@@ -190,7 +190,7 @@ export default function RatingsTrendChart({ venueId, timeframe = 'last30' }) {
   }
 
   return (
-    <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-6">
+    <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-lg p-6">
       <div className="mb-4">
         <h3 className="text-base font-semibold text-gray-900 dark:text-white">Ratings Trend Over Time</h3>
         <p className="text-xs text-gray-600 dark:text-gray-400 mt-1">Google and TripAdvisor ratings progression</p>

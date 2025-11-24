@@ -413,7 +413,7 @@ const FeedbackQuestionsPage = () => {
         </div>
       </div>
 
-      <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl overflow-hidden p-6">
+      <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl overflow-hidden p-6">
         <DragDropContext onDragEnd={onDragEnd}>
           <QuestionManagementTab
             questions={questions}

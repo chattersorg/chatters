@@ -232,7 +232,7 @@ const ReportsNPS = () => {
             <select
               value={dateRange}
               onChange={(e) => setDateRange(e.target.value)}
-              className="px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-300 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              className="px-3 py-2 text-sm border border-gray-300 dark:border-gray-700 rounded-md bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
             >
               <option value="7">Last 7 days</option>
               <option value="30">Last 30 days</option>
@@ -242,7 +242,7 @@ const ReportsNPS = () => {
           </div>
         </div>
 
-        <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl overflow-hidden p-6">
+        <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl overflow-hidden p-6">
           <div className="space-y-4">
             {sortedVenues.length === 0 ? (
               <div className="text-center py-12 text-gray-500 dark:text-gray-400">
@@ -260,7 +260,7 @@ const ReportsNPS = () => {
                   <button
                     key={venueId}
                     onClick={() => navigate(`/nps-report/${venueId}`)}
-                    className="w-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-6 hover:border-blue-500 dark:hover:border-blue-500 hover:shadow-md transition-all duration-200 group"
+                    className="w-full bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-lg p-6 hover:border-blue-500 dark:hover:border-blue-500 hover:shadow-md transition-all duration-200 group"
                   >
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-4">
@@ -337,7 +337,7 @@ const ReportsNPS = () => {
           <select
             value={dateRange}
             onChange={(e) => setDateRange(e.target.value)}
-            className="px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-300 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            className="px-3 py-2 text-sm border border-gray-300 dark:border-gray-700 rounded-md bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
           >
             <option value="7">Last 7 days</option>
             <option value="30">Last 30 days</option>
@@ -347,12 +347,12 @@ const ReportsNPS = () => {
         </div>
       </div>
 
-      <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl overflow-hidden p-6">
+      <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl overflow-hidden p-6">
         <div className="space-y-6">
           {/* Key Metrics */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
             {/* NPS Score */}
-            <div className="bg-gray-50 dark:bg-gray-900 rounded-lg p-6">
+            <div className="bg-gray-50 dark:bg-black rounded-lg p-6">
               <div className="flex items-start justify-between mb-4">
                 <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${
                   npsData.npsScore !== null && npsData.npsScore >= 50
@@ -382,7 +382,7 @@ const ReportsNPS = () => {
             </div>
 
             {/* Response Rate */}
-            <div className="bg-gray-50 dark:bg-gray-900 rounded-lg p-6">
+            <div className="bg-gray-50 dark:bg-black rounded-lg p-6">
               <div className="flex items-start justify-between mb-4">
                 <div className="w-10 h-10 bg-blue-100 dark:bg-blue-900/30 rounded-lg flex items-center justify-center">
                   <MailCheck className="w-5 h-5 text-blue-600 dark:text-blue-400" />
@@ -400,7 +400,7 @@ const ReportsNPS = () => {
             </div>
 
             {/* Emails Sent */}
-            <div className="bg-gray-50 dark:bg-gray-900 rounded-lg p-6">
+            <div className="bg-gray-50 dark:bg-black rounded-lg p-6">
               <div className="flex items-start justify-between mb-4">
                 <div className="w-10 h-10 bg-green-100 dark:bg-green-900/30 rounded-lg flex items-center justify-center">
                   <Mail className="w-5 h-5 text-green-600 dark:text-green-400" />
@@ -418,7 +418,7 @@ const ReportsNPS = () => {
             </div>
 
             {/* Failed */}
-            <div className="bg-gray-50 dark:bg-gray-900 rounded-lg p-6">
+            <div className="bg-gray-50 dark:bg-black rounded-lg p-6">
               <div className="flex items-start justify-between mb-4">
                 <div className="w-10 h-10 bg-red-100 dark:bg-red-900/30 rounded-lg flex items-center justify-center">
                   <MailX className="w-5 h-5 text-red-600 dark:text-red-400" />
@@ -438,7 +438,7 @@ const ReportsNPS = () => {
 
           {/* Breakdown */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div className="bg-gray-50 dark:bg-gray-900 rounded-lg p-6">
+            <div className="bg-gray-50 dark:bg-black rounded-lg p-6">
               <div className="flex items-start justify-between mb-4">
                 <div className="w-10 h-10 bg-green-100 dark:bg-green-900/30 rounded-lg flex items-center justify-center">
                   <TrendingUp className="w-5 h-5 text-green-600 dark:text-green-400" />
@@ -460,7 +460,7 @@ const ReportsNPS = () => {
               </div>
             </div>
 
-            <div className="bg-gray-50 dark:bg-gray-900 rounded-lg p-6">
+            <div className="bg-gray-50 dark:bg-black rounded-lg p-6">
               <div className="flex items-start justify-between mb-4">
                 <div className="w-10 h-10 bg-yellow-100 dark:bg-yellow-900/30 rounded-lg flex items-center justify-center">
                   <Minus className="w-5 h-5 text-yellow-600 dark:text-yellow-400" />
@@ -482,7 +482,7 @@ const ReportsNPS = () => {
               </div>
             </div>
 
-            <div className="bg-gray-50 dark:bg-gray-900 rounded-lg p-6">
+            <div className="bg-gray-50 dark:bg-black rounded-lg p-6">
               <div className="flex items-start justify-between mb-4">
                 <div className="w-10 h-10 bg-red-100 dark:bg-red-900/30 rounded-lg flex items-center justify-center">
                   <TrendingDown className="w-5 h-5 text-red-600 dark:text-red-400" />
@@ -508,7 +508,7 @@ const ReportsNPS = () => {
           {/* Charts */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             {/* NPS Trend */}
-            <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-6">
+            <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-lg p-6">
               <div className="mb-4">
                 <h3 className="text-base font-semibold text-gray-900 dark:text-white">NPS Trend Over Time</h3>
                 <p className="text-xs text-gray-600 dark:text-gray-400 mt-1">Net Promoter Score progression</p>
@@ -570,7 +570,7 @@ const ReportsNPS = () => {
             </div>
 
             {/* Score Distribution */}
-            <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-6">
+            <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-lg p-6">
               <div className="mb-4">
                 <h3 className="text-base font-semibold text-gray-900 dark:text-white">Score Distribution</h3>
                 <p className="text-xs text-gray-600 dark:text-gray-400 mt-1">Response breakdown by rating (0-10)</p>
@@ -628,12 +628,12 @@ const ReportsNPS = () => {
           </div>
 
           {/* Recent Responses Table */}
-          <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-6">
+          <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-lg p-6">
             <h3 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-4">Recent Responses</h3>
             <div className="overflow-x-auto">
               <table className="w-full">
                 <thead>
-                  <tr className="border-b border-gray-200 dark:border-gray-700">
+                  <tr className="border-b border-gray-200 dark:border-gray-800">
                     <th className="text-left py-3 px-4 font-medium text-gray-700 dark:text-gray-300">Email</th>
                     <th className="text-left py-3 px-4 font-medium text-gray-700 dark:text-gray-300">Score</th>
                     <th className="text-left py-3 px-4 font-medium text-gray-700 dark:text-gray-300">Category</th>
@@ -654,7 +654,7 @@ const ReportsNPS = () => {
                           : { label: 'Detractor', color: 'text-red-600' };
 
                       return (
-                        <tr key={submission.id} className="border-b border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700">
+                        <tr key={submission.id} className="border-b border-gray-200 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-800">
                           <td className="py-3 px-4 text-sm text-gray-900 dark:text-gray-300">{submission.customer_email}</td>
                           <td className="py-3 px-4">
                             <span className={`text-lg font-bold ${category.color}`}>

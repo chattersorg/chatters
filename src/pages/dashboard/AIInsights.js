@@ -265,11 +265,11 @@ const AIInsights = () => {
       </div>
 
       {/* Week Navigator */}
-      <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl px-6 py-4">
+      <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl px-6 py-4">
         <div className="flex items-center justify-between">
           <button
             onClick={goToPreviousWeek}
-            className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
+            className="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors"
             title="Previous week"
           >
             <ChevronLeft className="w-5 h-5 text-gray-600 dark:text-gray-400" />
@@ -290,7 +290,7 @@ const AIInsights = () => {
             onClick={goToNextWeek}
             disabled={!canGoNext}
             className={`p-2 rounded-lg transition-colors ${
-              canGoNext ? 'hover:bg-gray-100 dark:hover:bg-gray-700' : 'opacity-30 cursor-not-allowed'
+              canGoNext ? 'hover:bg-gray-100 dark:hover:bg-gray-800' : 'opacity-30 cursor-not-allowed'
             }`}
             title="Next week"
           >
@@ -337,7 +337,7 @@ const AIInsights = () => {
 
       {/* Loading State */}
       {loading && (
-        <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-12">
+        <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl p-12">
           <div className="text-center">
             <div className="w-16 h-16 bg-blue-50 dark:bg-blue-900/30 rounded-full flex items-center justify-center mx-auto mb-4">
               <RefreshCw className="w-8 h-8 text-blue-600 dark:text-blue-400 animate-spin" />
@@ -355,8 +355,8 @@ const AIInsights = () => {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Left Column: AI Summary */}
           <div>
-            <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl overflow-hidden h-full">
-              <div className="px-6 py-4 border-b border-gray-100 dark:border-gray-700">
+            <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl overflow-hidden h-full">
+              <div className="px-6 py-4 border-b border-gray-100 dark:border-gray-800">
                 <div className="flex items-center gap-2">
                   <FileText className="w-5 h-5 text-blue-600 dark:text-blue-400" />
                   <h3 className="text-base font-semibold text-gray-900 dark:text-white">AI Summary</h3>
@@ -378,8 +378,8 @@ const AIInsights = () => {
 
           {/* Middle Column: AI Score */}
           <div>
-            <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl overflow-hidden h-full">
-              <div className="px-6 py-4 border-b border-gray-100 dark:border-gray-700">
+            <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl overflow-hidden h-full">
+              <div className="px-6 py-4 border-b border-gray-100 dark:border-gray-800">
                 <div className="flex items-center gap-2">
                   <Sparkles className="w-5 h-5 text-blue-600 dark:text-blue-400" />
                   <h3 className="text-base font-semibold text-gray-900 dark:text-white">AI Score</h3>
@@ -431,8 +431,8 @@ const AIInsights = () => {
 
           {/* Right Column: AI Insights (Strengths & Opportunities) */}
           <div>
-            <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl overflow-hidden h-full">
-              <div className="px-6 py-4 border-b border-gray-100 dark:border-gray-700">
+            <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl overflow-hidden h-full">
+              <div className="px-6 py-4 border-b border-gray-100 dark:border-gray-800">
                 <div className="flex items-center gap-2">
                   <Target className="w-5 h-5 text-blue-600 dark:text-blue-400" />
                   <h3 className="text-base font-semibold text-gray-900 dark:text-white">AI Insights</h3>
@@ -443,7 +443,7 @@ const AIInsights = () => {
                 <div>
                   <button
                     onClick={() => setStrengthsOpen(!strengthsOpen)}
-                    className="w-full px-6 py-3 flex items-center justify-between hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+                    className="w-full px-6 py-3 flex items-center justify-between hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
                   >
                     <div className="flex items-center gap-2">
                       <ThumbsUp className="w-4 h-4 text-green-600 dark:text-green-400" />
@@ -473,7 +473,7 @@ const AIInsights = () => {
                 <div>
                   <button
                     onClick={() => setOpportunitiesOpen(!opportunitiesOpen)}
-                    className="w-full px-6 py-3 flex items-center justify-between hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+                    className="w-full px-6 py-3 flex items-center justify-between hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
                   >
                     <div className="flex items-center gap-2">
                       <Target className="w-4 h-4 text-amber-600 dark:text-amber-400" />
