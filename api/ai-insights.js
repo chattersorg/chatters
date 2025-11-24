@@ -225,7 +225,8 @@ export default async function handler(req, res) {
         ...insightRecord,
         id: null,
         created_at: new Date().toISOString(),
-        saved: false
+        saved: false,
+        saveError: saveError.message || saveError.code || JSON.stringify(saveError)
       });
     }
 
