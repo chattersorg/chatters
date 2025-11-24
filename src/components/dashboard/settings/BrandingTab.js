@@ -10,10 +10,8 @@ const HighlightedInput = ({ value, onChange, placeholder, rows, className }) => 
       part === '{table}' ? (
         <span
           key={index}
-          className="inline-block px-1 rounded"
           style={{
-            backgroundColor: '#fee2e2',
-            color: '#991b1b',
+            color: '#2F5CFF',
             fontWeight: '600'
           }}
         >
@@ -613,11 +611,9 @@ const BrandingTab = ({
                         part === '{table}' ? (
                           <span
                             key={index}
-                            className="inline-block px-2 py-0.5 rounded mx-1"
                             style={{
-                              backgroundColor: '#fee2e2',
-                              color: '#991b1b',
-                              fontWeight: '600'
+                              color: '#2F5CFF',
+                              fontWeight: '700'
                             }}
                           >
                             14
@@ -633,11 +629,9 @@ const BrandingTab = ({
                         part === '{table}' ? (
                           <span
                             key={index}
-                            className="inline-block px-2 py-0.5 rounded mx-1"
                             style={{
-                              backgroundColor: '#fee2e2',
-                              color: '#991b1b',
-                              fontWeight: '600'
+                              color: '#2F5CFF',
+                              fontWeight: '700'
                             }}
                           >
                             14

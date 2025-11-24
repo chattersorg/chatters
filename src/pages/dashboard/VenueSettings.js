@@ -850,6 +850,7 @@ const VenueSettingsPage = () => {
         saveSettings={saveSettings}
         loading={loading}
         message={message}
+        venueId={venueId}
       />
     </div>
   );

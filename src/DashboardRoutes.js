@@ -43,7 +43,6 @@ import StaffManagersPage from './pages/dashboard/StaffManagers';
 import StaffEmployeesPage from './pages/dashboard/StaffEmployees';
 import EmployeeDetail from './pages/dashboard/EmployeeDetail';
 import SettingsBrandingPage from './pages/dashboard/SettingsBranding';
-import SettingsCustomLinksPage from './pages/dashboard/SettingsCustomLinks';
 import AccountProfilePage from './pages/dashboard/AccountProfile';
 import AccountBillingPage from './pages/dashboard/AccountBilling';
 import FeedbackSettings from './pages/dashboard/FeedbackSettings';
@@ -176,7 +175,7 @@ const DashboardRoutes = () => {
         <Route path="/settings/venue-details" element={<VenueSettingsPage />} />
         <Route path="/settings/feedback" element={<FeedbackSettings />} />
         <Route path="/settings/branding" element={<SettingsBrandingPage />} />
-        <Route path="/settings/custom-links" element={<SettingsCustomLinksPage />} />
+        <Route path="/settings/custom-links" element={<Navigate to="/settings/venue-details" replace />} />
         <Route path="/settings/integrations" element={<IntegrationsSettingsPage />} />
         
         {/* Legacy settings routes */}
