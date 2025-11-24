@@ -16,6 +16,7 @@ interface NPSSubmission {
     logo: string;
     nps_question: string;
     primary_color: string;
+    nps_enabled: boolean;
   };
 }
 
@@ -37,10 +38,11 @@ serve(async (req) => {
     );
 
     // Get all NPS submissions that are scheduled to be sent and haven't been sent yet
+    // Only for venues that have NPS enabled
     const now = new Date().toISOString();
     const { data: submissions, error: fetchError } = await supabase
       .from("nps_submissions")
-      .select("*, venues(name, logo, nps_question, primary_color)")
+      .select("*, venues(name, logo, nps_question, primary_color, nps_enabled)")
       .lte("scheduled_send_at", now)
       .is("sent_at", null)
       .limit(50); // Process max 50 per run
@@ -62,12 +64,28 @@ serve(async (req) => {
     const results = {
       sent: 0,
       failed: 0,
+      skipped: 0,
       errors: [] as string[],
     };
 
     // Send emails using Resend
     for (const submission of submissions as NPSSubmission[]) {
       try {
+        // Skip if venue has NPS disabled
+        if (!submission.venues?.nps_enabled) {
+          console.log(`Skipping ${submission.customer_email} - NPS disabled for venue`);
+          // Mark as skipped so we don't retry
+          await supabase
+            .from("nps_submissions")
+            .update({
+              sent_at: new Date().toISOString(),
+              send_error: "NPS disabled for venue"
+            })
+            .eq("id", submission.id);
+          results.skipped = (results.skipped || 0) + 1;
+          continue;
+        }
+
         const npsUrl = `${APP_URL}/nps?id=${submission.id}`;
         const venueName = submission.venues.name || "Our venue";
         const npsQuestion =
@@ -181,7 +199,7 @@ serve(async (req) => {
     }
 
     console.log(
-      `NPS email batch complete: ${results.sent} sent, ${results.failed} failed`
+      `NPS email batch complete: ${results.sent} sent, ${results.skipped} skipped, ${results.failed} failed`
     );
 
     return new Response(JSON.stringify(results), {
