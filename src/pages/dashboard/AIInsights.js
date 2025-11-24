@@ -168,6 +168,13 @@ const AIInsights = () => {
       }
 
       const result = await response.json();
+      console.log('[AI Insights] API response:', { saved: result.saved, cached: result.cached, id: result.id });
+
+      if (result.saved === false) {
+        console.error('[AI Insights] Insight was not saved to database');
+        setError('Insight generated but failed to save. Please try again.');
+      }
+
       setCurrentInsight(result);
       setSelectedWeek(weekStart);
 
@@ -178,6 +185,7 @@ const AIInsights = () => {
         .eq('venue_id', venueId)
         .order('week_start', { ascending: false });
 
+      console.log('[AI Insights] Reloaded history:', data?.length, 'insights');
       const validData = (data || []).filter(i => i.week_start);
       setWeeklyHistory(validData);
 
