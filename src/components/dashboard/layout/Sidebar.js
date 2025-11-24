@@ -38,7 +38,8 @@ import {
   MessageCircle,
   List,
   LayoutDashboard,
-  Sparkles
+  Sparkles,
+  ExternalLink
 } from 'lucide-react';
 
 // Venue Management Section - Single venue context
@@ -127,6 +128,7 @@ const venueNavItems = [
       { label: 'Feedback', path: '/settings/feedback', icon: MessageSquare },
       { label: 'Branding', path: '/settings/branding', icon: Palette },
       { label: 'QR Code', path: '/feedback/qr', icon: QrCode },
+      { label: 'Custom Links', path: '/settings/custom-links', icon: ExternalLink },
       { label: 'Integrations', path: '/settings/integrations', icon: Activity }
     ]
   }

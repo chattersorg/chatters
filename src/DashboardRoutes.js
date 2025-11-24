@@ -43,6 +43,7 @@ import StaffManagersPage from './pages/dashboard/StaffManagers';
 import StaffEmployeesPage from './pages/dashboard/StaffEmployees';
 import EmployeeDetail from './pages/dashboard/EmployeeDetail';
 import SettingsBrandingPage from './pages/dashboard/SettingsBranding';
+import SettingsCustomLinksPage from './pages/dashboard/SettingsCustomLinks';
 import AccountProfilePage from './pages/dashboard/AccountProfile';
 import AccountBillingPage from './pages/dashboard/AccountBilling';
 import FeedbackSettings from './pages/dashboard/FeedbackSettings';
@@ -62,6 +63,7 @@ import KioskPage from './pages/dashboard/KioskPage';
 
 // Public / guest routes (no venue context)
 import CustomerFeedbackPage from './pages/dashboard/CustomerFeedback';
+import FeedbackSplashPage from './pages/dashboard/FeedbackSplash';
 import NPSResponsePage from './pages/dashboard/NPSResponse';
 
 // Testing (outside venue context unless you need it)
@@ -112,7 +114,8 @@ const DashboardRoutes = () => {
 
       {/* Public guest feedback (no venue context) */}
       <Route path="/feedback" element={<CustomerFeedbackPage />} />
-      <Route path="/feedback/:venueId" element={<CustomerFeedbackPage />} />
+      <Route path="/feedback/:venueId" element={<FeedbackSplashPage />} />
+      <Route path="/feedback/:venueId/form" element={<CustomerFeedbackPage />} />
       <Route path="/nps" element={<NPSResponsePage />} />
 
       {/* Kiosk: venue context, no dashboard frame */}
@@ -173,6 +176,7 @@ const DashboardRoutes = () => {
         <Route path="/settings/venue-details" element={<VenueSettingsPage />} />
         <Route path="/settings/feedback" element={<FeedbackSettings />} />
         <Route path="/settings/branding" element={<SettingsBrandingPage />} />
+        <Route path="/settings/custom-links" element={<SettingsCustomLinksPage />} />
         <Route path="/settings/integrations" element={<IntegrationsSettingsPage />} />
         
         {/* Legacy settings routes */}
