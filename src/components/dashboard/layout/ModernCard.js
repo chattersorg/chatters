@@ -1,5 +1,6 @@
 import React from 'react';
 import { TrendingUp, TrendingDown } from 'lucide-react';
+import { LineChart, Line, ResponsiveContainer } from 'recharts';
 
 const ModernCard = ({ 
   children, 
@@ -124,6 +125,72 @@ const MetricCard = ({
   );
 };
 
+const SparklineMetricCard = ({
+  title,
+  value,
+  subtitle,
+  trend,
+  trendDirection = 'up',
+  sparklineData = [],
+  className = ''
+}) => {
+  // Transform sparklineData to format needed by Recharts
+  const chartData = sparklineData.map((val, idx) => ({
+    index: idx,
+    value: val
+  }));
+
+  return (
+    <ModernCard className={`${className}`} padding="p-4">
+      {/* Header */}
+      <div className="mb-3">
+        <h3 className="text-sm font-medium text-gray-700">
+          {title}
+        </h3>
+        {subtitle && (
+          <p className="text-xs text-gray-500">{subtitle}</p>
+        )}
+      </div>
+
+      {/* Main Value and Trend */}
+      <div className="flex items-baseline justify-between mb-3">
+        <div className="text-2xl font-bold text-gray-900">
+          {value || '0'}
+        </div>
+        {trend && (
+          <div className={`flex items-center gap-1 text-sm font-semibold ${
+            trendDirection === 'up' ? 'text-green-600' :
+            trendDirection === 'down' ? 'text-red-600' :
+            'text-gray-500'
+          }`}>
+            {trendDirection === 'up' && <TrendingUp className="w-3.5 h-3.5" />}
+            {trendDirection === 'down' && <TrendingDown className="w-3.5 h-3.5" />}
+            <span>{trend}</span>
+          </div>
+        )}
+      </div>
+
+      {/* Sparkline Graph */}
+      {chartData.length > 0 && (
+        <div className="h-12 w-full">
+          <ResponsiveContainer width="100%" height="100%">
+            <LineChart data={chartData}>
+              <Line
+                type="monotone"
+                dataKey="value"
+                stroke="#3b82f6"
+                strokeWidth={2}
+                dot={false}
+                isAnimationActive={false}
+              />
+            </LineChart>
+          </ResponsiveContainer>
+        </div>
+      )}
+    </ModernCard>
+  );
+};
+
 const ChartCard = ({
   title,
   subtitle,
@@ -221,4 +288,4 @@ const StatsGrid = ({ children, className = '' }) => {
 };
 
 export default ModernCard;
-export { MetricCard, ChartCard, ActivityCard, StatsGrid };
+export { MetricCard, SparklineMetricCard, ChartCard, ActivityCard, StatsGrid };

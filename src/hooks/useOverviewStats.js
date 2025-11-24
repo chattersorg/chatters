@@ -29,6 +29,10 @@ const useOverviewStats = (venueId) => {
       const yesterdayStart = new Date(todayStart);
       yesterdayStart.setDate(yesterdayStart.getDate() - 1);
 
+      // Calculate 7-day lookback for sparkline data
+      const sevenDaysAgo = new Date(todayStart);
+      sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 6);
+
       // Fetch today's feedback sessions (including resolution info)
       const todayFeedbackResult = await logQuery(
         'feedback:today',
@@ -76,6 +80,29 @@ const useOverviewStats = (venueId) => {
           .lt('created_at', todayStart.toISOString())
       );
       const yesterdayAssistance = yesterdayAssistanceResult.data;
+
+      // Fetch 7-day data for sparklines
+      const sevenDayFeedbackResult = await logQuery(
+        'feedback:7days',
+        supabase
+          .from('feedback')
+          .select('id, session_id, rating, created_at, resolved_at, is_actioned')
+          .eq('venue_id', venueId)
+          .gte('created_at', sevenDaysAgo.toISOString())
+          .order('created_at', { ascending: true })
+      );
+      const sevenDayFeedback = sevenDayFeedbackResult.data;
+
+      const sevenDayAssistanceResult = await logQuery(
+        'assistance_requests:7days',
+        supabase
+          .from('assistance_requests')
+          .select('id, created_at, acknowledged_at, resolved_at')
+          .eq('venue_id', venueId)
+          .gte('created_at', sevenDaysAgo.toISOString())
+          .order('created_at', { ascending: true })
+      );
+      const sevenDayAssistance = sevenDayAssistanceResult.data;
 
       // Calculate stats - count unique sessions
       const todaySessionIds = new Set(todayFeedback?.map(f => f.session_id) || []);
@@ -148,15 +175,21 @@ const useOverviewStats = (venueId) => {
 
       // Calculate trends
       const sessionsTrend = calculateTrend(todaySessions, yesterdaySessions);
-      const satisfactionTrend = avgSatisfaction && yesterdayAvgSatisfaction 
+      const satisfactionTrend = avgSatisfaction && yesterdayAvgSatisfaction
         ? calculateTrend(parseFloat(avgSatisfaction), yesterdayAvgSatisfaction, true)
         : null;
       const responseTimeTrend = avgResponseTime && yesterdayAvgResponseTime
         ? calculateTrend(calculateAverageResponseTimeMs(allResolvedToday), yesterdayAvgResponseTime, false, true)
         : null;
-      const completionTrend = completionRate && yesterdayCompletionRate 
+      const completionTrend = completionRate && yesterdayCompletionRate
         ? calculateTrend(completionRate, yesterdayCompletionRate, true)
         : null;
+
+      // Calculate 7-day sparkline data
+      const sessionsSparkline = calculate7DaySparkline(sevenDayFeedback, sevenDayAssistance, 'sessions');
+      const satisfactionSparkline = calculate7DaySparkline(sevenDayFeedback, sevenDayAssistance, 'satisfaction');
+      const responseTimeSparkline = calculate7DaySparkline(sevenDayFeedback, sevenDayAssistance, 'responseTime');
+      const completionRateSparkline = calculate7DaySparkline(sevenDayFeedback, sevenDayAssistance, 'completionRate');
 
       setStats({
         todaySessions,
@@ -174,7 +207,11 @@ const useOverviewStats = (venueId) => {
         responseTimeTrend: responseTimeTrend?.value,
         responseTimeTrendDirection: responseTimeTrend?.direction,
         completionTrend: completionTrend?.value,
-        completionTrendDirection: completionTrend?.direction
+        completionTrendDirection: completionTrend?.direction,
+        sessionsSparkline,
+        satisfactionSparkline,
+        responseTimeSparkline,
+        completionRateSparkline
       });
 
       const totalDuration = performance.now() - pageStartTime;
@@ -248,22 +285,97 @@ const useOverviewStats = (venueId) => {
 
   const calculateTrend = (current, previous, higherIsBetter = true, lowerIsBetter = false) => {
     if (current === null || previous === null || previous === 0) return null;
-    
+
     const percentChange = ((current - previous) / previous) * 100;
     const absChange = Math.abs(percentChange);
-    
+
     if (absChange < 1) return { value: '~0%', direction: 'neutral' };
-    
+
     const value = `${percentChange > 0 ? '+' : ''}${percentChange.toFixed(0)}%`;
-    
+
     let direction;
     if (lowerIsBetter) {
       direction = percentChange < 0 ? 'up' : 'down';
     } else {
       direction = percentChange > 0 ? 'up' : 'down';
     }
-    
+
     return { value, direction };
+  };
+
+  const calculate7DaySparkline = (feedback, assistance, metric) => {
+    const now = new Date();
+    const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    const sparklineData = [];
+
+    // Generate data for the last 7 days
+    for (let i = 6; i >= 0; i--) {
+      const dayStart = new Date(todayStart);
+      dayStart.setDate(dayStart.getDate() - i);
+      const dayEnd = new Date(dayStart);
+      dayEnd.setHours(23, 59, 59, 999);
+
+      const dayFeedback = feedback?.filter(f => {
+        const createdAt = new Date(f.created_at);
+        return createdAt >= dayStart && createdAt <= dayEnd;
+      }) || [];
+
+      const dayAssistance = assistance?.filter(a => {
+        const createdAt = new Date(a.created_at);
+        return createdAt >= dayStart && createdAt <= dayEnd;
+      }) || [];
+
+      let value = 0;
+
+      switch (metric) {
+        case 'sessions':
+          const sessionIds = new Set(dayFeedback.map(f => f.session_id));
+          value = sessionIds.size;
+          break;
+
+        case 'satisfaction':
+          const ratings = dayFeedback.filter(f => f.rating).map(f => f.rating);
+          value = ratings.length > 0
+            ? ratings.reduce((a, b) => a + b, 0) / ratings.length
+            : 0;
+          break;
+
+        case 'responseTime':
+          const resolvedAssistance = dayAssistance.filter(a => a.resolved_at);
+          const resolvedFeedback = dayFeedback.filter(f => f.resolved_at && f.is_actioned);
+          const allResolved = [...resolvedAssistance, ...resolvedFeedback];
+
+          if (allResolved.length > 0) {
+            const totalMs = allResolved.reduce((sum, request) => {
+              const created = new Date(request.created_at);
+              const resolved = new Date(request.resolved_at);
+              return sum + (resolved - created);
+            }, 0);
+            value = totalMs / allResolved.length / 60000; // Convert to minutes
+          }
+          break;
+
+        case 'completionRate':
+          const totalFeedbackSessions = new Set(dayFeedback.map(f => f.session_id)).size;
+          const resolvedFeedbackSessions = new Set(
+            dayFeedback.filter(f => f.resolved_at && f.is_actioned).map(f => f.session_id)
+          ).size;
+          const totalAssistance = dayAssistance.length;
+          const resolvedAssistanceCount = dayAssistance.filter(a => a.resolved_at).length;
+
+          const total = totalFeedbackSessions + totalAssistance;
+          const completed = resolvedFeedbackSessions + resolvedAssistanceCount;
+          value = total > 0 ? (completed / total) * 100 : 0;
+          break;
+
+        default:
+          value = 0;
+      }
+
+      sparklineData.push(value);
+    }
+
+    return sparklineData;
   };
 
   return { stats, loading, error, refetch: fetchStats };

@@ -2,7 +2,7 @@ import React from 'react';
 import { TrendingUp, Users, Star, Clock, AlertTriangle, CheckCircle, Activity, Target } from 'lucide-react';
 import useOverviewStats from '../../../hooks/useOverviewStats';
 import { useVenue } from '../../../context/VenueContext';
-import { MetricCard, ChartCard } from '../layout/ModernCard';
+import { MetricCard, SparklineMetricCard, ChartCard } from '../layout/ModernCard';
 
 // StatCard component removed - using MetricCard from ModernCard instead
 
@@ -54,59 +54,43 @@ const OverviewStats = ({
         {/* Stats Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
           {/* Today's Sessions */}
-          <MetricCard
-            icon={Users}
+          <SparklineMetricCard
             title="Today's Sessions"
             value={stats?.todaySessions || '0'}
             subtitle="Customer interactions"
-            color="blue"
             trend={stats?.sessionsTrend}
             trendDirection={stats?.sessionsTrendDirection}
-            venueBreakdowns={venueBreakdowns}
-            allVenues={allVenues}
-            field="sessions"
+            sparklineData={stats?.sessionsSparkline || []}
           />
 
           {/* Average Satisfaction */}
-          <MetricCard
-            icon={Star}
+          <SparklineMetricCard
             title="Satisfaction Score"
             value={stats?.avgSatisfaction ? `${stats.avgSatisfaction}/5` : '--'}
             subtitle="Today's average"
-            color="amber"
             trend={stats?.satisfactionTrend}
             trendDirection={stats?.satisfactionTrendDirection}
-            venueBreakdowns={venueBreakdowns}
-            allVenues={allVenues}
-            field="avgSatisfaction"
+            sparklineData={stats?.satisfactionSparkline || []}
           />
 
           {/* Response Time */}
-          <MetricCard
-            icon={Clock}
+          <SparklineMetricCard
             title="Avg Response Time"
             value={stats?.avgResponseTime || '--'}
             subtitle="To all feedback"
-            color="green"
             trend={stats?.responseTimeTrend}
             trendDirection={stats?.responseTimeTrendDirection}
-            venueBreakdowns={venueBreakdowns}
-            allVenues={allVenues}
-            field="avgResponseTime"
+            sparklineData={stats?.responseTimeSparkline || []}
           />
 
           {/* Completion Rate */}
-          <MetricCard
-            icon={Target}
+          <SparklineMetricCard
             title="Completion Rate"
             value={stats?.completionRate ? `${stats.completionRate}%` : '--'}
             subtitle="Issues resolved"
-            color="purple"
             trend={stats?.completionTrend}
             trendDirection={stats?.completionTrendDirection}
-            venueBreakdowns={venueBreakdowns}
-            allVenues={allVenues}
-            field="completionRate"
+            sparklineData={stats?.completionRateSparkline || []}
           />
 
           {/* Active Alerts */}
