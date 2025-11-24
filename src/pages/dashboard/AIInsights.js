@@ -2,7 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { useVenue } from '../../context/VenueContext';
 import { supabase } from '../../utils/supabase';
 import usePageTitle from '../../hooks/usePageTitle';
-import { Sparkles, RefreshCw, AlertCircle, TrendingUp, Calendar, Lightbulb, ChevronRight } from 'lucide-react';
+import { Sparkles, RefreshCw, AlertCircle, TrendingUp, Calendar, Lightbulb, ChevronRight, ChevronLeft } from 'lucide-react';
 import dayjs from 'dayjs';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 
@@ -189,6 +189,46 @@ const AIInsights = () => {
     setSelectedWeek(insight.week_start);
   };
 
+  // Navigate to previous week
+  const goToPreviousWeek = () => {
+    const currentDate = dayjs(selectedWeek || currentWeekStart);
+    const previousWeek = currentDate.subtract(7, 'day').format('YYYY-MM-DD');
+
+    // Check if we have an insight for this week
+    const existingInsight = weeklyHistory.find(i => i.week_start === previousWeek);
+    if (existingInsight) {
+      setCurrentInsight(existingInsight);
+      setSelectedWeek(previousWeek);
+    } else {
+      // No insight exists, just update the selected week (will show generate option)
+      setCurrentInsight(null);
+      setSelectedWeek(previousWeek);
+    }
+  };
+
+  // Navigate to next week
+  const goToNextWeek = () => {
+    const currentDate = dayjs(selectedWeek || currentWeekStart);
+    const nextWeek = currentDate.add(7, 'day').format('YYYY-MM-DD');
+
+    // Don't go beyond current week
+    if (nextWeek > currentWeekStart) return;
+
+    // Check if we have an insight for this week
+    const existingInsight = weeklyHistory.find(i => i.week_start === nextWeek);
+    if (existingInsight) {
+      setCurrentInsight(existingInsight);
+      setSelectedWeek(nextWeek);
+    } else {
+      setCurrentInsight(null);
+      setSelectedWeek(nextWeek);
+    }
+  };
+
+  // Check if we can navigate
+  const canGoNext = selectedWeek && selectedWeek < currentWeekStart;
+  const displayedWeek = selectedWeek || currentWeekStart;
+
   // Prepare graph data
   const graphData = weeklyHistory
     .slice(0, timeframeWeeks)
@@ -212,6 +252,41 @@ const AIInsights = () => {
         <p className="text-sm text-gray-500 mt-1">Weekly AI-powered analysis of your customer feedback</p>
       </div>
 
+      {/* Week Navigator */}
+      <div className="bg-white border border-gray-200 rounded-xl px-6 py-4">
+        <div className="flex items-center justify-between">
+          <button
+            onClick={goToPreviousWeek}
+            className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+            title="Previous week"
+          >
+            <ChevronLeft className="w-5 h-5 text-gray-600" />
+          </button>
+
+          <div className="text-center">
+            <div className="text-lg font-semibold text-gray-900">
+              {formatWeekDisplay(displayedWeek)}
+            </div>
+            <div className="text-xs text-gray-500 mt-0.5">
+              {displayedWeek === currentWeekStart ? 'This week' :
+               dayjs(displayedWeek).isSame(dayjs(currentWeekStart).subtract(7, 'day'), 'day') ? 'Last week' :
+               `${dayjs(currentWeekStart).diff(dayjs(displayedWeek), 'week')} weeks ago`}
+            </div>
+          </div>
+
+          <button
+            onClick={goToNextWeek}
+            disabled={!canGoNext}
+            className={`p-2 rounded-lg transition-colors ${
+              canGoNext ? 'hover:bg-gray-100' : 'opacity-30 cursor-not-allowed'
+            }`}
+            title="Next week"
+          >
+            <ChevronRight className="w-5 h-5 text-gray-600" />
+          </button>
+        </div>
+      </div>
+
       {/* Error Message */}
       {error && (
         <div className="p-4 bg-red-50 border border-red-200 rounded-lg flex items-start gap-3">
@@ -223,20 +298,20 @@ const AIInsights = () => {
         </div>
       )}
 
-      {/* Generate Button if no current week insight */}
-      {!hasCurrentWeekInsight && !loading && (
+      {/* Generate Button if selected week has no insight */}
+      {!currentInsight && !loading && (
         <div className="bg-blue-50 border border-blue-200 rounded-xl p-6">
           <div className="flex items-start gap-4">
             <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0">
               <Sparkles className="w-6 h-6 text-blue-600" />
             </div>
             <div className="flex-1">
-              <h3 className="text-lg font-semibold text-gray-900 mb-1">Generate This Week's Insights</h3>
+              <h3 className="text-lg font-semibold text-gray-900 mb-1">Generate Insights for This Week</h3>
               <p className="text-sm text-gray-600 mb-4">
-                No insights have been generated for the week of {formatWeekDisplay(currentWeekStart)} yet.
+                No insights have been generated for the week of {formatWeekDisplay(displayedWeek)} yet.
               </p>
               <button
-                onClick={generateCurrentWeekInsight}
+                onClick={() => generateInsightForWeek(displayedWeek)}
                 disabled={loading}
                 className="inline-flex items-center px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50"
               >
@@ -463,8 +538,8 @@ const AIInsights = () => {
         </div>
       )}
 
-      {/* Empty State */}
-      {!loading && !currentInsight && weeklyHistory.length === 0 && !hasCurrentWeekInsight && (
+      {/* Empty State - only show when no history at all */}
+      {!loading && weeklyHistory.length === 0 && !currentInsight && (
         <div className="bg-white border border-gray-200 rounded-xl p-12">
           <div className="text-center">
             <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
@@ -475,7 +550,7 @@ const AIInsights = () => {
               Get AI-powered weekly insights about your customer feedback. Insights are automatically generated each week to help you improve.
             </p>
             <button
-              onClick={generateCurrentWeekInsight}
+              onClick={() => generateInsightForWeek(displayedWeek)}
               disabled={loading}
               className="inline-flex items-center px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50"
             >
