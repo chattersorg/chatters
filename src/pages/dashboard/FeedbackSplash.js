@@ -48,7 +48,12 @@ const FeedbackSplashPage = () => {
   };
 
   const handleLinkClick = (url) => {
-    window.open(url, '_blank', 'noopener,noreferrer');
+    // Ensure URL has a protocol
+    let fullUrl = url;
+    if (!url.startsWith('http://') && !url.startsWith('https://')) {
+      fullUrl = `https://${url}`;
+    }
+    window.open(fullUrl, '_blank', 'noopener,noreferrer');
   };
 
   if (loading) {
