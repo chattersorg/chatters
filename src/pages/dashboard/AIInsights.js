@@ -171,8 +171,15 @@ const AIInsights = () => {
       setCurrentInsight(result);
       setSelectedWeek(weekStart);
 
-      // Reload history to include new insight
-      await loadInsights();
+      // Reload history to include new insight (without resetting selection)
+      const { data } = await supabase
+        .from('ai_insights')
+        .select('*')
+        .eq('venue_id', venueId)
+        .order('week_start', { ascending: false });
+
+      const validData = (data || []).filter(i => i.week_start);
+      setWeeklyHistory(validData);
 
     } catch (err) {
       console.error('[AI Insights] Error generating insights:', err);
