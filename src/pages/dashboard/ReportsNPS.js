@@ -3,7 +3,6 @@ import { useNavigate } from 'react-router-dom';
 import { useVenue } from '../../context/VenueContext';
 import { supabase } from '../../utils/supabase';
 import usePageTitle from '../../hooks/usePageTitle';
-import { ChartCard } from '../../components/dashboard/layout/ModernCard';
 import { TrendingUp, TrendingDown, Minus, Mail, MailCheck, MailX, ChevronRight, Building2 } from 'lucide-react';
 import {
   AreaChart,
@@ -220,25 +219,30 @@ const ReportsNPS = () => {
 
     return (
       <div className="space-y-6">
-        <ChartCard
-          title="NPS Reports"
-          subtitle={isAllVenuesMode ? "All venues overview" : `${selectedVenueIds.length} selected venues`}
-          actions={
-            <div className="flex items-center space-x-2">
-              <label className="text-sm font-medium text-gray-700">Period:</label>
-              <select
-                value={dateRange}
-                onChange={(e) => setDateRange(e.target.value)}
-                className="px-3 py-2 text-sm border border-gray-300 rounded-md bg-white text-gray-700 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-              >
-                <option value="7">Last 7 days</option>
-                <option value="30">Last 30 days</option>
-                <option value="90">Last 90 days</option>
-                <option value="365">Last year</option>
-              </select>
-            </div>
-          }
-        >
+        {/* Page Header */}
+        <div className="mb-2 flex items-center justify-between">
+          <div>
+            <h1 className="text-2xl font-semibold text-gray-900">NPS Reports</h1>
+            <p className="text-sm text-gray-500 mt-1">
+              {isAllVenuesMode ? "All venues overview" : `${selectedVenueIds.length} selected venues`}
+            </p>
+          </div>
+          <div className="flex items-center space-x-2">
+            <label className="text-sm font-medium text-gray-700">Period:</label>
+            <select
+              value={dateRange}
+              onChange={(e) => setDateRange(e.target.value)}
+              className="px-3 py-2 text-sm border border-gray-300 rounded-md bg-white text-gray-700 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            >
+              <option value="7">Last 7 days</option>
+              <option value="30">Last 30 days</option>
+              <option value="90">Last 90 days</option>
+              <option value="365">Last year</option>
+            </select>
+          </div>
+        </div>
+
+        <div className="bg-white border border-gray-200 rounded-xl overflow-hidden p-6">
           <div className="space-y-4">
             {sortedVenues.length === 0 ? (
               <div className="text-center py-12 text-gray-500">
@@ -310,7 +314,7 @@ const ReportsNPS = () => {
               })
             )}
           </div>
-        </ChartCard>
+        </div>
       </div>
     );
   }
@@ -322,25 +326,28 @@ const ReportsNPS = () => {
 
   return (
     <div className="space-y-6">
-      <ChartCard
-        title="NPS Reports"
-        subtitle="Net Promoter Score analytics and customer sentiment"
-        actions={
-          <div className="flex items-center space-x-2">
-            <label className="text-sm font-medium text-gray-700">Period:</label>
-            <select
-              value={dateRange}
-              onChange={(e) => setDateRange(e.target.value)}
-              className="px-3 py-2 text-sm border border-gray-300 rounded-md bg-white text-gray-700 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-            >
-              <option value="7">Last 7 days</option>
-              <option value="30">Last 30 days</option>
-              <option value="90">Last 90 days</option>
-              <option value="365">Last year</option>
-            </select>
-          </div>
-        }
-      >
+      {/* Page Header */}
+      <div className="mb-2 flex items-center justify-between">
+        <div>
+          <h1 className="text-2xl font-semibold text-gray-900">NPS Reports</h1>
+          <p className="text-sm text-gray-500 mt-1">Net Promoter Score analytics and customer sentiment</p>
+        </div>
+        <div className="flex items-center space-x-2">
+          <label className="text-sm font-medium text-gray-700">Period:</label>
+          <select
+            value={dateRange}
+            onChange={(e) => setDateRange(e.target.value)}
+            className="px-3 py-2 text-sm border border-gray-300 rounded-md bg-white text-gray-700 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+          >
+            <option value="7">Last 7 days</option>
+            <option value="30">Last 30 days</option>
+            <option value="90">Last 90 days</option>
+            <option value="365">Last year</option>
+          </select>
+        </div>
+      </div>
+
+      <div className="bg-white border border-gray-200 rounded-xl overflow-hidden p-6">
         <div className="space-y-6">
           {/* Key Metrics */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -682,7 +689,7 @@ const ReportsNPS = () => {
             </div>
           </div>
         </div>
-      </ChartCard>
+      </div>
     </div>
   );
 };
