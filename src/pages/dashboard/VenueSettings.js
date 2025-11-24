@@ -834,8 +834,8 @@ const VenueSettingsPage = () => {
     <div className="space-y-6">
       {/* Page Header */}
       <div className="mb-2">
-        <h1 className="text-2xl font-semibold text-gray-900">Venue Details</h1>
-        <p className="text-sm text-gray-500 mt-1">Configure your venue information and location details</p>
+        <h1 className="text-2xl font-semibold text-gray-900 dark:text-white">Venue Details</h1>
+        <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">Configure your venue information and location details</p>
       </div>
 
       <VenueTab

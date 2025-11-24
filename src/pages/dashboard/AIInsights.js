@@ -260,26 +260,26 @@ const AIInsights = () => {
     <div className="space-y-6">
       {/* Page Header */}
       <div className="mb-2">
-        <h1 className="text-2xl font-semibold text-gray-900">AI Insights</h1>
-        <p className="text-sm text-gray-500 mt-1">Weekly AI-powered analysis of your customer feedback</p>
+        <h1 className="text-2xl font-semibold text-gray-900 dark:text-white">AI Insights</h1>
+        <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">Weekly AI-powered analysis of your customer feedback</p>
       </div>
 
       {/* Week Navigator */}
-      <div className="bg-white border border-gray-200 rounded-xl px-6 py-4">
+      <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl px-6 py-4">
         <div className="flex items-center justify-between">
           <button
             onClick={goToPreviousWeek}
-            className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+            className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
             title="Previous week"
           >
-            <ChevronLeft className="w-5 h-5 text-gray-600" />
+            <ChevronLeft className="w-5 h-5 text-gray-600 dark:text-gray-400" />
           </button>
 
           <div className="text-center">
-            <div className="text-lg font-semibold text-gray-900">
+            <div className="text-lg font-semibold text-gray-900 dark:text-white">
               {formatWeekDisplay(displayedWeek)}
             </div>
-            <div className="text-xs text-gray-500 mt-0.5">
+            <div className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
               {displayedWeek === currentWeekStart ? 'This week' :
                dayjs(displayedWeek).isSame(dayjs(currentWeekStart).subtract(7, 'day'), 'day') ? 'Last week' :
                `${dayjs(currentWeekStart).diff(dayjs(displayedWeek), 'week')} weeks ago`}
@@ -290,11 +290,11 @@ const AIInsights = () => {
             onClick={goToNextWeek}
             disabled={!canGoNext}
             className={`p-2 rounded-lg transition-colors ${
-              canGoNext ? 'hover:bg-gray-100' : 'opacity-30 cursor-not-allowed'
+              canGoNext ? 'hover:bg-gray-100 dark:hover:bg-gray-700' : 'opacity-30 cursor-not-allowed'
             }`}
             title="Next week"
           >
-            <ChevronRight className="w-5 h-5 text-gray-600" />
+            <ChevronRight className="w-5 h-5 text-gray-600 dark:text-gray-400" />
           </button>
         </div>
       </div>
@@ -312,14 +312,14 @@ const AIInsights = () => {
 
       {/* Generate Button if selected week has no insight */}
       {!currentInsight && !loading && (
-        <div className="bg-blue-50 border border-blue-200 rounded-xl p-6">
+        <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-xl p-6">
           <div className="flex items-start gap-4">
-            <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0">
-              <Sparkles className="w-6 h-6 text-blue-600" />
+            <div className="w-12 h-12 bg-blue-100 dark:bg-blue-900/30 rounded-full flex items-center justify-center flex-shrink-0">
+              <Sparkles className="w-6 h-6 text-blue-600 dark:text-blue-400" />
             </div>
             <div className="flex-1">
-              <h3 className="text-lg font-semibold text-gray-900 mb-1">Generate Insights for This Week</h3>
-              <p className="text-sm text-gray-600 mb-4">
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-1">Generate Insights for This Week</h3>
+              <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
                 No insights have been generated for the week of {formatWeekDisplay(displayedWeek)} yet.
               </p>
               <button
@@ -337,13 +337,13 @@ const AIInsights = () => {
 
       {/* Loading State */}
       {loading && (
-        <div className="bg-white border border-gray-200 rounded-xl p-12">
+        <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-12">
           <div className="text-center">
-            <div className="w-16 h-16 bg-blue-50 rounded-full flex items-center justify-center mx-auto mb-4">
-              <RefreshCw className="w-8 h-8 text-blue-600 animate-spin" />
+            <div className="w-16 h-16 bg-blue-50 dark:bg-blue-900/30 rounded-full flex items-center justify-center mx-auto mb-4">
+              <RefreshCw className="w-8 h-8 text-blue-600 dark:text-blue-400 animate-spin" />
             </div>
-            <h3 className="text-lg font-semibold text-gray-900 mb-2">Analysing Feedback...</h3>
-            <p className="text-gray-600 max-w-md mx-auto text-sm">
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">Analysing Feedback...</h3>
+            <p className="text-gray-600 dark:text-gray-400 max-w-md mx-auto text-sm">
               Our AI is reviewing your customer feedback. This usually takes a few seconds.
             </p>
           </div>
@@ -355,20 +355,20 @@ const AIInsights = () => {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Left Column: AI Summary */}
           <div>
-            <div className="bg-white border border-gray-200 rounded-xl overflow-hidden h-full">
-              <div className="px-6 py-4 border-b border-gray-100">
+            <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl overflow-hidden h-full">
+              <div className="px-6 py-4 border-b border-gray-100 dark:border-gray-700">
                 <div className="flex items-center gap-2">
-                  <FileText className="w-5 h-5 text-blue-600" />
-                  <h3 className="text-base font-semibold text-gray-900">AI Summary</h3>
+                  <FileText className="w-5 h-5 text-blue-600 dark:text-blue-400" />
+                  <h3 className="text-base font-semibold text-gray-900 dark:text-white">AI Summary</h3>
                 </div>
               </div>
               <div className="p-6">
                 {currentInsight?.actionable_recommendation ? (
-                  <p className="text-gray-700 text-sm leading-relaxed">
+                  <p className="text-gray-700 dark:text-gray-300 text-sm leading-relaxed">
                     {currentInsight.actionable_recommendation}
                   </p>
                 ) : (
-                  <div className="text-center py-4 text-gray-500 text-sm">
+                  <div className="text-center py-4 text-gray-500 dark:text-gray-400 text-sm">
                     No summary available.
                   </div>
                 )}
@@ -378,11 +378,11 @@ const AIInsights = () => {
 
           {/* Middle Column: AI Score */}
           <div>
-            <div className="bg-white border border-gray-200 rounded-xl overflow-hidden h-full">
-              <div className="px-6 py-4 border-b border-gray-100">
+            <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl overflow-hidden h-full">
+              <div className="px-6 py-4 border-b border-gray-100 dark:border-gray-700">
                 <div className="flex items-center gap-2">
-                  <Sparkles className="w-5 h-5 text-blue-600" />
-                  <h3 className="text-base font-semibold text-gray-900">AI Score</h3>
+                  <Sparkles className="w-5 h-5 text-blue-600 dark:text-blue-400" />
+                  <h3 className="text-base font-semibold text-gray-900 dark:text-white">AI Score</h3>
                 </div>
               </div>
               <div className="p-6 flex flex-col items-center justify-center">
@@ -431,23 +431,23 @@ const AIInsights = () => {
 
           {/* Right Column: AI Insights (Strengths & Opportunities) */}
           <div>
-            <div className="bg-white border border-gray-200 rounded-xl overflow-hidden h-full">
-              <div className="px-6 py-4 border-b border-gray-100">
+            <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl overflow-hidden h-full">
+              <div className="px-6 py-4 border-b border-gray-100 dark:border-gray-700">
                 <div className="flex items-center gap-2">
-                  <Target className="w-5 h-5 text-blue-600" />
-                  <h3 className="text-base font-semibold text-gray-900">AI Insights</h3>
+                  <Target className="w-5 h-5 text-blue-600 dark:text-blue-400" />
+                  <h3 className="text-base font-semibold text-gray-900 dark:text-white">AI Insights</h3>
                 </div>
               </div>
-              <div className="divide-y divide-gray-100">
+              <div className="divide-y divide-gray-100 dark:divide-gray-700">
                 {/* Strengths Accordion */}
                 <div>
                   <button
                     onClick={() => setStrengthsOpen(!strengthsOpen)}
-                    className="w-full px-6 py-3 flex items-center justify-between hover:bg-gray-50 transition-colors"
+                    className="w-full px-6 py-3 flex items-center justify-between hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
                   >
                     <div className="flex items-center gap-2">
-                      <ThumbsUp className="w-4 h-4 text-green-600" />
-                      <span className="text-sm font-medium text-gray-900">Strengths</span>
+                      <ThumbsUp className="w-4 h-4 text-green-600 dark:text-green-400" />
+                      <span className="text-sm font-medium text-gray-900 dark:text-white">Strengths</span>
                     </div>
                     <ChevronDown className={`w-4 h-4 text-gray-400 transition-transform ${strengthsOpen ? 'rotate-180' : ''}`} />
                   </button>
@@ -456,14 +456,14 @@ const AIInsights = () => {
                       {currentInsight?.strengths && currentInsight.strengths.length > 0 ? (
                         <ul className="space-y-2">
                           {currentInsight.strengths.map((strength, idx) => (
-                            <li key={idx} className="text-sm text-gray-600 flex items-start gap-2">
+                            <li key={idx} className="text-sm text-gray-600 dark:text-gray-400 flex items-start gap-2">
                               <span className="text-green-500 mt-0.5">+</span>
                               <span>{strength}</span>
                             </li>
                           ))}
                         </ul>
                       ) : (
-                        <p className="text-sm text-gray-500">No strengths identified.</p>
+                        <p className="text-sm text-gray-500 dark:text-gray-400">No strengths identified.</p>
                       )}
                     </div>
                   )}
@@ -473,11 +473,11 @@ const AIInsights = () => {
                 <div>
                   <button
                     onClick={() => setOpportunitiesOpen(!opportunitiesOpen)}
-                    className="w-full px-6 py-3 flex items-center justify-between hover:bg-gray-50 transition-colors"
+                    className="w-full px-6 py-3 flex items-center justify-between hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
                   >
                     <div className="flex items-center gap-2">
-                      <Target className="w-4 h-4 text-amber-600" />
-                      <span className="text-sm font-medium text-gray-900">Opportunities</span>
+                      <Target className="w-4 h-4 text-amber-600 dark:text-amber-400" />
+                      <span className="text-sm font-medium text-gray-900 dark:text-white">Opportunities</span>
                     </div>
                     <ChevronDown className={`w-4 h-4 text-gray-400 transition-transform ${opportunitiesOpen ? 'rotate-180' : ''}`} />
                   </button>
@@ -486,14 +486,14 @@ const AIInsights = () => {
                       {currentInsight?.areas_for_improvement && currentInsight.areas_for_improvement.length > 0 ? (
                         <ul className="space-y-2">
                           {currentInsight.areas_for_improvement.map((area, idx) => (
-                            <li key={idx} className="text-sm text-gray-600 flex items-start gap-2">
+                            <li key={idx} className="text-sm text-gray-600 dark:text-gray-400 flex items-start gap-2">
                               <span className="text-amber-500 mt-0.5">!</span>
                               <span>{area}</span>
                             </li>
                           ))}
                         </ul>
                       ) : (
-                        <p className="text-sm text-gray-500">No opportunities identified.</p>
+                        <p className="text-sm text-gray-500 dark:text-gray-400">No opportunities identified.</p>
                       )}
                     </div>
                   )}

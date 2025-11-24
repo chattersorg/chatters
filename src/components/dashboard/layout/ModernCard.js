@@ -2,18 +2,18 @@ import React from 'react';
 import { TrendingUp, TrendingDown } from 'lucide-react';
 import { LineChart, Line, ResponsiveContainer } from 'recharts';
 
-const ModernCard = ({ 
-  children, 
+const ModernCard = ({
+  children,
   className = '',
   padding = 'p-6',
   shadow = 'shadow-sm hover:shadow-md',
-  border = 'border border-gray-100',
+  border = 'border border-gray-100 dark:border-gray-700',
   rounded = 'rounded-xl',
-  background = 'bg-white',
+  background = 'bg-white dark:bg-gray-800',
   transition = 'transition-all duration-200'
 }) => {
   return (
-    <div 
+    <div
       className={`${background} ${rounded} ${padding} ${border} ${shadow} ${transition} ${className}`}
     >
       {children}
@@ -55,11 +55,11 @@ const MetricCard = ({
           <Icon className="w-4 h-4" />
         </div>
         <div>
-          <h3 className="text-sm font-medium text-gray-700">
+          <h3 className="text-sm font-medium text-gray-700 dark:text-gray-300">
             {title}
           </h3>
           {subtitle && (
-            <p className="text-xs text-gray-500">{subtitle}</p>
+            <p className="text-xs text-gray-500 dark:text-gray-400">{subtitle}</p>
           )}
         </div>
       </div>
@@ -67,14 +67,14 @@ const MetricCard = ({
       {/* Main Value */}
       <div className="mb-3">
         <div className="flex items-center gap-2">
-          <div className="text-xl font-bold text-gray-900">
+          <div className="text-xl font-bold text-gray-900 dark:text-white">
             {value || '0'}
           </div>
           {trend && (
             <div className={`flex items-center gap-1 text-sm font-medium ${
-              trendDirection === 'up' ? 'text-green-600' :
-              trendDirection === 'down' ? 'text-red-600' :
-              'text-gray-500'
+              trendDirection === 'up' ? 'text-green-600 dark:text-green-400' :
+              trendDirection === 'down' ? 'text-red-600 dark:text-red-400' :
+              'text-gray-500 dark:text-gray-400'
             }`}>
               {trendDirection === 'up' && <TrendingUp className="w-3 h-3" />}
               {trendDirection === 'down' && <TrendingDown className="w-3 h-3" />}
@@ -83,7 +83,7 @@ const MetricCard = ({
           )}
         </div>
         {comparison && (
-          <div className="text-sm text-gray-500 mt-1">
+          <div className="text-sm text-gray-500 dark:text-gray-400 mt-1">
             {comparison}
           </div>
         )}
@@ -91,27 +91,27 @@ const MetricCard = ({
 
       {/* Venue Breakdowns */}
       {hasBreakdowns && (
-        <div className="pt-3 border-t border-gray-200">
+        <div className="pt-3 border-t border-gray-200 dark:border-gray-700">
           <div className="space-y-2">
-            <h4 className="text-xs font-medium text-gray-500 uppercase tracking-wide">
+            <h4 className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide">
               By Venue
             </h4>
             <div className="space-y-1">
               {Object.entries(venueBreakdowns).map(([venueId, breakdown]) => {
                 const venue = allVenues?.find(v => v.id === venueId);
                 if (!venue || !breakdown) return null;
-                
+
                 let breakdownValue = breakdown[field];
                 if (field === 'avgSatisfaction' && breakdownValue) {
                   breakdownValue = `${breakdownValue}/5`;
                 }
-                
+
                 return (
                   <div key={venueId} className="flex items-center justify-between py-1">
-                    <span className="text-sm text-gray-600 truncate flex-1 mr-2">
+                    <span className="text-sm text-gray-600 dark:text-gray-400 truncate flex-1 mr-2">
                       {venue.name}
                     </span>
-                    <span className="text-sm font-medium text-gray-900 flex-shrink-0">
+                    <span className="text-sm font-medium text-gray-900 dark:text-white flex-shrink-0">
                       {breakdownValue || '0'}
                     </span>
                   </div>
@@ -144,24 +144,24 @@ const SparklineMetricCard = ({
     <ModernCard className={`${className}`} padding="p-4">
       {/* Header */}
       <div className="mb-3">
-        <h3 className="text-sm font-medium text-gray-700">
+        <h3 className="text-sm font-medium text-gray-700 dark:text-gray-300">
           {title}
         </h3>
         {subtitle && (
-          <p className="text-xs text-gray-500">{subtitle}</p>
+          <p className="text-xs text-gray-500 dark:text-gray-400">{subtitle}</p>
         )}
       </div>
 
       {/* Main Value and Trend */}
       <div className="flex items-baseline justify-between mb-3">
-        <div className="text-2xl font-bold text-gray-900">
+        <div className="text-2xl font-bold text-gray-900 dark:text-white">
           {value || '0'}
         </div>
         {trend && (
           <div className={`flex items-center gap-1 text-sm font-semibold ${
-            trendDirection === 'up' ? 'text-green-600' :
-            trendDirection === 'down' ? 'text-red-600' :
-            'text-gray-500'
+            trendDirection === 'up' ? 'text-green-600 dark:text-green-400' :
+            trendDirection === 'down' ? 'text-red-600 dark:text-red-400' :
+            'text-gray-500 dark:text-gray-400'
           }`}>
             {trendDirection === 'up' && <TrendingUp className="w-3.5 h-3.5" />}
             {trendDirection === 'down' && <TrendingDown className="w-3.5 h-3.5" />}
@@ -204,11 +204,11 @@ const ChartCard = ({
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h3 className="text-lg font-semibold text-gray-900">
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
             {title}
           </h3>
           {subtitle && (
-            <p className="text-sm text-gray-500 mt-1">{subtitle}</p>
+            <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">{subtitle}</p>
           )}
         </div>
         <div className="flex items-center gap-4">
@@ -242,18 +242,18 @@ const ActivityCard = ({
 }) => {
   return (
     <ModernCard className={className} padding="p-6">
-      <h3 className="text-lg font-semibold text-gray-900 mb-4">
+      <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
         {title}
       </h3>
-      
+
       {loading ? (
         <div className="space-y-3">
           {[...Array(5)].map((_, i) => (
             <div key={i} className="animate-pulse flex items-center gap-3">
-              <div className="w-8 h-8 bg-gray-200 rounded-full" />
+              <div className="w-8 h-8 bg-gray-200 dark:bg-gray-700 rounded-full" />
               <div className="flex-1">
-                <div className="h-4 bg-gray-200 rounded w-3/4 mb-1" />
-                <div className="h-3 bg-gray-200 rounded w-1/2" />
+                <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-3/4 mb-1" />
+                <div className="h-3 bg-gray-200 dark:bg-gray-700 rounded w-1/2" />
               </div>
             </div>
           ))}
@@ -261,14 +261,14 @@ const ActivityCard = ({
       ) : items.length > 0 ? (
         <div className="space-y-3">
           {items.map((item, index) => (
-            <div key={index} className="flex items-start gap-3 p-3 rounded-lg hover:bg-gray-50 transition-colors">
+            <div key={index} className="flex items-start gap-3 p-3 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
               {item}
             </div>
           ))}
         </div>
       ) : (
         emptyState || (
-          <div className="flex items-center justify-center h-32 text-gray-500">
+          <div className="flex items-center justify-center h-32 text-gray-500 dark:text-gray-400">
             <div className="text-center">
               <p className="text-sm">No recent activity</p>
             </div>

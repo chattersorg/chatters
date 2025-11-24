@@ -405,15 +405,15 @@ const FeedbackQuestionsPage = () => {
       {/* Page Header */}
       <div className="mb-2 flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-semibold text-gray-900">Question Management</h1>
-          <p className="text-sm text-gray-500 mt-1">Create and organise customer feedback questions for your venue</p>
+          <h1 className="text-2xl font-semibold text-gray-900 dark:text-white">Question Management</h1>
+          <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">Create and organise customer feedback questions for your venue</p>
         </div>
-        <div className="bg-blue-50 px-4 py-2 rounded-xl border border-blue-200">
-          <span className="text-blue-700 font-semibold">Active: {questions.length}/5</span>
+        <div className="bg-blue-50 dark:bg-blue-900/20 px-4 py-2 rounded-xl border border-blue-200 dark:border-blue-800">
+          <span className="text-blue-700 dark:text-blue-300 font-semibold">Active: {questions.length}/5</span>
         </div>
       </div>
 
-      <div className="bg-white border border-gray-200 rounded-xl overflow-hidden p-6">
+      <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl overflow-hidden p-6">
         <DragDropContext onDragEnd={onDragEnd}>
           <QuestionManagementTab
             questions={questions}

@@ -44,13 +44,13 @@ const AlertModal = ({
   const getIconBgClasses = () => {
     switch (type) {
       case 'success':
-        return 'bg-green-100';
+        return 'bg-green-100 dark:bg-green-900/30';
       case 'info':
-        return 'bg-blue-100';
+        return 'bg-blue-100 dark:bg-blue-900/30';
       case 'warning':
-        return 'bg-yellow-100';
+        return 'bg-yellow-100 dark:bg-yellow-900/30';
       default: // 'error'
-        return 'bg-red-100';
+        return 'bg-red-100 dark:bg-red-900/30';
     }
   };
 
@@ -68,8 +68,8 @@ const AlertModal = ({
   };
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-lg w-full max-w-md">
+    <div className="fixed inset-0 bg-gray-500/75 dark:bg-gray-900/80 flex items-center justify-center z-50 p-4">
+      <div className="bg-white dark:bg-gray-800 rounded-lg w-full max-w-md border border-gray-200 dark:border-gray-700">
         <div className="p-4 lg:p-6">
           <div className="flex items-start gap-4 mb-6">
             <div className={`w-12 h-12 ${getIconBgClasses()} rounded-full flex items-center justify-center flex-shrink-0`}>
@@ -77,11 +77,11 @@ const AlertModal = ({
             </div>
             <div className="flex-1">
               {title && (
-                <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-2">
                   {title}
                 </h3>
               )}
-              <div className="text-sm text-gray-600">
+              <div className="text-sm text-gray-600 dark:text-gray-300">
                 {typeof message === 'string' ? (
                   <p>{message}</p>
                 ) : (

@@ -340,18 +340,18 @@ const DashboardNew = () => {
       <div className="mb-8">
         <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 mb-3">
           <div className="flex-1">
-            <h1 className="text-3xl font-bold text-gray-900">
+            <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
               {getGreeting()}{userName ? `, ${userName}` : ''}
             </h1>
-            <p className="text-gray-600 mt-1">
-              Welcome back to <span className="font-semibold text-gray-800">{venueName}</span>
+            <p className="text-gray-600 dark:text-gray-400 mt-1">
+              Welcome back to <span className="font-semibold text-gray-800 dark:text-gray-300">{venueName}</span>
             </p>
           </div>
         </div>
 
         {getMultiVenueGreeting() && (
-          <div className="bg-blue-50 border border-blue-200 rounded-xl px-4 py-3 mt-4">
-            <p className="text-sm text-blue-700 font-medium flex items-center gap-2">
+          <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-xl px-4 py-3 mt-4">
+            <p className="text-sm text-blue-700 dark:text-blue-300 font-medium flex items-center gap-2">
               <Users className="w-4 h-4" />
               {getMultiVenueGreeting()}
             </p>
@@ -390,16 +390,16 @@ const DashboardNew = () => {
             {userTiles.length < 3 && (
               <button
                 onClick={handleAddTile}
-                className="bg-white rounded-xl shadow-sm p-6 border-2 border-dashed border-gray-300 hover:border-blue-400 hover:bg-blue-50 transition-all flex flex-col items-center justify-center gap-3 min-h-[200px] group"
+                className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6 border-2 border-dashed border-gray-300 dark:border-gray-700 hover:border-blue-400 dark:hover:border-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-all flex flex-col items-center justify-center gap-3 min-h-[200px] group"
               >
-                <div className="p-3 bg-gray-100 group-hover:bg-blue-100 rounded-full transition-colors">
-                  <Plus className="w-6 h-6 text-gray-600 group-hover:text-blue-600 transition-colors" />
+                <div className="p-3 bg-gray-100 dark:bg-gray-700 group-hover:bg-blue-100 dark:group-hover:bg-blue-900/30 rounded-full transition-colors">
+                  <Plus className="w-6 h-6 text-gray-600 dark:text-gray-400 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors" />
                 </div>
                 <div className="text-center">
-                  <p className="font-medium text-gray-700 group-hover:text-blue-700 transition-colors">
+                  <p className="font-medium text-gray-700 dark:text-gray-300 group-hover:text-blue-700 dark:group-hover:text-blue-400 transition-colors">
                     Add Metric Tile
                   </p>
-                  <p className="text-sm text-gray-500 mt-1">
+                  <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
                     Track metrics across all venues
                   </p>
                 </div>

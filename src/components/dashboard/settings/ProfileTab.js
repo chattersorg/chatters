@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { supabase } from '../../../utils/supabase';
 import { Button } from '../../ui/button';
+import { useDarkMode } from '../../../context/DarkModeContext';
+import { Moon, Sun } from 'lucide-react';
 
 const ProfileTab = ({
   firstName, setFirstName,
@@ -16,6 +18,8 @@ const ProfileTab = ({
   const [emailChangeMessage, setEmailChangeMessage] = useState('');
   const [newEmail, setNewEmail] = useState('');
   const [showEmailChange, setShowEmailChange] = useState(false);
+
+  const { isDarkMode, toggleDarkMode } = useDarkMode();
 
   const saveSettings = async () => {
     if (!venueId) return;
@@ -128,10 +132,10 @@ const ProfileTab = ({
   return (
     <div className="space-y-6">
       {/* Personal Information Card */}
-      <div className="bg-white border border-gray-200 rounded-xl overflow-hidden">
-        <div className="px-6 py-4 border-b border-gray-100">
-          <h3 className="text-base font-semibold text-gray-900">Personal Information</h3>
-          <p className="text-sm text-gray-500 mt-1">Update your name and email address</p>
+      <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl overflow-hidden">
+        <div className="px-6 py-4 border-b border-gray-100 dark:border-gray-700">
+          <h3 className="text-base font-semibold text-gray-900 dark:text-white">Personal Information</h3>
+          <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">Update your name and email address</p>
         </div>
 
         <div className="p-6 space-y-6">
@@ -258,8 +262,55 @@ const ProfileTab = ({
         </div>
       </div>
 
+      {/* Appearance Card */}
+      <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl overflow-hidden">
+        <div className="px-6 py-4 border-b border-gray-100 dark:border-gray-700">
+          <h3 className="text-base font-semibold text-gray-900 dark:text-white">Appearance</h3>
+          <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">Customize your dashboard appearance</p>
+        </div>
+
+        <div className="p-6">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 items-start">
+            <div className="lg:col-span-1">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Theme</label>
+              <p className="text-xs text-gray-500 dark:text-gray-400">Choose light or dark mode</p>
+            </div>
+            <div className="lg:col-span-2">
+              <button
+                onClick={toggleDarkMode}
+                className="flex items-center justify-between w-full sm:w-auto px-4 py-3 bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors"
+              >
+                <div className="flex items-center gap-3">
+                  {isDarkMode ? (
+                    <>
+                      <Moon className="w-5 h-5 text-blue-600 dark:text-blue-400" />
+                      <span className="text-sm font-medium text-gray-900 dark:text-white">Dark Mode</span>
+                    </>
+                  ) : (
+                    <>
+                      <Sun className="w-5 h-5 text-amber-600" />
+                      <span className="text-sm font-medium text-gray-900">Light Mode</span>
+                    </>
+                  )}
+                </div>
+                <div className={`ml-8 w-11 h-6 rounded-full transition-colors ${
+                  isDarkMode ? 'bg-blue-600' : 'bg-gray-300'
+                }`}>
+                  <div className={`w-5 h-5 bg-white rounded-full shadow-md transform transition-transform ${
+                    isDarkMode ? 'translate-x-6' : 'translate-x-0.5'
+                  } mt-0.5`} />
+                </div>
+              </button>
+              <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">
+                {isDarkMode ? 'Using dark mode for reduced eye strain' : 'Using light mode for better visibility'}
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+
       {/* Password & Security Card */}
-      <div className="bg-white border border-gray-200 rounded-xl overflow-hidden">
+      <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl overflow-hidden">
         <div className="px-6 py-4 border-b border-gray-100">
           <h3 className="text-base font-semibold text-gray-900">Password & Security</h3>
           <p className="text-sm text-gray-500 mt-1">Manage your password and security settings</p>

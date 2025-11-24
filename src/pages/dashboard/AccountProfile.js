@@ -48,8 +48,8 @@ const AccountProfilePage = () => {
     <div className="space-y-6">
       {/* Page Header */}
       <div className="mb-2">
-        <h1 className="text-2xl font-semibold text-gray-900">Account Profile</h1>
-        <p className="text-sm text-gray-500 mt-1">Manage your personal information and account settings</p>
+        <h1 className="text-2xl font-semibold text-gray-900 dark:text-white">Account Profile</h1>
+        <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">Manage your personal information and account settings</p>
       </div>
 
       <ProfileTab

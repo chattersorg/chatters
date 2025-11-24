@@ -293,24 +293,24 @@ const StaffLeaderboard = () => {
     <div className="space-y-6">
       {/* Page Header */}
       <div className="mb-2">
-        <h1 className="text-2xl font-semibold text-gray-900">Staff Leaderboard</h1>
-        <p className="text-sm text-gray-500 mt-1">Track staff performance and feedback resolution rates</p>
+        <h1 className="text-2xl font-semibold text-gray-900 dark:text-white">Staff Leaderboard</h1>
+        <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">Track staff performance and feedback resolution rates</p>
       </div>
 
       {/* Leaderboard Card */}
-      <div className="bg-white border border-gray-200 rounded-xl overflow-hidden">
+      <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl overflow-hidden">
         {/* Card Header with Filters */}
-        <div className="px-6 py-4 border-b border-gray-100">
+        <div className="px-6 py-4 border-b border-gray-100 dark:border-gray-700">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
             <div>
-              <h3 className="text-base font-semibold text-gray-900">Performance Rankings</h3>
-              <p className="text-sm text-gray-500 mt-1">Staff ranked by total resolutions</p>
+              <h3 className="text-base font-semibold text-gray-900 dark:text-white">Performance Rankings</h3>
+              <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">Staff ranked by total resolutions</p>
             </div>
             <div className="flex items-center gap-3">
               <select
                 value={timeFilter}
                 onChange={(e) => setTimeFilter(e.target.value)}
-                className="px-3 py-2 text-sm border border-gray-300 rounded-lg bg-white text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                className="px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
               >
                 <option value="today">Today</option>
                 <option value="thisWeek">This Week</option>
@@ -333,64 +333,64 @@ const StaffLeaderboard = () => {
         {/* Table Content */}
         <div className="overflow-x-auto">
           {staffStats.length > 0 ? (
-            <table className="min-w-full divide-y divide-gray-200">
-              <thead className="bg-gray-50">
+            <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+              <thead className="bg-gray-50 dark:bg-gray-900">
                 <tr>
-                  <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                  <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wider">
                     Rank
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                  <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wider">
                     Staff Member
                   </th>
-                  <th className="px-6 py-3 text-center text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                  <th className="px-6 py-3 text-center text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wider">
                     Resolved
                   </th>
-                  <th className="px-6 py-3 text-center text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                  <th className="px-6 py-3 text-center text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wider">
                     Co-resolved
                   </th>
-                  <th className="px-6 py-3 text-center text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                  <th className="px-6 py-3 text-center text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wider">
                     Assistance
                   </th>
-                  <th className="px-6 py-3 text-center text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                  <th className="px-6 py-3 text-center text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wider">
                     Total
                   </th>
-                  <th className="px-6 py-3 text-center text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                  <th className="px-6 py-3 text-center text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wider">
                     Actions
                   </th>
                 </tr>
               </thead>
-              <tbody className="bg-white divide-y divide-gray-100">
+              <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-100 dark:divide-gray-700">
                 {staffStats.map((staff, index) => (
                   <tr
                     key={staff.id}
-                    className="hover:bg-gray-50 transition-colors duration-150"
+                    className="hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors duration-150"
                   >
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className={`inline-flex items-center justify-center w-8 h-8 rounded-full text-sm font-bold ${
-                        index === 0 ? 'bg-yellow-100 text-yellow-800' :
-                        index === 1 ? 'bg-gray-100 text-gray-700' :
-                        index === 2 ? 'bg-orange-100 text-orange-700' :
-                        'bg-blue-50 text-blue-700'
+                        index === 0 ? 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-800 dark:text-yellow-300' :
+                        index === 1 ? 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300' :
+                        index === 2 ? 'bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-300' :
+                        'bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300'
                       }`}>
                         {staff.rank}
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="flex items-center">
-                        <div className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center text-sm font-medium text-gray-600 mr-3">
+                        <div className="w-10 h-10 rounded-full bg-gray-100 dark:bg-gray-700 flex items-center justify-center text-sm font-medium text-gray-600 dark:text-gray-400 mr-3">
                           {staff.name.split(' ').map(word => word[0]).join('').toUpperCase()}
                         </div>
                         <div>
                           <button
                             onClick={() => navigate(`/staff-member/${staff.id}`)}
-                            className="text-sm font-medium text-blue-600 hover:text-blue-800 hover:underline text-left"
+                            className="text-sm font-medium text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 hover:underline text-left"
                           >
                             {staff.name}
                           </button>
-                          <div className="flex items-center gap-2 text-xs text-gray-500">
+                          <div className="flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400">
                             {staff.role && <span>{staff.role}</span>}
                             {staff.location && (
-                              <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-600">
+                              <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400">
                                 {staff.location}
                               </span>
                             )}
@@ -399,16 +399,16 @@ const StaffLeaderboard = () => {
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-center">
-                      <span className="text-sm font-semibold text-gray-900">{staff.feedbackResolved}</span>
+                      <span className="text-sm font-semibold text-gray-900 dark:text-white">{staff.feedbackResolved}</span>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-center">
-                      <span className="text-sm font-semibold text-gray-900">{staff.feedbackCoResolved}</span>
+                      <span className="text-sm font-semibold text-gray-900 dark:text-white">{staff.feedbackCoResolved}</span>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-center">
-                      <span className="text-sm font-semibold text-gray-900">{staff.assistanceResolved}</span>
+                      <span className="text-sm font-semibold text-gray-900 dark:text-white">{staff.assistanceResolved}</span>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-center">
-                      <span className="text-sm font-bold text-blue-600">{staff.totalResolved}</span>
+                      <span className="text-sm font-bold text-blue-600 dark:text-blue-400">{staff.totalResolved}</span>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-center">
                       <Button

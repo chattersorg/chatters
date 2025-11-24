@@ -120,14 +120,14 @@ export default function TablePerformanceRankingTile({ venueId, timeframe = 'last
   const worst = rows[rows.length - 1];
 
   return (
-    <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100">
+    <div className="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-sm border border-gray-100 dark:border-gray-700">
       {/* Header */}
       <div className="flex items-start justify-between gap-3 mb-2">
         <div>
-          <h3 className="text-base font-semibold text-gray-900">
+          <h3 className="text-base font-semibold text-gray-900 dark:text-white">
             Table Performance Ranking
           </h3>
-          <p className="text-xs text-gray-600 mt-1">
+          <p className="text-xs text-gray-600 dark:text-gray-400 mt-1">
             Ranked by average rating
           </p>
         </div>
@@ -137,37 +137,37 @@ export default function TablePerformanceRankingTile({ venueId, timeframe = 'last
       {loading ? (
         <div className="space-y-3">
           {Array.from({ length: 5 }).map((_, i) => (
-            <div key={i} className="h-14 bg-gray-100 rounded-md animate-pulse" />
+            <div key={i} className="h-14 bg-gray-100 dark:bg-gray-700 rounded-md animate-pulse" />
           ))}
         </div>
       ) : noData ? (
         <div className="text-center py-10">
-          <div className="text-sm text-gray-600">No table data yet — rankings will appear once feedback comes in.</div>
+          <div className="text-sm text-gray-600 dark:text-gray-400">No table data yet — rankings will appear once feedback comes in.</div>
         </div>
       ) : (
         <div className="space-y-2 overflow-y-auto pr-1" style={{ maxHeight: 'calc(100vh - 400px)', minHeight: '300px' }}>
           {rows.map((r, idx) => (
             <div
               key={r.table}
-              className="rounded-md border border-gray-100 p-3 hover:bg-gray-50 transition-colors"
+              className="rounded-md border border-gray-100 dark:border-gray-700 p-3 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
               title={`Table ${r.table} • ${r.average}★ avg from ${r.totalFeedback} responses`}
             >
               <div className="grid grid-cols-3 gap-3 items-center">
                 {/* Left: table number */}
                 <div className="text-left">
-                  <div className="text-sm font-medium text-gray-900">Table {r.table}</div>
+                  <div className="text-sm font-medium text-gray-900 dark:text-white">Table {r.table}</div>
                 </div>
 
                 {/* Center: rating count - aligned column */}
                 <div className="text-center">
-                  <div className="text-sm font-medium text-gray-900 tabular-nums">{r.totalFeedback}</div>
-                  <div className="text-[11px] text-gray-600">rating{r.totalFeedback !== 1 ? 's' : ''}</div>
+                  <div className="text-sm font-medium text-gray-900 dark:text-white tabular-nums">{r.totalFeedback}</div>
+                  <div className="text-[11px] text-gray-600 dark:text-gray-400">rating{r.totalFeedback !== 1 ? 's' : ''}</div>
                 </div>
 
                 {/* Right: average */}
                 <div className="text-right">
-                  <div className="text-xl font-bold text-gray-900 tabular-nums">{r.average}</div>
-                  <div className="text-[11px] text-gray-600">avg rating</div>
+                  <div className="text-xl font-bold text-gray-900 dark:text-white tabular-nums">{r.average}</div>
+                  <div className="text-[11px] text-gray-600 dark:text-gray-400">avg rating</div>
                 </div>
               </div>
 

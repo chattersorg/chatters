@@ -162,6 +162,11 @@ body {
   outline: none;
 }
 
+.dark .modal {
+  background: rgb(31 41 55); /* gray-800 */
+  border: 1px solid rgb(55 65 81); /* gray-700 */
+}
+
 .modal-overlay {
   position: fixed;
   top: 0;
@@ -169,6 +174,10 @@ body {
   right: 0;
   bottom: 0;
   background: rgba(0, 0, 0, 0.5);
+}
+
+.dark .modal-overlay {
+  background: rgba(17, 24, 39, 0.8); /* gray-900 with 80% opacity */
 }
 
 .disabled {

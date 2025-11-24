@@ -176,15 +176,15 @@ const QuickInsightsTile = ({ venueId }) => {
     return (
       <Card>
         <CardHeader>
-          <CardTitle className="text-sm font-medium text-gray-600 flex items-center gap-2">
-            <Lightbulb className="h-5 w-5 text-blue-600" />
+          <CardTitle className="text-sm font-medium text-gray-600 dark:text-gray-400 flex items-center gap-2">
+            <Lightbulb className="h-5 w-5 text-blue-600 dark:text-blue-400" />
             Quick Insights
           </CardTitle>
         </CardHeader>
         <CardContent>
           <div className="animate-pulse space-y-3">
-            <div className="h-16 bg-gray-200 rounded"></div>
-            <div className="h-16 bg-gray-200 rounded"></div>
+            <div className="h-16 bg-gray-200 dark:bg-gray-700 rounded"></div>
+            <div className="h-16 bg-gray-200 dark:bg-gray-700 rounded"></div>
           </div>
         </CardContent>
       </Card>
@@ -194,8 +194,8 @@ const QuickInsightsTile = ({ venueId }) => {
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="text-sm font-medium text-gray-600 flex items-center gap-2">
-          <Lightbulb className="h-5 w-5 text-blue-600" />
+        <CardTitle className="text-sm font-medium text-gray-600 dark:text-gray-400 flex items-center gap-2">
+          <Lightbulb className="h-5 w-5 text-blue-600 dark:text-blue-400" />
           Quick Insights
         </CardTitle>
       </CardHeader>
@@ -210,7 +210,7 @@ const QuickInsightsTile = ({ venueId }) => {
               >
                 <div className="flex items-start gap-3">
                   <Icon className={`h-5 w-5 mt-0.5 flex-shrink-0 ${getIconColor(insight.type)}`} />
-                  <p className="text-sm text-gray-700 leading-relaxed">{insight.text}</p>
+                  <p className="text-sm text-gray-700 dark:text-gray-300 leading-relaxed">{insight.text}</p>
                 </div>
               </div>
             );
