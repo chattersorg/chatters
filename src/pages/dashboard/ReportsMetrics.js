@@ -395,11 +395,11 @@ const ReportsMetricsPage = () => {
         subtitle="Comprehensive metrics and KPIs for your feedback system"
         actions={
           <div className="flex items-center space-x-2">
-            <label className="text-sm font-medium text-gray-700">Period:</label>
+            <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Period:</label>
             <select
               value={timeframe}
               onChange={(e) => setTimeframe(e.target.value)}
-              className="px-3 py-2 text-sm border border-gray-300 rounded-md bg-white text-gray-700 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              className="px-3 py-2 text-sm border border-gray-300 dark:border-gray-700 rounded-md bg-white dark:bg-gray-800 text-gray-700 dark:text-white shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
             >
               <option value="today">Today</option>
               <option value="yesterday">Yesterday</option>
@@ -416,23 +416,23 @@ const ReportsMetricsPage = () => {
             const Icon = category.icon;
             
             return (
-              <div key={index} className="border border-gray-200 rounded-xl p-6">
+              <div key={index} className="border border-gray-200 dark:border-gray-800 rounded-xl p-6 bg-white dark:bg-gray-900">
                 <div className="flex items-center gap-3 mb-6">
-                  <div className={`p-2 rounded-lg bg-${category.color}-100`}>
-                    <Icon className={`w-5 h-5 text-${category.color}-600`} />
+                  <div className={`p-2 rounded-lg bg-${category.color}-100 dark:bg-${category.color}-900`}>
+                    <Icon className={`w-5 h-5 text-${category.color}-600 dark:text-${category.color}-400`} />
                   </div>
-                  <h3 className="text-lg font-semibold text-gray-900">{category.title}</h3>
+                  <h3 className="text-lg font-semibold text-gray-900 dark:text-white">{category.title}</h3>
                 </div>
-                
+
                 <div className="space-y-4">
                   {category.metrics.map((metric, metricIndex) => (
                     <div key={metricIndex} className="flex items-center justify-between">
                       <div>
-                        <p className="text-sm text-gray-600">{metric.label}</p>
-                        <p className="text-xs text-gray-400">{metric.period}</p>
+                        <p className="text-sm text-gray-600 dark:text-gray-400">{metric.label}</p>
+                        <p className="text-xs text-gray-400 dark:text-gray-500">{metric.period}</p>
                       </div>
                       <div className="text-right">
-                        <p className="text-xl font-bold text-gray-900">{metric.value}</p>
+                        <p className="text-xl font-bold text-gray-900 dark:text-white">{metric.value}</p>
                       </div>
                     </div>
                   ))}

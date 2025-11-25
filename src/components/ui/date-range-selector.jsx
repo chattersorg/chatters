@@ -107,21 +107,21 @@ export function DateRangeSelector({ value = "last7", onChange, className, preset
       <button
         onClick={() => setIsOpen(!isOpen)}
         className={cn(
-          "w-full sm:w-[200px] px-4 py-2 text-left text-sm font-medium bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors flex items-center justify-between focus:outline-none focus:ring-2 focus:ring-blue-500"
+          "w-full sm:w-[200px] px-4 py-2 text-left text-sm font-medium bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors flex items-center justify-between focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 text-gray-900 dark:text-white"
         )}
       >
         <div className="flex items-center gap-2">
-          <Calendar className="h-4 w-4 text-gray-500" />
+          <Calendar className="h-4 w-4 text-gray-500 dark:text-gray-400" />
           <span>{getDisplayText()}</span>
         </div>
         <ChevronDown className={cn(
-          "h-4 w-4 text-gray-500 transition-transform",
+          "h-4 w-4 text-gray-500 dark:text-gray-400 transition-transform",
           isOpen && "transform rotate-180"
         )} />
       </button>
 
       {isOpen && (
-        <div className="absolute z-50 mt-2 w-full sm:w-[200px] bg-white border border-gray-200 rounded-lg shadow-lg overflow-hidden">
+        <div className="absolute z-50 mt-2 w-full sm:w-[200px] bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg overflow-hidden">
           <div className="py-1">
             {presets.map((preset) => (
               <button
@@ -130,8 +130,8 @@ export function DateRangeSelector({ value = "last7", onChange, className, preset
                 className={cn(
                   "w-full px-4 py-2 text-sm text-left transition-colors",
                   activePreset === preset.value
-                    ? "bg-blue-50 text-blue-700 font-medium"
-                    : "text-gray-700 hover:bg-gray-50"
+                    ? "bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 font-medium"
+                    : "text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700"
                 )}
               >
                 {preset.label}

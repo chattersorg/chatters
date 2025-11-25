@@ -159,34 +159,34 @@ const FeedbackTimeSelection = ({ currentVenueId }) => {
   };
 
   return (
-    <div className="bg-white border border-gray-200 rounded-xl overflow-hidden">
-      <div className="px-6 py-4 border-b border-gray-100">
-        <h3 className="text-base font-semibold text-gray-900">Feedback Collection Hours</h3>
-        <p className="text-sm text-gray-500 mt-1">Set when customers can leave feedback</p>
+    <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl overflow-hidden">
+      <div className="px-6 py-4 border-b border-gray-100 dark:border-gray-800">
+        <h3 className="text-base font-semibold text-gray-900 dark:text-white">Feedback Collection Hours</h3>
+        <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">Set when customers can leave feedback</p>
       </div>
 
       <div className="p-6">
       {/* Compact table-like view */}
       <div className="space-y-2">
         {dayNames.map((day, dayIndex) => (
-          <div key={day} className="border border-gray-200 rounded-lg">
+          <div key={day} className="border border-gray-200 dark:border-gray-700 rounded-lg">
             {/* Day header row */}
-            <div className="flex items-center justify-between p-3 hover:bg-gray-50">
+            <div className="flex items-center justify-between p-3 hover:bg-gray-50 dark:hover:bg-gray-800">
               <div className="flex items-center space-x-3 flex-1">
                 <input
                   type="checkbox"
                   checked={feedbackHours[day].enabled}
                   onChange={(e) => updateFeedbackHours(day, 'enabled', e.target.checked)}
-                  className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                  className="w-4 h-4 text-blue-600 border-gray-300 dark:border-gray-600 rounded focus:ring-blue-500"
                 />
                 <div className="min-w-[60px]">
-                  <span className="text-sm font-medium text-gray-900">
+                  <span className="text-sm font-medium text-gray-900 dark:text-white">
                     {dayLabels[dayIndex]}
                   </span>
                 </div>
-                
+
                 {feedbackHours[day].enabled && (
-                  <div className="flex-1 text-sm text-gray-600">
+                  <div className="flex-1 text-sm text-gray-600 dark:text-gray-400">
                     {formatTimeRange(feedbackHours[day].periods)}
                   </div>
                 )}
@@ -197,14 +197,14 @@ const FeedbackTimeSelection = ({ currentVenueId }) => {
                   <>
                     <button
                       onClick={() => copyToAllDays(day)}
-                      className="p-1 text-blue-600 hover:text-blue-800 hover:bg-blue-50 rounded"
+                      className="p-1 text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 hover:bg-blue-50 dark:hover:bg-blue-900/30 rounded"
                       title="Copy to all days"
                     >
                       <Copy className="w-4 h-4" />
                     </button>
                     <button
                       onClick={() => toggleDayExpansion(day)}
-                      className="p-1 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded"
+                      className="p-1 text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded"
                       title={expandedDays[day] ? "Collapse" : "Expand"}
                     >
                       {expandedDays[day] ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
@@ -216,7 +216,7 @@ const FeedbackTimeSelection = ({ currentVenueId }) => {
 
             {/* Expanded time controls */}
             {feedbackHours[day].enabled && expandedDays[day] && (
-              <div className="border-t border-gray-200 p-3 bg-gray-50">
+              <div className="border-t border-gray-200 dark:border-gray-700 p-3 bg-gray-50 dark:bg-gray-800">
                 <div className="space-y-2">
                   {feedbackHours[day].periods.map((period, periodIndex) => (
                     <div key={periodIndex} className="flex items-center space-x-2">
@@ -224,20 +224,20 @@ const FeedbackTimeSelection = ({ currentVenueId }) => {
                         type="time"
                         value={period.start}
                         onChange={(e) => updateFeedbackHours(day, 'start', e.target.value, periodIndex)}
-                        className="px-2 py-1 border border-gray-300 rounded text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
+                        className="px-2 py-1 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900 text-gray-900 dark:text-white rounded text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
                       />
-                      <span className="text-gray-500 text-sm">to</span>
+                      <span className="text-gray-500 dark:text-gray-400 text-sm">to</span>
                       <input
                         type="time"
                         value={period.end}
                         onChange={(e) => updateFeedbackHours(day, 'end', e.target.value, periodIndex)}
-                        className="px-2 py-1 border border-gray-300 rounded text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
+                        className="px-2 py-1 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900 text-gray-900 dark:text-white rounded text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
                       />
-                      
+
                       {feedbackHours[day].periods.length > 1 && (
                         <button
                           onClick={() => removePeriod(day, periodIndex)}
-                          className="p-1 text-red-500 hover:text-red-700 hover:bg-red-50 rounded"
+                          className="p-1 text-red-500 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300 hover:bg-red-50 dark:hover:bg-red-900/30 rounded"
                           title="Remove period"
                         >
                           <X className="w-4 h-4" />
@@ -245,10 +245,10 @@ const FeedbackTimeSelection = ({ currentVenueId }) => {
                       )}
                     </div>
                   ))}
-                  
+
                   <button
                     onClick={() => addPeriod(day)}
-                    className="flex items-center space-x-1 text-blue-600 hover:text-blue-800 text-sm px-2 py-1 hover:bg-blue-50 rounded transition-colors"
+                    className="flex items-center space-x-1 text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 text-sm px-2 py-1 hover:bg-blue-50 dark:hover:bg-blue-900/30 rounded transition-colors"
                   >
                     <Plus className="w-4 h-4" />
                     <span>Add break time</span>
@@ -270,7 +270,7 @@ const FeedbackTimeSelection = ({ currentVenueId }) => {
             });
             setFeedbackHours(allEnabled);
           }}
-          className="text-sm text-blue-600 hover:text-blue-800 px-3 py-1 border border-blue-200 rounded hover:bg-blue-50 transition-colors"
+          className="text-sm text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 px-3 py-1 border border-blue-200 dark:border-blue-800 rounded hover:bg-blue-50 dark:hover:bg-blue-900/30 transition-colors"
         >
           Enable All Days
         </button>
@@ -282,7 +282,7 @@ const FeedbackTimeSelection = ({ currentVenueId }) => {
             });
             setFeedbackHours(allDisabled);
           }}
-          className="text-sm text-gray-600 hover:text-gray-800 px-3 py-1 border border-gray-200 rounded hover:bg-gray-50 transition-colors"
+          className="text-sm text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-300 px-3 py-1 border border-gray-200 dark:border-gray-700 rounded hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
         >
           Disable All Days
         </button>
@@ -290,9 +290,9 @@ const FeedbackTimeSelection = ({ currentVenueId }) => {
       </div>
 
       {/* Save button and messages */}
-      <div className="px-6 py-4 border-t border-gray-100">
+      <div className="px-6 py-4 border-t border-gray-100 dark:border-gray-800">
         <div className="flex items-center justify-between">
-          <div className="text-xs text-gray-500">Changes are saved per venue</div>
+          <div className="text-xs text-gray-500 dark:text-gray-400">Changes are saved per venue</div>
           <Button
             variant="primary"
             onClick={saveFeedbackHours}
@@ -305,8 +305,8 @@ const FeedbackTimeSelection = ({ currentVenueId }) => {
         {message && (
           <div className={`text-xs p-2 rounded-lg mt-3 ${
             message.includes('success')
-              ? 'text-green-700 bg-green-50 border border-green-200'
-              : 'text-red-700 bg-red-50 border border-red-200'
+              ? 'text-green-700 dark:text-green-300 bg-green-50 dark:bg-green-900/30 border border-green-200 dark:border-green-800'
+              : 'text-red-700 dark:text-red-300 bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-800'
           }`}>
             {message}
           </div>

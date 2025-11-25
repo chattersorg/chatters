@@ -142,8 +142,8 @@ const ProfileTab = ({
           {/* Name Fields */}
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 items-start">
             <div className="lg:col-span-1">
-              <label className="block text-sm font-medium text-gray-700 mb-1">Name</label>
-              <p className="text-xs text-gray-500">Your display name</p>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Name</label>
+              <p className="text-xs text-gray-500 dark:text-gray-400">Your display name</p>
             </div>
             <div className="lg:col-span-2">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -152,14 +152,14 @@ const ProfileTab = ({
                   placeholder="First name"
                   value={firstName}
                   onChange={(e) => setFirstName(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 text-sm dark:bg-gray-800 dark:text-white dark:placeholder-gray-400"
                 />
                 <input
                   type="text"
                   placeholder="Last name"
                   value={lastName}
                   onChange={(e) => setLastName(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 text-sm dark:bg-gray-800 dark:text-white dark:placeholder-gray-400"
                 />
               </div>
             </div>
@@ -168,8 +168,8 @@ const ProfileTab = ({
           {/* Email Field */}
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 items-start">
             <div className="lg:col-span-1">
-              <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
-              <p className="text-xs text-gray-500">Your login email address</p>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Email</label>
+              <p className="text-xs text-gray-500 dark:text-gray-400">Your login email address</p>
             </div>
             <div className="lg:col-span-2">
               <div className="flex gap-2">
@@ -178,7 +178,7 @@ const ProfileTab = ({
                   placeholder="your@example.com"
                   value={email}
                   disabled
-                  className="flex-1 px-3 py-2 border border-gray-300 rounded-lg bg-gray-50 text-gray-500 cursor-not-allowed text-sm"
+                  className="flex-1 px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-lg bg-gray-50 dark:bg-gray-800 text-gray-500 dark:text-gray-400 cursor-not-allowed text-sm"
                 />
                 <Button
                   variant="primary"
@@ -189,9 +189,9 @@ const ProfileTab = ({
               </div>
 
               {showEmailChange && (
-                <div className="mt-3 p-4 bg-blue-50 border border-blue-200 rounded-lg space-y-3">
-                  <p className="text-sm text-blue-900 font-medium">Enter your new email address</p>
-                  <p className="text-xs text-blue-700">
+                <div className="mt-3 p-4 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg space-y-3">
+                  <p className="text-sm text-blue-900 dark:text-blue-300 font-medium">Enter your new email address</p>
+                  <p className="text-xs text-blue-700 dark:text-blue-300">
                     We'll send a verification link to the new email address. Your current email will remain active until you verify the new one.
                   </p>
                   <div className="flex gap-2">
@@ -200,7 +200,7 @@ const ProfileTab = ({
                       placeholder="new@example.com"
                       value={newEmail}
                       onChange={(e) => setNewEmail(e.target.value)}
-                      className="flex-1 px-3 py-2 border border-blue-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
+                      className="flex-1 px-3 py-2 border border-blue-300 dark:border-blue-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 text-sm dark:bg-gray-800 dark:text-white dark:placeholder-gray-400"
                     />
                     <Button
                       variant="primary"
@@ -216,7 +216,7 @@ const ProfileTab = ({
                       setNewEmail('');
                       setEmailChangeMessage('');
                     }}
-                    className="text-sm text-gray-600 hover:text-gray-800"
+                    className="text-sm text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200"
                   >
                     Cancel
                   </button>

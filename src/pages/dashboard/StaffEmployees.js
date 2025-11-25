@@ -183,7 +183,7 @@ const StaffEmployeesPage = () => {
     return (
       <div className="space-y-6">
         <div className="flex items-center justify-center py-12">
-          <span className="text-gray-500 text-sm lg:text-base">Loading venues...</span>
+          <span className="text-gray-500 dark:text-gray-400 text-sm lg:text-base">Loading venues...</span>
         </div>
       </div>
     );
@@ -197,10 +197,10 @@ const StaffEmployeesPage = () => {
       >
         {loading && (
           <div className="flex items-center justify-center py-12">
-            <span className="text-gray-500 text-sm lg:text-base">Loading staff data...</span>
+            <span className="text-gray-500 dark:text-gray-400 text-sm lg:text-base">Loading staff data...</span>
           </div>
         )}
-        
+
         {!loading && <EmployeesTab {...tabProps} />}
 
         {message && (

@@ -226,7 +226,7 @@ const TableComponent = ({
   };
 
   const getShapeClasses = () => {
-    const base = 'text-gray-800 bg-white flex items-center justify-center font-semibold border border-gray-300 shadow-sm transition-all duration-200';
+    const base = 'text-gray-800 dark:text-gray-100 bg-white dark:bg-gray-700 flex items-center justify-center font-semibold border border-gray-300 dark:border-gray-600 shadow-sm transition-all duration-200';
     const isCircle = table.shape === 'circle';
     return `${base} ${isCircle ? 'rounded-full' : 'rounded-lg'}`;
   };
@@ -294,7 +294,7 @@ const TableComponent = ({
 
           {/* Hover outline */}
           {showHandles && (
-            <div className="absolute inset-0 border-2 border-dashed border-blue-300 rounded-lg pointer-events-none" />
+            <div className="absolute inset-0 border-2 border-dashed border-blue-300 dark:border-blue-500 rounded-lg pointer-events-none" />
           )}
         </>
       )}

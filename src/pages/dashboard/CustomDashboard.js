@@ -400,13 +400,13 @@ const CustomDashboard = () => {
       <div className="space-y-6">
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900">Dashboard Views</h1>
-            <p className="text-gray-600 mt-1">Loading...</p>
+            <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Dashboard Views</h1>
+            <p className="text-gray-600 dark:text-gray-400 mt-1">Loading...</p>
           </div>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {[...Array(3)].map((_, i) => (
-            <div key={i} className="bg-white rounded-xl p-6 border border-gray-200 animate-pulse h-48" />
+            <div key={i} className="bg-white dark:bg-gray-900 rounded-xl p-6 border border-gray-200 dark:border-gray-800 animate-pulse h-48" />
           ))}
         </div>
       </div>
@@ -418,12 +418,12 @@ const CustomDashboard = () => {
       {/* Header with View Tabs and Save Button */}
       <div className="flex flex-col gap-4">
         <div className="flex items-center justify-between">
-          <h1 className="text-3xl font-bold text-gray-900">Dashboard Views</h1>
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Dashboard Views</h1>
           <div className="flex items-center gap-2">
             {hasUnsavedChanges && (
               <button
                 onClick={handleDiscardChanges}
-                className="px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-lg transition-colors flex items-center gap-2"
+                className="px-4 py-2 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors flex items-center gap-2"
               >
                 <X className="w-4 h-4" />
                 Discard
@@ -435,7 +435,7 @@ const CustomDashboard = () => {
               className={`px-4 py-2 rounded-lg transition-colors flex items-center gap-2 ${
                 hasUnsavedChanges
                   ? 'bg-blue-600 text-white hover:bg-blue-700'
-                  : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                  : 'bg-gray-300 dark:bg-gray-700 text-gray-500 dark:text-gray-400 cursor-not-allowed'
               }`}
             >
               <Save className="w-4 h-4" />
@@ -451,8 +451,8 @@ const CustomDashboard = () => {
               key={view.id}
               className={`flex items-center gap-2 px-4 py-2 rounded-lg border-2 transition-all ${
                 currentView?.id === view.id
-                  ? 'border-blue-500 bg-blue-50 text-blue-700'
-                  : 'border-gray-200 hover:border-gray-300 text-gray-700'
+                  ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400'
+                  : 'border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600 text-gray-700 dark:text-gray-300'
               }`}
             >
               {isRenamingView === view.id ? (
@@ -466,7 +466,7 @@ const CustomDashboard = () => {
                     if (e.key === 'Escape') setIsRenamingView(null);
                   }}
                   autoFocus
-                  className="w-32 px-2 py-1 text-sm border border-blue-500 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-32 px-2 py-1 text-sm border border-blue-500 bg-white dark:bg-gray-800 text-gray-900 dark:text-white rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
               ) : (
                 <>
@@ -481,7 +481,7 @@ const CustomDashboard = () => {
                       setIsRenamingView(view.id);
                       setRenameValue(view.name);
                     }}
-                    className="p-1 hover:bg-white rounded transition-colors"
+                    className="p-1 hover:bg-white dark:hover:bg-gray-700 rounded transition-colors"
                     title="Rename view"
                   >
                     <Edit2 className="w-3 h-3" />
@@ -489,7 +489,7 @@ const CustomDashboard = () => {
                   {views.length > 1 && (
                     <button
                       onClick={() => handleDeleteView(view.id)}
-                      className="p-1 hover:bg-red-100 rounded transition-colors text-red-600"
+                      className="p-1 hover:bg-red-100 dark:hover:bg-red-900/30 rounded transition-colors text-red-600 dark:text-red-400"
                       title="Delete view"
                     >
                       <Trash2 className="w-3 h-3" />
@@ -501,7 +501,7 @@ const CustomDashboard = () => {
           ))}
           <button
             onClick={handleCreateView}
-            className="flex items-center gap-2 px-4 py-2 border-2 border-dashed border-gray-300 rounded-lg hover:border-blue-400 hover:bg-blue-50 transition-all text-gray-600 hover:text-blue-600"
+            className="flex items-center gap-2 px-4 py-2 border-2 border-dashed border-gray-300 dark:border-gray-700 rounded-lg hover:border-blue-400 dark:hover:border-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/30 transition-all text-gray-600 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400"
           >
             <Plus className="w-4 h-4" />
             New View
@@ -509,7 +509,7 @@ const CustomDashboard = () => {
         </div>
 
         {hasUnsavedChanges && (
-          <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3 flex items-center gap-2 text-sm text-yellow-800">
+          <div className="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg p-3 flex items-center gap-2 text-sm text-yellow-800 dark:text-yellow-300">
             <LayoutDashboard className="w-4 h-4" />
             You have unsaved changes. Click "Save Changes" to persist your updates.
           </div>
@@ -518,13 +518,13 @@ const CustomDashboard = () => {
 
       {/* Empty State */}
       {draftTiles.length === 0 && (
-        <div className="bg-gradient-to-br from-blue-50 to-purple-50 rounded-xl p-12 text-center border-2 border-dashed border-blue-200">
+        <div className="bg-gradient-to-br from-blue-50 to-purple-50 dark:from-blue-900/20 dark:to-purple-900/20 rounded-xl p-12 text-center border-2 border-dashed border-blue-200 dark:border-blue-800">
           <div className="max-w-md mx-auto">
-            <Settings className="w-16 h-16 text-blue-500 mx-auto mb-4" />
-            <h2 className="text-2xl font-bold text-gray-900 mb-2">
+            <Settings className="w-16 h-16 text-blue-500 dark:text-blue-400 mx-auto mb-4" />
+            <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
               Build Your {currentView?.name}
             </h2>
-            <p className="text-gray-600 mb-6">
+            <p className="text-gray-600 dark:text-gray-400 mb-6">
               Add metric tiles to track your most important data.
             </p>
             <button
@@ -554,7 +554,7 @@ const CustomDashboard = () => {
             >
               {/* Drag Handle */}
               <div className="absolute -left-3 top-1/2 -translate-y-1/2 z-10 opacity-0 group-hover:opacity-100 transition-opacity cursor-grab active:cursor-grabbing">
-                <div className="bg-gray-700 text-white p-2 rounded-lg shadow-lg">
+                <div className="bg-gray-700 dark:bg-gray-600 text-white p-2 rounded-lg shadow-lg">
                   <GripVertical className="w-4 h-4" />
                 </div>
               </div>
@@ -600,16 +600,16 @@ const CustomDashboard = () => {
           {/* Add Tile Button */}
           <button
             onClick={handleAddTile}
-            className="bg-white rounded-xl shadow-sm p-6 border-2 border-dashed border-gray-300 hover:border-blue-400 hover:bg-blue-50 transition-all flex flex-col items-center justify-center gap-3 min-h-[200px] group"
+            className="bg-white dark:bg-gray-900 rounded-xl shadow-sm p-6 border-2 border-dashed border-gray-300 dark:border-gray-700 hover:border-blue-400 dark:hover:border-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-all flex flex-col items-center justify-center gap-3 min-h-[200px] group"
           >
-            <div className="p-3 bg-gray-100 group-hover:bg-blue-100 rounded-full transition-colors">
-              <Plus className="w-6 h-6 text-gray-600 group-hover:text-blue-600 transition-colors" />
+            <div className="p-3 bg-gray-100 dark:bg-gray-800 group-hover:bg-blue-100 dark:group-hover:bg-blue-900/30 rounded-full transition-colors">
+              <Plus className="w-6 h-6 text-gray-600 dark:text-gray-400 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors" />
             </div>
             <div className="text-center">
-              <p className="font-medium text-gray-700 group-hover:text-blue-700 transition-colors">
+              <p className="font-medium text-gray-700 dark:text-gray-300 group-hover:text-blue-700 dark:group-hover:text-blue-400 transition-colors">
                 Add Metric Tile
               </p>
-              <p className="text-sm text-gray-500 mt-1">
+              <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
                 Track more metrics
               </p>
             </div>
