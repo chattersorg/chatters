@@ -66,10 +66,10 @@ export const articles = {
     category: 'Kiosk Mode',
     title: 'Setting Up Your Floor Plan'
   },
-  'alert-colors-explained': {
+  'alert-colours-explained': {
     component: UnderstandingKioskMode, // Placeholder
     category: 'Kiosk Mode',
-    title: 'Alert Colors Explained'
+    title: 'Alert Colours Explained'
   },
   'staff-training-kiosk': {
     component: UnderstandingKioskMode, // Placeholder

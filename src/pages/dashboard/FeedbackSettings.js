@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../../utils/supabase';
-import { ChartCard } from '../../components/dashboard/layout/ModernCard';
 import usePageTitle from '../../hooks/usePageTitle';
 import { useVenue } from '../../context/VenueContext';
 import FeedbackTimeSelection from '../../components/dashboard/settings/venuetabcomponents/FeedbackTimeSelection';
+import { Button } from '../../components/ui/button';
+import { RefreshCw } from 'lucide-react';
 
 const FeedbackSettings = () => {
   usePageTitle('Feedback Settings');
@@ -19,7 +20,7 @@ const FeedbackSettings = () => {
 
   // Session Timeout state
   const [sessionTimeoutHours, setSessionTimeoutHours] = useState(2);
-  const [selectedTimeoutHours, setSelectedTimeoutHours] = useState(2); // For UI state before save
+  const [selectedTimeoutHours, setSelectedTimeoutHours] = useState(2);
   const [sessionTimeoutLoading, setSessionTimeoutLoading] = useState(false);
   const [sessionTimeoutMessage, setSessionTimeoutMessage] = useState('');
 
@@ -35,7 +36,6 @@ const FeedbackSettings = () => {
   const [coResolverLoading, setCoResolverLoading] = useState(false);
   const [coResolverMessage, setCoResolverMessage] = useState('');
 
-  // Fetch data on component mount
   useEffect(() => {
     if (!venueId) return;
     fetchFeedbackSettings();
@@ -69,34 +69,28 @@ const FeedbackSettings = () => {
     }
   };
 
-  // Regenerate Google Review URL
   const regenerateGoogleUrl = () => {
     if (placeId) {
       const generatedUrl = `https://search.google.com/local/writereview?placeid=${placeId}`;
       setGoogleReviewLink(generatedUrl);
-      setReviewLinksMessage('Google review URL regenerated! Click "Save Review Links" to save.');
+      setReviewLinksMessage('Google review URL regenerated! Click "Save" to save.');
     } else {
       setReviewLinksMessage('No Google Place ID found. Please link your venue in Settings > Integrations first.');
     }
   };
 
-  // Regenerate TripAdvisor URL
   const regenerateTripAdvisorUrl = () => {
     if (tripadvisorLocationId) {
-      // TripAdvisor location ID format is just the numeric ID (e.g., "26229914")
-      // The write review URL uses format: UserReviewEdit-d{location_id}
       const generatedUrl = `https://www.tripadvisor.com/UserReviewEdit-d${tripadvisorLocationId}`;
       setTripadvisorLink(generatedUrl);
-      setReviewLinksMessage('TripAdvisor review URL regenerated! Click "Save Review Links" to save.');
+      setReviewLinksMessage('TripAdvisor review URL regenerated! Click "Save" to save.');
     } else {
       setReviewLinksMessage('No TripAdvisor Location ID found. Please link your venue in Settings > Integrations first.');
     }
   };
 
-  // Save review links
   const saveReviewLinks = async () => {
     if (!venueId) return;
-
     setReviewLinksLoading(true);
     setReviewLinksMessage('');
 
@@ -109,10 +103,7 @@ const FeedbackSettings = () => {
         })
         .eq('id', venueId);
 
-      if (error) {
-        throw error;
-      }
-
+      if (error) throw error;
       setReviewLinksMessage('Review links updated successfully!');
     } catch (error) {
       console.error('Error updating review links:', error);
@@ -122,10 +113,8 @@ const FeedbackSettings = () => {
     }
   };
 
-  // Save session timeout
   const saveSessionTimeout = async () => {
     if (!venueId) return;
-
     setSessionTimeoutLoading(true);
     setSessionTimeoutMessage('');
 
@@ -137,27 +126,22 @@ const FeedbackSettings = () => {
         .select();
 
       if (error) throw error;
-
       if (count === 0 || !data || data.length === 0) {
         throw new Error('No rows updated. You may not have permission to update this venue.');
       }
 
-      // Update the stored value to match the selected value
       setSessionTimeoutHours(selectedTimeoutHours);
       setSessionTimeoutMessage('Session timeout updated successfully!');
     } catch (error) {
       console.error('Error saving session timeout:', error);
-      const errorDetails = error.code ? `Error ${error.code}: ${error.message}` : error.message;
-      setSessionTimeoutMessage(`Failed to save session timeout: ${errorDetails}. Please contact support with this error code.`);
+      setSessionTimeoutMessage(`Failed to save session timeout: ${error.message}`);
     } finally {
       setSessionTimeoutLoading(false);
     }
   };
 
-  // Save NPS settings
   const saveNPSSettings = async () => {
     if (!venueId) return;
-
     setNpsLoading(true);
     setNpsMessage('');
 
@@ -172,7 +156,6 @@ const FeedbackSettings = () => {
         .eq('id', venueId);
 
       if (error) throw error;
-
       setNpsMessage('NPS settings updated successfully!');
     } catch (error) {
       console.error('Error saving NPS settings:', error);
@@ -182,23 +165,18 @@ const FeedbackSettings = () => {
     }
   };
 
-  // Save Co-resolver settings
   const saveCoResolverSettings = async () => {
     if (!venueId) return;
-
     setCoResolverLoading(true);
     setCoResolverMessage('');
 
     try {
       const { error } = await supabase
         .from('venues')
-        .update({
-          enable_co_resolving: enableCoResolving
-        })
+        .update({ enable_co_resolving: enableCoResolving })
         .eq('id', venueId);
 
       if (error) throw error;
-
       setCoResolverMessage('Co-resolver settings updated successfully!');
     } catch (error) {
       console.error('Error saving co-resolver settings:', error);
@@ -208,268 +186,189 @@ const FeedbackSettings = () => {
     }
   };
 
-  if (!venueId) {
-    return null;
-  }
+  if (!venueId) return null;
+
+  // Reusable card component
+  const SettingsCard = ({ title, description, children, onSave, loading, message, saveLabel = 'Save' }) => (
+    <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl overflow-hidden">
+      <div className="px-6 py-4 border-b border-gray-100 dark:border-gray-800">
+        <h3 className="text-base font-semibold text-gray-900 dark:text-white">{title}</h3>
+        <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">{description}</p>
+      </div>
+      <div className="p-6">
+        {children}
+      </div>
+      <div className="px-6 py-4 border-t border-gray-100 dark:border-gray-800">
+        <div className="flex items-center justify-between">
+          <div className="text-xs text-gray-500 dark:text-gray-400">
+            Changes are saved per venue
+          </div>
+          <Button
+            variant="primary"
+            onClick={onSave}
+            loading={loading}
+          >
+            {loading ? 'Saving...' : saveLabel}
+          </Button>
+        </div>
+        {message && (
+          <div className={`text-xs p-2 rounded-lg mt-3 ${
+            message.includes('success') || message.includes('regenerated')
+              ? 'text-green-700 dark:text-green-300 bg-green-50 dark:bg-green-900/30 border border-green-200 dark:border-green-800'
+              : 'text-red-700 dark:text-red-300 bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-800'
+          }`}>
+            {message}
+          </div>
+        )}
+      </div>
+    </div>
+  );
 
   return (
     <div className="space-y-6">
-      <ChartCard
-        title="Feedback Settings"
-        subtitle="Configure review platform links, session timeout, feedback collection hours, and co-resolver feature"
+      {/* Page Header */}
+      <div className="mb-2">
+        <h1 className="text-2xl font-semibold text-gray-900 dark:text-white">Feedback Settings</h1>
+        <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">Configure how feedback is collected and processed for your venue</p>
+      </div>
+
+      {/* Review Platform Links */}
+      <SettingsCard
+        title="Review Platform Links"
+        description="Direct satisfied customers to leave positive reviews"
+        onSave={saveReviewLinks}
+        loading={reviewLinksLoading}
+        message={reviewLinksMessage}
       >
-        <div className="space-y-8">
-          {/* Review Platform Links Section */}
-          <div>
-            <div className="mb-6">
-              <h3 className="text-lg font-semibold text-gray-900">Review Platform Links</h3>
-              <p className="text-sm text-gray-500 mt-1">Direct satisfied customers to leave positive reviews</p>
-            </div>
-            <div className="space-y-6">
-              {/* TripAdvisor */}
-              <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 items-start">
-            <div className="lg:col-span-1">
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                TripAdvisor
-              </label>
-              <p className="text-xs text-gray-500">Your TripAdvisor review page</p>
-            </div>
-            <div className="lg:col-span-2 space-y-2">
-              <div className="flex gap-2">
-                <input
-                  type="url"
-                  placeholder="https://www.tripadvisor.com/your-venue"
-                  value={tripadvisorLink}
-                  onChange={(e) => setTripadvisorLink(e.target.value)}
-                  className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
-                />
-                <button
-                  onClick={regenerateTripAdvisorUrl}
-                  disabled={!tripadvisorLocationId}
-                  className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors duration-200 text-sm font-medium whitespace-nowrap disabled:opacity-50 disabled:cursor-not-allowed"
-                  title={tripadvisorLocationId ? "Generate TripAdvisor review URL" : "Link venue in Integrations first"}
-                >
-                  Regenerate Feedback URL
-                </button>
-              </div>
-              {tripadvisorLink && tripadvisorLink.includes('tripadvisor.com/UserReviewEdit') && (
-                <p className="text-xs text-green-600 mt-1 flex items-center">
-                  <svg className="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
-                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                  </svg>
-                  Generated from TripAdvisor integration
-                </p>
-              )}
-              {!tripadvisorLocationId && (
-                <p className="text-xs text-amber-600">
-                  Link your TripAdvisor venue in Settings → Integrations to enable URL generation
-                </p>
-              )}
-            </div>
-          </div>
-
+        <div className="space-y-6">
           {/* Google Reviews */}
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 items-start">
-            <div className="lg:col-span-1">
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Google Reviews
-              </label>
-              <p className="text-xs text-gray-500">Your Google Business review link</p>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              Google Reviews
+            </label>
+            <div className="flex gap-2">
+              <input
+                type="url"
+                placeholder="https://search.google.com/local/writereview?placeid=..."
+                value={googleReviewLink}
+                onChange={(e) => setGoogleReviewLink(e.target.value)}
+                className="flex-1 px-3 py-2 border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
+              />
+              <Button
+                variant="outline"
+                onClick={regenerateGoogleUrl}
+                disabled={!placeId}
+                title={placeId ? "Generate Google review URL" : "Link venue in Integrations first"}
+              >
+                <RefreshCw className="w-4 h-4" />
+                Regenerate
+              </Button>
             </div>
-            <div className="lg:col-span-2 space-y-2">
-              <div className="flex gap-2">
-                <input
-                  type="url"
-                  placeholder="https://search.google.com/local/writereview?placeid=..."
-                  value={googleReviewLink}
-                  onChange={(e) => setGoogleReviewLink(e.target.value)}
-                  className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
-                />
-                <button
-                  onClick={regenerateGoogleUrl}
-                  disabled={!placeId}
-                  className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors duration-200 text-sm font-medium whitespace-nowrap disabled:opacity-50 disabled:cursor-not-allowed"
-                  title={placeId ? "Generate Google review URL" : "Link venue in Integrations first"}
-                >
-                  Regenerate Feedback URL
-                </button>
-              </div>
-              {googleReviewLink && googleReviewLink.includes('writereview?placeid=') && (
-                <p className="text-xs text-green-600 mt-1 flex items-center">
-                  <svg className="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
-                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                  </svg>
-                  Generated from Google Places integration
-                </p>
-              )}
-              {!placeId && (
-                <p className="text-xs text-amber-600">
-                  Link your Google Business venue in Settings → Integrations to enable URL generation
-                </p>
-              )}
-            </div>
+            {!placeId && (
+              <p className="text-xs text-amber-600 mt-2">
+                Link your Google Business venue in Settings → Integrations to enable URL generation
+              </p>
+            )}
           </div>
 
-          {/* Save Action */}
-          <div className="border-t border-gray-100 pt-4">
-            <div className="flex items-center justify-between">
-              <div className="text-xs text-gray-500">
-                Update review links to guide satisfied customers
-              </div>
-              <button
-                onClick={saveReviewLinks}
-                disabled={reviewLinksLoading}
-                className="bg-custom-green text-white px-6 py-2 rounded-lg hover:bg-custom-green-hover transition-colors duration-200 text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+          {/* TripAdvisor */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              TripAdvisor
+            </label>
+            <div className="flex gap-2">
+              <input
+                type="url"
+                placeholder="https://www.tripadvisor.com/your-venue"
+                value={tripadvisorLink}
+                onChange={(e) => setTripadvisorLink(e.target.value)}
+                className="flex-1 px-3 py-2 border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
+              />
+              <Button
+                variant="outline"
+                onClick={regenerateTripAdvisorUrl}
+                disabled={!tripadvisorLocationId}
+                title={tripadvisorLocationId ? "Generate TripAdvisor review URL" : "Link venue in Integrations first"}
               >
-                {reviewLinksLoading ? 'Saving...' : 'Save Review Links'}
-              </button>
+                <RefreshCw className="w-4 h-4" />
+                Regenerate
+              </Button>
             </div>
-            {reviewLinksMessage && (
-              <div className={`text-xs p-2 rounded-lg mt-3 ${
-                reviewLinksMessage.includes('success') || reviewLinksMessage.includes('regenerated')
-                  ? 'text-green-700 bg-green-50 border border-green-200'
-                  : 'text-red-700 bg-red-50 border border-red-200'
-              }`}>
-                {reviewLinksMessage}
-              </div>
+            {!tripadvisorLocationId && (
+              <p className="text-xs text-amber-600 mt-2">
+                Link your TripAdvisor venue in Settings → Integrations to enable URL generation
+              </p>
             )}
           </div>
         </div>
-        </div>
+      </SettingsCard>
 
-        {/* Two Column Layout for Session Timeout and Collection Hours */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {/* Left Column - Session Timeout Settings */}
-          <div className="bg-gray-50 border border-gray-200 rounded-lg p-6">
-              <div className="mb-4">
-                <h3 className="text-lg font-semibold text-gray-900">Session Timeout</h3>
-                <p className="text-sm text-gray-500">Configure how long feedback sessions remain visible in the kiosk view</p>
-              </div>
-          <div className="space-y-6">
-            <div className="space-y-4">
+      {/* Session Timeout */}
+      <SettingsCard
+        title="Session Timeout"
+        description="How long feedback stays visible in kiosk view"
+        onSave={saveSessionTimeout}
+        loading={sessionTimeoutLoading}
+        message={sessionTimeoutMessage}
+      >
+        <div className="space-y-3">
+          {[1, 2, 4, 6, 8, 12, 24].map((hours) => (
+            <label key={hours} className="flex items-center cursor-pointer">
+              <input
+                type="radio"
+                name="sessionTimeout"
+                value={hours}
+                checked={selectedTimeoutHours === hours}
+                onChange={() => setSelectedTimeoutHours(hours)}
+                className="w-4 h-4 text-blue-600 border-gray-300 focus:ring-blue-500"
+              />
+              <span className="ml-3 text-sm text-gray-700">
+                {hours} hour{hours !== 1 ? 's' : ''}{hours === 2 ? ' (default)' : ''}
+              </span>
+            </label>
+          ))}
+        </div>
+      </SettingsCard>
+
+      {/* Feedback Collection Hours */}
+      <FeedbackTimeSelection currentVenueId={venueId} />
+
+      {/* NPS Settings */}
+      <SettingsCard
+        title="Net Promoter Score (NPS)"
+        description="Send automated follow-up emails to gather customer loyalty insights"
+        onSave={saveNPSSettings}
+        loading={npsLoading}
+        message={npsMessage}
+      >
+        <div className="space-y-6">
+          {/* Enable Toggle */}
+          <div className="flex items-center justify-between">
+            <div>
+              <label className="block text-sm font-medium text-gray-700">
+                Enable NPS Emails
+              </label>
+              <p className="text-xs text-gray-500 mt-1">Automatically send NPS surveys after visits</p>
+            </div>
+            <label className="relative inline-flex items-center cursor-pointer">
+              <input
+                type="checkbox"
+                checked={npsEnabled}
+                onChange={(e) => setNpsEnabled(e.target.checked)}
+                className="sr-only peer"
+              />
+              <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#2548CC]"></div>
+            </label>
+          </div>
+
+          {npsEnabled && (
+            <>
+              {/* Delay Hours */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Timeout Duration (Hours)
-                </label>
-                <p className="text-xs text-gray-500 mb-4">
-                  Feedback older than this will be filtered from kiosk view
-                </p>
-                
-                {/* Radio button options */}
-                <div className="space-y-3">
-                  {[1, 2, 4, 6, 8, 12, 24].map((hours) => (
-                    <label key={hours} className="flex items-center cursor-pointer">
-                      <input
-                        type="radio"
-                        name="sessionTimeout"
-                        value={hours}
-                        checked={selectedTimeoutHours === hours}
-                        onChange={() => setSelectedTimeoutHours(hours)}
-                        className="w-4 h-4 text-blue-600 border-gray-300 focus:ring-blue-500"
-                      />
-                      <span className="ml-3 text-sm text-gray-700">
-                        {hours} hour{hours !== 1 ? 's' : ''}{hours === 2 ? ' (default)' : ''}
-                      </span>
-                    </label>
-                  ))}
-                </div>
-                
-                <p className="text-xs text-gray-500 mt-3">
-                  Current setting: Feedback older than {sessionTimeoutHours} hour{sessionTimeoutHours !== 1 ? 's' : ''} will be hidden from staff kiosk
-                </p>
-                
-                {/* Show if changes are pending */}
-                {selectedTimeoutHours !== sessionTimeoutHours && (
-                  <div className="mt-2 p-2 bg-yellow-50 border border-yellow-200 rounded-lg">
-                    <p className="text-xs text-yellow-700">
-                      You have unsaved changes. Click "Save Settings" to apply the new timeout of {selectedTimeoutHours} hour{selectedTimeoutHours !== 1 ? 's' : ''}.
-                    </p>
-                  </div>
-                )}
-              </div>
-            </div>
-
-            {/* Save Action */}
-            <div className="border-t border-gray-100 pt-4">
-              <div className="flex flex-col space-y-2">
-                <button
-                  onClick={saveSessionTimeout}
-                  disabled={sessionTimeoutLoading || selectedTimeoutHours === sessionTimeoutHours}
-                  className="w-full bg-custom-green text-white px-6 py-2 rounded-lg hover:bg-custom-green-hover transition-colors duration-200 text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  {sessionTimeoutLoading ? 'Saving...' : 'Save Settings'}
-                </button>
-                <div className="text-xs text-gray-500 text-center">
-                  {selectedTimeoutHours === sessionTimeoutHours 
-                    ? 'Changes apply immediately to all staff devices' 
-                    : 'Click Save Settings to apply changes'}
-                </div>
-              </div>
-              {sessionTimeoutMessage && (
-                <div className={`text-xs p-2 rounded-lg mt-3 ${
-                  sessionTimeoutMessage.includes('success') 
-                    ? 'text-green-700 bg-green-50 border border-green-200' 
-                    : 'text-red-700 bg-red-50 border border-red-200'
-                }`}>
-                  {sessionTimeoutMessage}
-                </div>
-              )}
-            </div>
-          </div>
-          </div>
-
-          {/* Right Column - Feedback Collection Hours */}
-          <div className="bg-gray-50 border border-gray-200 rounded-lg p-6">
-              <div className="mb-4">
-                <h3 className="text-lg font-semibold text-gray-900">Feedback Collection Hours</h3>
-                <p className="text-sm text-gray-500">Set when customers can leave feedback during operating hours</p>
-              </div>
-              <FeedbackTimeSelection currentVenueId={venueId} />
-          </div>
-        </div>
-
-        {/* NPS Settings Section */}
-        <div className="border-t border-gray-200 mt-8 pt-8">
-          <div className="mb-6">
-            <h3 className="text-lg font-semibold text-gray-900">Net Promoter Score (NPS)</h3>
-            <p className="text-sm text-gray-500 mt-1">Send automated follow-up emails to gather customer loyalty insights</p>
-          </div>
-
-          <div className="space-y-6">
-            {/* Enable/Disable Toggle */}
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 items-start">
-              <div className="lg:col-span-1">
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Enable NPS Emails
-                </label>
-                <p className="text-xs text-gray-500">Automatically send NPS surveys after visits</p>
-              </div>
-              <div className="lg:col-span-2">
-                <label className="inline-flex items-center cursor-pointer">
-                  <input
-                    type="checkbox"
-                    checked={npsEnabled}
-                    onChange={(e) => setNpsEnabled(e.target.checked)}
-                    className="sr-only peer"
-                  />
-                  <div className="relative w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-green-600"></div>
-                  <span className="ms-3 text-sm font-medium text-gray-700">
-                    {npsEnabled ? 'Enabled' : 'Disabled'}
-                  </span>
-                </label>
-              </div>
-            </div>
-
-            {/* Delay Hours */}
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 items-start">
-              <div className="lg:col-span-1">
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-gray-700 mb-3">
                   Send Delay
                 </label>
-                <p className="text-xs text-gray-500">Hours after visit to send NPS email</p>
-              </div>
-              <div className="lg:col-span-2">
-                <div className="space-y-2">
+                <div className="flex gap-4">
                   {[12, 24, 36].map((hours) => (
                     <label key={hours} className="flex items-center cursor-pointer">
                       <input
@@ -480,175 +379,69 @@ const FeedbackSettings = () => {
                         onChange={() => setNpsDelayHours(hours)}
                         className="w-4 h-4 text-blue-600 border-gray-300 focus:ring-blue-500"
                       />
-                      <span className="ml-3 text-sm text-gray-700">
-                        {hours} hours {hours === 24 ? '(recommended)' : ''}
+                      <span className="ml-2 text-sm text-gray-700">
+                        {hours}h {hours === 24 ? '(recommended)' : ''}
                       </span>
                     </label>
                   ))}
                 </div>
               </div>
-            </div>
 
-            {/* NPS Question */}
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 items-start">
-              <div className="lg:col-span-1">
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+              {/* NPS Question */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                   NPS Question
                 </label>
-                <p className="text-xs text-gray-500">Customize the question shown to customers</p>
-              </div>
-              <div className="lg:col-span-2">
                 <textarea
                   value={npsQuestion}
                   onChange={(e) => setNpsQuestion(e.target.value)}
                   rows={2}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 dark:bg-gray-800 dark:text-white dark:placeholder-gray-400 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
                   placeholder="How likely are you to recommend us to a friend or colleague?"
                 />
               </div>
-            </div>
-
-            {/* Save Action */}
-            <div className="border-t border-gray-100 pt-4">
-              <div className="flex items-center justify-between">
-                <div className="text-xs text-gray-500">
-                  {npsEnabled
-                    ? 'Customers who provide email will receive NPS surveys'
-                    : 'Enable to start collecting NPS data'}
-                </div>
-                <button
-                  onClick={saveNPSSettings}
-                  disabled={npsLoading}
-                  className="bg-custom-green text-white px-6 py-2 rounded-lg hover:bg-custom-green-hover transition-colors duration-200 text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  {npsLoading ? 'Saving...' : 'Save NPS Settings'}
-                </button>
-              </div>
-              {npsMessage && (
-                <div className={`text-xs p-2 rounded-lg mt-3 ${
-                  npsMessage.includes('success')
-                    ? 'text-green-700 bg-green-50 border border-green-200'
-                    : 'text-red-700 bg-red-50 border border-red-200'
-                }`}>
-                  {npsMessage}
-                </div>
-              )}
-            </div>
-          </div>
+            </>
+          )}
         </div>
+      </SettingsCard>
 
-        {/* Co-Resolver Settings Section */}
-        <div className="border-t border-gray-200 mt-8 pt-8">
-          <div className="mb-6">
-            <h3 className="text-lg font-semibold text-gray-900">Co-Resolver Feature</h3>
-            <p className="text-sm text-gray-500 mt-1">Allow staff to assign a secondary team member who helped resolve feedback</p>
+      {/* Co-Resolver Settings */}
+      <SettingsCard
+        title="Co-Resolver Feature"
+        description="Allow staff to assign a secondary team member who helped resolve feedback"
+        onSave={saveCoResolverSettings}
+        loading={coResolverLoading}
+        message={coResolverMessage}
+      >
+        <div className="space-y-4">
+          {/* Enable Toggle */}
+          <div className="flex items-center justify-between">
+            <div>
+              <label className="block text-sm font-medium text-gray-700">
+                Enable Co-Resolvers
+              </label>
+              <p className="text-xs text-gray-500 mt-1">Allow selecting a second staff member when resolving feedback</p>
+            </div>
+            <label className="relative inline-flex items-center cursor-pointer">
+              <input
+                type="checkbox"
+                checked={enableCoResolving}
+                onChange={(e) => setEnableCoResolving(e.target.checked)}
+                className="sr-only peer"
+              />
+              <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#2548CC]"></div>
+            </label>
           </div>
 
-          <div className="space-y-6">
-            {/* Enable/Disable Toggle */}
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 items-start">
-              <div className="lg:col-span-1">
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Enable Co-Resolvers
-                </label>
-                <p className="text-xs text-gray-500">Allow selecting a second staff member when resolving feedback</p>
-              </div>
-              <div className="lg:col-span-2">
-                <label className="inline-flex items-center cursor-pointer">
-                  <input
-                    type="checkbox"
-                    checked={enableCoResolving}
-                    onChange={(e) => setEnableCoResolving(e.target.checked)}
-                    className="sr-only peer"
-                  />
-                  <div className="relative w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-green-600"></div>
-                  <span className="ms-3 text-sm font-medium text-gray-700">
-                    {enableCoResolving ? 'Enabled' : 'Disabled'}
-                  </span>
-                </label>
-                {enableCoResolving && (
-                  <div className="mt-3 bg-blue-50 border border-blue-200 rounded-lg p-4">
-                    <div className="flex items-start gap-3">
-                      <svg className="w-5 h-5 text-blue-500 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                      </svg>
-                      <div className="text-sm text-blue-800">
-                        <strong>Example:</strong> If John notices a guest's food issue and Sarah (the chef) makes new food, John can resolve the feedback and add Sarah as a co-resolver to recognize her contribution.
-                      </div>
-                    </div>
-                  </div>
-                )}
-              </div>
+          {enableCoResolving && (
+            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+              <p className="text-sm text-blue-800">
+                <strong>Example:</strong> If John notices a guest's food issue and Sarah (the chef) makes new food, John can resolve the feedback and add Sarah as a co-resolver to recognise her contribution.
+              </p>
             </div>
-
-            {/* How it Works */}
-            {enableCoResolving && (
-              <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 items-start bg-gray-50 border border-gray-200 rounded-lg p-4">
-                <div className="lg:col-span-1">
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    How It Works
-                  </label>
-                  <p className="text-xs text-gray-500">Co-resolver workflow in kiosk mode</p>
-                </div>
-                <div className="lg:col-span-2 space-y-3">
-                  <div className="flex items-start gap-2">
-                    <div className="w-6 h-6 bg-green-100 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
-                      <span className="text-xs font-bold text-green-700">1</span>
-                    </div>
-                    <p className="text-sm text-gray-700">Select the main resolver (required)</p>
-                  </div>
-                  <div className="flex items-start gap-2">
-                    <div className="w-6 h-6 bg-green-100 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
-                      <span className="text-xs font-bold text-green-700">2</span>
-                    </div>
-                    <p className="text-sm text-gray-700">Check "Add co-resolver" box (optional)</p>
-                  </div>
-                  <div className="flex items-start gap-2">
-                    <div className="w-6 h-6 bg-green-100 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
-                      <span className="text-xs font-bold text-green-700">3</span>
-                    </div>
-                    <p className="text-sm text-gray-700">Select a second staff member from the dropdown</p>
-                  </div>
-                  <div className="flex items-start gap-2">
-                    <div className="w-6 h-6 bg-green-100 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
-                      <span className="text-xs font-bold text-green-700">4</span>
-                    </div>
-                    <p className="text-sm text-gray-700">Both staff members get credit in reports and metrics</p>
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {/* Save Action */}
-            <div className="border-t border-gray-100 pt-4">
-              <div className="flex items-center justify-between">
-                <div className="text-xs text-gray-500">
-                  {enableCoResolving
-                    ? 'Staff can now assign co-resolvers in kiosk mode'
-                    : 'Enable to allow team collaboration tracking'}
-                </div>
-                <button
-                  onClick={saveCoResolverSettings}
-                  disabled={coResolverLoading}
-                  className="bg-custom-green text-white px-6 py-2 rounded-lg hover:bg-custom-green-hover transition-colors duration-200 text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  {coResolverLoading ? 'Saving...' : 'Save Co-Resolver Settings'}
-                </button>
-              </div>
-              {coResolverMessage && (
-                <div className={`text-xs p-2 rounded-lg mt-3 ${
-                  coResolverMessage.includes('success')
-                    ? 'text-green-700 bg-green-50 border border-green-200'
-                    : 'text-red-700 bg-red-50 border border-red-200'
-                }`}>
-                  {coResolverMessage}
-                </div>
-              )}
-            </div>
-          </div>
+          )}
         </div>
-      </div>
-      </ChartCard>
+      </SettingsCard>
     </div>
   );
 };

@@ -132,7 +132,7 @@ const SettingUpFirstVenue = () => {
             <div className="bg-white rounded-xl p-6 border-2 border-gray-200">
               <h4 className="font-semibold text-primary mb-3 text-lg">Venue Type</h4>
               <p className="text-gray-700 mb-4">
-                Select your venue type to customize your experience and question templates.
+                Select your venue type to customise your experience and question templates.
               </p>
               <div className="grid md:grid-cols-4 gap-3">
                 <div className="bg-gray-50 rounded-lg p-3 text-center">
@@ -235,7 +235,7 @@ const SettingUpFirstVenue = () => {
                 <div className="flex-1">
                   <h4 className="font-semibold text-primary mb-2 text-lg">Set Brand Colors</h4>
                   <p className="text-gray-700 text-sm">
-                    Customize the color scheme to match your brand identity.
+                    Customise the colour scheme to match your brand identity.
                   </p>
                 </div>
               </div>

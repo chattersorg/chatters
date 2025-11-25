@@ -185,6 +185,14 @@ const Footer = () => {
                 </a>
               </li>
               <li>
+                <a
+                  href="/security"
+                  className="hover:text-white transition-colors"
+                >
+                  Security
+                </a>
+              </li>
+              <li>
                 <button
                   onClick={() => {
                     localStorage.removeItem('chatters_cookie_consent');

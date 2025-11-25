@@ -15,6 +15,77 @@ export const config = {
   },
 };
 
+/**
+ * Check if event has already been processed (idempotency)
+ * Returns true if this is a duplicate event
+ */
+async function isEventProcessed(eventId) {
+  const { data } = await supabase
+    .from('stripe_webhook_events')
+    .select('id')
+    .eq('event_id', eventId)
+    .single();
+
+  return !!data;
+}
+
+/**
+ * Mark event as processed
+ */
+async function markEventProcessed(eventId, eventType, customerId = null) {
+  await supabase
+    .from('stripe_webhook_events')
+    .insert({
+      event_id: eventId,
+      event_type: eventType,
+      customer_id: customerId,
+      processed_at: new Date().toISOString()
+    });
+}
+
+/**
+ * Helper function to find account by Stripe customer ID
+ * Falls back to email lookup for checkout.session.completed (first-time customers)
+ */
+async function findAccountByCustomer(customerId, fallbackEmail = null) {
+  // First try to find by customer ID (most reliable)
+  if (customerId) {
+    const { data: account } = await supabase
+      .from('accounts')
+      .select('id, stripe_subscription_id, stripe_subscription_status')
+      .eq('stripe_customer_id', customerId)
+      .single();
+
+    if (account) {
+      return { account, source: 'customer_id' };
+    }
+  }
+
+  // Fall back to email lookup only for new customers (checkout.session.completed)
+  // This is needed because customer_id might not be saved yet for first-time checkouts
+  if (fallbackEmail) {
+    const { data: user } = await supabase
+      .from('users')
+      .select('account_id')
+      .ilike('email', fallbackEmail) // Case-insensitive email match
+      .single();
+
+    if (user?.account_id) {
+      const { data: account } = await supabase
+        .from('accounts')
+        .select('id, stripe_subscription_id, stripe_subscription_status')
+        .eq('id', user.account_id)
+        .single();
+
+      if (account) {
+        return { account, source: 'email' };
+      }
+    }
+  }
+
+  return { account: null, source: null };
+}
+
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
     return res.status(405).json({ message: 'Method not allowed' });
@@ -33,24 +104,26 @@ export default async function handler(req, res) {
     return res.status(400).json({ message: 'Webhook error' });
   }
 
+  // Idempotency check - skip if already processed
+  const isDuplicate = await isEventProcessed(event.id);
+  if (isDuplicate) {
+    console.log('Duplicate event, skipping:', event.id);
+    return res.status(200).json({ received: true, duplicate: true });
+  }
+
   // Handle different webhook events
   try {
     switch (event.type) {
       case 'checkout.session.completed': {
         const session = event.data.object;
-        const customerEmail = session.customer_email;
         const customerId = session.customer;
         const subscriptionId = session.subscription;
+        const customerEmail = session.customer_email;
 
-        // Find the user's account via email
-        const { data: user } = await supabase
-          .from('users')
-          .select('account_id')
-          .eq('email', customerEmail)
-          .single();
+        // Try customer_id first, then fall back to email for new customers
+        const { account, source } = await findAccountByCustomer(customerId, customerEmail);
 
-        if (user && user.account_id) {
-          // Update existing account with payment info
+        if (account) {
           const { error: updateError } = await supabase
             .from('accounts')
             .update({
@@ -61,12 +134,12 @@ export default async function handler(req, res) {
               stripe_subscription_status: 'active',
               account_type: 'paid'
             })
-            .eq('id', user.account_id);
+            .eq('id', account.id);
 
           if (updateError) throw updateError;
-          console.log('Account marked as paid:', user.account_id);
+          console.log(`Account marked as paid: ${account.id} (found via ${source})`);
         } else {
-          console.warn('No user found for email:', customerEmail);
+          console.warn('No account found for customer:', customerId, 'email:', customerEmail);
         }
         break;
       }
@@ -82,15 +155,16 @@ export default async function handler(req, res) {
           break;
         }
 
-        // Get current account to check if this is the active subscription
-        const { data: account } = await supabase
-          .from('accounts')
-          .select('stripe_subscription_id, stripe_subscription_status')
-          .eq('stripe_customer_id', customerId)
-          .single();
+        // Find account by customer ID
+        const { account } = await findAccountByCustomer(customerId);
+
+        if (!account) {
+          console.warn('No account found for customer:', customerId);
+          break;
+        }
 
         // Only update if this is the current subscription OR if we don't have one yet
-        if (!account || !account.stripe_subscription_id || account.stripe_subscription_id === subscription.id) {
+        if (!account.stripe_subscription_id || account.stripe_subscription_id === subscription.id) {
           const { error: updateError } = await supabase
             .from('accounts')
             .update({
@@ -98,15 +172,16 @@ export default async function handler(req, res) {
               stripe_subscription_id: subscription.id,
               stripe_subscription_status: subscription.status,
               subscription_period_end: new Date(subscription.current_period_end * 1000).toISOString(),
+              cancel_at_period_end: subscription.cancel_at_period_end || false,
               trial_ends_at: isActive ? null : undefined,
               account_type: isActive ? 'paid' : undefined
             })
             .eq('stripe_customer_id', customerId);
 
           if (updateError) throw updateError;
-          console.log('Subscription updated:', subscription.id, 'Status:', subscription.status, 'Next billing:', new Date(subscription.current_period_end * 1000).toISOString());
+          console.log('Subscription updated:', subscription.id, 'Status:', subscription.status, 'Cancel at period end:', subscription.cancel_at_period_end);
         } else {
-          console.log('Ignoring update for non-active subscription:', subscription.id, 'Current subscription:', account.stripe_subscription_id);
+          console.log('Ignoring update for non-active subscription:', subscription.id);
         }
         break;
       }
@@ -118,7 +193,7 @@ export default async function handler(req, res) {
 
         // Ignore canceled or ended subscriptions
         if (subscription.ended_at || subscription.canceled_at) {
-          console.log('Ignoring ended/canceled subscription creation:', subscription.id, 'Status:', subscription.status);
+          console.log('Ignoring ended/canceled subscription creation:', subscription.id);
           break;
         }
 
@@ -136,7 +211,7 @@ export default async function handler(req, res) {
           .eq('stripe_customer_id', customerId);
 
         if (updateError) throw updateError;
-        console.log('Subscription created:', subscription.id, 'Status:', subscription.status, 'Next billing:', new Date(subscription.current_period_end * 1000).toISOString());
+        console.log('Subscription created:', subscription.id, 'Status:', subscription.status);
         break;
       }
 
@@ -144,15 +219,16 @@ export default async function handler(req, res) {
         const subscription = event.data.object;
         const customerId = subscription.customer;
 
-        // Get current account to check if this is the active subscription
-        const { data: account } = await supabase
-          .from('accounts')
-          .select('stripe_subscription_id')
-          .eq('stripe_customer_id', customerId)
-          .single();
+        // Find account by customer ID
+        const { account } = await findAccountByCustomer(customerId);
+
+        if (!account) {
+          console.warn('No account found for customer:', customerId);
+          break;
+        }
 
         // Only mark as canceled if this is the current subscription
-        if (account && account.stripe_subscription_id === subscription.id) {
+        if (account.stripe_subscription_id === subscription.id) {
           const { error: updateError } = await supabase
             .from('accounts')
             .update({
@@ -173,10 +249,28 @@ export default async function handler(req, res) {
       case 'invoice.payment_failed': {
         const invoice = event.data.object;
         const customerId = invoice.customer;
+        const attemptCount = invoice.attempt_count || 1;
 
-        // Optionally: Set grace period or notify user
-        // For now, we'll let subscription.updated handle the status change
-        console.log('Payment failed for customer:', customerId);
+        // Get current account state
+        const { account } = await findAccountByCustomer(customerId);
+
+        // Update account to reflect payment failure with dunning tracking
+        const { error: updateError } = await supabase
+          .from('accounts')
+          .update({
+            stripe_subscription_status: 'past_due',
+            payment_failed_at: account?.payment_failed_at || new Date().toISOString(),
+            payment_failure_count: attemptCount,
+            last_payment_error: invoice.last_payment_error?.message || 'Payment failed'
+          })
+          .eq('stripe_customer_id', customerId);
+
+        if (updateError) {
+          console.error('Error updating account for payment failure:', updateError);
+        }
+
+        // Log for manual dunning follow-up (could integrate email service here)
+        console.log('Payment failed for customer:', customerId, 'Attempt:', attemptCount);
         break;
       }
 
@@ -185,10 +279,14 @@ export default async function handler(req, res) {
         const customerId = invoice.customer;
         const subscriptionId = invoice.subscription;
 
-        // Update account with payment success and subscription details if available
-        const updateData = { is_paid: true };
+        // Update account with payment success and clear dunning state
+        const updateData = {
+          is_paid: true,
+          payment_failed_at: null,
+          payment_failure_count: 0,
+          last_payment_error: null
+        };
 
-        // If this invoice is for a subscription, also update subscription details
         if (subscriptionId) {
           updateData.stripe_subscription_id = subscriptionId;
           updateData.stripe_subscription_status = 'active';
@@ -202,19 +300,13 @@ export default async function handler(req, res) {
           .eq('stripe_customer_id', customerId);
 
         if (updateError) throw updateError;
-        console.log('Payment succeeded for customer:', customerId, 'Subscription:', subscriptionId);
+        console.log('Payment succeeded for customer:', customerId);
         break;
       }
 
       case 'payment_intent.processing': {
         const paymentIntent = event.data.object;
-        const customerId = paymentIntent.customer;
-
-        // BACS Direct Debit payments will be in processing state for 3-5 days
-        console.log('Payment processing for customer:', customerId);
-        console.log('Payment method type:', paymentIntent.payment_method_types);
-
-        // Optionally: Send email notification that payment is being processed
+        console.log('Payment processing for customer:', paymentIntent.customer);
         break;
       }
 
@@ -222,14 +314,12 @@ export default async function handler(req, res) {
         const setupIntent = event.data.object;
         const customerId = setupIntent.customer;
 
-        // Payment method successfully added during trial
+        // Payment method successfully added
         console.log('Payment method added for customer:', customerId);
 
-        // Optionally: Update account to mark that payment method is on file
         const { error: updateError } = await supabase
           .from('accounts')
           .update({
-            // You could add a 'has_payment_method' boolean column if you want
             updated_at: new Date().toISOString()
           })
           .eq('stripe_customer_id', customerId);
@@ -240,8 +330,6 @@ export default async function handler(req, res) {
 
       case 'customer.updated': {
         const customer = event.data.object;
-
-        // Customer details updated (e.g., payment method changed)
         console.log('Customer updated:', customer.id);
         break;
       }
@@ -249,6 +337,9 @@ export default async function handler(req, res) {
       default:
         console.log('Unhandled event type:', event.type);
     }
+
+    // Mark event as processed for idempotency
+    await markEventProcessed(event.id, event.type, event.data.object?.customer);
 
     res.status(200).json({ received: true });
   } catch (err) {

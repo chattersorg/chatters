@@ -7,6 +7,7 @@ import { supabase } from './utils/supabase';
 import AdminFrame from './pages/admin/AdminFrame';
 import AdminAccountsList from './pages/admin/AdminAccountsList';
 import AdminAccountDetail from './pages/admin/AdminAccountDetail';
+import AdminCreateAccount from './pages/admin/AdminCreateAccount';
 // Keep old admin for now
 import EnhancedAdminDashboard from './pages/admin/EnhancedAdminDashboard';
 
@@ -77,6 +78,7 @@ export default function AppRoutes() {
         }
       >
         <Route index element={<AdminAccountsList />} />
+        <Route path="create" element={<AdminCreateAccount />} />
         <Route path="accounts/:accountId" element={<AdminAccountDetail />} />
         <Route path="old" element={<EnhancedAdminDashboard />} />
       </Route>

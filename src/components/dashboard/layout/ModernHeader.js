@@ -226,7 +226,7 @@ const ModernHeader = ({ sidebarCollapsed, setSidebarCollapsed, trialInfo }) => {
 
   return (
     <header
-      className={`fixed top-0 right-0 z-30 h-16 bg-white border-b border-gray-200 transition-all duration-300 ${
+      className={`fixed top-0 right-0 z-30 h-16 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800 transition-all duration-300 ${
         sidebarCollapsed ? 'lg:left-16 left-0' : 'lg:left-64 left-0'
       }`}
     >
@@ -234,18 +234,18 @@ const ModernHeader = ({ sidebarCollapsed, setSidebarCollapsed, trialInfo }) => {
         {/* Mobile Menu Button */}
         <button
           onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
-          className="lg:hidden p-2 rounded-lg hover:bg-gray-100 transition-colors"
+          className="lg:hidden p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
         >
-          <Menu className="w-5 h-5 text-gray-600" />
+          <Menu className="w-5 h-5 text-gray-600 dark:text-gray-300" />
         </button>
 
         {/* Left Side - Page Title */}
         <div className="flex items-center gap-3 min-w-0">
           <div className="min-w-0">
-            <h1 className="text-lg sm:text-xl font-semibold text-gray-900 truncate">
+            <h1 className="text-lg sm:text-xl font-semibold text-gray-900 dark:text-gray-100 truncate">
               {currentSection.label}
             </h1>
-            <p className="text-xs sm:text-sm text-gray-500 truncate hidden sm:block">
+            <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-400 truncate hidden sm:block">
               {getSubtitleForSection()}
             </p>
           </div>
@@ -255,14 +255,14 @@ const ModernHeader = ({ sidebarCollapsed, setSidebarCollapsed, trialInfo }) => {
         <div className="flex items-center gap-2 sm:gap-3">
           {/* Trial Info */}
           {trialInfo && trialInfo.isActive && userRole === 'master' && (
-            <div className="hidden sm:flex items-center gap-2 px-3 py-2 bg-yellow-50 border border-yellow-200 rounded-lg">
-              <Clock className="w-4 h-4 text-gray-700" />
-              <span className="text-sm text-gray-700">
+            <div className="hidden sm:flex items-center gap-2 px-3 py-2 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg">
+              <Clock className="w-4 h-4 text-gray-700 dark:text-gray-300" />
+              <span className="text-sm text-gray-700 dark:text-gray-300">
                 Trial: <span className="font-semibold">{trialInfo.daysLeft}</span> day{trialInfo.daysLeft !== 1 ? 's' : ''} left
               </span>
               <button
                 onClick={() => navigate('/account/billing')}
-                className="ml-2 text-sm font-medium text-blue-600 hover:text-blue-700 transition-colors"
+                className="ml-2 text-sm font-medium text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 transition-colors"
               >
                 Upgrade
               </button>
@@ -274,7 +274,7 @@ const ModernHeader = ({ sidebarCollapsed, setSidebarCollapsed, trialInfo }) => {
             variant="outline"
             size="sm"
             onClick={handleOpenKiosk}
-            className="hidden md:flex items-center gap-2 px-3 py-2 text-sm border border-gray-200 rounded-xl hover:bg-gray-50 transition-colors"
+            className="hidden md:flex items-center gap-2 px-3 py-2 text-sm border border-gray-200 dark:border-gray-700 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors text-gray-700 dark:text-gray-300"
           >
             <span>Kiosk</span>
             <ExternalLink className="w-4 h-4" />

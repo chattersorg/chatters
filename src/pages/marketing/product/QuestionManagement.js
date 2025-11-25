@@ -69,14 +69,14 @@ const QuestionManagementProduct = () => {
             eyebrow: "Visual Builder",
             title: "Design questions visually",
             description: "Drag-and-drop interface makes it easy to create professional feedback forms without technical skills.",
-            bullets: ["Visual editor", "Live preview", "Mobile optimization"],
+            bullets: ["Visual editor", "Live preview", "Mobile optimisation"],
             image: { src: "/img/mock-builder.png", alt: "Question builder interface" },
           },
           {
             id: "logic",
             eyebrow: "Smart Logic",
             title: "Conditional question flows",
-            description: "Show relevant follow-up questions based on previous answers to create personalized feedback experiences.",
+            description: "Show relevant follow-up questions based on previous answers to create personalised feedback experiences.",
             bullets: ["Branching logic", "Skip patterns", "Dynamic content"],
             image: { src: "/img/mock-logic.png", alt: "Conditional logic" },
           },
@@ -84,7 +84,7 @@ const QuestionManagementProduct = () => {
             id: "templates",
             eyebrow: "Ready Templates",
             title: "Start with proven questions",
-            description: "Choose from industry-tested question sets designed to maximize response rates and actionable insights.",
+            description: "Choose from industry-tested question sets designed to maximise response rates and actionable insights.",
             bullets: ["Industry templates", "Best practices", "Custom branding"],
             image: { src: "/img/mock-templates.png", alt: "Question templates" },
           },
@@ -119,13 +119,13 @@ const QuestionManagementProduct = () => {
             icon: <Filter className="w-6 h-6 text-teal-600" />,
             title: "Smart filtering",
             description:
-              "Conditional logic shows relevant questions based on previous answers for personalized surveys.",
+              "Conditional logic shows relevant questions based on previous answers for personalised surveys.",
           },
           {
             icon: <Tag className="w-6 h-6 text-teal-600" />,
             title: "Category tagging",
             description:
-              "Automatically categorize responses to route feedback to the right department or team member.",
+              "Automatically categorise responses to route feedback to the right department or team member.",
           },
           {
             icon: <Archive className="w-6 h-6 text-teal-600" />,

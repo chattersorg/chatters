@@ -17,7 +17,43 @@ module.exports = async (req, res) => {
     return res.status(400).json({ error: 'Account ID is required' });
   }
 
+  // Extract and verify authorization
+  const authHeader = req.headers.authorization;
+  if (!authHeader || !authHeader.startsWith('Bearer ')) {
+    return res.status(401).json({ error: 'Unauthorized - no token provided' });
+  }
+
+  const token = authHeader.replace('Bearer ', '');
+
   try {
+    // Verify the user's session
+    const { data: { user: authUser }, error: authError } = await supabase.auth.getUser(token);
+
+    if (authError || !authUser) {
+      return res.status(401).json({ error: 'Unauthorized - invalid token' });
+    }
+
+    // Get user's role and account_id
+    const { data: user, error: userError } = await supabase
+      .from('users')
+      .select('account_id, role')
+      .eq('id', authUser.id)
+      .single();
+
+    if (userError || !user) {
+      return res.status(401).json({ error: 'Unauthorized - user not found' });
+    }
+
+    // Check user has access to this account
+    if (user.account_id !== accountId) {
+      return res.status(403).json({ error: 'Forbidden - you do not have access to this account' });
+    }
+
+    // Only masters can update subscription quantity
+    if (user.role !== 'master') {
+      return res.status(403).json({ error: 'Forbidden - only account owners can modify subscriptions' });
+    }
+
     // Get account data from Supabase
     const { data: account, error: accountError } = await supabase
       .from('accounts')
@@ -66,17 +102,8 @@ module.exports = async (req, res) => {
     const price = subscriptionItem.price;
 
     // Check if this is a test/flat-rate plan (doesn't scale with venue count)
-    // Identify by product name or price metadata
     const productName = price.product?.name || '';
     const priceNickname = price.nickname || '';
-
-    // Debug logging
-    console.log('=== Stripe Subscription Debug ===');
-    console.log('Product Name:', productName);
-    console.log('Price Nickname:', priceNickname);
-    console.log('Price Metadata:', price.metadata);
-    console.log('Product Object:', price.product);
-    console.log('================================');
 
     // Skip quantity updates for test plans or flat-rate plans
     if (productName.includes('Test') ||
@@ -105,12 +132,9 @@ module.exports = async (req, res) => {
     }
 
     // Update the subscription quantity
-    // Stripe will prorate automatically on the NEXT billing cycle:
-    // - Adding venues: adds prorated amount to next invoice
-    // - Removing venues: credits the next invoice
     await stripe.subscriptionItems.update(subscriptionItemId, {
       quantity: venueCount,
-      proration_behavior: 'create_prorations', // Add to next invoice, don't charge now
+      proration_behavior: 'create_prorations',
     });
 
     console.log(`Updated subscription ${subscription.id} quantity from ${currentQuantity} to ${venueCount}`);

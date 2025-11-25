@@ -318,7 +318,7 @@ const BlogPost = () => {
         <p>Reducing detractors has a bigger impact than increasing promoters. Analyse detractor feedback to identify common themes, then prioritise fixing the most frequently mentioned issues.</p>
 
         <h3>2. Convert Passives to Promoters</h3>
-        <p>Passives are satisfied but not loyal. They're looking for a reason to become promoters. Small improvements in service, personalization, or value can push them over the edge.</p>
+        <p>Passives are satisfied but not loyal. They're looking for a reason to become promoters. Small improvements in service, personalisation, or value can push them over the edge.</p>
 
         <h3>3. Empower Your Team</h3>
         <p>Share NPS scores with your staff and train them on what drives scores up or down. Many successful venues tie staff bonuses to NPS improvements, creating ownership of the metric.</p>
@@ -355,7 +355,7 @@ const BlogPost = () => {
         <ul>
           <li><strong>AI-Powered Analysis:</strong> Machine learning can identify patterns in qualitative feedback, surfacing issues faster than manual review</li>
           <li><strong>Predictive NPS:</strong> Advanced systems can predict likely NPS scores based on operational data like wait times, order accuracy, and table turnover</li>
-          <li><strong>Personalized Follow-Up:</strong> Automated but personalized responses to feedback, with human escalation for serious issues</li>
+          <li><strong>Personalised Follow-Up:</strong> Automated but personalised responses to feedback, with human escalation for serious issues</li>
           <li><strong>Integration with Operations:</strong> NPS data flowing directly into scheduling, inventory, and training systems</li>
         </ul>
 
@@ -495,7 +495,7 @@ const BlogPost = () => {
         <p><strong>Average NPS: 65 | Top Quartile: 82+</strong></p>
         <p>Highest expectations in hospitality. Key drivers:</p>
         <ul>
-          <li>Personalized service (35%)</li>
+          <li>Personalised service (35%)</li>
           <li>Room quality and amenities (25%)</li>
           <li>Problem resolution (20%)</li>
           <li>Food & beverage quality (20%)</li>
@@ -575,7 +575,7 @@ const BlogPost = () => {
         <ul>
           <li>Set up real-time alerts for detractor feedback (NPS 0-6)</li>
           <li>Assign a dedicated team member for feedback response</li>
-          <li>Create response templates for common issues but personalize each reply</li>
+          <li>Create response templates for common issues but personalise each reply</li>
           <li>Offer concrete solutions, not just apologies</li>
         </ul>
 
@@ -619,7 +619,7 @@ const BlogPost = () => {
         <h3>The Framework</h3>
         <ol>
           <li><strong>Identify the issue immediately</strong> (real-time feedback helps)</li>
-          <li><strong>Acknowledge and apologize sincerely</strong></li>
+          <li><strong>Acknowledge and apologise sincerely</strong></li>
           <li><strong>Fix it on the spot</strong> (empower staff to comp items, offer alternatives)</li>
           <li><strong>Follow up afterward</strong> to ensure satisfaction</li>
         </ol>
@@ -633,7 +633,7 @@ const BlogPost = () => {
         <h3>How to Find Them</h3>
         <ul>
           <li>Review 50-100 recent detractor comments</li>
-          <li>Categorize into themes (service speed, food quality, cleanliness, value, etc.)</li>
+          <li>Categorise into themes (service speed, food quality, cleanliness, value, etc.)</li>
           <li>Identify the top 3 most mentioned issues</li>
           <li>Create action plans specifically for those three</li>
         </ul>
@@ -659,17 +659,17 @@ const BlogPost = () => {
         </ul>
 
         <h3>Why Timing Matters</h3>
-        <p>Ask too soon and emotions skew results. Ask too late and they forget details. The sweet spot is when the experience is fresh but emotions have normalized.</p>
+        <p>Ask too soon and emotions skew results. Ask too late and they forget details. The sweet spot is when the experience is fresh but emotions have normalised.</p>
 
-        <h2 id="strategy-7">7. Personalize the Experience</h2>
+        <h2 id="strategy-7">7. Personalise the Experience</h2>
         <p>Promoters overwhelmingly cite "felt valued" and "remembered my preferences" in their feedback.</p>
 
-        <h3>Practical Personalization</h3>
+        <h3>Practical Personalisation</h3>
         <ul>
-          <li>Track customer preferences (dietary needs, favorite table, drink order)</li>
+          <li>Track customer preferences (dietary needs, favourite table, drink order)</li>
           <li>Acknowledge repeat customers by name</li>
           <li>Remember and celebrate special occasions</li>
-          <li>Send personalized follow-ups referencing their specific visit</li>
+          <li>Send personalised follow-ups referencing their specific visit</li>
         </ul>
 
         <h3>Technology Helps</h3>
@@ -895,7 +895,7 @@ const BlogPost = () => {
         <p class="text-center text-2xl font-bold text-[#1A535C] my-8">NPS = % Promoters - % Detractors</p>
 
         <h3>Step 1: Classify Your Responses</h3>
-        <p>Based on the question "How likely are you to recommend us?" (0-10 scale), categorize responses:</p>
+        <p>Based on the question "How likely are you to recommend us?" (0-10 scale), categorise responses:</p>
         <ul>
           <li><strong>Promoters (9-10):</strong> Your loyal enthusiasts</li>
           <li><strong>Passives (7-8):</strong> Satisfied but unenthusiastic customers</li>
@@ -1424,7 +1424,7 @@ const BlogPost = () => {
       { id: 'strategy-4', title: '4. Service Recovery Paradox' },
       { id: 'strategy-5', title: '5. Eliminate Top 3 Detractor Drivers' },
       { id: 'strategy-6', title: '6. Collect Feedback at Right Moment' },
-      { id: 'strategy-7', title: '7. Personalize the Experience' },
+      { id: 'strategy-7', title: '7. Personalise the Experience' },
       { id: 'strategy-8', title: '8. Make Consistency Non-Negotiable' },
       { id: 'strategy-9', title: '9. Transform Promoters into Advocates' },
       { id: 'strategy-10', title: '10. Track, Test, and Iterate' },

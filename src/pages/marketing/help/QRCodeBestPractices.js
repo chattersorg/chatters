@@ -183,7 +183,7 @@ const QRCodeBestPractices = () => {
                 <div>
                   <h4 className="font-semibold text-red-800 mb-2">Too Small to Scan</h4>
                   <p className="text-gray-700">
-                    QR codes smaller than 2cm x 2cm are difficult to scan. Always prioritize readability over space-saving.
+                    QR codes smaller than 2cm x 2cm are difficult to scan. Always prioritise readability over space-saving.
                   </p>
                 </div>
               </div>

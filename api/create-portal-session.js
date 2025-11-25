@@ -7,23 +7,35 @@ const supabase = createClient(
   process.env.SUPABASE_SERVICE_ROLE_KEY
 );
 
+// Return URL - use environment variable or default to production
+const RETURN_URL = process.env.APP_URL || 'https://my.getchatters.com';
+
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
     return res.status(405).json({ message: 'Method not allowed' });
   }
 
-  try {
-    const { email } = req.body;
+  // Extract and verify authorization
+  const authHeader = req.headers.authorization;
+  if (!authHeader || !authHeader.startsWith('Bearer ')) {
+    return res.status(401).json({ error: 'Unauthorized - no token provided' });
+  }
 
-    if (!email) {
-      return res.status(400).json({ error: 'Email is required' });
+  const token = authHeader.replace('Bearer ', '');
+
+  try {
+    // Verify the user's session
+    const { data: { user: authUser }, error: authError } = await supabase.auth.getUser(token);
+
+    if (authError || !authUser) {
+      return res.status(401).json({ error: 'Unauthorized - invalid token' });
     }
 
-    // Get user's account
+    // Get user's role and account_id
     const { data: user, error: userError } = await supabase
       .from('users')
       .select('account_id, role')
-      .eq('email', email)
+      .eq('id', authUser.id)
       .single();
 
     if (userError || !user) {
@@ -55,7 +67,7 @@ export default async function handler(req, res) {
     // Create Stripe billing portal session
     const session = await stripe.billingPortal.sessions.create({
       customer: account.stripe_customer_id,
-      return_url: 'https://my.getchatters.com/account/billing',
+      return_url: `${RETURN_URL}/account/billing`,
     });
 
     return res.status(200).json({ url: session.url });

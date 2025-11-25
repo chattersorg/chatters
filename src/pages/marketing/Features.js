@@ -44,7 +44,7 @@ const FeaturesPage = () => {
       icon: Mail,
     },
     {
-      title: 'Customizable Dashboards',
+      title: 'Customisable Dashboards',
       description: 'Tailor your analytics dashboard to focus on the metrics that matter most.',
       icon: Settings,
     },

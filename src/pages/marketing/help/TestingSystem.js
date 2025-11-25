@@ -233,7 +233,7 @@ const TestingSystem = () => {
                       <li>• Timestamp is accurate</li>
                       <li>• Star ratings display correctly</li>
                       <li>• Comments appear in full (not truncated)</li>
-                      <li>• Alert colors match ratings (red for 1-2 stars, etc.)</li>
+                      <li>• Alert colours match ratings (red for 1-2 stars, etc.)</li>
                     </ul>
                   </div>
                 </div>
@@ -327,7 +327,7 @@ const TestingSystem = () => {
                     </li>
                     <li className="flex items-start">
                       <CheckCircle className="w-5 h-5 text-brand mr-2 mt-0.5 flex-shrink-0" />
-                      <span>Alert colors match severity (red for urgent, yellow for moderate, blue for info)</span>
+                      <span>Alert colours match severity (red for urgent, yellow for moderate, blue for info)</span>
                     </li>
                     <li className="flex items-start">
                       <CheckCircle className="w-5 h-5 text-brand mr-2 mt-0.5 flex-shrink-0" />
@@ -462,7 +462,7 @@ const TestingSystem = () => {
                   </li>
                   <li className="flex items-start">
                     <div className="w-6 h-6 bg-brand text-white rounded-full flex items-center justify-center text-xs font-bold mr-3 mt-0.5 flex-shrink-0">✓</div>
-                    <span>What different alert colors mean (red = urgent, orange = assistance, etc.)</span>
+                    <span>What different alert colours mean (red = urgent, orange = assistance, etc.)</span>
                   </li>
                   <li className="flex items-start">
                     <div className="w-6 h-6 bg-brand text-white rounded-full flex items-center justify-center text-xs font-bold mr-3 mt-0.5 flex-shrink-0">✓</div>

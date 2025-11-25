@@ -76,7 +76,7 @@ const QuickStartGuide = () => {
                 <div className="flex-1">
                   <h3 className="text-xl font-bold text-primary mb-3">Set Up Your First Venue</h3>
                   <p className="text-gray-700 mb-4">
-                    Add your venue details to personalize the feedback experience.
+                    Add your venue details to personalise the feedback experience.
                   </p>
                   <ul className="space-y-2 text-gray-700">
                     <li className="flex items-start">

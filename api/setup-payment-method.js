@@ -15,30 +15,49 @@ module.exports = async (req, res) => {
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
-  const { email, accountId } = req.body;
-
-  console.log('Setup payment method called with:', { email, accountId });
-
-  if (!email || !accountId) {
-    console.error('Missing required fields:', { email, accountId });
-    return res.status(400).json({ error: 'Email and account ID are required' });
+  // Extract and verify authorization
+  const authHeader = req.headers.authorization;
+  if (!authHeader || !authHeader.startsWith('Bearer ')) {
+    return res.status(401).json({ error: 'Unauthorized - no token provided' });
   }
 
+  const token = authHeader.replace('Bearer ', '');
+
   try {
-    console.log('Fetching account from database...');
-    // Get or create Stripe customer
+    // Verify the user's session
+    const { data: { user: authUser }, error: authError } = await supabase.auth.getUser(token);
+
+    if (authError || !authUser) {
+      return res.status(401).json({ error: 'Unauthorized - invalid token' });
+    }
+
+    // Get user's role and account_id
+    const { data: user, error: userError } = await supabase
+      .from('users')
+      .select('account_id, role, email')
+      .eq('id', authUser.id)
+      .single();
+
+    if (userError || !user) {
+      return res.status(401).json({ error: 'Unauthorized - user not found' });
+    }
+
+    // Only masters can setup payment methods
+    if (user.role !== 'master') {
+      return res.status(403).json({ error: 'Forbidden - only account owners can manage payment methods' });
+    }
+
+    // Get account data
     const { data: account, error: accountError } = await supabase
       .from('accounts')
       .select('stripe_customer_id, name')
-      .eq('id', accountId)
+      .eq('id', user.account_id)
       .single();
 
     if (accountError) {
-      console.error('Supabase error fetching account:', accountError);
+      console.error('Error fetching account:', accountError);
       throw new Error(`Database error: ${accountError.message}`);
     }
-
-    console.log('Account fetched:', { accountId, hasCustomerId: !!account?.stripe_customer_id });
 
     let customerId = account?.stripe_customer_id;
 
@@ -46,11 +65,11 @@ module.exports = async (req, res) => {
     if (!customerId) {
       console.log('Creating new Stripe customer...');
       const customer = await stripe.customers.create({
-        email,
-        name: account?.name || email,
+        email: user.email,
+        name: account?.name || user.email,
         metadata: {
-          chatters_account_id: accountId,
-          chatters_account_name: account?.name || email,
+          chatters_account_id: user.account_id,
+          chatters_account_name: account?.name || user.email,
           account_type: 'trial'
         }
       });
@@ -62,26 +81,23 @@ module.exports = async (req, res) => {
       const { error: updateError } = await supabase
         .from('accounts')
         .update({ stripe_customer_id: customerId })
-        .eq('id', accountId);
+        .eq('id', user.account_id);
 
       if (updateError) {
         console.error('Error saving customer ID to database:', updateError);
         throw new Error(`Failed to save customer ID: ${updateError.message}`);
       }
-      console.log('Customer ID saved to database');
     }
 
     // Create SetupIntent for collecting payment method
-    console.log('Creating SetupIntent for customer:', customerId);
     const setupIntent = await stripe.setupIntents.create({
       customer: customerId,
-      payment_method_types: ['card'], // Only card for now (bacs_debit requires additional Stripe setup)
+      payment_method_types: ['card'],
       metadata: {
-        chatters_account_id: accountId
+        chatters_account_id: user.account_id
       }
     });
 
-    console.log('SetupIntent created successfully:', setupIntent.id);
     return res.status(200).json({
       success: true,
       clientSecret: setupIntent.client_secret,
@@ -90,17 +106,9 @@ module.exports = async (req, res) => {
 
   } catch (error) {
     console.error('Error creating setup intent:', error);
-    console.error('Error details:', {
-      name: error.name,
-      message: error.message,
-      stack: error.stack,
-      type: error.type,
-      code: error.code
-    });
     return res.status(500).json({
       error: 'Failed to create setup intent',
-      message: error.message,
-      details: error.type || error.code || 'Unknown error'
+      message: error.message
     });
   }
 };

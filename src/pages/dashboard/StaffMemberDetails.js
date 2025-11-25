@@ -612,12 +612,26 @@ const StaffMemberDetails = () => {
         <div className="bg-white border border-gray-200 rounded-lg p-4">
           <div className="text-center">
             <div className="text-sm text-gray-500 mb-2">Performance Summary</div>
-            <div className="flex items-center justify-center gap-2 text-lg font-semibold">
-              <span className="text-gray-900">Resolved: {totalStats.feedbackResolved}</span>
-              <span className="text-gray-400">|</span>
-              <span className="text-gray-900">Co-resolved: {totalStats.feedbackCoResolved}</span>
-              <span className="text-gray-400">|</span>
-              <span className="text-blue-600">Total: {totalStats.totalResolved}</span>
+            <div className="flex items-center justify-center gap-4 text-sm">
+              <div className="text-center">
+                <div className="text-lg font-semibold text-gray-900">{totalStats.feedbackResolved}</div>
+                <div className="text-xs text-gray-500">Feedback</div>
+              </div>
+              <div className="text-gray-300">|</div>
+              <div className="text-center">
+                <div className="text-lg font-semibold text-gray-900">{totalStats.feedbackCoResolved}</div>
+                <div className="text-xs text-gray-500">Co-resolved</div>
+              </div>
+              <div className="text-gray-300">|</div>
+              <div className="text-center">
+                <div className="text-lg font-semibold text-gray-900">{totalStats.assistanceResolved}</div>
+                <div className="text-xs text-gray-500">Assistance</div>
+              </div>
+              <div className="text-gray-300">|</div>
+              <div className="text-center">
+                <div className="text-lg font-semibold text-blue-600">{totalStats.totalResolved}</div>
+                <div className="text-xs text-gray-500">Total</div>
+              </div>
             </div>
           </div>
         </div>

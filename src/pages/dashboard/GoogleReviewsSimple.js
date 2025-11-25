@@ -168,7 +168,7 @@ const GoogleReviewsSimplePage = () => {
               </div>
               <div className="flex-1">
                 <p className="text-sm text-gray-700">
-                  Customize and save links to share with satisfied customers
+                  Customise and save links to share with satisfied customers
                 </p>
               </div>
             </div>

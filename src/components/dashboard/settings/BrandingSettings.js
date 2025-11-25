@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { ColorPicker, Tooltip } from 'antd';
+import { Button } from '../../ui/button';
 
 const BrandingSettings = ({ logo, onLogoUpload, primaryColor, secondaryColor, onColorChange, colorsUpdated, onSaveColors, colorsMessage, loading }) => {
   const [locked, setLocked] = useState(true);
@@ -8,12 +9,12 @@ const BrandingSettings = ({ logo, onLogoUpload, primaryColor, secondaryColor, on
     <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 mb-8">
       <div className="flex justify-between items-center mb-4">
         <h2 className="text-xl font-bold text-gray-900">Branding Settings</h2>
-        <button
+        <Button
+          variant="primary"
           onClick={() => setLocked(!locked)}
-          className="bg-custom-green text-white px-6 py-2 rounded-lg hover:bg-custom-green-hover transition-colors duration-200 text-sm font-medium"
         >
           {locked ? 'Unlock' : 'Lock'}
-        </button>
+        </Button>
       </div>
       <div className="flex items-center gap-6">
         {logo && (
@@ -34,8 +35,8 @@ const BrandingSettings = ({ logo, onLogoUpload, primaryColor, secondaryColor, on
           />
           <label
             htmlFor="logo-upload"
-            className={`bg-custom-green text-white px-6 py-2 rounded-lg cursor-pointer hover:bg-custom-green-hover transition-colors duration-200 text-sm font-medium ${
-              locked ? 'opacity-50 cursor-not-allowed' : ''
+            className={`inline-flex items-center justify-center gap-2 rounded-lg text-sm font-medium px-4 py-2 bg-[#2548CC] text-white hover:bg-[#1e3ba8] transition-colors cursor-pointer ${
+              locked ? 'opacity-50 cursor-not-allowed pointer-events-none' : ''
             }`}
           >
             {loading ? 'Uploading...' : 'Upload Logo'}
@@ -83,13 +84,15 @@ const BrandingSettings = ({ logo, onLogoUpload, primaryColor, secondaryColor, on
         </div>
       </div>
       {colorsUpdated && (
-        <button
+        <Button
+          variant="primary"
           onClick={onSaveColors}
-          className="mt-4 bg-custom-green text-white px-6 py-2 rounded-lg hover:bg-custom-green-hover transition-colors duration-200 text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed"
-          disabled={loading || locked}
+          loading={loading}
+          disabled={locked}
+          className="mt-4"
         >
           {loading ? 'Saving...' : 'Save Colors'}
-        </button>
+        </Button>
       )}
       {colorsMessage && <p className="text-sm text-red-500 mt-2">{colorsMessage}</p>}
     </div>

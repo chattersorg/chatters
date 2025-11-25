@@ -130,7 +130,7 @@ const HelpPageNew = () => {
             <ul>
               <li>Access to assigned venues only</li>
               <li>Can manage feedback and questions</li>
-              <li>Can customize branding and settings</li>
+              <li>Can customise branding and settings</li>
               <li>Cannot access billing information</li>
             </ul>
 
@@ -214,7 +214,7 @@ const HelpPageNew = () => {
     'qr-codes': {
       title: 'QR Codes',
       icon: QrCode,
-      description: 'Generate, customize, and deploy QR codes',
+      description: 'Generate, customise, and deploy QR codes',
       articles: [
         {
           id: 'generating-qr',
@@ -262,13 +262,13 @@ const HelpPageNew = () => {
           `
         },
         {
-          id: 'customizing-qr',
-          title: 'Customizing QR Code Appearance',
+          id: 'customising-qr',
+          title: 'Customising QR Code Appearance',
           content: `
             <h3>Making Your QR Codes On-Brand</h3>
-            <p>Customize your QR codes to match your venue's aesthetic.</p>
+            <p>Customise your QR codes to match your venue's aesthetic.</p>
 
-            <h4>Customization Options</h4>
+            <h4>Customisation Options</h4>
 
             <strong>Adding Your Logo:</strong>
             <ul>
@@ -278,11 +278,11 @@ const HelpPageNew = () => {
               <li>Format: PNG with transparent background works best</li>
             </ul>
 
-            <strong>Color Customization:</strong>
+            <strong>Colour Customisation:</strong>
             <ul>
-              <li>Change QR code colors to match your brand</li>
+              <li>Change QR code colours to match your brand</li>
               <li>Maintain good contrast for scanability</li>
-              <li>Dark colors on light backgrounds work best</li>
+              <li>Dark colours on light backgrounds work best</li>
             </ul>
 
             <strong>Adding Instructions:</strong>
@@ -301,7 +301,7 @@ const HelpPageNew = () => {
             </ul>
 
             <div class="warning-box">
-              <strong>Warning:</strong> Excessive customization can affect scanability. Always test your customized QR codes before printing large quantities.
+              <strong>Warning:</strong> Excessive customisation can affect scanability. Always test your customised QR codes before printing large quantities.
             </div>
           `
         },
@@ -310,7 +310,7 @@ const HelpPageNew = () => {
           title: 'QR Code Placement Strategies',
           content: `
             <h3>Where to Place Your QR Codes</h3>
-            <p>Strategic placement is key to maximizing feedback collection.</p>
+            <p>Strategic placement is key to maximising feedback collection.</p>
 
             <h4>Best Locations</h4>
 
@@ -369,7 +369,7 @@ const HelpPageNew = () => {
           id: 'qr-best-practices',
           title: 'QR Code Best Practices',
           content: `
-            <h3>Maximizing QR Code Effectiveness</h3>
+            <h3>Maximising QR Code Effectiveness</h3>
             <p>Follow these best practices to ensure your QR codes work flawlessly.</p>
 
             <h4>Technical Best Practices</h4>
@@ -441,7 +441,7 @@ const HelpPageNew = () => {
     'question-management': {
       title: 'Question Management',
       icon: HelpCircle,
-      description: 'Create, edit, and optimize your feedback questions',
+      description: 'Create, edit, and optimise your feedback questions',
       articles: [
         {
           id: 'adding-questions',
@@ -632,10 +632,10 @@ const HelpPageNew = () => {
         },
         {
           id: 'question-analytics',
-          title: 'Analyzing Question Performance',
+          title: 'Analysing Question Performance',
           content: `
             <h3>Understanding Question Analytics</h3>
-            <p>Learn how to track and optimize your questions based on performance data.</p>
+            <p>Learn how to track and optimise your questions based on performance data.</p>
 
             <h4>Key Metrics to Track</h4>
 
@@ -668,7 +668,7 @@ const HelpPageNew = () => {
               <li>Compare performance across questions</li>
             </ol>
 
-            <h4>Optimizing Based on Data</h4>
+            <h4>Optimising Based on Data</h4>
 
             <strong>Low Response Rate:</strong>
             <ul>
@@ -691,7 +691,7 @@ const HelpPageNew = () => {
             <strong>High Ratings, Many Comments:</strong>
             <ul>
               <li><strong>Insight:</strong> This is a key differentiator for your business</li>
-              <li><strong>Action:</strong> Maintain standards and emphasize in marketing</li>
+              <li><strong>Action:</strong> Maintain standards and emphasise in marketing</li>
             </ul>
 
             <h4>A/B Testing Questions</h4>

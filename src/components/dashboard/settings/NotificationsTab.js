@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { Button } from '../../ui/button';
 
 const NotificationsTab = ({ 
   saveSettings,
@@ -120,13 +121,13 @@ const NotificationsTab = ({
 
         {/* Save Button */}
         <div className="pt-2">
-          <button
+          <Button
+            variant="primary"
             onClick={saveSettings}
-            disabled={loading}
-            className="w-full sm:w-auto bg-black text-white px-4 lg:px-6 py-2 lg:py-3 rounded-md hover:bg-custom-black-hover transition-colors duration-200 text-sm lg:text-base font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+            loading={loading}
           >
             {loading ? 'Saving...' : 'Save Changes'}
-          </button>
+          </Button>
         </div>
 
         {/* Message Display */}

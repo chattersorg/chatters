@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useVenue } from '../../../context/VenueContext';
 import { supabase } from '../../../utils/supabase';
-import UnifiedReviewsCard from './UnifiedReviewsCard';
 import GoogleBusinessConnect from './GoogleBusinessConnect';
 
 const IntegrationsTab = () => {
@@ -17,14 +16,12 @@ const IntegrationsTab = () => {
   const tripadvisorSearchTimeoutRef = useRef(null);
   const tripadvisorDropdownRef = useRef(null);
 
-  // Load venue data on mount
   useEffect(() => {
     if (venueId) {
       loadVenueData();
     }
   }, [venueId]);
 
-  // Handle clicks outside dropdown
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (tripadvisorDropdownRef.current && !tripadvisorDropdownRef.current.contains(event.target)) {
@@ -186,10 +183,8 @@ const IntegrationsTab = () => {
 
   if (loading) {
     return (
-      <div className="w-full">
-        <div className="flex items-center justify-center py-8">
-          <div className="text-gray-500">Loading integrations...</div>
-        </div>
+      <div className="flex items-center justify-center py-8">
+        <div className="text-gray-500">Loading integrations...</div>
       </div>
     );
   }
@@ -198,10 +193,10 @@ const IntegrationsTab = () => {
   const tripadvisorConnected = venueData?.tripadvisor_location_id && venueData.tripadvisor_location_id.trim() !== '';
 
   return (
-    <div className="w-full">
+    <div className="space-y-6">
       {/* Message Display */}
       {message && (
-        <div className={`mb-6 p-4 rounded-lg ${
+        <div className={`p-3 rounded-lg text-sm ${
           message.includes('Error') || message.includes('Failed')
             ? 'bg-red-50 border border-red-200 text-red-700'
             : 'bg-green-50 border border-green-200 text-green-700'
@@ -210,25 +205,23 @@ const IntegrationsTab = () => {
         </div>
       )}
 
-      {/* Two Column Integration Status */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+      {/* Google Business Profile Card */}
+      <GoogleBusinessConnect />
 
-        {/* Google Business Profile - New OAuth Integration */}
-        <GoogleBusinessConnect />
-
-        {/* TripAdvisor Integration Card */}
-        <div className="bg-white border border-gray-200 rounded-lg p-6">
-          <div className="flex items-center justify-between mb-4">
+      {/* TripAdvisor Card */}
+      <div className="bg-white border border-gray-200 rounded-xl overflow-hidden">
+        <div className="px-6 py-4 border-b border-gray-100">
+          <div className="flex items-center justify-between">
             <div className="flex items-center space-x-3">
               <div className="w-10 h-10 bg-white rounded-lg border border-gray-200 flex items-center justify-center p-1">
-                <img 
+                <img
                   src="https://uxwing.com/wp-content/themes/uxwing/download/brands-and-social-media/tripadvisor-icon.png"
                   alt="TripAdvisor"
                   className="w-6 h-6 object-contain"
                 />
               </div>
               <div>
-                <h3 className="text-lg font-semibold text-gray-900">TripAdvisor</h3>
+                <h3 className="text-base font-semibold text-gray-900">TripAdvisor</h3>
                 <p className="text-sm text-gray-500">Listing integration</p>
               </div>
             </div>
@@ -244,40 +237,43 @@ const IntegrationsTab = () => {
               </div>
             )}
           </div>
-          
+        </div>
+
+        <div className="p-6">
           <div className="text-sm text-gray-600">
             {tripadvisorConnected ? (
-              <>
-                <p className="mb-2">✅ TripAdvisor listing is connected</p>
-                <p className="mb-4">Your TripAdvisor reviews are being tracked automatically.</p>
+              <div className="space-y-4">
+                <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+                  <p className="font-medium text-green-900 mb-1">✅ TripAdvisor listing is connected</p>
+                  <p className="text-green-700 text-xs">Your TripAdvisor reviews are being tracked automatically.</p>
+                </div>
 
                 {venueData?.tripadvisor_integration_locked ? (
-                  <div className="mt-4 pt-4 border-t border-gray-200">
-                    <p className="text-xs text-gray-500">
-                      This integration is locked and cannot be unlinked. Contact support if you need to change this.
-                    </p>
-                  </div>
+                  <p className="text-xs text-gray-500">
+                    This integration is locked and cannot be unlinked. Contact support if you need to change this.
+                  </p>
                 ) : (
-                  <div className="mt-4 pt-4 border-t border-gray-200">
-                    <button
-                      onClick={handleUnlinkTripAdvisor}
-                      disabled={unlinking}
-                      className="px-4 py-2 text-sm font-medium text-red-700 bg-red-50 border border-red-200 rounded-lg hover:bg-red-100 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-                    >
-                      {unlinking ? 'Unlinking...' : 'Unlink TripAdvisor'}
-                    </button>
-                  </div>
+                  <button
+                    onClick={handleUnlinkTripAdvisor}
+                    disabled={unlinking}
+                    className="px-4 py-2 text-sm font-medium text-red-700 bg-red-50 border border-red-200 rounded-lg hover:bg-red-100 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                  >
+                    {unlinking ? 'Unlinking...' : 'Unlink TripAdvisor'}
+                  </button>
                 )}
-              </>
+              </div>
             ) : (
-              <>
-                <p className="mb-3">Connect your TripAdvisor listing to:</p>
-                <ul className="space-y-1 text-xs mb-4">
-                  <li>• Track TripAdvisor reviews automatically</li>
-                  <li>• Generate review request links</li>
-                  <li>• Monitor rating changes over time</li>
-                </ul>
-                <div className="mt-4 pt-4 border-t border-gray-200">
+              <div className="space-y-4">
+                <div>
+                  <p className="mb-3 font-medium text-gray-700">Connect your TripAdvisor listing to:</p>
+                  <ul className="space-y-1 text-xs text-gray-600">
+                    <li>• Track TripAdvisor reviews automatically</li>
+                    <li>• Generate review request links</li>
+                    <li>• Monitor rating changes over time</li>
+                  </ul>
+                </div>
+
+                <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
                     Search for your business on TripAdvisor
                   </label>
@@ -287,10 +283,9 @@ const IntegrationsTab = () => {
                       value={tripadvisorSearchQuery}
                       onChange={(e) => handleTripadvisorSearchInput(e.target.value)}
                       placeholder="e.g., 'The Fox Inn, SW1A 1AA' or 'Restaurant London'"
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 text-sm"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm"
                     />
 
-                    {/* TripAdvisor Search Dropdown */}
                     {showTripadvisorDropdown && (
                       <div className="absolute z-10 w-full mt-1 bg-white border border-gray-200 rounded-lg shadow-lg max-h-60 overflow-y-auto">
                         {isSearchingTripadvisor ? (
@@ -300,7 +295,7 @@ const IntegrationsTab = () => {
                             <button
                               key={`tripadvisor-${index}`}
                               onClick={() => selectTripadvisorVenue(result)}
-                              className="w-full px-3 py-2 text-left hover:bg-green-50 border-b border-gray-100 last:border-b-0"
+                              className="w-full px-3 py-2 text-left hover:bg-blue-50 border-b border-gray-100 last:border-b-0"
                             >
                               <div className="font-medium text-sm text-gray-900 flex items-center">
                                 <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-green-100 text-green-800 mr-2">
@@ -331,20 +326,19 @@ const IntegrationsTab = () => {
                       </div>
                     )}
                   </div>
-                  <p className="mt-1 text-xs text-gray-500">
-                    💡 Tip: Include your business name and postcode for best results (UK businesses only)
+                  <p className="mt-2 text-xs text-gray-500">
+                    Include your business name and postcode for best results (UK businesses only)
                   </p>
                 </div>
-              </>
+              </div>
             )}
           </div>
         </div>
-        
       </div>
 
       {/* Connection Status Bar */}
       {googleConnected && tripadvisorConnected && (
-        <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+        <div className="bg-green-50 border border-green-200 rounded-xl p-4">
           <div className="flex items-center">
             <div className="flex-shrink-0">
               <div className="w-5 h-5 bg-green-500 rounded-full flex items-center justify-center">
@@ -363,12 +357,10 @@ const IntegrationsTab = () => {
         </div>
       )}
 
-      {/* Show detailed management only if neither platform is connected */}
+      {/* Help text when nothing connected */}
       {!googleConnected && !tripadvisorConnected && (
-        <div className="space-y-6">
-          <div className="text-center py-8 text-gray-500 text-sm">
-            Use the search boxes above to connect your Google Business and TripAdvisor listings.
-          </div>
+        <div className="text-center py-4 text-gray-500 text-sm">
+          Connect your Google Business and TripAdvisor listings above to start tracking reviews.
         </div>
       )}
     </div>

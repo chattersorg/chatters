@@ -63,7 +63,7 @@ const CreatingQRCode = () => {
         </section>
 
         <section>
-          <h2 className="text-2xl font-bold text-primary mb-6">Step 2: Customize Your QR Code</h2>
+          <h2 className="text-2xl font-bold text-primary mb-6">Step 2: Customise Your QR Code</h2>
 
           <div className="space-y-6">
 

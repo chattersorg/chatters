@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { Button } from '../../ui/button';
 
 const AccountSettings = ({ name, email, firstName, lastName, onNameChange, onEmailChange, onFirstNameChange, onLastNameChange, profileMessage }) => {
   const [locked, setLocked] = useState(true);
@@ -7,12 +8,12 @@ const AccountSettings = ({ name, email, firstName, lastName, onNameChange, onEma
     <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 mb-8">
       <div className="flex justify-between items-center mb-4">
         <h2 className="text-xl font-bold text-gray-900">Account Settings</h2>
-        <button
+        <Button
+          variant="primary"
           onClick={() => setLocked(!locked)}
-          className="bg-custom-green text-white px-6 py-2 rounded-lg hover:bg-custom-green-hover transition-colors duration-200 text-sm font-medium"
         >
           {locked ? 'Unlock' : 'Lock'}
-        </button>
+        </Button>
       </div>
       <form onSubmit={(e) => e.preventDefault()}>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">

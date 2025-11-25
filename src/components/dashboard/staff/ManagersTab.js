@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { supabase } from '../../../utils/supabase';
+import { Button } from '../../ui/button';
 
 const ManagersTab = ({ 
   managers, 
@@ -522,12 +523,13 @@ const ManagersTab = ({
         <div className="flex flex-col space-y-4 sm:flex-row sm:items-start sm:justify-between sm:space-y-0">
           <div className="flex-1">
           </div>
-          <button
+          <Button
+            variant="primary"
             onClick={() => setShowAddForm(true)}
-            className="w-full sm:w-auto bg-custom-green text-white px-6 py-2 rounded-lg hover:bg-custom-green-hover transition-colors duration-200 text-sm font-medium"
+            className="w-full sm:w-auto"
           >
             Add Manager
-          </button>
+          </Button>
         </div>
       </div>
 
@@ -549,12 +551,12 @@ const ManagersTab = ({
             </div>
             <h3 className="text-lg font-medium text-gray-900 mb-2">No managers yet</h3>
             <p className="text-gray-600 mb-4">Add your first manager to get started</p>
-            <button
+            <Button
+              variant="primary"
               onClick={() => setShowAddForm(true)}
-              className="bg-custom-green text-white px-6 py-2 rounded-lg hover:bg-custom-green-hover transition-colors duration-200 text-sm font-medium"
             >
               Add First Manager
-            </button>
+            </Button>
           </div>
         ) : (
           <div className="bg-white rounded-lg border border-gray-200 shadow-sm overflow-hidden">
@@ -972,13 +974,14 @@ const ManagersTab = ({
                     Cancel
                   </button>
                   {uniqueManagers.length > 0 && (
-                    <button
+                    <Button
+                      variant="primary"
                       onClick={handleSaveManagerAssignments}
-                      disabled={assignFormLoading}
-                      className="w-full sm:w-auto px-6 py-2 bg-custom-green text-white rounded-lg hover:bg-custom-green-hover disabled:opacity-50 disabled:cursor-not-allowed text-sm font-medium"
+                      loading={assignFormLoading}
+                      className="w-full sm:w-auto"
                     >
                       {assignFormLoading ? 'Saving...' : 'Save Assignments'}
-                    </button>
+                    </Button>
                   )}
                 </div>
               </div>
@@ -1024,13 +1027,14 @@ const ManagersTab = ({
                   >
                     Cancel
                   </button>
-                  <button
+                  <Button
+                    variant="primary"
                     onClick={handleSaveVenueAssignments}
-                    disabled={editFormLoading}
-                    className="w-full sm:w-auto px-6 py-2 bg-custom-green text-white rounded-lg hover:bg-custom-green-hover disabled:opacity-50 disabled:cursor-not-allowed text-sm font-medium"
+                    loading={editFormLoading}
+                    className="w-full sm:w-auto"
                   >
                     {editFormLoading ? 'Saving...' : 'Save Changes'}
-                  </button>
+                  </Button>
                 </div>
               </div>
             </div>

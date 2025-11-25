@@ -91,9 +91,9 @@ const HelpNewPage = () => {
           link: "/help/setting-up-floor-plan"
         },
         {
-          title: "Alert Colors Explained",
-          description: "Learn the color-coded priority system for feedback",
-          link: "/help/alert-colors-explained"
+          title: "Alert Colours Explained",
+          description: "Learn the colour-coded priority system for feedback",
+          link: "/help/alert-colours-explained"
         },
         {
           title: "Staff Training for Kiosk Mode",

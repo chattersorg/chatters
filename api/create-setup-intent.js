@@ -17,7 +17,43 @@ module.exports = async (req, res) => {
     return res.status(400).json({ error: 'Account ID is required' });
   }
 
+  // Extract and verify authorization
+  const authHeader = req.headers.authorization;
+  if (!authHeader || !authHeader.startsWith('Bearer ')) {
+    return res.status(401).json({ error: 'Unauthorized - no token provided' });
+  }
+
+  const token = authHeader.replace('Bearer ', '');
+
   try {
+    // Verify the user's session
+    const { data: { user: authUser }, error: authError } = await supabase.auth.getUser(token);
+
+    if (authError || !authUser) {
+      return res.status(401).json({ error: 'Unauthorized - invalid token' });
+    }
+
+    // Get user's role and account_id
+    const { data: user, error: userError } = await supabase
+      .from('users')
+      .select('account_id, role')
+      .eq('id', authUser.id)
+      .single();
+
+    if (userError || !user) {
+      return res.status(401).json({ error: 'Unauthorized - user not found' });
+    }
+
+    // Check user has access to this account
+    if (user.account_id !== accountId) {
+      return res.status(403).json({ error: 'Forbidden - you do not have access to this account' });
+    }
+
+    // Only masters can update payment methods
+    if (user.role !== 'master') {
+      return res.status(403).json({ error: 'Forbidden - only account owners can update payment methods' });
+    }
+
     // Get account data from Supabase
     const { data: account, error: accountError } = await supabase
       .from('accounts')

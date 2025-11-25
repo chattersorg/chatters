@@ -94,7 +94,7 @@ const UnderstandingKioskMode = () => {
                 <div className="flex-1">
                   <h3 className="text-xl font-bold text-primary mb-3">Visual Floor Plan</h3>
                   <p className="text-gray-700 mb-4">
-                    See which tables need attention at a glance with color-coded indicators.
+                    See which tables need attention at a glance with colour-coded indicators.
                   </p>
                   <div className="grid md:grid-cols-2 gap-3">
                     <div className="flex items-center space-x-3 bg-white rounded-lg p-3 border border-gray-200">
@@ -205,8 +205,8 @@ const UnderstandingKioskMode = () => {
               <div className="flex items-start">
                 <div className="w-6 h-6 bg-brand text-white rounded-full flex items-center justify-center text-xs font-bold mr-3 mt-0.5 flex-shrink-0">1</div>
                 <div>
-                  <p className="font-semibold">Understanding Alert Colors</p>
-                  <p className="text-sm text-gray-600">Train staff on what each color means and appropriate response times</p>
+                  <p className="font-semibold">Understanding Alert Colours</p>
+                  <p className="text-sm text-gray-600">Train staff on what each colour means and appropriate response times</p>
                 </div>
               </div>
               <div className="flex items-start">

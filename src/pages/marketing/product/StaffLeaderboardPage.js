@@ -34,7 +34,7 @@ const StaffLeaderboardPage = () => {
 
       <PageHeader
         title="Motivate Your Team With Performance Leaderboards That Celebrate Success"
-        description="Turn customer service into a friendly competition. Track achievements, recognize top performers, and boost team morale with gamified performance tracking."
+        description="Turn customer service into a friendly competition. Track achievements, recognise top performers, and boost team morale with gamified performance tracking."
         backgroundGradient="from-white to-yellow-200"
         showSubtitle={true}
         subtitle="Staff Leaderboard"
@@ -47,7 +47,7 @@ const StaffLeaderboardPage = () => {
         description="Create a culture of excellence with interactive leaderboards that showcase individual and team achievements. Celebrate success and inspire continuous improvement."
         bullets={[
           "Real-time performance tracking",
-          "Customizable achievement badges", 
+          "Customisable achievement badges", 
           "Team and individual rankings",
           "Automated recognition system"
         ]}
@@ -76,7 +76,7 @@ const StaffLeaderboardPage = () => {
             id: "recognition",
             eyebrow: "Achievement System",
             title: "Celebrate wins with badges & rewards",
-            description: "Automatically recognize achievements with customizable badges, milestone celebrations, and reward systems that motivate continued excellence.",
+            description: "Automatically recognise achievements with customisable badges, milestone celebrations, and reward systems that motivate continued excellence.",
             bullets: ["Achievement badges", "Milestone rewards", "Custom recognition"],
             image: { src: "/img/mock-badges.png", alt: "Achievement badges and rewards" },
           },

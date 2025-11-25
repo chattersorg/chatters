@@ -1,5 +1,4 @@
 import React from 'react';
-import { ChartCard } from '../../components/dashboard/layout/ModernCard';
 import usePageTitle from '../../hooks/usePageTitle';
 import { useVenue } from '../../context/VenueContext';
 import BillingTab from '../../components/dashboard/settings/BillingTab';
@@ -14,12 +13,13 @@ const AccountBillingPage = () => {
 
   return (
     <div className="space-y-6">
-      <ChartCard
-        title="Billing & Subscription"
-        subtitle="Manage your subscription, billing details, and payment methods"
-      >
-        <BillingTab />
-      </ChartCard>
+      {/* Page Header */}
+      <div className="mb-2">
+        <h1 className="text-2xl font-semibold text-gray-900 dark:text-white">Billing & Subscription</h1>
+        <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">Manage your subscription, billing details, and payment methods</p>
+      </div>
+
+      <BillingTab />
     </div>
   );
 };

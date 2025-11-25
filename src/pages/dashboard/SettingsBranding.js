@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../../utils/supabase';
-import { ChartCard } from '../../components/dashboard/layout/ModernCard';
 import usePageTitle from '../../hooks/usePageTitle';
 import { useVenue } from '../../context/VenueContext';
 import BrandingTab from '../../components/dashboard/settings/BrandingTab';
@@ -11,6 +10,7 @@ const SettingsBrandingPage = () => {
 
   // State variables for BrandingTab
   const [logo, setLogo] = useState(null);
+  const [backgroundImage, setBackgroundImage] = useState(null);
   const [primaryColor, setPrimaryColor] = useState('#1890ff');
   const [backgroundColor, setBackgroundColor] = useState('#ffffff');
   const [textColor, setTextColor] = useState('#111827');
@@ -36,7 +36,7 @@ const SettingsBrandingPage = () => {
       // Fetch venue branding data
       const { data: venueData, error: venueError } = await supabase
         .from('venues')
-        .select('logo, primary_color, background_color, text_color, button_text_color, assistance_title, assistance_message, assistance_icon, thank_you_title, thank_you_message, thank_you_icon')
+        .select('logo, background_image, primary_color, background_color, text_color, button_text_color, assistance_title, assistance_message, assistance_icon, thank_you_title, thank_you_message, thank_you_icon')
         .eq('id', venueId)
         .single();
 
@@ -47,6 +47,7 @@ const SettingsBrandingPage = () => {
 
       // Set branding data
       setLogo(venueData.logo || null);
+      setBackgroundImage(venueData.background_image || null);
       setPrimaryColor(venueData.primary_color || '#1890ff');
       setBackgroundColor(venueData.background_color || '#ffffff');
       setTextColor(venueData.text_color || '#111827');
@@ -72,36 +73,39 @@ const SettingsBrandingPage = () => {
 
   return (
     <div className="space-y-6">
-      <ChartCard
-        title="Branding Settings"
-        subtitle="Customize the look and feel of your feedback forms and QR codes"
-      >
-        <BrandingTab
-          logo={logo}
-          setLogo={setLogo}
-          primaryColor={primaryColor}
-          setPrimaryColor={setPrimaryColor}
-          backgroundColor={backgroundColor}
-          setBackgroundColor={setBackgroundColor}
-          textColor={textColor}
-          setTextColor={setTextColor}
-          buttonTextColor={buttonTextColor}
-          setButtonTextColor={setButtonTextColor}
-          assistanceTitle={assistanceTitle}
-          setAssistanceTitle={setAssistanceTitle}
-          assistanceMessage={assistanceMessage}
-          setAssistanceMessage={setAssistanceMessage}
-          assistanceIcon={assistanceIcon}
-          setAssistanceIcon={setAssistanceIcon}
-          thankYouTitle={thankYouTitle}
-          setThankYouTitle={setThankYouTitle}
-          thankYouMessage={thankYouMessage}
-          setThankYouMessage={setThankYouMessage}
-          thankYouIcon={thankYouIcon}
-          setThankYouIcon={setThankYouIcon}
-          venueId={venueId}
-        />
-      </ChartCard>
+      {/* Page Header */}
+      <div className="mb-2">
+        <h1 className="text-2xl font-semibold text-gray-900 dark:text-white">Branding Settings</h1>
+        <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">Customize the look and feel of your feedback forms and QR codes</p>
+      </div>
+
+      <BrandingTab
+        logo={logo}
+        setLogo={setLogo}
+        backgroundImage={backgroundImage}
+        setBackgroundImage={setBackgroundImage}
+        primaryColor={primaryColor}
+        setPrimaryColor={setPrimaryColor}
+        backgroundColor={backgroundColor}
+        setBackgroundColor={setBackgroundColor}
+        textColor={textColor}
+        setTextColor={setTextColor}
+        buttonTextColor={buttonTextColor}
+        setButtonTextColor={setButtonTextColor}
+        assistanceTitle={assistanceTitle}
+        setAssistanceTitle={setAssistanceTitle}
+        assistanceMessage={assistanceMessage}
+        setAssistanceMessage={setAssistanceMessage}
+        assistanceIcon={assistanceIcon}
+        setAssistanceIcon={setAssistanceIcon}
+        thankYouTitle={thankYouTitle}
+        setThankYouTitle={setThankYouTitle}
+        thankYouMessage={thankYouMessage}
+        setThankYouMessage={setThankYouMessage}
+        thankYouIcon={thankYouIcon}
+        setThankYouIcon={setThankYouIcon}
+        venueId={venueId}
+      />
     </div>
   );
 };

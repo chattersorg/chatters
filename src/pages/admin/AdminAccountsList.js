@@ -17,7 +17,10 @@ import {
   ExternalLink,
   Clock,
   Loader2,
-  LogOut
+  LogOut,
+  MessageSquare,
+  Star,
+  TrendingUp
 } from 'lucide-react';
 
 const AdminAccountsList = () => {
@@ -25,18 +28,46 @@ const AdminAccountsList = () => {
   const [accounts, setAccounts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
-  const [showCreateModal, setShowCreateModal] = useState(false);
+  const [mrrData, setMrrData] = useState({ mrrByAccount: {}, totalMRR: 0, loading: true });
   const [stats, setStats] = useState({
     totalAccounts: 0,
     paidAccounts: 0,
     trialAccounts: 0,
+    expiredAccounts: 0,
     totalVenues: 0,
+    totalFeedback: 0,
     loading: true
   });
 
   useEffect(() => {
     loadAccounts();
+    loadMRRData();
   }, []);
+
+  const loadMRRData = async () => {
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session?.access_token) return;
+
+      const response = await fetch('/api/admin-get-mrr', {
+        headers: {
+          'Authorization': `Bearer ${session.access_token}`
+        }
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        setMrrData({
+          mrrByAccount: data.mrrByAccount || {},
+          totalMRR: data.totalMRR || 0,
+          loading: false
+        });
+      }
+    } catch (error) {
+      console.error('Error loading MRR data:', error);
+      setMrrData(prev => ({ ...prev, loading: false }));
+    }
+  };
 
   const loadAccounts = async () => {
     try {
@@ -48,21 +79,52 @@ const AdminAccountsList = () => {
         .select(`
           *,
           users(id, email, first_name, last_name, role),
-          venues(id)
+          venues(id, name, table_count)
         `)
         .order('created_at', { ascending: false });
 
       if (accountsError) throw accountsError;
 
-      // Process accounts to include venue count
+      // Get all venue IDs for feedback counts
+      const allVenueIds = accountsData?.flatMap(a => a.venues?.map(v => v.id) || []) || [];
+
+      // Load feedback counts per venue (last 30 days)
+      const thirtyDaysAgo = new Date();
+      thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+
+      let feedbackCounts = {};
+      if (allVenueIds.length > 0) {
+        const { data: feedbackData } = await supabase
+          .from('feedback')
+          .select('venue_id')
+          .in('venue_id', allVenueIds)
+          .gte('created_at', thirtyDaysAgo.toISOString());
+
+        feedbackCounts = (feedbackData || []).reduce((acc, item) => {
+          acc[item.venue_id] = (acc[item.venue_id] || 0) + 1;
+          return acc;
+        }, {});
+      }
+
+      // Process accounts to include venue count and feedback
       const processedAccounts = accountsData?.map(account => {
         // Find master user - prefer ones with complete profile (first_name and last_name)
         const masterUsers = account.users?.filter(u => u.role === 'master') || [];
         const masterUser = masterUsers.find(u => u.first_name && u.last_name) || masterUsers[0] || account.users?.[0];
 
+        // Calculate total feedback for this account
+        const accountFeedback = account.venues?.reduce((sum, v) => sum + (feedbackCounts[v.id] || 0), 0) || 0;
+
+        // Calculate total tables
+        const totalTables = account.venues?.reduce((sum, v) => sum + (v.table_count || 0), 0) || 0;
+
+        const venueCount = account.venues?.length || 0;
+
         return {
           ...account,
-          venueCount: account.venues?.length || 0,
+          venueCount,
+          totalTables,
+          feedbackCount: accountFeedback,
           masterUser
         };
       }) || [];
@@ -75,13 +137,19 @@ const AdminAccountsList = () => {
       const trialCount = processedAccounts.filter(a =>
         !a.is_paid && a.trial_ends_at && new Date(a.trial_ends_at) > now
       ).length;
+      const expiredCount = processedAccounts.filter(a =>
+        !a.is_paid && (!a.trial_ends_at || new Date(a.trial_ends_at) <= now)
+      ).length;
       const totalVenueCount = processedAccounts.reduce((sum, a) => sum + a.venueCount, 0);
+      const totalFeedbackCount = processedAccounts.reduce((sum, a) => sum + a.feedbackCount, 0);
 
       setStats({
         totalAccounts: processedAccounts.length,
         paidAccounts: paidCount,
         trialAccounts: trialCount,
+        expiredAccounts: expiredCount,
         totalVenues: totalVenueCount,
+        totalFeedback: totalFeedbackCount,
         loading: false
       });
 
@@ -207,15 +275,15 @@ const AdminAccountsList = () => {
             </div>
             <div className="flex items-center gap-3">
               <button
-                onClick={loadAccounts}
-                disabled={loading}
+                onClick={() => { loadAccounts(); loadMRRData(); }}
+                disabled={loading || mrrData.loading}
                 className="inline-flex items-center gap-2 px-4 py-2.5 border border-gray-300 text-sm font-medium rounded-lg text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors disabled:opacity-50"
               >
-                <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
+                <RefreshCw className={`w-4 h-4 ${loading || mrrData.loading ? 'animate-spin' : ''}`} />
                 Refresh
               </button>
               <button
-                onClick={() => setShowCreateModal(true)}
+                onClick={() => navigate('/admin/create')}
                 className="inline-flex items-center gap-2 px-4 py-2.5 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors"
               >
                 <Plus className="w-4 h-4" />
@@ -234,70 +302,69 @@ const AdminAccountsList = () => {
       </div>
 
       <div className="max-w-[1400px] mx-auto px-6 lg:px-8 py-8">
-        {/* Statistics Cards */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 mb-8">
-          <div className="bg-white border border-gray-200 rounded-xl p-6 hover:shadow-md transition-shadow">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-gray-600 mb-1">
-                  Total Accounts
-                </p>
-                <p className="text-3xl font-semibold text-gray-900">
-                  {stats.totalAccounts}
-                </p>
-              </div>
-              <div className="p-3 bg-blue-50 rounded-lg">
-                <Building2 className="h-7 w-7 text-blue-600" />
-              </div>
+        {/* Statistics Cards - More Compact */}
+        <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-3 mb-6">
+          <div className="bg-white border border-gray-200 rounded-lg p-4 hover:shadow-sm transition-shadow">
+            <div className="flex items-center gap-2 mb-1">
+              <Building2 className="h-4 w-4 text-blue-600" />
+              <p className="text-xs font-medium text-gray-500 uppercase">Accounts</p>
             </div>
+            <p className="text-2xl font-semibold text-gray-900">{stats.totalAccounts}</p>
           </div>
 
-          <div className="bg-white border border-gray-200 rounded-xl p-6 hover:shadow-md transition-shadow">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-gray-600 mb-1">
-                  Paid Accounts
-                </p>
-                <p className="text-3xl font-semibold text-gray-900">
-                  {stats.paidAccounts}
-                </p>
-              </div>
-              <div className="p-3 bg-green-50 rounded-lg">
-                <CreditCard className="h-7 w-7 text-green-600" />
-              </div>
+          <div className="bg-white border border-gray-200 rounded-lg p-4 hover:shadow-sm transition-shadow">
+            <div className="flex items-center gap-2 mb-1">
+              <CreditCard className="h-4 w-4 text-green-600" />
+              <p className="text-xs font-medium text-gray-500 uppercase">Paid</p>
             </div>
+            <p className="text-2xl font-semibold text-green-600">{stats.paidAccounts}</p>
           </div>
 
-          <div className="bg-white border border-gray-200 rounded-xl p-6 hover:shadow-md transition-shadow">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-gray-600 mb-1">
-                  Trial Accounts
-                </p>
-                <p className="text-3xl font-semibold text-gray-900">
-                  {stats.trialAccounts}
-                </p>
-              </div>
-              <div className="p-3 bg-blue-50 rounded-lg">
-                <Clock className="h-7 w-7 text-blue-600" />
-              </div>
+          <div className="bg-white border border-gray-200 rounded-lg p-4 hover:shadow-sm transition-shadow">
+            <div className="flex items-center gap-2 mb-1">
+              <Clock className="h-4 w-4 text-blue-600" />
+              <p className="text-xs font-medium text-gray-500 uppercase">Trial</p>
             </div>
+            <p className="text-2xl font-semibold text-blue-600">{stats.trialAccounts}</p>
           </div>
 
-          <div className="bg-white border border-gray-200 rounded-xl p-6 hover:shadow-md transition-shadow">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-gray-600 mb-1">
-                  Total Venues
-                </p>
-                <p className="text-3xl font-semibold text-gray-900">
-                  {stats.totalVenues}
-                </p>
-              </div>
-              <div className="p-3 bg-purple-50 rounded-lg">
-                <Building2 className="h-7 w-7 text-purple-600" />
-              </div>
+          <div className="bg-white border border-gray-200 rounded-lg p-4 hover:shadow-sm transition-shadow">
+            <div className="flex items-center gap-2 mb-1">
+              <X className="h-4 w-4 text-red-600" />
+              <p className="text-xs font-medium text-gray-500 uppercase">Expired</p>
             </div>
+            <p className="text-2xl font-semibold text-red-600">{stats.expiredAccounts}</p>
+          </div>
+
+          <div className="bg-white border border-gray-200 rounded-lg p-4 hover:shadow-sm transition-shadow">
+            <div className="flex items-center gap-2 mb-1">
+              <Building2 className="h-4 w-4 text-purple-600" />
+              <p className="text-xs font-medium text-gray-500 uppercase">Venues</p>
+            </div>
+            <p className="text-2xl font-semibold text-gray-900">{stats.totalVenues}</p>
+          </div>
+
+          <div className="bg-white border border-gray-200 rounded-lg p-4 hover:shadow-sm transition-shadow">
+            <div className="flex items-center gap-2 mb-1">
+              <MessageSquare className="h-4 w-4 text-orange-600" />
+              <p className="text-xs font-medium text-gray-500 uppercase">Feedback (30d)</p>
+            </div>
+            <p className="text-2xl font-semibold text-gray-900">{stats.totalFeedback}</p>
+          </div>
+
+          <div className="bg-white border border-green-200 rounded-lg p-4 hover:shadow-sm transition-shadow bg-green-50">
+            <div className="flex items-center gap-2 mb-1">
+              <TrendingUp className="h-4 w-4 text-green-600" />
+              <p className="text-xs font-medium text-green-700 uppercase">MRR</p>
+            </div>
+            {mrrData.loading ? (
+              <div className="flex items-center gap-2">
+                <Loader2 className="h-4 w-4 animate-spin text-green-600" />
+                <span className="text-sm text-green-600">Loading...</span>
+              </div>
+            ) : (
+              <p className="text-2xl font-semibold text-green-700">£{mrrData.totalMRR.toLocaleString()}</p>
+            )}
           </div>
         </div>
 
@@ -332,35 +399,44 @@ const AdminAccountsList = () => {
           </div>
         </div>
 
-        {/* Accounts Table */}
+        {/* Accounts Table - More Compact */}
         <div className="bg-white border border-gray-200 rounded-xl overflow-hidden">
           <div className="overflow-x-auto">
             <table className="min-w-full divide-y divide-gray-200">
               <thead className="bg-gray-50">
                 <tr>
-                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Account / Company
+                  <th scope="col" className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Account
                   </th>
-                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th scope="col" className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Master User
                   </th>
-                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th scope="col" className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Status
                   </th>
-                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Next Billing Date
-                  </th>
-                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th scope="col" className="px-4 py-2 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Venues
                   </th>
-                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th scope="col" className="px-4 py-2 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Tables
+                  </th>
+                  <th scope="col" className="px-4 py-2 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Feedback
+                  </th>
+                  <th scope="col" className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Trial/Billing
+                  </th>
+                  <th scope="col" className="px-4 py-2 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    MRR
+                  </th>
+                  <th scope="col" className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Created
                   </th>
-                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th scope="col" className="px-4 py-2 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Stripe
                   </th>
-                  <th scope="col" className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Actions
+                  <th scope="col" className="px-4 py-2 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+
                   </th>
                 </tr>
               </thead>
@@ -370,32 +446,49 @@ const AdminAccountsList = () => {
                   const stripeUrl = getStripeCustomerUrl(account.stripe_customer_id);
 
                   return (
-                    <tr key={account.id} className="hover:bg-gray-50 transition-colors">
-                      <td className="px-6 py-4 whitespace-nowrap">
+                    <tr
+                      key={account.id}
+                      className="hover:bg-gray-50 transition-colors cursor-pointer"
+                      onClick={() => navigate(`/admin/accounts/${account.id}`)}
+                    >
+                      <td className="px-4 py-3 whitespace-nowrap">
                         <div className="text-sm font-medium text-gray-900">
-                          {account.name || 'Unnamed Account'}
+                          {account.name || 'Unnamed'}
                         </div>
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm text-gray-900">
+                      <td className="px-4 py-3 whitespace-nowrap">
+                        <div className="text-xs text-gray-900">
                           {account.masterUser ? (
                             <>
                               <div className="font-medium">
                                 {account.masterUser.first_name} {account.masterUser.last_name}
                               </div>
-                              <div className="text-gray-500">{account.masterUser.email}</div>
+                              <div className="text-gray-500 truncate max-w-[150px]" title={account.masterUser.email}>
+                                {account.masterUser.email}
+                              </div>
                             </>
                           ) : (
-                            <span className="text-gray-400">No master user</span>
+                            <span className="text-gray-400">—</span>
                           )}
                         </div>
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <span className={`inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-medium border ${status.bgColor} ${status.textColor} ${status.borderColor}`}>
+                      <td className="px-4 py-3 whitespace-nowrap">
+                        <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium border ${status.bgColor} ${status.textColor} ${status.borderColor}`}>
                           {status.label}
                         </span>
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                      <td className="px-4 py-3 whitespace-nowrap text-center text-sm text-gray-900">
+                        {account.venueCount}
+                      </td>
+                      <td className="px-4 py-3 whitespace-nowrap text-center text-sm text-gray-900">
+                        {account.totalTables}
+                      </td>
+                      <td className="px-4 py-3 whitespace-nowrap text-center">
+                        <span className={`text-sm ${account.feedbackCount > 0 ? 'text-gray-900 font-medium' : 'text-gray-400'}`}>
+                          {account.feedbackCount}
+                        </span>
+                      </td>
+                      <td className="px-4 py-3 whitespace-nowrap text-xs text-gray-900">
                         {account.is_paid && account.subscription_period_end ? (
                           formatDate(account.subscription_period_end)
                         ) : account.trial_ends_at ? (
@@ -404,35 +497,37 @@ const AdminAccountsList = () => {
                           <span className="text-gray-400">—</span>
                         )}
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                        {account.venueCount}
+                      <td className="px-4 py-3 whitespace-nowrap text-right">
+                        {mrrData.loading ? (
+                          <Loader2 className="h-3 w-3 animate-spin text-gray-400 inline" />
+                        ) : mrrData.mrrByAccount[account.id] > 0 ? (
+                          <span className="text-sm font-medium text-green-600">
+                            £{mrrData.mrrByAccount[account.id].toLocaleString()}
+                          </span>
+                        ) : (
+                          <span className="text-xs text-gray-400">—</span>
+                        )}
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                      <td className="px-4 py-3 whitespace-nowrap text-xs text-gray-500">
                         {new Date(account.created_at).toLocaleDateString()}
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
+                      <td className="px-4 py-3 whitespace-nowrap text-center">
                         {stripeUrl ? (
                           <a
                             href={stripeUrl}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="inline-flex items-center gap-1 text-sm text-blue-600 hover:text-blue-800 transition-colors"
+                            className="inline-flex items-center gap-1 text-xs text-blue-600 hover:text-blue-800 transition-colors"
+                            onClick={(e) => e.stopPropagation()}
                           >
-                            <ExternalLink className="w-3.5 h-3.5" />
-                            View
+                            <ExternalLink className="w-3 h-3" />
                           </a>
                         ) : (
-                          <span className="text-xs text-gray-400">No Stripe</span>
+                          <span className="text-xs text-gray-300">—</span>
                         )}
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                        <button
-                          onClick={() => navigate(`/admin/accounts/${account.id}`)}
-                          className="inline-flex items-center gap-1 text-blue-600 hover:text-blue-800 transition-colors"
-                        >
-                          View Details
-                          <ChevronRight className="w-4 h-4" />
-                        </button>
+                      <td className="px-4 py-3 whitespace-nowrap text-right text-sm font-medium">
+                        <ChevronRight className="w-4 h-4 text-gray-400" />
                       </td>
                     </tr>
                   );
@@ -455,224 +550,6 @@ const AdminAccountsList = () => {
         </div>
       </div>
 
-      {/* Create Account Modal */}
-      {showCreateModal && (
-        <CreateAccountModal
-          onClose={() => setShowCreateModal(false)}
-          onSuccess={() => {
-            setShowCreateModal(false);
-            loadAccounts();
-          }}
-        />
-      )}
-    </div>
-  );
-};
-
-// Create Account Modal Component
-const CreateAccountModal = ({ onClose, onSuccess }) => {
-  const [formData, setFormData] = useState({
-    firstName: '',
-    lastName: '',
-    email: '',
-    companyName: '',
-    phone: '',
-    startTrial: true,
-    trialDays: 14
-  });
-  const [creating, setCreating] = useState(false);
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-
-    if (!formData.firstName || !formData.lastName || !formData.email || !formData.companyName) {
-      toast.error('Please fill in all required fields');
-      return;
-    }
-
-    setCreating(true);
-
-    try {
-      const { data: { session } } = await supabase.auth.getSession();
-
-      const apiUrl = window.location.hostname === 'localhost'
-        ? 'https://my.getchatters.com/api/admin/create-account'
-        : '/api/admin/create-account';
-
-      const response = await fetch(apiUrl, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${session?.access_token}`
-        },
-        body: JSON.stringify({
-          firstName: formData.firstName,
-          lastName: formData.lastName,
-          email: formData.email,
-          companyName: formData.companyName,
-          phone: formData.phone,
-          startTrial: formData.startTrial,
-          trialDays: formData.trialDays
-        })
-      });
-
-      const result = await response.json();
-
-      if (!response.ok) {
-        throw new Error(result.error || 'Failed to create account');
-      }
-
-      toast.success('Account created successfully! Invitation email sent.');
-      onSuccess();
-
-    } catch (error) {
-      console.error('Error creating account:', error);
-      toast.error('Failed to create account: ' + error.message);
-    } finally {
-      setCreating(false);
-    }
-  };
-
-  return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-      <div className="bg-white rounded-2xl w-full max-w-md">
-        <div className="px-6 py-5 border-b border-gray-200">
-          <div className="flex items-center justify-between">
-            <h2 className="text-xl font-semibold text-gray-900">Create New Account</h2>
-            <button
-              onClick={onClose}
-              className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-all"
-            >
-              <X className="w-5 h-5" />
-            </button>
-          </div>
-        </div>
-
-        <form onSubmit={handleSubmit} className="px-6 py-5 space-y-4">
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1.5">
-                First Name *
-              </label>
-              <input
-                type="text"
-                value={formData.firstName}
-                onChange={(e) => setFormData({...formData, firstName: e.target.value})}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                required
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1.5">
-                Last Name *
-              </label>
-              <input
-                type="text"
-                value={formData.lastName}
-                onChange={(e) => setFormData({...formData, lastName: e.target.value})}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                required
-              />
-            </div>
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1.5">
-              Email Address *
-            </label>
-            <input
-              type="email"
-              value={formData.email}
-              onChange={(e) => setFormData({...formData, email: e.target.value})}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-              required
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1.5">
-              Company Name *
-            </label>
-            <input
-              type="text"
-              value={formData.companyName}
-              onChange={(e) => setFormData({...formData, companyName: e.target.value})}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-              required
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1.5">
-              Phone Number
-            </label>
-            <input
-              type="tel"
-              value={formData.phone}
-              onChange={(e) => setFormData({...formData, phone: e.target.value})}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-              placeholder="+44 20 1234 5678"
-            />
-          </div>
-
-          <div className="pt-4 border-t border-gray-200">
-            <label className="flex items-center gap-3">
-              <input
-                type="checkbox"
-                checked={formData.startTrial}
-                onChange={(e) => setFormData({...formData, startTrial: e.target.checked})}
-                className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
-              />
-              <span className="text-sm font-medium text-gray-700">Start Trial</span>
-            </label>
-
-            {formData.startTrial && (
-              <div className="mt-3 ml-7">
-                <label className="block text-sm font-medium text-gray-700 mb-1.5">
-                  Trial Duration
-                </label>
-                <select
-                  value={formData.trialDays}
-                  onChange={(e) => setFormData({...formData, trialDays: parseInt(e.target.value)})}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                >
-                  <option value={14}>14 days</option>
-                  <option value={30}>30 days</option>
-                </select>
-              </div>
-            )}
-          </div>
-        </form>
-
-        <div className="px-6 py-4 bg-gray-50 border-t border-gray-200 rounded-b-2xl">
-          <div className="flex justify-end gap-3">
-            <button
-              type="button"
-              onClick={onClose}
-              className="px-4 py-2 text-gray-700 bg-white border border-gray-300 hover:bg-gray-50 rounded-lg transition-colors"
-            >
-              Cancel
-            </button>
-            <button
-              onClick={handleSubmit}
-              disabled={creating}
-              className="px-4 py-2 bg-blue-600 text-white hover:bg-blue-700 rounded-lg transition-colors disabled:opacity-50 flex items-center gap-2"
-            >
-              {creating ? (
-                <>
-                  <Loader2 className="w-4 h-4 animate-spin" />
-                  Creating...
-                </>
-              ) : (
-                <>
-                  <Plus className="w-4 h-4" />
-                  Create Account
-                </>
-              )}
-            </button>
-          </div>
-        </div>
-      </div>
     </div>
   );
 };

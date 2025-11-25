@@ -126,6 +126,7 @@ const venueNavItems = [
       { label: 'Venue Details', path: '/settings/venue-details', icon: Building2 },
       { label: 'Feedback', path: '/settings/feedback', icon: MessageSquare },
       { label: 'Branding', path: '/settings/branding', icon: Palette },
+      { label: 'QR Code', path: '/feedback/qr', icon: QrCode },
       { label: 'Integrations', path: '/settings/integrations', icon: Activity }
     ]
   }
@@ -313,14 +314,14 @@ const Sidebar = ({ collapsed, setCollapsed }) => {
 
       {/* Sidebar */}
       <div
-        className={`fixed left-0 top-0 z-40 h-screen bg-white border-r border-gray-200 transition-all duration-300 flex flex-col ${
+        className={`fixed left-0 top-0 z-40 h-screen bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-800 transition-all duration-300 flex flex-col ${
           collapsed
             ? '-translate-x-full lg:translate-x-0 lg:w-16'
             : 'translate-x-0 w-64'
         }`}
       >
         {/* Sidebar Header */}
-        <div className="flex items-center justify-between p-4 border-b border-gray-200">
+        <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-800">
           {!collapsed && (
             <div className="flex flex-col gap-1">
               <img
@@ -333,7 +334,7 @@ const Sidebar = ({ collapsed, setCollapsed }) => {
           )}
           <button
             onClick={() => setCollapsed(!collapsed)}
-            className="p-2 rounded-lg hover:bg-gray-100 transition-colors"
+            className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors text-gray-700 dark:text-gray-300"
           >
             {collapsed ? <Menu className="w-4 h-4" /> : <X className="w-4 h-4" />}
           </button>
@@ -346,16 +347,16 @@ const Sidebar = ({ collapsed, setCollapsed }) => {
               <div className="relative">
                 <button
                   onClick={() => setVenueDropdownOpen(!venueDropdownOpen)}
-                  className="w-full flex items-center justify-between px-3 py-2.5 rounded-lg bg-gray-50 hover:bg-gray-100 transition-colors border border-gray-200"
+                  className="w-full flex items-center justify-between px-3 py-2.5 rounded-lg bg-gray-50 dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors border border-gray-200 dark:border-gray-700"
                 >
                   <div className="flex items-center gap-2 min-w-0">
-                    <Building2 className="w-5 h-5 text-gray-600 flex-shrink-0" />
-                    <span className="text-sm font-medium text-gray-900 truncate">{venueName}</span>
+                    <Building2 className="w-5 h-5 text-gray-600 dark:text-gray-300 flex-shrink-0" />
+                    <span className="text-sm font-medium text-gray-900 dark:text-gray-100 truncate">{venueName}</span>
                   </div>
-                  <ChevronDown className={`w-4 h-4 text-gray-400 flex-shrink-0 transition-transform ${venueDropdownOpen ? 'rotate-180' : ''}`} />
+                  <ChevronDown className={`w-4 h-4 text-gray-400 dark:text-gray-400 flex-shrink-0 transition-transform ${venueDropdownOpen ? 'rotate-180' : ''}`} />
                 </button>
                 {venueDropdownOpen && (
-                  <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-gray-200 rounded-lg shadow-lg z-50 max-h-60 overflow-y-auto">
+                  <div className="absolute top-full left-0 right-0 mt-1 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-lg shadow-lg z-50 max-h-60 overflow-y-auto">
                     {allVenues.map((venue) => (
                       <button
                         key={venue.id}
@@ -363,22 +364,22 @@ const Sidebar = ({ collapsed, setCollapsed }) => {
                           setCurrentVenue(venue.id);
                           setVenueDropdownOpen(false);
                         }}
-                        className={`w-full flex items-center gap-2 px-3 py-2.5 text-sm hover:bg-gray-50 transition-colors ${
-                          venue.id === venueId ? 'bg-blue-50 text-blue-700 font-medium' : 'text-gray-700'
+                        className={`w-full flex items-center gap-2 px-3 py-2.5 text-sm hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors ${
+                          venue.id === venueId ? 'bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-400 font-medium' : 'text-gray-700 dark:text-gray-300'
                         }`}
                       >
                         <Building2 className="w-4 h-4 flex-shrink-0" />
                         <span className="truncate">{venue.name}</span>
-                        {venue.id === venueId && <span className="ml-auto text-blue-600">✓</span>}
+                        {venue.id === venueId && <span className="ml-auto text-blue-600 dark:text-blue-400">✓</span>}
                       </button>
                     ))}
                   </div>
                 )}
               </div>
             ) : (
-              <div className="flex items-center gap-2 px-3 py-2.5 rounded-lg bg-gray-50 border border-gray-200">
-                <Building2 className="w-5 h-5 text-gray-600 flex-shrink-0" />
-                <span className="text-sm font-medium text-gray-900 truncate">{venueName}</span>
+              <div className="flex items-center gap-2 px-3 py-2.5 rounded-lg bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700">
+                <Building2 className="w-5 h-5 text-gray-600 dark:text-gray-300 flex-shrink-0" />
+                <span className="text-sm font-medium text-gray-900 dark:text-gray-100 truncate">{venueName}</span>
               </div>
             )}
           </div>
@@ -400,12 +401,12 @@ const Sidebar = ({ collapsed, setCollapsed }) => {
                     onClick={() => toggleSubmenu(item.id)}
                     className={`w-full flex items-center justify-between px-3 py-2 rounded-lg transition-all duration-200 group ${
                       itemActive
-                        ? 'bg-gray-100 text-gray-900 shadow-sm'
-                        : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
+                        ? 'bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-gray-100 shadow-sm'
+                        : 'text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-gray-100'
                     }`}
                   >
                     <div className="flex items-center">
-                      <Icon className={`w-5 h-5 ${itemActive ? item.color : 'text-gray-400 group-hover:text-gray-600'}`} />
+                      <Icon className={`w-5 h-5 ${itemActive ? item.color : 'text-gray-400 dark:text-gray-500 group-hover:text-gray-600 dark:group-hover:text-gray-300'}`} />
                       {!collapsed && (
                         <span className="ml-3 font-medium text-sm">{item.label}</span>
                       )}
@@ -424,19 +425,19 @@ const Sidebar = ({ collapsed, setCollapsed }) => {
                     onClick={handleMobileLinkClick}
                     className={`flex items-center justify-between px-3 py-2 rounded-lg transition-all duration-200 group ${
                       itemActive
-                        ? 'bg-gray-100 text-gray-900 shadow-sm'
-                        : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
+                        ? 'bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-gray-100 shadow-sm'
+                        : 'text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-gray-100'
                     }`}
                     title={collapsed ? item.label : ''}
                   >
                     <div className="flex items-center">
-                      <Icon className={`w-5 h-5 ${itemActive ? item.color : 'text-gray-400 group-hover:text-gray-600'}`} />
+                      <Icon className={`w-5 h-5 ${itemActive ? item.color : 'text-gray-400 dark:text-gray-500 group-hover:text-gray-600 dark:group-hover:text-gray-300'}`} />
                       {!collapsed && (
                         <span className="ml-3 font-medium text-sm">{item.label}</span>
                       )}
                     </div>
                     {!collapsed && item.badge && (
-                      <span className="px-1.5 py-0.5 text-[10px] font-semibold text-blue-700 bg-blue-100 rounded uppercase tracking-wide">
+                      <span className="px-1.5 py-0.5 text-[10px] font-semibold text-blue-700 dark:text-blue-400 bg-blue-100 dark:bg-blue-900/30 rounded uppercase tracking-wide">
                         {item.badge}
                       </span>
                     )}
@@ -445,7 +446,7 @@ const Sidebar = ({ collapsed, setCollapsed }) => {
 
                 {/* Submenu Items */}
                 {showSubmenu && (
-                  <div className="ml-2 mt-1 space-y-1 border-l-2 border-gray-100 pl-4">
+                  <div className="ml-2 mt-1 space-y-1 border-l-2 border-gray-100 dark:border-gray-800 pl-4">
                     {item.subItems.map((subItem) => {
                       const SubIcon = subItem.icon;
                       return (
@@ -455,8 +456,8 @@ const Sidebar = ({ collapsed, setCollapsed }) => {
                           onClick={handleMobileLinkClick}
                           className={`flex items-center justify-between px-3 py-2 text-sm rounded-md transition-colors group ${
                             isActive(subItem.path)
-                              ? 'bg-blue-50 text-blue-700 font-medium'
-                              : 'text-gray-500 hover:bg-gray-50 hover:text-gray-700'
+                              ? 'bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-400 font-medium'
+                              : 'text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800 hover:text-gray-700 dark:hover:text-gray-300'
                           }`}
                         >
                           <div className="flex items-center">
@@ -464,7 +465,7 @@ const Sidebar = ({ collapsed, setCollapsed }) => {
                             {subItem.label}
                           </div>
                           {subItem.badge && (
-                            <span className="px-1.5 py-0.5 text-[10px] font-semibold text-blue-700 bg-blue-100 rounded uppercase tracking-wide">
+                            <span className="px-1.5 py-0.5 text-[10px] font-semibold text-blue-700 dark:text-blue-400 bg-blue-100 dark:bg-blue-900/30 rounded uppercase tracking-wide">
                               {subItem.badge}
                             </span>
                           )}
@@ -480,8 +481,8 @@ const Sidebar = ({ collapsed, setCollapsed }) => {
           {/* Multi-Venue Section Divider */}
           {hasMultipleVenues && !collapsed && (
             <div className="my-4 px-3">
-              <div className="border-t border-gray-200 pt-4">
-                <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">
+              <div className="border-t border-gray-200 dark:border-gray-800 pt-4">
+                <p className="text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wider mb-2">
                   Multi Venue
                 </p>
               </div>
@@ -502,12 +503,12 @@ const Sidebar = ({ collapsed, setCollapsed }) => {
                     onClick={() => toggleSubmenu(item.id)}
                     className={`w-full flex items-center justify-between px-3 py-2 rounded-lg transition-all duration-200 group ${
                       itemActive
-                        ? 'bg-gray-100 text-gray-900 shadow-sm'
-                        : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
+                        ? 'bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-gray-100 shadow-sm'
+                        : 'text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-gray-100'
                     }`}
                   >
                     <div className="flex items-center">
-                      <Icon className={`w-5 h-5 ${itemActive ? item.color : 'text-gray-400 group-hover:text-gray-600'}`} />
+                      <Icon className={`w-5 h-5 ${itemActive ? item.color : 'text-gray-400 dark:text-gray-500 group-hover:text-gray-600 dark:group-hover:text-gray-300'}`} />
                       {!collapsed && (
                         <span className="ml-3 font-medium text-sm">{item.label}</span>
                       )}
@@ -526,13 +527,13 @@ const Sidebar = ({ collapsed, setCollapsed }) => {
                     onClick={handleMobileLinkClick}
                     className={`flex items-center justify-between px-3 py-2 rounded-lg transition-all duration-200 group ${
                       itemActive
-                        ? 'bg-gray-100 text-gray-900 shadow-sm'
-                        : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
+                        ? 'bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-gray-100 shadow-sm'
+                        : 'text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-gray-100'
                     }`}
                     title={collapsed ? item.label : ''}
                   >
                     <div className="flex items-center">
-                      <Icon className={`w-5 h-5 ${itemActive ? item.color : 'text-gray-400 group-hover:text-gray-600'}`} />
+                      <Icon className={`w-5 h-5 ${itemActive ? item.color : 'text-gray-400 dark:text-gray-500 group-hover:text-gray-600 dark:group-hover:text-gray-300'}`} />
                       {!collapsed && (
                         <span className="ml-3 font-medium text-sm">{item.label}</span>
                       )}
@@ -542,7 +543,7 @@ const Sidebar = ({ collapsed, setCollapsed }) => {
 
                 {/* Submenu Items */}
                 {showSubmenu && (
-                  <div className="ml-2 mt-1 space-y-1 border-l-2 border-gray-100 pl-4">
+                  <div className="ml-2 mt-1 space-y-1 border-l-2 border-gray-100 dark:border-gray-800 pl-4">
                     {item.subItems.map((subItem) => {
                       const SubIcon = subItem.icon;
                       return (
@@ -552,8 +553,8 @@ const Sidebar = ({ collapsed, setCollapsed }) => {
                           onClick={handleMobileLinkClick}
                           className={`flex items-center justify-between px-3 py-2 text-sm rounded-md transition-colors group ${
                             isActive(subItem.path)
-                              ? 'bg-blue-50 text-blue-700 font-medium'
-                              : 'text-gray-500 hover:bg-gray-50 hover:text-gray-700'
+                              ? 'bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-400 font-medium'
+                              : 'text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800 hover:text-gray-700 dark:hover:text-gray-300'
                           }`}
                         >
                           <div className="flex items-center">
@@ -571,11 +572,11 @@ const Sidebar = ({ collapsed, setCollapsed }) => {
         </nav>
 
         {/* Account Actions - Bottom of Sidebar */}
-        <div className="mt-auto p-2 border-t border-gray-200">
+        <div className="mt-auto p-2 border-t border-gray-200 dark:border-gray-800">
           {/* Account Settings Section */}
           {!collapsed && (
             <div className="mb-2">
-              <p className="px-3 text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">
+              <p className="px-3 text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wider mb-2">
                 Account Settings
               </p>
               <div className="space-y-1">
@@ -587,8 +588,8 @@ const Sidebar = ({ collapsed, setCollapsed }) => {
                       to={item.path}
                       className={`flex items-center px-3 py-2 text-sm rounded-lg transition-colors group ${
                         isActive(item.path)
-                          ? 'bg-blue-50 text-blue-700 font-medium'
-                          : 'text-gray-500 hover:bg-gray-50 hover:text-gray-700'
+                          ? 'bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-400 font-medium'
+                          : 'text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800 hover:text-gray-700 dark:hover:text-gray-300'
                       }`}
                     >
                       <ItemIcon className="w-4 h-4 mr-2" />
@@ -611,12 +612,12 @@ const Sidebar = ({ collapsed, setCollapsed }) => {
                     to={item.path}
                     className={`flex items-center px-3 py-2 rounded-lg transition-all duration-200 group ${
                       isActive(item.path)
-                        ? 'bg-gray-100 text-gray-900 shadow-sm'
-                        : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
+                        ? 'bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-gray-100 shadow-sm'
+                        : 'text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-gray-100'
                     }`}
                     title={item.label}
                   >
-                    <ItemIcon className={`w-5 h-5 ${isActive(item.path) ? 'text-gray-600' : 'text-gray-400 group-hover:text-gray-600'}`} />
+                    <ItemIcon className={`w-5 h-5 ${isActive(item.path) ? 'text-gray-600 dark:text-gray-300' : 'text-gray-400 dark:text-gray-500 group-hover:text-gray-600 dark:group-hover:text-gray-300'}`} />
                   </Link>
                 );
               })}
@@ -626,10 +627,10 @@ const Sidebar = ({ collapsed, setCollapsed }) => {
           {/* Sign Out */}
           <button
             onClick={handleSignOut}
-            className="w-full flex items-center px-3 py-2 rounded-lg transition-all duration-200 group text-red-600 hover:bg-red-50"
+            className="w-full flex items-center px-3 py-2 rounded-lg transition-all duration-200 group text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20"
             title={collapsed ? 'Sign Out' : ''}
           >
-            <LogOut className="w-5 h-5 text-red-500" />
+            <LogOut className="w-5 h-5 text-red-500 dark:text-red-400" />
             {!collapsed && (
               <span className="ml-3 font-medium text-sm">Sign Out</span>
             )}

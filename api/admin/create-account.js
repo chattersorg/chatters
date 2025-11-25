@@ -1,5 +1,6 @@
 const { createClient } = require('@supabase/supabase-js');
 const { Resend } = require('resend');
+const Stripe = require('stripe');
 
 const supabase = createClient(
   process.env.REACT_APP_SUPABASE_URL,
@@ -7,13 +8,25 @@ const supabase = createClient(
 );
 
 const resend = new Resend(process.env.RESEND_API_KEY);
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 
 module.exports = async (req, res) => {
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
-  const { firstName, lastName, email, companyName, phone, startTrial, trialDays } = req.body;
+  const {
+    firstName,
+    lastName,
+    email,
+    companyName,
+    phone,
+    accountPhone,
+    billingEmail,
+    startTrial,
+    trialDays,
+    venues
+  } = req.body;
 
   if (!firstName || !lastName || !email || !companyName) {
     return res.status(400).json({ error: 'Missing required fields' });
@@ -39,15 +52,39 @@ module.exports = async (req, res) => {
       trialEndsAt = trialEnd.toISOString();
     }
 
+    // Create Stripe customer first
+    const customerEmail = billingEmail || email.toLowerCase();
+    let stripeCustomerId = null;
+
+    try {
+      const stripeCustomer = await stripe.customers.create({
+        email: customerEmail,
+        name: companyName,
+        phone: accountPhone || phone || null,
+        metadata: {
+          source: 'admin_created',
+          master_user_email: email.toLowerCase(),
+          master_user_name: `${firstName} ${lastName}`
+        }
+      });
+      stripeCustomerId = stripeCustomer.id;
+      console.log('Stripe customer created:', stripeCustomerId);
+    } catch (stripeError) {
+      console.error('Failed to create Stripe customer:', stripeError);
+      // Continue without Stripe customer - can be created later
+    }
+
     // Create account
     const { data: account, error: accountError } = await supabase
       .from('accounts')
       .insert({
         name: companyName,
-        phone: phone || null,
+        phone: accountPhone || phone || null,
+        billing_email: customerEmail,
         is_paid: false,
         trial_ends_at: trialEndsAt,
-        demo_account: false
+        demo_account: false,
+        stripe_customer_id: stripeCustomerId
       })
       .select()
       .single();
@@ -61,6 +98,7 @@ module.exports = async (req, res) => {
         email: email.toLowerCase(),
         first_name: firstName,
         last_name: lastName,
+        phone: phone || null,
         role: 'master',
         account_id: account.id
       })
@@ -68,6 +106,72 @@ module.exports = async (req, res) => {
       .single();
 
     if (userError) throw userError;
+
+    // Create venues if provided
+    let createdVenues = [];
+    if (venues && venues.length > 0) {
+      for (const venue of venues) {
+        const { data: venueData, error: venueError } = await supabase
+          .from('venues')
+          .insert({
+            account_id: account.id,
+            name: venue.name,
+            venue_type: venue.type || null,
+            table_count: venue.table_count || 1,
+            address: venue.address || null,
+            primary_color: '#000000',
+            secondary_color: '#ffffff'
+          })
+          .select()
+          .single();
+
+        if (venueError) {
+          console.error('Error creating venue:', venueError);
+          continue;
+        }
+
+        createdVenues.push(venueData);
+
+        // Create feedback questions if provided
+        if (venue.questions && venue.questions.length > 0) {
+          const questionsToInsert = venue.questions.map((q, index) => ({
+            venue_id: venueData.id,
+            question_text: q.question,
+            question_type: q.type || 'rating',
+            order_index: index,
+            is_active: true
+          }));
+
+          const { error: questionsError } = await supabase
+            .from('feedback_questions')
+            .insert(questionsToInsert);
+
+          if (questionsError) {
+            console.error('Error creating questions:', questionsError);
+          }
+        }
+
+        // Generate QR codes for tables
+        const tablesToInsert = [];
+        for (let i = 1; i <= (venue.table_count || 1); i++) {
+          tablesToInsert.push({
+            venue_id: venueData.id,
+            table_number: i.toString(),
+            qr_code: `${venueData.id}-${i}`
+          });
+        }
+
+        if (tablesToInsert.length > 0) {
+          const { error: tablesError } = await supabase
+            .from('tables')
+            .insert(tablesToInsert);
+
+          if (tablesError) {
+            console.error('Error creating tables:', tablesError);
+          }
+        }
+      }
+    }
 
     // Generate invitation token
     const token = generateToken();
@@ -179,12 +283,17 @@ module.exports = async (req, res) => {
       message: 'Account created successfully',
       account: {
         id: account.id,
-        name: account.name
+        name: account.name,
+        stripe_customer_id: stripeCustomerId
       },
       user: {
         id: user.id,
         email: user.email
-      }
+      },
+      venues: createdVenues.map(v => ({
+        id: v.id,
+        name: v.name
+      }))
     });
 
   } catch (error) {

@@ -120,7 +120,7 @@ const QuestionManagementProduct = () => {
             icon: <BarChart3 className="w-6 h-6 text-red-600" />,
             title: "Peak hour insights",
             description:
-              "Track issues during rush periods and optimize staffing and processes.",
+              "Track issues during rush periods and optimise staffing and processes.",
           },
           {
             icon: <Shield className="w-6 h-6 text-red-600" />,

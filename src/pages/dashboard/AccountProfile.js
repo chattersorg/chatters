@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../../utils/supabase';
-import { ChartCard } from '../../components/dashboard/layout/ModernCard';
 import usePageTitle from '../../hooks/usePageTitle';
 import { useVenue } from '../../context/VenueContext';
 import ProfileTab from '../../components/dashboard/settings/ProfileTab';
@@ -8,7 +7,7 @@ import ProfileTab from '../../components/dashboard/settings/ProfileTab';
 const AccountProfilePage = () => {
   usePageTitle('Account Profile');
   const { venueId } = useVenue();
-  
+
   // State variables for ProfileTab
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
@@ -47,20 +46,21 @@ const AccountProfilePage = () => {
 
   return (
     <div className="space-y-6">
-      <ChartCard
-        title="Account Profile"
-        subtitle="Manage your personal information and account settings"
-      >
-        <ProfileTab
-          firstName={firstName}
-          setFirstName={setFirstName}
-          lastName={lastName}
-          setLastName={setLastName}
-          email={email}
-          setEmail={setEmail}
-          venueId={venueId}
-        />
-      </ChartCard>
+      {/* Page Header */}
+      <div className="mb-2">
+        <h1 className="text-2xl font-semibold text-gray-900 dark:text-white">Account Profile</h1>
+        <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">Manage your personal information and account settings</p>
+      </div>
+
+      <ProfileTab
+        firstName={firstName}
+        setFirstName={setFirstName}
+        lastName={lastName}
+        setLastName={setLastName}
+        email={email}
+        setEmail={setEmail}
+        venueId={venueId}
+      />
     </div>
   );
 };

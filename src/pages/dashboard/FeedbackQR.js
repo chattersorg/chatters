@@ -1,5 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { ChartCard } from '../../components/dashboard/layout/ModernCard';
+import React from 'react';
 import usePageTitle from '../../hooks/usePageTitle';
 import { useVenue } from '../../context/VenueContext';
 import QRCodeSection from '../../components/dashboard/feedback/QRCodeSection';
@@ -7,31 +6,22 @@ import QRCodeSection from '../../components/dashboard/feedback/QRCodeSection';
 const FeedbackQRPage = () => {
   usePageTitle('QR Code & Sharing');
   const { venueId } = useVenue();
-  const qrCodeRef = useRef(null);
-  
-  const feedbackUrl = `${window.location.origin}/feedback/${venueId}`;
 
-  const tabProps = {
-    feedbackUrl,
-    venueId,
-    qrCodeRef,
-  };
+  const feedbackUrl = `${window.location.origin}/feedback/${venueId}`;
 
   if (!venueId) {
     return null;
   }
 
   return (
-    <div className="w-full">
-      <ChartCard
-        title="QR Code & Sharing"
-        subtitle="Generate QR codes and share feedback links with your customers"
-        className="w-full"
-      >
-        <div className="w-full">
-          <QRCodeSection feedbackUrl={feedbackUrl} venueId={venueId} />
-        </div>
-      </ChartCard>
+    <div className="space-y-6">
+      {/* Page Header */}
+      <div className="mb-2">
+        <h1 className="text-2xl font-semibold text-gray-900">QR Code & Sharing</h1>
+        <p className="text-sm text-gray-500 mt-1">Generate QR codes and share feedback links with your customers</p>
+      </div>
+
+      <QRCodeSection feedbackUrl={feedbackUrl} venueId={venueId} />
     </div>
   );
 };

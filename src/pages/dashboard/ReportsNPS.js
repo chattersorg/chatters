@@ -3,7 +3,6 @@ import { useNavigate } from 'react-router-dom';
 import { useVenue } from '../../context/VenueContext';
 import { supabase } from '../../utils/supabase';
 import usePageTitle from '../../hooks/usePageTitle';
-import { ChartCard } from '../../components/dashboard/layout/ModernCard';
 import { TrendingUp, TrendingDown, Minus, Mail, MailCheck, MailX, ChevronRight, Building2 } from 'lucide-react';
 import {
   AreaChart,
@@ -220,28 +219,33 @@ const ReportsNPS = () => {
 
     return (
       <div className="space-y-6">
-        <ChartCard
-          title="NPS Reports"
-          subtitle={isAllVenuesMode ? "All venues overview" : `${selectedVenueIds.length} selected venues`}
-          actions={
-            <div className="flex items-center space-x-2">
-              <label className="text-sm font-medium text-gray-700">Period:</label>
-              <select
-                value={dateRange}
-                onChange={(e) => setDateRange(e.target.value)}
-                className="px-3 py-2 text-sm border border-gray-300 rounded-md bg-white text-gray-700 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-              >
-                <option value="7">Last 7 days</option>
-                <option value="30">Last 30 days</option>
-                <option value="90">Last 90 days</option>
-                <option value="365">Last year</option>
-              </select>
-            </div>
-          }
-        >
+        {/* Page Header */}
+        <div className="mb-2 flex items-center justify-between">
+          <div>
+            <h1 className="text-2xl font-semibold text-gray-900 dark:text-white">NPS Reports</h1>
+            <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+              {isAllVenuesMode ? "All venues overview" : `${selectedVenueIds.length} selected venues`}
+            </p>
+          </div>
+          <div className="flex items-center space-x-2">
+            <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Period:</label>
+            <select
+              value={dateRange}
+              onChange={(e) => setDateRange(e.target.value)}
+              className="px-3 py-2 text-sm border border-gray-300 dark:border-gray-700 rounded-md bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            >
+              <option value="7">Last 7 days</option>
+              <option value="30">Last 30 days</option>
+              <option value="90">Last 90 days</option>
+              <option value="365">Last year</option>
+            </select>
+          </div>
+        </div>
+
+        <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl overflow-hidden p-6">
           <div className="space-y-4">
             {sortedVenues.length === 0 ? (
-              <div className="text-center py-12 text-gray-500">
+              <div className="text-center py-12 text-gray-500 dark:text-gray-400">
                 No NPS data available for selected venues
               </div>
             ) : (
@@ -256,18 +260,18 @@ const ReportsNPS = () => {
                   <button
                     key={venueId}
                     onClick={() => navigate(`/nps-report/${venueId}`)}
-                    className="w-full bg-white border border-gray-200 rounded-lg p-6 hover:border-blue-500 hover:shadow-md transition-all duration-200 group"
+                    className="w-full bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-lg p-6 hover:border-blue-500 dark:hover:border-blue-500 hover:shadow-md transition-all duration-200 group"
                   >
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-4">
-                        <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
-                          <Building2 className="w-6 h-6 text-blue-600" />
+                        <div className="w-12 h-12 bg-blue-100 dark:bg-blue-900/30 rounded-lg flex items-center justify-center">
+                          <Building2 className="w-6 h-6 text-blue-600 dark:text-blue-400" />
                         </div>
                         <div className="text-left">
-                          <h3 className="text-lg font-semibold text-gray-900 group-hover:text-blue-600 transition-colors">
+                          <h3 className="text-lg font-semibold text-gray-900 dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
                             {data.name}
                           </h3>
-                          <p className="text-sm text-gray-600 mt-0.5">
+                          <p className="text-sm text-gray-600 dark:text-gray-400 mt-0.5">
                             {data.responses} responses · {data.sent} emails sent
                           </p>
                         </div>
@@ -310,7 +314,7 @@ const ReportsNPS = () => {
               })
             )}
           </div>
-        </ChartCard>
+        </div>
       </div>
     );
   }
@@ -322,37 +326,40 @@ const ReportsNPS = () => {
 
   return (
     <div className="space-y-6">
-      <ChartCard
-        title="NPS Reports"
-        subtitle="Net Promoter Score analytics and customer sentiment"
-        actions={
-          <div className="flex items-center space-x-2">
-            <label className="text-sm font-medium text-gray-700">Period:</label>
-            <select
-              value={dateRange}
-              onChange={(e) => setDateRange(e.target.value)}
-              className="px-3 py-2 text-sm border border-gray-300 rounded-md bg-white text-gray-700 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-            >
-              <option value="7">Last 7 days</option>
-              <option value="30">Last 30 days</option>
-              <option value="90">Last 90 days</option>
-              <option value="365">Last year</option>
-            </select>
-          </div>
-        }
-      >
+      {/* Page Header */}
+      <div className="mb-2 flex items-center justify-between">
+        <div>
+          <h1 className="text-2xl font-semibold text-gray-900 dark:text-white">NPS Reports</h1>
+          <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">Net Promoter Score analytics and customer sentiment</p>
+        </div>
+        <div className="flex items-center space-x-2">
+          <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Period:</label>
+          <select
+            value={dateRange}
+            onChange={(e) => setDateRange(e.target.value)}
+            className="px-3 py-2 text-sm border border-gray-300 dark:border-gray-700 rounded-md bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+          >
+            <option value="7">Last 7 days</option>
+            <option value="30">Last 30 days</option>
+            <option value="90">Last 90 days</option>
+            <option value="365">Last year</option>
+          </select>
+        </div>
+      </div>
+
+      <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl overflow-hidden p-6">
         <div className="space-y-6">
           {/* Key Metrics */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
             {/* NPS Score */}
-            <div className="bg-gray-50 rounded-lg p-6">
+            <div className="bg-gray-50 dark:bg-black rounded-lg p-6">
               <div className="flex items-start justify-between mb-4">
                 <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${
                   npsData.npsScore !== null && npsData.npsScore >= 50
-                    ? 'bg-green-100'
+                    ? 'bg-green-100 dark:bg-green-900/30'
                     : npsData.npsScore !== null && npsData.npsScore >= 0
-                    ? 'bg-yellow-100'
-                    : 'bg-red-100'
+                    ? 'bg-yellow-100 dark:bg-yellow-900/30'
+                    : 'bg-red-100 dark:bg-red-900/30'
                 }`}>
                   {npsData.npsScore !== null ? (
                     getNPSTrend(npsData.npsScore)
@@ -366,64 +373,64 @@ const ReportsNPS = () => {
               }`}>
                 {npsData.npsScore !== null ? npsData.npsScore : '—'}
               </div>
-              <div className="text-sm text-gray-600">
+              <div className="text-sm text-gray-600 dark:text-gray-400">
                 NPS Score
               </div>
-              <div className="text-xs text-gray-500 mt-1">
+              <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">
                 {npsData.responded} responses
               </div>
             </div>
 
             {/* Response Rate */}
-            <div className="bg-gray-50 rounded-lg p-6">
+            <div className="bg-gray-50 dark:bg-black rounded-lg p-6">
               <div className="flex items-start justify-between mb-4">
-                <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
-                  <MailCheck className="w-5 h-5 text-blue-600" />
+                <div className="w-10 h-10 bg-blue-100 dark:bg-blue-900/30 rounded-lg flex items-center justify-center">
+                  <MailCheck className="w-5 h-5 text-blue-600 dark:text-blue-400" />
                 </div>
               </div>
-              <div className="text-2xl font-bold text-gray-900 mb-1">
+              <div className="text-2xl font-bold text-gray-900 dark:text-white mb-1">
                 {npsData.responseRate}%
               </div>
-              <div className="text-sm text-gray-600">
+              <div className="text-sm text-gray-600 dark:text-gray-400">
                 Response Rate
               </div>
-              <div className="text-xs text-gray-500 mt-1">
+              <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">
                 {npsData.responded} of {npsData.sent} sent
               </div>
             </div>
 
             {/* Emails Sent */}
-            <div className="bg-gray-50 rounded-lg p-6">
+            <div className="bg-gray-50 dark:bg-black rounded-lg p-6">
               <div className="flex items-start justify-between mb-4">
-                <div className="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center">
-                  <Mail className="w-5 h-5 text-green-600" />
+                <div className="w-10 h-10 bg-green-100 dark:bg-green-900/30 rounded-lg flex items-center justify-center">
+                  <Mail className="w-5 h-5 text-green-600 dark:text-green-400" />
                 </div>
               </div>
-              <div className="text-2xl font-bold text-gray-900 mb-1">
+              <div className="text-2xl font-bold text-gray-900 dark:text-white mb-1">
                 {npsData.sent}
               </div>
-              <div className="text-sm text-gray-600">
+              <div className="text-sm text-gray-600 dark:text-gray-400">
                 Emails Sent
               </div>
-              <div className="text-xs text-gray-500 mt-1">
+              <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">
                 {npsData.pending} pending
               </div>
             </div>
 
             {/* Failed */}
-            <div className="bg-gray-50 rounded-lg p-6">
+            <div className="bg-gray-50 dark:bg-black rounded-lg p-6">
               <div className="flex items-start justify-between mb-4">
-                <div className="w-10 h-10 bg-red-100 rounded-lg flex items-center justify-center">
-                  <MailX className="w-5 h-5 text-red-600" />
+                <div className="w-10 h-10 bg-red-100 dark:bg-red-900/30 rounded-lg flex items-center justify-center">
+                  <MailX className="w-5 h-5 text-red-600 dark:text-red-400" />
                 </div>
               </div>
-              <div className="text-2xl font-bold text-gray-900 mb-1">
+              <div className="text-2xl font-bold text-gray-900 dark:text-white mb-1">
                 {npsData.failed}
               </div>
-              <div className="text-sm text-gray-600">
+              <div className="text-sm text-gray-600 dark:text-gray-400">
                 Failed Emails
               </div>
-              <div className="text-xs text-gray-500 mt-1">
+              <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">
                 Send errors
               </div>
             </div>
@@ -431,68 +438,68 @@ const ReportsNPS = () => {
 
           {/* Breakdown */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div className="bg-gray-50 rounded-lg p-6">
+            <div className="bg-gray-50 dark:bg-black rounded-lg p-6">
               <div className="flex items-start justify-between mb-4">
-                <div className="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center">
-                  <TrendingUp className="w-5 h-5 text-green-600" />
+                <div className="w-10 h-10 bg-green-100 dark:bg-green-900/30 rounded-lg flex items-center justify-center">
+                  <TrendingUp className="w-5 h-5 text-green-600 dark:text-green-400" />
                 </div>
-                <div className="px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-700">
+                <div className="px-2 py-1 rounded-full text-xs font-medium bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300">
                   {npsData.responded > 0
                     ? Math.round((npsData.promoters / npsData.responded) * 100)
                     : 0}%
                 </div>
               </div>
-              <div className="text-2xl font-bold text-gray-900 mb-1">
+              <div className="text-2xl font-bold text-gray-900 dark:text-white mb-1">
                 {npsData.promoters}
               </div>
-              <div className="text-sm text-gray-600">
+              <div className="text-sm text-gray-600 dark:text-gray-400">
                 Promoters (9-10)
               </div>
-              <div className="text-xs text-gray-500 mt-1">
+              <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">
                 of {npsData.responded} responses
               </div>
             </div>
 
-            <div className="bg-gray-50 rounded-lg p-6">
+            <div className="bg-gray-50 dark:bg-black rounded-lg p-6">
               <div className="flex items-start justify-between mb-4">
-                <div className="w-10 h-10 bg-yellow-100 rounded-lg flex items-center justify-center">
-                  <Minus className="w-5 h-5 text-yellow-600" />
+                <div className="w-10 h-10 bg-yellow-100 dark:bg-yellow-900/30 rounded-lg flex items-center justify-center">
+                  <Minus className="w-5 h-5 text-yellow-600 dark:text-yellow-400" />
                 </div>
-                <div className="px-2 py-1 rounded-full text-xs font-medium bg-yellow-100 text-yellow-700">
+                <div className="px-2 py-1 rounded-full text-xs font-medium bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-300">
                   {npsData.responded > 0
                     ? Math.round((npsData.passives / npsData.responded) * 100)
                     : 0}%
                 </div>
               </div>
-              <div className="text-2xl font-bold text-gray-900 mb-1">
+              <div className="text-2xl font-bold text-gray-900 dark:text-white mb-1">
                 {npsData.passives}
               </div>
-              <div className="text-sm text-gray-600">
+              <div className="text-sm text-gray-600 dark:text-gray-400">
                 Passives (7-8)
               </div>
-              <div className="text-xs text-gray-500 mt-1">
+              <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">
                 of {npsData.responded} responses
               </div>
             </div>
 
-            <div className="bg-gray-50 rounded-lg p-6">
+            <div className="bg-gray-50 dark:bg-black rounded-lg p-6">
               <div className="flex items-start justify-between mb-4">
-                <div className="w-10 h-10 bg-red-100 rounded-lg flex items-center justify-center">
-                  <TrendingDown className="w-5 h-5 text-red-600" />
+                <div className="w-10 h-10 bg-red-100 dark:bg-red-900/30 rounded-lg flex items-center justify-center">
+                  <TrendingDown className="w-5 h-5 text-red-600 dark:text-red-400" />
                 </div>
-                <div className="px-2 py-1 rounded-full text-xs font-medium bg-red-100 text-red-700">
+                <div className="px-2 py-1 rounded-full text-xs font-medium bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300">
                   {npsData.responded > 0
                     ? Math.round((npsData.detractors / npsData.responded) * 100)
                     : 0}%
                 </div>
               </div>
-              <div className="text-2xl font-bold text-gray-900 mb-1">
+              <div className="text-2xl font-bold text-gray-900 dark:text-white mb-1">
                 {npsData.detractors}
               </div>
-              <div className="text-sm text-gray-600">
+              <div className="text-sm text-gray-600 dark:text-gray-400">
                 Detractors (0-6)
               </div>
-              <div className="text-xs text-gray-500 mt-1">
+              <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">
                 of {npsData.responded} responses
               </div>
             </div>
@@ -501,10 +508,10 @@ const ReportsNPS = () => {
           {/* Charts */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             {/* NPS Trend */}
-            <div className="bg-white border border-gray-200 rounded-lg p-6">
+            <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-lg p-6">
               <div className="mb-4">
-                <h3 className="text-base font-semibold text-gray-900">NPS Trend Over Time</h3>
-                <p className="text-xs text-gray-600 mt-1">Net Promoter Score progression</p>
+                <h3 className="text-base font-semibold text-gray-900 dark:text-white">NPS Trend Over Time</h3>
+                <p className="text-xs text-gray-600 dark:text-gray-400 mt-1">Net Promoter Score progression</p>
               </div>
               {npsData.trendChartData.length > 0 ? (
                 <div className="h-64">
@@ -556,17 +563,17 @@ const ReportsNPS = () => {
                   </ResponsiveContainer>
                 </div>
               ) : (
-                <div className="h-64 flex items-center justify-center text-gray-500">
+                <div className="h-64 flex items-center justify-center text-gray-500 dark:text-gray-400">
                   No trend data available
                 </div>
               )}
             </div>
 
             {/* Score Distribution */}
-            <div className="bg-white border border-gray-200 rounded-lg p-6">
+            <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-lg p-6">
               <div className="mb-4">
-                <h3 className="text-base font-semibold text-gray-900">Score Distribution</h3>
-                <p className="text-xs text-gray-600 mt-1">Response breakdown by rating (0-10)</p>
+                <h3 className="text-base font-semibold text-gray-900 dark:text-white">Score Distribution</h3>
+                <p className="text-xs text-gray-600 dark:text-gray-400 mt-1">Response breakdown by rating (0-10)</p>
               </div>
               {npsData.distributionData.some((d) => d.count > 0) ? (
                 <div className="h-64">
@@ -613,7 +620,7 @@ const ReportsNPS = () => {
                   </ResponsiveContainer>
                 </div>
               ) : (
-                <div className="h-64 flex items-center justify-center text-gray-500">
+                <div className="h-64 flex items-center justify-center text-gray-500 dark:text-gray-400">
                   No distribution data available
                 </div>
               )}
@@ -621,17 +628,17 @@ const ReportsNPS = () => {
           </div>
 
           {/* Recent Responses Table */}
-          <div className="bg-white border border-gray-200 rounded-lg p-6">
-            <h3 className="text-sm font-medium text-gray-700 mb-4">Recent Responses</h3>
+          <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-lg p-6">
+            <h3 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-4">Recent Responses</h3>
             <div className="overflow-x-auto">
               <table className="w-full">
                 <thead>
-                  <tr className="border-b">
-                    <th className="text-left py-3 px-4 font-medium text-gray-700">Email</th>
-                    <th className="text-left py-3 px-4 font-medium text-gray-700">Score</th>
-                    <th className="text-left py-3 px-4 font-medium text-gray-700">Category</th>
-                    <th className="text-left py-3 px-4 font-medium text-gray-700">Date</th>
-                    <th className="text-left py-3 px-4 font-medium text-gray-700">Status</th>
+                  <tr className="border-b border-gray-200 dark:border-gray-800">
+                    <th className="text-left py-3 px-4 font-medium text-gray-700 dark:text-gray-300">Email</th>
+                    <th className="text-left py-3 px-4 font-medium text-gray-700 dark:text-gray-300">Score</th>
+                    <th className="text-left py-3 px-4 font-medium text-gray-700 dark:text-gray-300">Category</th>
+                    <th className="text-left py-3 px-4 font-medium text-gray-700 dark:text-gray-300">Date</th>
+                    <th className="text-left py-3 px-4 font-medium text-gray-700 dark:text-gray-300">Status</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -647,8 +654,8 @@ const ReportsNPS = () => {
                           : { label: 'Detractor', color: 'text-red-600' };
 
                       return (
-                        <tr key={submission.id} className="border-b hover:bg-gray-50">
-                          <td className="py-3 px-4 text-sm">{submission.customer_email}</td>
+                        <tr key={submission.id} className="border-b border-gray-200 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-800">
+                          <td className="py-3 px-4 text-sm text-gray-900 dark:text-gray-300">{submission.customer_email}</td>
                           <td className="py-3 px-4">
                             <span className={`text-lg font-bold ${category.color}`}>
                               {submission.score}
@@ -659,11 +666,11 @@ const ReportsNPS = () => {
                               {category.label}
                             </span>
                           </td>
-                          <td className="py-3 px-4 text-sm text-gray-600">
+                          <td className="py-3 px-4 text-sm text-gray-600 dark:text-gray-400">
                             {new Date(submission.responded_at).toLocaleDateString()}
                           </td>
                           <td className="py-3 px-4">
-                            <span className="text-xs bg-green-100 text-green-800 px-2 py-1 rounded">
+                            <span className="text-xs bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300 px-2 py-1 rounded">
                               Responded
                             </span>
                           </td>
@@ -682,7 +689,7 @@ const ReportsNPS = () => {
             </div>
           </div>
         </div>
-      </ChartCard>
+      </div>
     </div>
   );
 };

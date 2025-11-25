@@ -7,6 +7,7 @@ import {
   useElements
 } from '@stripe/react-stripe-js';
 import { X, CreditCard, Lock } from 'lucide-react';
+import { Button } from '../../ui/button';
 
 const stripePromise = loadStripe(process.env.REACT_APP_STRIPE_PUBLISHABLE_KEY);
 
@@ -151,30 +152,30 @@ const CheckoutForm = ({ onSuccess, onCancel, total, billingPeriod, venueCount, i
       {/* Security Badge & Action Buttons Combined */}
       <div className="space-y-3">
         <div className="flex gap-3">
-          <button
+          <Button
             type="button"
+            variant="outline"
             onClick={onCancel}
             disabled={isProcessing}
-            className="flex-1 px-5 py-2.5 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed font-medium text-sm"
+            className="flex-1"
           >
             Cancel
-          </button>
-          <button
+          </Button>
+          <Button
             type="submit"
-            disabled={!stripe || isProcessing}
-            className="flex-1 px-5 py-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed font-medium text-sm"
+            variant="primary"
+            disabled={!stripe}
+            loading={isProcessing}
+            className="flex-1"
           >
             {isProcessing ? (
-              <span className="flex items-center justify-center gap-2">
-                <div className="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                {isSetupMode ? 'Saving...' : 'Processing...'}
-              </span>
+              isSetupMode ? 'Saving...' : 'Processing...'
             ) : isSetupMode ? (
               'Save Card (No Charge)'
             ) : (
               `Pay £${total.toLocaleString()}`
             )}
-          </button>
+          </Button>
         </div>
         <div className="flex items-center justify-center gap-2 text-xs text-gray-500">
           <Lock className="w-3 h-3" />

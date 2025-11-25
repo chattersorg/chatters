@@ -841,7 +841,7 @@ const HelpPage = () => {
                         <li>• Start with basics - ensure foundation knowledge first</li>
                         <li>• Practice regularly - use the system daily</li>
                         <li>• Share insights - discuss feedback patterns with team</li>
-                        <li>• Celebrate wins - recognize staff who excel</li>
+                        <li>• Celebrate wins - recognise staff who excel</li>
                       </ul>
                     </div>
                     

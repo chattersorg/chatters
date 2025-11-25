@@ -222,8 +222,8 @@ const StaffManagersPage = () => {
           message && (
             <span className={`text-sm font-medium ${
               message.includes('success') || message.includes('recovered')
-                ? 'text-green-600'
-                : 'text-red-600'
+                ? 'text-green-600 dark:text-green-400'
+                : 'text-red-600 dark:text-red-400'
             }`}>
               {message}
             </span>

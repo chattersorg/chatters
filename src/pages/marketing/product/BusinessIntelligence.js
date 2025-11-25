@@ -68,7 +68,7 @@ const BusinessIntelligenceProduct = () => {
             id: "dashboards",
             eyebrow: "Real-time",
             title: "Live satisfaction dashboards",
-            description: "Monitor customer satisfaction metrics in real-time with customizable dashboards that show what matters most to your business.",
+            description: "Monitor customer satisfaction metrics in real-time with customisable dashboards that show what matters most to your business.",
             bullets: ["Live satisfaction scores", "Custom KPIs", "Alert thresholds"],
             image: { src: "/img/mock-dashboards.png", alt: "BI dashboard interface" },
           },
@@ -119,7 +119,7 @@ const BusinessIntelligenceProduct = () => {
             icon: <PieChart className="w-6 h-6 text-blue-600" />,
             title: "Custom dashboards",
             description:
-              "Build personalized dashboards that focus on your key metrics and business objectives.",
+              "Build personalised dashboards that focus on your key metrics and business objectives.",
           },
           {
             icon: <LineChart className="w-6 h-6 text-blue-600" />,

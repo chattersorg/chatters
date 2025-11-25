@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../../../../utils/supabase';
 import { ChevronDown, ChevronUp, Copy, Plus, X } from 'lucide-react';
+import { Button } from '../../../ui/button';
 
 const FeedbackTimeSelection = ({ currentVenueId }) => {
   // Feedback hours state
@@ -158,12 +159,13 @@ const FeedbackTimeSelection = ({ currentVenueId }) => {
   };
 
   return (
-    <div className="bg-white border border-gray-200 rounded-lg p-6">
-      <div className="mb-4">
-        <h3 className="text-lg font-semibold text-gray-900 mb-1">Feedback Collection Hours</h3>
-        <p className="text-gray-600 text-sm">Set when customers can leave feedback during operating hours.</p>
+    <div className="bg-white border border-gray-200 rounded-xl overflow-hidden">
+      <div className="px-6 py-4 border-b border-gray-100">
+        <h3 className="text-base font-semibold text-gray-900">Feedback Collection Hours</h3>
+        <p className="text-sm text-gray-500 mt-1">Set when customers can leave feedback</p>
       </div>
 
+      <div className="p-6">
       {/* Compact table-like view */}
       <div className="space-y-2">
         {dayNames.map((day, dayIndex) => (
@@ -285,21 +287,25 @@ const FeedbackTimeSelection = ({ currentVenueId }) => {
           Disable All Days
         </button>
       </div>
+      </div>
 
       {/* Save button and messages */}
-      <div className="pt-4 border-t border-gray-200 mt-4">
-        <button
-          onClick={saveFeedbackHours}
-          disabled={loading}
-          className="bg-custom-green text-white px-6 py-2 rounded-lg hover:bg-custom-green-hover transition-colors duration-200 text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed"
-        >
-          {loading ? 'Saving...' : 'Save Feedback Hours'}
-        </button>
-        
+      <div className="px-6 py-4 border-t border-gray-100">
+        <div className="flex items-center justify-between">
+          <div className="text-xs text-gray-500">Changes are saved per venue</div>
+          <Button
+            variant="primary"
+            onClick={saveFeedbackHours}
+            loading={loading}
+          >
+            {loading ? 'Saving...' : 'Save'}
+          </Button>
+        </div>
+
         {message && (
-          <div className={`text-sm p-3 rounded-lg mt-3 ${
-            message.includes('success') 
-              ? 'text-green-700 bg-green-50 border border-green-200' 
+          <div className={`text-xs p-2 rounded-lg mt-3 ${
+            message.includes('success')
+              ? 'text-green-700 bg-green-50 border border-green-200'
               : 'text-red-700 bg-red-50 border border-red-200'
           }`}>
             {message}

@@ -3,9 +3,21 @@
  *
  * This serverless function securely handles AI analysis of customer feedback
  * using the Anthropic Claude API. It keeps the API key secure on the server side.
+ *
+ * Supports weekly insight generation with week_start parameter for automatic
+ * Sunday night generation.
  */
 
 import { createClient } from '@supabase/supabase-js';
+
+// Helper to get Monday of a given week
+function getWeekStart(date) {
+  const d = new Date(date);
+  const day = d.getDay();
+  const diff = d.getDate() - day + (day === 0 ? -6 : 1); // Adjust when day is Sunday
+  d.setDate(diff);
+  return d.toISOString().split('T')[0];
+}
 
 export default async function handler(req, res) {
   // Only allow POST requests
@@ -14,14 +26,18 @@ export default async function handler(req, res) {
   }
 
   try {
-    const { feedbackData, npsData, venueName, venueId, dateFrom, dateTo } = req.body;
+    const { feedbackData, npsData, venueName, venueId, dateFrom, dateTo, weekStart } = req.body;
+
+    // Calculate week_start from dateFrom if not provided
+    const calculatedWeekStart = weekStart || getWeekStart(dateFrom);
 
     console.log('[AI Insights] Request received:', {
       feedbackCount: feedbackData?.length || 0,
       npsCount: npsData?.length || 0,
       venueName,
       venueId,
-      dateRange: `${dateFrom} to ${dateTo}`
+      dateRange: `${dateFrom} to ${dateTo}`,
+      weekStart: calculatedWeekStart
     });
 
     // Validate required fields
@@ -38,22 +54,29 @@ export default async function handler(req, res) {
     }
 
     // Initialize Supabase client
-    const supabase = createClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL,
-      process.env.SUPABASE_SERVICE_ROLE_KEY
-    );
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.REACT_APP_SUPABASE_URL;
+    const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
-    // Check if we already have an insight for this exact date range
+    if (!supabaseUrl || !supabaseServiceKey) {
+      console.error('[AI Insights] Missing Supabase credentials:', {
+        hasUrl: !!supabaseUrl,
+        hasServiceKey: !!supabaseServiceKey
+      });
+      return res.status(500).json({ error: 'Database not configured. Please contact support.' });
+    }
+
+    const supabase = createClient(supabaseUrl, supabaseServiceKey);
+
+    // Check if we already have an insight for this week
     const { data: existingInsight } = await supabase
       .from('ai_insights')
       .select('*')
       .eq('venue_id', venueId)
-      .eq('date_from', dateFrom)
-      .eq('date_to', dateTo)
+      .eq('week_start', calculatedWeekStart)
       .single();
 
     if (existingInsight) {
-      console.log('[AI Insights] Returning cached insight for this date range');
+      console.log('[AI Insights] Returning cached insight for week:', calculatedWeekStart);
       return res.status(200).json({
         ...existingInsight,
         cached: true
@@ -177,6 +200,7 @@ export default async function handler(req, res) {
       venue_id: venueId,
       date_from: dateFrom,
       date_to: dateTo,
+      week_start: calculatedWeekStart,
       ai_score: parsedInsight.ai_score,
       critical_insights: parsedInsight.critical_insights,
       strengths: parsedInsight.strengths,
@@ -201,7 +225,8 @@ export default async function handler(req, res) {
         ...insightRecord,
         id: null,
         created_at: new Date().toISOString(),
-        saved: false
+        saved: false,
+        saveError: saveError.message || saveError.code || JSON.stringify(saveError)
       });
     }
 

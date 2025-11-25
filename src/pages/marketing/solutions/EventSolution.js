@@ -119,7 +119,7 @@ const EventSolution = () => {
         defaultOpenIndex={0}
         faqs={[
           { q: "How do attendees provide feedback during events?", a: "QR codes on event materials or displays allow attendees to quickly share feedback without interrupting presentations." },
-          { q: "Can it handle different types of events?", a: "Yes—conferences, weddings, corporate events, festivals, and more. Customizable workflows for any event type." },
+          { q: "Can it handle different types of events?", a: "Yes—conferences, weddings, corporate events, festivals, and more. Customisable workflows for any event type." },
           { q: "Does it work for multi-day events?", a: "Absolutely. Track feedback trends across days and sessions with detailed event analytics." },
           { q: "What if we manage multiple events?", a: "Multi-event dashboards let you compare performance and apply learnings across your event portfolio." },
         ]}

@@ -24,7 +24,7 @@ const StaffRecognitionPage = () => {
           content="staff recognition, employee rewards, team motivation, performance recognition, hospitality staff management, employee engagement, automated recognition, staff performance tracking"
         />
         <meta property="og:title" content="Staff Recognition System | Chatters" />
-        <meta property="og:description" content="Automatically recognize and reward your top-performing staff with personalized emails based on customer feedback resolution and performance metrics." />
+        <meta property="og:description" content="Automatically recognise and reward your top-performing staff with personalised emails based on customer feedback resolution and performance metrics." />
         <meta property="og:type" content="website" />
         <link rel="canonical" href="https://getchatters.com/product/staff-recognition" />
       </Helmet>
@@ -32,8 +32,8 @@ const StaffRecognitionPage = () => {
       <Navbar overlay />
 
       <PageHeader
-        title="Recognize and Reward Your Top Performers Automatically"
-        description="Turn exceptional customer service into celebrated achievements. Send personalized recognition emails to staff who go above and beyond, boosting morale and motivation across your team."
+        title="Recognise and Reward Your Top Performers Automatically"
+        description="Turn exceptional customer service into celebrated achievements. Send personalised recognition emails to staff who go above and beyond, boosting morale and motivation across your team."
         backgroundGradient="from-white to-green-200"
         showSubtitle={true}
         subtitle="Staff Recognition"
@@ -43,14 +43,14 @@ const StaffRecognitionPage = () => {
         eyebrow="Employee Recognition"
         eyebrowColour='text-green-600'
         title="Celebrate success with one click."
-        description="See who's resolving the most customer feedback and send beautiful, personalized recognition emails instantly. Turn performance data into meaningful appreciation that motivates your entire team."
+        description="See who's resolving the most customer feedback and send beautiful, personalised recognition emails instantly. Turn performance data into meaningful appreciation that motivates your entire team."
         bullets={[
           "One-click recognition emails",
           "Performance-based rewards",
-          "Personalized manager messages",
+          "Personalised manager messages",
           "Track recognition history"
         ]}
-        primaryCta={{ label: "Start recognizing", to: "/signup" }}
+        primaryCta={{ label: "Start recognising", to: "/signup" }}
         secondaryCta={{ label: "See demo", to: "/demo" }}
         image={{ src: "/img/product_pages/staffrecognition/hero.png", alt: "Staff recognition interface" }}
       />
@@ -67,7 +67,7 @@ const StaffRecognitionPage = () => {
             id: "automated",
             eyebrow: "Smart Recognition",
             title: "Identify top performers automatically",
-            description: "See who's ranked highest for feedback resolution, assistance requests, and customer satisfaction. Filter by day, week, or month to recognize timely achievements.",
+            description: "See who's ranked highest for feedback resolution, assistance requests, and customer satisfaction. Filter by day, week, or month to recognise timely achievements.",
             bullets: ["Real-time leaderboards", "Custom time periods", "Performance rankings"],
             image: { src: "/img/mock-metrics.png", alt: "Performance leaderboard dashboard" },
           },
@@ -77,13 +77,13 @@ const StaffRecognitionPage = () => {
             title: "Add your own personal message",
             description: "Include a heartfelt note from management that makes recognition meaningful. Your personal message appears in a beautiful branded email with their performance stats.",
             bullets: ["Custom manager messages", "Performance stats included", "Beautiful email templates"],
-            image: { src: "/img/mock-badges.png", alt: "Personalized recognition email" },
+            image: { src: "/img/mock-badges.png", alt: "Personalised recognition email" },
           },
           {
             id: "tracking",
             eyebrow: "Recognition History",
-            title: "Track who you've recognized and when",
-            description: "Never miss recognizing a top performer. See recognition history, track patterns, and ensure fair appreciation across your team.",
+            title: "Track who you've recognised and when",
+            description: "Never miss recognising a top performer. See recognition history, track patterns, and ensure fair appreciation across your team.",
             bullets: ["Recognition logs", "Frequency tracking", "Fair distribution"],
             image: { src: "/img/mock-competition.png", alt: "Recognition tracking interface" },
           },
@@ -117,7 +117,7 @@ const StaffRecognitionPage = () => {
             icon: <TrendingUp className="w-6 h-6 text-green-600" />,
             title: "Encourage excellence",
             description:
-              "When staff see peers recognized for great work, it motivates everyone to deliver exceptional customer service.",
+              "When staff see peers recognised for great work, it motivates everyone to deliver exceptional customer service.",
           },
           {
             icon: <Award className="w-6 h-6 text-green-600" />,
@@ -129,13 +129,13 @@ const StaffRecognitionPage = () => {
             icon: <Users className="w-6 h-6 text-green-600" />,
             title: "Strengthen culture",
             description:
-              "Regular recognition builds a culture of appreciation and excellence across your entire organization.",
+              "Regular recognition builds a culture of appreciation and excellence across your entire organisation.",
           },
           {
             icon: <Star className="w-6 h-6 text-green-600" />,
             title: "Retain top talent",
             description:
-              "Employees who feel recognized and valued are more likely to stay, reducing costly turnover.",
+              "Employees who feel recognised and valued are more likely to stay, reducing costly turnover.",
           },
         ]}
         wavyBottom={true}
@@ -161,7 +161,7 @@ const StaffRecognitionPage = () => {
       />
 
       <CTA
-        title="Start recognizing your top performers today"
+        title="Start recognising your top performers today"
         subtitle="Boost morale, motivation, and customer service excellence with automated staff recognition."
         buttonText="Book a Demo"
         buttonLink="/demo"

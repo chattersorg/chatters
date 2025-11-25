@@ -62,6 +62,7 @@ import KioskPage from './pages/dashboard/KioskPage';
 
 // Public / guest routes (no venue context)
 import CustomerFeedbackPage from './pages/dashboard/CustomerFeedback';
+import FeedbackSplashPage from './pages/dashboard/FeedbackSplash';
 import NPSResponsePage from './pages/dashboard/NPSResponse';
 
 // Testing (outside venue context unless you need it)
@@ -70,21 +71,30 @@ import TestDashboardPage from './pages/admin/TestDashboardPage';
 // Frames & context
 import ModernDashboardFrame from './components/dashboard/layout/ModernDashboardFrame';
 import { VenueProvider } from './context/VenueContext';
+import SubscriptionGuard from './components/guards/SubscriptionGuard';
 
-// Wrap all authenticated dashboard pages once: VenueProvider + ModernDashboardFrame
+// Trial expired page (outside subscription guard)
+import TrialExpired from './pages/dashboard/TrialExpired';
+
+// Wrap all authenticated dashboard pages once: SubscriptionGuard + VenueProvider + ModernDashboardFrame
 const DashboardShell = () => (
-  <VenueProvider>
-    <ModernDashboardFrame>
-      <Outlet />
-    </ModernDashboardFrame>
-  </VenueProvider>
+  <SubscriptionGuard>
+    <VenueProvider>
+      <ModernDashboardFrame>
+        <Outlet />
+      </ModernDashboardFrame>
+    </VenueProvider>
+  </SubscriptionGuard>
 );
 
 // Kiosk gets VenueProvider but intentionally no DashboardFrame
+// Also wrapped with SubscriptionGuard
 const KioskShell = () => (
-  <VenueProvider>
-    <Outlet />
-  </VenueProvider>
+  <SubscriptionGuard>
+    <VenueProvider>
+      <Outlet />
+    </VenueProvider>
+  </SubscriptionGuard>
 );
 
 const DashboardRoutes = () => {
@@ -98,9 +108,13 @@ const DashboardRoutes = () => {
       <Route path="/set-password" element={<SetPasswordPage />} />
       <Route path="/verify-email-change" element={<VerifyEmailChange />} />
 
+      {/* Trial expired page (outside subscription guard) */}
+      <Route path="/trial-expired" element={<TrialExpired />} />
+
       {/* Public guest feedback (no venue context) */}
       <Route path="/feedback" element={<CustomerFeedbackPage />} />
-      <Route path="/feedback/:venueId" element={<CustomerFeedbackPage />} />
+      <Route path="/feedback/:venueId" element={<FeedbackSplashPage />} />
+      <Route path="/feedback/:venueId/form" element={<CustomerFeedbackPage />} />
       <Route path="/nps" element={<NPSResponsePage />} />
 
       {/* Kiosk: venue context, no dashboard frame */}
@@ -161,6 +175,7 @@ const DashboardRoutes = () => {
         <Route path="/settings/venue-details" element={<VenueSettingsPage />} />
         <Route path="/settings/feedback" element={<FeedbackSettings />} />
         <Route path="/settings/branding" element={<SettingsBrandingPage />} />
+        <Route path="/settings/custom-links" element={<Navigate to="/settings/venue-details" replace />} />
         <Route path="/settings/integrations" element={<IntegrationsSettingsPage />} />
         
         {/* Legacy settings routes */}
