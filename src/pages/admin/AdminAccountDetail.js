@@ -247,6 +247,149 @@ const AdminAccountDetail = () => {
     setSelectedDateRange({ startDate: '', endDate: '' });
   };
 
+  const populate60DaysDemo = async () => {
+    if (!account) return;
+
+    const endDate = new Date();
+    const startDate = new Date();
+    startDate.setDate(startDate.getDate() - 60);
+
+    if (!window.confirm(
+      `Populate 60 days of demo data for "${account.name}"?\n\n` +
+      `This will create:\n` +
+      `• 5 feedback sessions per day (~13 items, 60% resolved)\n` +
+      `• 5 NPS submissions per day\n` +
+      `• 2 rating scores per day (Google + TripAdvisor)\n\n` +
+      `⚠️ This will OVERWRITE any existing data in this date range.\n\n` +
+      `Processing time: ~2-3 minutes`
+    )) {
+      return;
+    }
+
+    setSeedingDemoData(true);
+
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+
+      const apiUrl = window.location.hostname === 'localhost'
+        ? 'https://my.getchatters.com/api/admin/seed-demo-v2'
+        : '/api/admin/seed-demo-v2';
+
+      // Generate array of dates
+      const allDates = [];
+      for (let d = new Date(startDate); d <= endDate; d.setDate(d.getDate() + 1)) {
+        allDates.push(new Date(d).toISOString().split('T')[0]);
+      }
+
+      console.log(`🚀 Processing ${allDates.length} days in chunks of 3`);
+
+      // Split into chunks of 3 days
+      const chunks = [];
+      for (let i = 0; i < allDates.length; i += 3) {
+        chunks.push(allDates.slice(i, i + 3));
+      }
+
+      const totalStats = {
+        sessionsCreated: 0,
+        feedbackCreated: 0,
+        feedbackResolved: 0,
+        externalRatingsCreated: 0,
+        npsCreated: 0,
+        datesOverwritten: 0,
+        datesProcessed: 0
+      };
+
+      let failedChunks = [];
+
+      for (let i = 0; i < chunks.length; i++) {
+        const chunk = chunks[i];
+        const chunkStartDate = chunk[0];
+        const chunkEndDate = chunk[chunk.length - 1];
+
+        const progressToast = toast.loading(
+          `Processing days ${i * 3 + 1}-${Math.min((i + 1) * 3, allDates.length)} of ${allDates.length}...`,
+          { duration: Infinity }
+        );
+
+        try {
+          const response = await fetch(apiUrl, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${session?.access_token}`
+            },
+            body: JSON.stringify({
+              accountId: account.id,
+              startDate: chunkStartDate,
+              endDate: chunkEndDate,
+              dataType: 'all',
+              overwrite: true
+            })
+          });
+
+          const responseText = await response.text();
+          let result;
+          try {
+            result = JSON.parse(responseText);
+          } catch (parseError) {
+            throw new Error(`Invalid JSON response. Status: ${response.status}`);
+          }
+
+          if (!response.ok) {
+            throw new Error(result.error || 'API request failed');
+          }
+
+          totalStats.sessionsCreated += result.stats.sessionsCreated || 0;
+          totalStats.feedbackCreated += result.stats.feedbackCreated || 0;
+          totalStats.feedbackResolved += result.stats.feedbackResolved || 0;
+          totalStats.externalRatingsCreated += result.stats.externalRatingsCreated || 0;
+          totalStats.npsCreated += result.stats.npsCreated || 0;
+          totalStats.datesOverwritten += result.stats.datesOverwritten || 0;
+          totalStats.datesProcessed += result.stats.datesProcessed || 0;
+
+          toast.dismiss(progressToast);
+          toast.success(`Days ${i * 3 + 1}-${Math.min((i + 1) * 3, allDates.length)} done`, { duration: 1500 });
+
+        } catch (chunkError) {
+          console.error(`❌ Chunk ${i + 1} failed:`, chunkError);
+          failedChunks.push({ dates: `${chunkStartDate} to ${chunkEndDate}`, error: chunkError.message });
+          toast.dismiss(progressToast);
+          toast.error(`Days ${i * 3 + 1}-${Math.min((i + 1) * 3, allDates.length)} failed`, { duration: 2000 });
+        }
+
+        if (i < chunks.length - 1) {
+          await new Promise(resolve => setTimeout(resolve, 800));
+        }
+      }
+
+      const successParts = [];
+      if (totalStats.sessionsCreated) successParts.push(`${totalStats.sessionsCreated} sessions`);
+      if (totalStats.feedbackCreated) successParts.push(`${totalStats.feedbackCreated} feedback items`);
+      if (totalStats.feedbackResolved) successParts.push(`${totalStats.feedbackResolved} resolved`);
+      if (totalStats.externalRatingsCreated) successParts.push(`${totalStats.externalRatingsCreated} rating snapshots`);
+      if (totalStats.npsCreated) successParts.push(`${totalStats.npsCreated} NPS submissions`);
+      if (totalStats.datesOverwritten) successParts.push(`${totalStats.datesOverwritten} days overwritten`);
+
+      if (failedChunks.length > 0) {
+        toast.error(
+          `Completed with ${failedChunks.length} failed chunks.\n${successParts.join(', ')}`,
+          { duration: 8000 }
+        );
+      } else {
+        toast.success(
+          `60 days of demo data created!\n${successParts.join(', ')}`,
+          { duration: 6000 }
+        );
+      }
+
+    } catch (error) {
+      console.error('Error populating demo data:', error);
+      toast.error('Failed to populate demo data: ' + error.message);
+    } finally {
+      setSeedingDemoData(false);
+    }
+  };
+
   const populateDemoData = async () => {
     if (!dateRangeForAccount || !selectedDateRange.startDate || !selectedDateRange.endDate) {
       toast.error('Please select a valid date range');
@@ -256,9 +399,9 @@ const AdminAccountDetail = () => {
     const { accountId, accountName, dataType = 'all' } = dateRangeForAccount;
     const dayCount = Math.ceil((new Date(selectedDateRange.endDate) - new Date(selectedDateRange.startDate)) / (1000 * 60 * 60 * 24)) + 1;
 
-    // Validate date range (max 7 days to prevent timeout)
-    if (dayCount > 7) {
-      toast.error(`Date range too large (${dayCount} days). Maximum 7 days per request. Please select a shorter range.`);
+    // Validate date range (max 30 days)
+    if (dayCount > 30) {
+      toast.error(`Date range too large (${dayCount} days). Maximum 30 days per request. Please select a shorter range.`);
       return;
     }
 
@@ -280,6 +423,7 @@ const AdminAccountDetail = () => {
       `Populate ${dataTypeLabels[dataType]} for "${accountName}"?\n\n` +
       `Date Range: ${selectedDateRange.startDate} to ${selectedDateRange.endDate} (${dayCount} days)\n\n` +
       `Per venue, per day:\n${dataTypeDetails[dataType]}\n\n` +
+      `Processing will happen day-by-day to avoid timeouts.\n` +
       `Dates with existing data will be SKIPPED.`
     )) {
       return;
@@ -296,61 +440,118 @@ const AdminAccountDetail = () => {
         ? 'https://my.getchatters.com/api/admin/seed-demo-v2'
         : '/api/admin/seed-demo-v2';
 
-      console.log('🚀 Making API request to:', apiUrl);
-      console.log('📦 Request body:', {
-        accountId,
-        startDate: selectedDateRange.startDate,
-        endDate: selectedDateRange.endDate,
-        dataType
-      });
+      // Generate array of dates to process
+      const dates = [];
+      const startDate = new Date(selectedDateRange.startDate);
+      const endDate = new Date(selectedDateRange.endDate);
 
-      const response = await fetch(apiUrl, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${session?.access_token}`
-        },
-        body: JSON.stringify({
-          accountId,
-          startDate: selectedDateRange.startDate,
-          endDate: selectedDateRange.endDate,
-          dataType
-        })
-      });
-
-      console.log('📨 Response status:', response.status);
-      console.log('📨 Response headers:', Object.fromEntries(response.headers.entries()));
-
-      // Get the raw text first
-      const responseText = await response.text();
-      console.log('📨 Response text (first 500 chars):', responseText.substring(0, 500));
-
-      // Try to parse as JSON
-      let result;
-      try {
-        result = JSON.parse(responseText);
-        console.log('✅ Parsed JSON result:', result);
-      } catch (parseError) {
-        console.error('❌ Failed to parse JSON:', parseError);
-        throw new Error(`Server returned invalid JSON. Status: ${response.status}. Response: ${responseText.substring(0, 200)}`);
+      for (let d = new Date(startDate); d <= endDate; d.setDate(d.getDate() + 1)) {
+        dates.push(new Date(d).toISOString().split('T')[0]);
       }
 
-      if (!response.ok) {
-        throw new Error(result.error || 'Failed to populate demo data');
+      console.log(`🚀 Processing ${dates.length} days sequentially:`, dates);
+
+      // Aggregate stats across all days
+      const totalStats = {
+        sessionsCreated: 0,
+        feedbackCreated: 0,
+        feedbackResolved: 0,
+        externalRatingsCreated: 0,
+        npsCreated: 0,
+        datesSkipped: 0,
+        datesProcessed: 0
+      };
+
+      let failedDays = [];
+
+      // Process each day individually
+      for (let i = 0; i < dates.length; i++) {
+        const currentDate = dates[i];
+
+        // Show progress toast
+        const progressToast = toast.loading(
+          `Processing day ${i + 1} of ${dates.length}: ${currentDate}...`,
+          { duration: Infinity }
+        );
+
+        try {
+          console.log(`📅 Day ${i + 1}/${dates.length}: ${currentDate}`);
+
+          const response = await fetch(apiUrl, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${session?.access_token}`
+            },
+            body: JSON.stringify({
+              accountId,
+              startDate: currentDate,
+              endDate: currentDate, // Same date for single day processing
+              dataType
+            })
+          });
+
+          const responseText = await response.text();
+
+          // Try to parse as JSON
+          let result;
+          try {
+            result = JSON.parse(responseText);
+          } catch (parseError) {
+            throw new Error(`Invalid JSON response. Status: ${response.status}`);
+          }
+
+          if (!response.ok) {
+            throw new Error(result.error || 'API request failed');
+          }
+
+          // Aggregate stats
+          totalStats.sessionsCreated += result.stats.sessionsCreated || 0;
+          totalStats.feedbackCreated += result.stats.feedbackCreated || 0;
+          totalStats.feedbackResolved += result.stats.feedbackResolved || 0;
+          totalStats.externalRatingsCreated += result.stats.externalRatingsCreated || 0;
+          totalStats.npsCreated += result.stats.npsCreated || 0;
+          totalStats.datesSkipped += result.stats.datesSkipped || 0;
+          totalStats.datesProcessed += result.stats.datesProcessed || 0;
+
+          console.log(`✅ Day ${i + 1} completed:`, result.stats);
+          toast.dismiss(progressToast);
+          toast.success(`Day ${i + 1}/${dates.length} done: ${currentDate}`, { duration: 1500 });
+
+        } catch (dayError) {
+          console.error(`❌ Day ${i + 1} failed (${currentDate}):`, dayError);
+          failedDays.push({ date: currentDate, error: dayError.message });
+          toast.dismiss(progressToast);
+          toast.error(`Day ${i + 1} failed: ${currentDate}`, { duration: 2000 });
+        }
+
+        // Small delay between requests to avoid rate limiting
+        if (i < dates.length - 1) {
+          await new Promise(resolve => setTimeout(resolve, 500));
+        }
       }
 
+      // Final summary
       const successParts = [];
-      if (result.stats.sessionsCreated) successParts.push(`${result.stats.sessionsCreated} sessions`);
-      if (result.stats.feedbackCreated) successParts.push(`${result.stats.feedbackCreated} feedback items`);
-      if (result.stats.feedbackResolved) successParts.push(`${result.stats.feedbackResolved} resolved`);
-      if (result.stats.externalRatingsCreated) successParts.push(`${result.stats.externalRatingsCreated} rating snapshots`);
-      if (result.stats.npsCreated) successParts.push(`${result.stats.npsCreated} NPS submissions`);
-      if (result.stats.datesSkipped) successParts.push(`${result.stats.datesSkipped} dates skipped`);
+      if (totalStats.sessionsCreated) successParts.push(`${totalStats.sessionsCreated} sessions`);
+      if (totalStats.feedbackCreated) successParts.push(`${totalStats.feedbackCreated} feedback items`);
+      if (totalStats.feedbackResolved) successParts.push(`${totalStats.feedbackResolved} resolved`);
+      if (totalStats.externalRatingsCreated) successParts.push(`${totalStats.externalRatingsCreated} rating snapshots`);
+      if (totalStats.npsCreated) successParts.push(`${totalStats.npsCreated} NPS submissions`);
+      if (totalStats.datesSkipped) successParts.push(`${totalStats.datesSkipped} dates skipped`);
 
-      toast.success(
-        `${dataTypeLabels[dataType]} created!\n${successParts.join(', ')}`,
-        { duration: 6000 }
-      );
+      if (failedDays.length > 0) {
+        toast.error(
+          `Completed with ${failedDays.length} failed days.\n${successParts.join(', ')}`,
+          { duration: 8000 }
+        );
+        console.error('Failed days:', failedDays);
+      } else {
+        toast.success(
+          `${dataTypeLabels[dataType]} created!\n${successParts.join(', ')}`,
+          { duration: 6000 }
+        );
+      }
 
       closeDateRangePicker();
 
@@ -698,62 +899,28 @@ const AdminAccountDetail = () => {
 
               {/* Demo Data Population Section */}
               <div className="px-6 py-4 border-b border-gray-200">
-                <h4 className="text-sm font-semibold text-gray-700 mb-3">Demo Data Population</h4>
-                <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h4 className="text-sm font-semibold text-gray-700 mb-1">Demo Data Population</h4>
+                    <p className="text-xs text-gray-500">Populate 60 days of realistic demo data (overwrites existing data)</p>
+                  </div>
                   <button
-                    onClick={() => showDemoDataPicker('feedback')}
+                    onClick={populate60DaysDemo}
                     disabled={seedingDemoData}
-                    className="inline-flex items-center justify-center gap-2 px-3 py-2 bg-blue-600 text-white hover:bg-blue-700 rounded-lg transition-colors disabled:opacity-50 text-sm"
-                    title="Populate feedback sessions and responses with random staff resolution"
+                    className="inline-flex items-center justify-center gap-2 px-4 py-2 bg-purple-600 text-white hover:bg-purple-700 rounded-lg transition-colors disabled:opacity-50 text-sm font-medium shadow-sm"
+                    title="Populate 60 days of all demo data (feedback, NPS, and reviews)"
                   >
                     {seedingDemoData ? (
-                      <Loader2 className="w-4 h-4 animate-spin" />
+                      <>
+                        <Loader2 className="w-4 h-4 animate-spin" />
+                        Processing...
+                      </>
                     ) : (
-                      <Sparkles className="w-4 h-4" />
+                      <>
+                        <Sparkles className="w-4 h-4" />
+                        Populate 60 Days
+                      </>
                     )}
-                    Feedback
-                  </button>
-
-                  <button
-                    onClick={() => showDemoDataPicker('reviews')}
-                    disabled={seedingDemoData}
-                    className="inline-flex items-center justify-center gap-2 px-3 py-2 bg-orange-600 text-white hover:bg-orange-700 rounded-lg transition-colors disabled:opacity-50 text-sm"
-                    title="Populate Google & TripAdvisor rating scores"
-                  >
-                    {seedingDemoData ? (
-                      <Loader2 className="w-4 h-4 animate-spin" />
-                    ) : (
-                      <Sparkles className="w-4 h-4" />
-                    )}
-                    Reviews
-                  </button>
-
-                  <button
-                    onClick={() => showDemoDataPicker('nps')}
-                    disabled={seedingDemoData}
-                    className="inline-flex items-center justify-center gap-2 px-3 py-2 bg-green-600 text-white hover:bg-green-700 rounded-lg transition-colors disabled:opacity-50 text-sm"
-                    title="Populate NPS email submissions"
-                  >
-                    {seedingDemoData ? (
-                      <Loader2 className="w-4 h-4 animate-spin" />
-                    ) : (
-                      <Sparkles className="w-4 h-4" />
-                    )}
-                    NPS
-                  </button>
-
-                  <button
-                    onClick={() => showDemoDataPicker('all')}
-                    disabled={seedingDemoData}
-                    className="inline-flex items-center justify-center gap-2 px-3 py-2 bg-purple-600 text-white hover:bg-purple-700 rounded-lg transition-colors disabled:opacity-50 text-sm font-medium"
-                    title="Populate all demo data types at once"
-                  >
-                    {seedingDemoData ? (
-                      <Loader2 className="w-4 h-4 animate-spin" />
-                    ) : (
-                      <Sparkles className="w-4 h-4" />
-                    )}
-                    All Data
                   </button>
                 </div>
               </div>

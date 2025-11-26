@@ -70,7 +70,51 @@ async function checkDateHasData(venueId, dateStr, dataType) {
   return data && data.length > 0;
 }
 
-async function populateFeedback(venues, dates, stats) {
+async function deleteDateData(venueId, dateStr, dataType) {
+  const startOfDay = new Date(dateStr);
+  startOfDay.setHours(0, 0, 0, 0);
+  const endOfDay = new Date(dateStr);
+  endOfDay.setHours(23, 59, 59, 999);
+
+  // Delete based on data type
+  if (dataType === 'feedback' || dataType === 'all') {
+    // Delete feedback first
+    await supabaseAdmin
+      .from('feedback')
+      .delete()
+      .eq('venue_id', venueId)
+      .gte('created_at', startOfDay.toISOString())
+      .lte('created_at', endOfDay.toISOString());
+
+    // Delete sessions
+    await supabaseAdmin
+      .from('feedback_sessions')
+      .delete()
+      .eq('venue_id', venueId)
+      .gte('created_at', startOfDay.toISOString())
+      .lte('created_at', endOfDay.toISOString());
+  }
+
+  if (dataType === 'reviews' || dataType === 'all') {
+    await supabaseAdmin
+      .from('historical_ratings')
+      .delete()
+      .eq('venue_id', venueId)
+      .gte('recorded_at', startOfDay.toISOString())
+      .lte('recorded_at', endOfDay.toISOString());
+  }
+
+  if (dataType === 'nps' || dataType === 'all') {
+    await supabaseAdmin
+      .from('nps_submissions')
+      .delete()
+      .eq('venue_id', venueId)
+      .gte('created_at', startOfDay.toISOString())
+      .lte('created_at', endOfDay.toISOString());
+  }
+}
+
+async function populateFeedback(venues, dates, stats, overwrite = false) {
   for (const venue of venues) {
     // Get questions
     let { data: questions } = await supabaseAdmin
@@ -103,9 +147,16 @@ async function populateFeedback(venues, dates, stats) {
     const tableCount = venue.table_count || 10;
 
     for (const dateStr of dates) {
-      if (await checkDateHasData(venue.id, dateStr, 'feedback')) {
+      const hasData = await checkDateHasData(venue.id, dateStr, 'feedback');
+
+      if (hasData && !overwrite) {
         stats.datesSkipped++;
         continue;
+      }
+
+      if (hasData && overwrite) {
+        await deleteDateData(venue.id, dateStr, 'feedback');
+        stats.datesOverwritten = (stats.datesOverwritten || 0) + 1;
       }
 
       stats.datesProcessed++;
@@ -217,15 +268,22 @@ async function populateFeedback(venues, dates, stats) {
   }
 }
 
-async function populateReviews(venues, dates, stats) {
+async function populateReviews(venues, dates, stats, overwrite = false) {
   for (const venue of venues) {
     const allGoogleRatings = [];
     const allTripAdvisorRatings = [];
 
     for (const dateStr of dates) {
-      if (await checkDateHasData(venue.id, dateStr, 'reviews')) {
+      const hasData = await checkDateHasData(venue.id, dateStr, 'reviews');
+
+      if (hasData && !overwrite) {
         stats.datesSkipped++;
         continue;
+      }
+
+      if (hasData && overwrite) {
+        await deleteDateData(venue.id, dateStr, 'reviews');
+        stats.datesOverwritten = (stats.datesOverwritten || 0) + 1;
       }
 
       stats.datesProcessed++;
@@ -312,12 +370,19 @@ async function populateReviews(venues, dates, stats) {
   }
 }
 
-async function populateNPS(venues, dates, stats) {
+async function populateNPS(venues, dates, stats, overwrite = false) {
   for (const venue of venues) {
     for (const dateStr of dates) {
-      if (await checkDateHasData(venue.id, dateStr, 'nps')) {
+      const hasData = await checkDateHasData(venue.id, dateStr, 'nps');
+
+      if (hasData && !overwrite) {
         stats.datesSkipped++;
         continue;
+      }
+
+      if (hasData && overwrite) {
+        await deleteDateData(venue.id, dateStr, 'nps');
+        stats.datesOverwritten = (stats.datesOverwritten || 0) + 1;
       }
 
       stats.datesProcessed++;
@@ -395,7 +460,7 @@ module.exports = async function handler(req, res) {
       return res.status(403).json({ error: 'Admin access required' });
     }
 
-    const { accountId, startDate, endDate, dataType = 'all' } = req.body;
+    const { accountId, startDate, endDate, dataType = 'all', overwrite = false } = req.body;
 
     if (!accountId || !startDate || !endDate) {
       return res.status(400).json({ error: 'Account ID, start date, and end date are required' });
@@ -422,10 +487,10 @@ module.exports = async function handler(req, res) {
       dates.push(new Date(d).toISOString().split('T')[0]);
     }
 
-    // LIMIT: Max 7 days per request to prevent timeout
-    if (dates.length > 7) {
+    // LIMIT: Max 3 days per request to prevent timeout
+    if (dates.length > 3) {
       return res.status(400).json({
-        error: `Too many days requested (${dates.length}). Maximum 7 days per request to prevent timeout. Please make multiple requests.`
+        error: `Too many days requested (${dates.length}). Maximum 3 days per request to prevent timeout. Please make multiple requests.`
       });
     }
 
@@ -436,20 +501,21 @@ module.exports = async function handler(req, res) {
       externalRatingsCreated: 0,
       npsCreated: 0,
       datesSkipped: 0,
-      datesProcessed: 0
+      datesProcessed: 0,
+      datesOverwritten: 0
     };
 
     // Populate based on dataType
     if (dataType === 'feedback' || dataType === 'all') {
-      await populateFeedback(venues, dates, stats);
+      await populateFeedback(venues, dates, stats, overwrite);
     }
 
     if (dataType === 'reviews' || dataType === 'all') {
-      await populateReviews(venues, dates, stats);
+      await populateReviews(venues, dates, stats, overwrite);
     }
 
     if (dataType === 'nps' || dataType === 'all') {
-      await populateNPS(venues, dates, stats);
+      await populateNPS(venues, dates, stats, overwrite);
     }
 
     return res.status(200).json({
