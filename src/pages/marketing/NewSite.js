@@ -46,7 +46,7 @@ const NewSite = () => {
 
       {/* Navbar */}
       <nav className="w-full border-b border-gray-200 font-jakarta relative">
-        <div className="w-full px-[30px] py-4">
+        <div className="w-full px-[30px] py-6">
           <div className="flex items-center justify-between">
             {/* Left side: Logo + Nav Links */}
             <div className="flex items-end space-x-8">
