@@ -50,13 +50,13 @@ const NewSite = () => {
           <div className="flex items-center justify-between">
             {/* Left side: Logo + Nav Links */}
             <div className="flex items-center space-x-8">
-              {/* Logo - Blue Chat Bubble Placeholder */}
+              {/* Logo */}
               <Link to="/" className="flex items-center">
-                <div className="w-10 h-10 rounded-full bg-[#2F5CFF] flex items-center justify-center">
-                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M21 15C21 15.5304 20.7893 16.0391 20.4142 16.4142C20.0391 16.7893 19.5304 17 19 17H7L3 21V5C3 4.46957 3.21071 3.96086 3.58579 3.58579C3.96086 3.21071 4.46957 3 5 3H19C19.5304 3 20.0391 3.21071 20.4142 3.58579C20.7893 3.96086 21 4.46957 21 5V15Z" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                  </svg>
-                </div>
+                <img
+                  src="/img/chatters_logo_new.svg"
+                  alt="Chatters"
+                  className="h-8 w-auto"
+                />
               </Link>
 
               {/* Desktop Navigation */}
