@@ -296,6 +296,14 @@ const AdminAccountDetail = () => {
         ? 'https://my.getchatters.com/api/admin/seed-demo-v2'
         : '/api/admin/seed-demo-v2';
 
+      console.log('🚀 Making API request to:', apiUrl);
+      console.log('📦 Request body:', {
+        accountId,
+        startDate: selectedDateRange.startDate,
+        endDate: selectedDateRange.endDate,
+        dataType
+      });
+
       const response = await fetch(apiUrl, {
         method: 'POST',
         headers: {
@@ -310,7 +318,22 @@ const AdminAccountDetail = () => {
         })
       });
 
-      const result = await response.json();
+      console.log('📨 Response status:', response.status);
+      console.log('📨 Response headers:', Object.fromEntries(response.headers.entries()));
+
+      // Get the raw text first
+      const responseText = await response.text();
+      console.log('📨 Response text (first 500 chars):', responseText.substring(0, 500));
+
+      // Try to parse as JSON
+      let result;
+      try {
+        result = JSON.parse(responseText);
+        console.log('✅ Parsed JSON result:', result);
+      } catch (parseError) {
+        console.error('❌ Failed to parse JSON:', parseError);
+        throw new Error(`Server returned invalid JSON. Status: ${response.status}. Response: ${responseText.substring(0, 200)}`);
+      }
 
       if (!response.ok) {
         throw new Error(result.error || 'Failed to populate demo data');
