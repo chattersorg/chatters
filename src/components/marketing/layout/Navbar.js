@@ -160,7 +160,7 @@ const Navbar = ({ overlay = false }) => {
                     {intelligenceLink.icon}
                   </div>
                   <div className="flex-1">
-                    <h3 className="font-satoshi font-bold text-gray-900 text-base mb-1 group-hover:text-purple-600 transition-colors">
+                    <h3 className="font-satoshi font-bold text-base mb-1 bg-clip-text text-transparent bg-gradient-to-r from-[#FF6D6D] via-[#FFAC4E] to-[#FF6D6D] bg-[length:200%_auto] animate-gradient">
                       {intelligenceLink.name}
                     </h3>
                     <p className="text-xs text-gray-600 font-satoshi">
@@ -184,15 +184,41 @@ const Navbar = ({ overlay = false }) => {
                   ))}
                 </div>
 
-                <div className="mt-4 pt-3 border-t border-purple-200">
-                  <div className="inline-flex items-center gap-1.5 text-xs font-semibold text-purple-600 group-hover:text-purple-700 transition-colors">
-                    Learn more
-                    <svg className="w-3 h-3 group-hover:translate-x-0.5 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              </Link>
+
+              <div className="mt-4 pt-4 border-t border-purple-200 flex gap-2">
+                <a
+                  href="/pricing"
+                  onClick={() => setActiveDropdown(null)}
+                  className="group flex-1 inline-flex items-center justify-center bg-white text-gray-900 rounded-lg font-semibold hover:bg-gray-50 transition-all duration-200 font-satoshi shadow-sm hover:shadow border border-gray-200 overflow-hidden relative px-3 py-2 text-xs"
+                >
+                  <span>View Pricing</span>
+                  <span className="relative ml-1.5 w-3 h-3 overflow-hidden inline-block">
+                    <svg className="w-3 h-3 absolute top-0 left-0 transition-all duration-300 group-hover:translate-x-6 group-hover:opacity-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                     </svg>
-                  </div>
-                </div>
-              </Link>
+                    <svg className="w-3 h-3 absolute top-0 left-0 -translate-x-6 opacity-0 transition-all duration-300 group-hover:translate-x-0 group-hover:opacity-100" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                    </svg>
+                  </span>
+                </a>
+                <a
+                  href="/demo"
+                  onClick={() => setActiveDropdown(null)}
+                  className="group flex-1 inline-flex items-center justify-center bg-[#41C74E] text-white rounded-lg font-semibold hover:bg-[#38b043] transition-all duration-200 font-satoshi shadow-lg hover:shadow-xl overflow-hidden relative px-3 py-2 text-xs"
+                >
+                  <span>Book a Demo</span>
+                  <span className="relative ml-1.5 w-3 h-3 overflow-hidden inline-block">
+                    <svg className="w-3 h-3 absolute top-0 left-0 transition-all duration-300 group-hover:translate-x-6 group-hover:opacity-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                    </svg>
+                    <svg className="w-3 h-3 absolute top-0 left-0 -translate-x-6 opacity-0 transition-all duration-300 group-hover:translate-x-0 group-hover:opacity-100" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                    </svg>
+                  </span>
+                </a>
+              </div>
+            </div>
               </div>
             </div>
           </div>
@@ -406,7 +432,7 @@ const Navbar = ({ overlay = false }) => {
                     {intelligenceLink.icon}
                   </div>
                   <div className="flex-1">
-                    <h3 className="font-satoshi font-bold text-gray-900 text-sm">
+                    <h3 className="font-satoshi font-bold text-sm bg-clip-text text-transparent bg-gradient-to-r from-[#FF6D6D] via-[#FFAC4E] to-[#FF6D6D] bg-[length:200%_auto] animate-gradient">
                       {intelligenceLink.name}
                     </h3>
                     <p className="text-xs text-gray-600 font-satoshi">
