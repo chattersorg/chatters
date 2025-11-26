@@ -422,6 +422,13 @@ module.exports = async function handler(req, res) {
       dates.push(new Date(d).toISOString().split('T')[0]);
     }
 
+    // LIMIT: Max 30 days per request to prevent timeout (Pro plan = 60s limit)
+    if (dates.length > 30) {
+      return res.status(400).json({
+        error: `Too many days requested (${dates.length}). Maximum 30 days per request to prevent timeout. Please make multiple requests.`
+      });
+    }
+
     const stats = {
       feedbackCreated: 0,
       feedbackResolved: 0,

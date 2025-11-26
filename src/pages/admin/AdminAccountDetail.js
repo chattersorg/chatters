@@ -230,10 +230,10 @@ const AdminAccountDetail = () => {
     setDateRangeForAccount({ accountId: account.id, accountName: account.name, dataType });
     setShowDateRangePicker(true);
 
-    // Set default date range (last 7 days)
+    // Set default date range (last 14 days)
     const endDate = new Date();
     const startDate = new Date();
-    startDate.setDate(startDate.getDate() - 7);
+    startDate.setDate(startDate.getDate() - 14);
 
     setSelectedDateRange({
       startDate: startDate.toISOString().split('T')[0],
@@ -255,6 +255,12 @@ const AdminAccountDetail = () => {
 
     const { accountId, accountName, dataType = 'all' } = dateRangeForAccount;
     const dayCount = Math.ceil((new Date(selectedDateRange.endDate) - new Date(selectedDateRange.startDate)) / (1000 * 60 * 60 * 24)) + 1;
+
+    // Validate date range (max 30 days to prevent timeout)
+    if (dayCount > 30) {
+      toast.error(`Date range too large (${dayCount} days). Maximum 30 days per request. Please select a shorter range.`);
+      return;
+    }
 
     const dataTypeLabels = {
       feedback: 'Feedback Sessions & Responses',
@@ -304,17 +310,7 @@ const AdminAccountDetail = () => {
         })
       });
 
-      // Log the raw response for debugging
-      const responseText = await response.text();
-      console.log('API Response Status:', response.status);
-      console.log('API Response Text:', responseText);
-
-      let result;
-      try {
-        result = JSON.parse(responseText);
-      } catch (parseError) {
-        throw new Error(`Invalid JSON response: ${responseText.substring(0, 100)}...`);
-      }
+      const result = await response.json();
 
       if (!response.ok) {
         throw new Error(result.error || 'Failed to populate demo data');
@@ -879,6 +875,9 @@ const AdminAccountDetail = () => {
                   {dateRangeForAccount.dataType === 'all' && (
                     <>This will create feedback, reviews, and NPS data for each day in the range.</>
                   )}
+                </p>
+                <p className="text-xs text-gray-500 mt-2">
+                  <strong>Note:</strong> Maximum 30 days per request. For larger ranges, make multiple requests.
                 </p>
               </div>
             </div>
