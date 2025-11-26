@@ -186,39 +186,38 @@ const Navbar = ({ overlay = false }) => {
 
               </Link>
 
-              <div className="mt-4 pt-4 border-t border-purple-200 flex gap-2">
-                <a
-                  href="/pricing"
-                  onClick={() => setActiveDropdown(null)}
-                  className="group flex-1 inline-flex items-center justify-center bg-white text-gray-900 rounded-lg font-semibold hover:bg-gray-50 transition-all duration-200 font-satoshi shadow-sm hover:shadow border border-gray-200 overflow-hidden relative px-3 py-2 text-xs"
-                >
-                  <span>View Pricing</span>
-                  <span className="relative ml-1.5 w-3 h-3 overflow-hidden inline-block">
-                    <svg className="w-3 h-3 absolute top-0 left-0 transition-all duration-300 group-hover:translate-x-6 group-hover:opacity-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                    </svg>
-                    <svg className="w-3 h-3 absolute top-0 left-0 -translate-x-6 opacity-0 transition-all duration-300 group-hover:translate-x-0 group-hover:opacity-100" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                    </svg>
-                  </span>
-                </a>
-                <a
-                  href="/demo"
-                  onClick={() => setActiveDropdown(null)}
-                  className="group flex-1 inline-flex items-center justify-center bg-[#41C74E] text-white rounded-lg font-semibold hover:bg-[#38b043] transition-all duration-200 font-satoshi shadow-lg hover:shadow-xl overflow-hidden relative px-3 py-2 text-xs"
-                >
-                  <span>Book a Demo</span>
-                  <span className="relative ml-1.5 w-3 h-3 overflow-hidden inline-block">
-                    <svg className="w-3 h-3 absolute top-0 left-0 transition-all duration-300 group-hover:translate-x-6 group-hover:opacity-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                    </svg>
-                    <svg className="w-3 h-3 absolute top-0 left-0 -translate-x-6 opacity-0 transition-all duration-300 group-hover:translate-x-0 group-hover:opacity-100" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                    </svg>
-                  </span>
-                </a>
-              </div>
-            </div>
+                <div className="mt-4 pt-4 border-t border-purple-200 flex gap-2">
+                  <a
+                    href="/pricing"
+                    onClick={() => setActiveDropdown(null)}
+                    className="group flex-1 inline-flex items-center justify-center bg-white text-gray-900 rounded-lg font-semibold hover:bg-gray-50 transition-all duration-200 font-satoshi shadow-sm hover:shadow border border-gray-200 overflow-hidden relative px-3 py-2 text-xs"
+                  >
+                    <span>View Pricing</span>
+                    <span className="relative ml-1.5 w-3 h-3 overflow-hidden inline-block">
+                      <svg className="w-3 h-3 absolute top-0 left-0 transition-all duration-300 group-hover:translate-x-6 group-hover:opacity-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                      </svg>
+                      <svg className="w-3 h-3 absolute top-0 left-0 -translate-x-6 opacity-0 transition-all duration-300 group-hover:translate-x-0 group-hover:opacity-100" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                      </svg>
+                    </span>
+                  </a>
+                  <a
+                    href="/demo"
+                    onClick={() => setActiveDropdown(null)}
+                    className="group flex-1 inline-flex items-center justify-center bg-[#41C74E] text-white rounded-lg font-semibold hover:bg-[#38b043] transition-all duration-200 font-satoshi shadow-lg hover:shadow-xl overflow-hidden relative px-3 py-2 text-xs"
+                  >
+                    <span>Book a Demo</span>
+                    <span className="relative ml-1.5 w-3 h-3 overflow-hidden inline-block">
+                      <svg className="w-3 h-3 absolute top-0 left-0 transition-all duration-300 group-hover:translate-x-6 group-hover:opacity-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                      </svg>
+                      <svg className="w-3 h-3 absolute top-0 left-0 -translate-x-6 opacity-0 transition-all duration-300 group-hover:translate-x-0 group-hover:opacity-100" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                      </svg>
+                    </span>
+                  </a>
+                </div>
               </div>
             </div>
           </div>
