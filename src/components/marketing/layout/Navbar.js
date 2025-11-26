@@ -91,64 +91,65 @@ const Navbar = ({ overlay = false }) => {
         onMouseEnter={handleDropdownContentEnter}
         onMouseLeave={handleDropdownContentLeave}
       >
-        <div className="w-full bg-white border-b border-gray-200 shadow-2xl py-4 px-8">
-          <div className="grid grid-cols-3 gap-4">
-            {/* Column 1: Core Features */}
-            <div>
-              <h3 className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-3 px-2.5">Core Features</h3>
-              <div className="space-y-1">
-                {coreProductLinks.map((link) => (
-                  <Link
-                    key={link.name}
-                    to={link.path}
-                    className="group flex items-start space-x-2.5 p-2.5 rounded-lg hover:bg-gray-50 hover:shadow-sm transition-all duration-200"
-                    onClick={() => setActiveDropdown(null)}
-                  >
-                    <div className="flex-shrink-0 w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center text-green-600 group-hover:bg-green-600 group-hover:text-white transition-all duration-200">
-                      {link.icon}
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <div className="font-satoshi font-semibold text-black transition-colors duration-200 text-sm">
-                        {link.name}
+        <div className="w-full bg-white border-b border-gray-200 shadow-2xl py-8">
+          <div className="px-8">
+            <div className="grid grid-cols-3 gap-8">
+              {/* Column 1: Core Features */}
+              <div>
+                <h3 className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-4">Core Features</h3>
+                <div className="space-y-2">
+                  {coreProductLinks.map((link) => (
+                    <Link
+                      key={link.name}
+                      to={link.path}
+                      className="group flex items-start space-x-3 p-3 rounded-lg hover:bg-gray-50 transition-all duration-200"
+                      onClick={() => setActiveDropdown(null)}
+                    >
+                      <div className="flex-shrink-0 w-10 h-10 bg-[#FF6D6D]/10 rounded-lg flex items-center justify-center text-[#FF6D6D] group-hover:bg-[#FF6D6D] group-hover:text-white transition-all duration-200">
+                        {link.icon}
                       </div>
-                      <div className="mt-0.5 text-xs text-gray-600 font-satoshi leading-snug">
-                        {link.description}
+                      <div className="flex-1 min-w-0">
+                        <div className="font-satoshi font-semibold text-gray-900 group-hover:text-[#FF6D6D] transition-colors duration-200 text-sm mb-1">
+                          {link.name}
+                        </div>
+                        <div className="text-xs text-gray-600 font-satoshi leading-relaxed">
+                          {link.description}
+                        </div>
                       </div>
-                    </div>
-                  </Link>
-                ))}
+                    </Link>
+                  ))}
+                </div>
               </div>
-            </div>
 
-            {/* Column 2: Team & Growth */}
-            <div>
-              <h3 className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-3 px-2.5">Team & Growth</h3>
-              <div className="space-y-1">
-                {teamProductLinks.map((link) => (
-                  <Link
-                    key={link.name}
-                    to={link.path}
-                    className="group flex items-start space-x-2.5 p-2.5 rounded-lg hover:bg-gray-50 hover:shadow-sm transition-all duration-200"
-                    onClick={() => setActiveDropdown(null)}
-                  >
-                    <div className="flex-shrink-0 w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center text-green-600 group-hover:bg-green-600 group-hover:text-white transition-all duration-200">
-                      {link.icon}
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <div className="font-satoshi font-semibold text-black transition-colors duration-200 text-sm">
-                        {link.name}
+              {/* Column 2: Team & Growth */}
+              <div>
+                <h3 className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-4">Team & Growth</h3>
+                <div className="space-y-2">
+                  {teamProductLinks.map((link) => (
+                    <Link
+                      key={link.name}
+                      to={link.path}
+                      className="group flex items-start space-x-3 p-3 rounded-lg hover:bg-gray-50 transition-all duration-200"
+                      onClick={() => setActiveDropdown(null)}
+                    >
+                      <div className="flex-shrink-0 w-10 h-10 bg-[#FF6D6D]/10 rounded-lg flex items-center justify-center text-[#FF6D6D] group-hover:bg-[#FF6D6D] group-hover:text-white transition-all duration-200">
+                        {link.icon}
                       </div>
-                      <div className="mt-0.5 text-xs text-gray-600 font-satoshi leading-snug">
-                        {link.description}
+                      <div className="flex-1 min-w-0">
+                        <div className="font-satoshi font-semibold text-gray-900 group-hover:text-[#FF6D6D] transition-colors duration-200 text-sm mb-1">
+                          {link.name}
+                        </div>
+                        <div className="text-xs text-gray-600 font-satoshi leading-relaxed">
+                          {link.description}
+                        </div>
                       </div>
-                    </div>
-                  </Link>
-                ))}
+                    </Link>
+                  ))}
+                </div>
               </div>
-            </div>
 
-            {/* Column 3: Chatters Intelligence (Full Height) */}
-            <div className="bg-gradient-to-br from-purple-50 to-blue-50 rounded-xl p-4 border-2 border-purple-200">
+              {/* Column 3: Chatters Intelligence (Full Height) */}
+              <div className="bg-gradient-to-br from-purple-50 to-blue-50 rounded-xl p-6 border-2 border-purple-200">
               <Link
                 to={intelligenceLink.path}
                 onClick={() => setActiveDropdown(null)}
@@ -203,11 +204,11 @@ const Navbar = ({ overlay = false }) => {
     const getColorClasses = () => {
       switch (colorScheme) {
         case 'purple':
-          return { bg: 'bg-purple-100', text: 'text-purple-600', hover: 'group-hover:bg-purple-600' };
+          return { bg: 'bg-[#FFAC4E]/10', text: 'text-[#FFAC4E]', hover: 'group-hover:bg-[#FFAC4E]', hoverText: 'group-hover:text-[#FFAC4E]' };
         case 'blue':
-          return { bg: 'bg-blue-100', text: 'text-blue-600', hover: 'group-hover:bg-blue-600' };
+          return { bg: 'bg-[#41C74E]/10', text: 'text-[#41C74E]', hover: 'group-hover:bg-[#41C74E]', hoverText: 'group-hover:text-[#41C74E]' };
         default:
-          return { bg: 'bg-green-100', text: 'text-green-600', hover: 'group-hover:bg-green-600' };
+          return { bg: 'bg-green-100', text: 'text-green-600', hover: 'group-hover:bg-green-600', hoverText: 'group-hover:text-green-600' };
       }
     };
     const colors = getColorClasses();
@@ -220,51 +221,53 @@ const Navbar = ({ overlay = false }) => {
         onMouseEnter={handleDropdownContentEnter}
         onMouseLeave={handleDropdownContentLeave}
       >
-        <div className="w-full bg-white border-b border-gray-200 shadow-2xl py-4 px-8">
-          <div className="grid grid-cols-2 gap-2">
-            {links.map((link) =>
-              link.path.startsWith('http') ? (
-                <a
-                  key={link.name}
-                  href={link.path}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="group flex items-start space-x-2.5 p-2.5 rounded-lg hover:bg-gray-50 hover:shadow-sm transition-all duration-200"
-                  onClick={() => setActiveDropdown(null)}
-                >
-                  <div className={`flex-shrink-0 w-8 h-8 ${colors.bg} rounded-lg flex items-center justify-center ${colors.text} ${colors.hover} group-hover:text-white transition-all duration-200`}>
-                    {link.icon}
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="font-satoshi font-semibold text-black transition-colors duration-200 text-sm">
-                      {link.name}
+        <div className="w-full bg-white border-b border-gray-200 shadow-2xl py-8">
+          <div className="px-8">
+            <div className="grid grid-cols-2 gap-6">
+              {links.map((link) =>
+                link.path.startsWith('http') ? (
+                  <a
+                    key={link.name}
+                    href={link.path}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="group flex items-start space-x-3 p-3 rounded-lg hover:bg-gray-50 transition-all duration-200"
+                    onClick={() => setActiveDropdown(null)}
+                  >
+                    <div className={`flex-shrink-0 w-10 h-10 ${colors.bg} rounded-lg flex items-center justify-center ${colors.text} ${colors.hover} group-hover:text-white transition-all duration-200`}>
+                      {link.icon}
                     </div>
-                    <div className="mt-0.5 text-xs text-gray-600 font-satoshi leading-snug">
-                      {link.description}
+                    <div className="flex-1 min-w-0">
+                      <div className={`font-satoshi font-semibold text-gray-900 transition-colors duration-200 text-sm mb-1 ${colors.hoverText}`}>
+                        {link.name}
+                      </div>
+                      <div className="text-xs text-gray-600 font-satoshi leading-relaxed">
+                        {link.description}
+                      </div>
                     </div>
-                  </div>
-                </a>
-              ) : (
-                <Link
-                  key={link.name}
-                  to={link.path}
-                  className="group flex items-start space-x-2.5 p-2.5 rounded-lg hover:bg-gray-50 hover:shadow-sm transition-all duration-200"
-                  onClick={() => setActiveDropdown(null)}
-                >
-                  <div className={`flex-shrink-0 w-8 h-8 ${colors.bg} rounded-lg flex items-center justify-center ${colors.text} ${colors.hover} group-hover:text-white transition-all duration-200`}>
-                    {link.icon}
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="font-satoshi font-semibold text-black transition-colors duration-200 text-sm">
-                      {link.name}
+                  </a>
+                ) : (
+                  <Link
+                    key={link.name}
+                    to={link.path}
+                    className="group flex items-start space-x-3 p-3 rounded-lg hover:bg-gray-50 transition-all duration-200"
+                    onClick={() => setActiveDropdown(null)}
+                  >
+                    <div className={`flex-shrink-0 w-10 h-10 ${colors.bg} rounded-lg flex items-center justify-center ${colors.text} ${colors.hover} group-hover:text-white transition-all duration-200`}>
+                      {link.icon}
                     </div>
-                    <div className="mt-0.5 text-xs text-gray-600 font-satoshi leading-snug">
-                      {link.description}
+                    <div className="flex-1 min-w-0">
+                      <div className={`font-satoshi font-semibold text-gray-900 transition-colors duration-200 text-sm mb-1 ${colors.hoverText}`}>
+                        {link.name}
+                      </div>
+                      <div className="text-xs text-gray-600 font-satoshi leading-relaxed">
+                        {link.description}
+                      </div>
                     </div>
-                  </div>
-                </Link>
-              )
-            )}
+                  </Link>
+                )
+              )}
+            </div>
           </div>
         </div>
       </div>
