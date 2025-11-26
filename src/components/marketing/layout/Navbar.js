@@ -273,13 +273,13 @@ const Navbar = ({ overlay = false }) => {
 
   return (
     <nav className='fixed top-0 inset-x-0 z-50 font-satoshi bg-white border-b border-gray-200'>
-      <div className='mx-auto max-w-[1400px] px-4'>
+      <div className='w-full px-8'>
         <div>
-          <div className="flex justify-between items-center h-16 px-6">
+          <div className="flex justify-between items-center h-16">
             {/* Left: Logo + Desktop Nav */}
             <div className="flex items-center space-x-8">
               <Link to="/" className="flex-shrink-0">
-                <img src="/img/chatters_logo_new.svg" alt="Chatters Logo" className="h-8" />
+                <img src="/img/chatters_logo_new.svg" alt="Chatters Logo" className="h-6" />
               </Link>
 
               <div className="hidden lg:flex lg:items-center lg:space-x-8 relative">

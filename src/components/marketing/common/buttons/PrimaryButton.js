@@ -18,8 +18,9 @@ const PrimaryButton = ({
   };
 
   const baseClasses = `
-    group inline-flex items-center bg-black text-white rounded-lg font-semibold 
-    hover:bg-gray-900 transition-all duration-200 font-satoshi shadow-lg hover:shadow-xl
+    group inline-flex items-center bg-[#41C74E] text-white rounded-lg font-semibold
+    hover:bg-[#38b043] transition-all duration-200 font-satoshi shadow-lg hover:shadow-xl
+    overflow-hidden relative
     ${sizeClasses[size]} ${className}
   `.trim();
 
@@ -33,20 +34,26 @@ const PrimaryButton = ({
       >
         <span>{text}</span>
         {showArrow && (
-          <ArrowRight className={`${arrowSize} ml-2 transition-transform duration-200 group-hover:translate-x-1`} />
+          <span className="relative ml-2 w-4 overflow-hidden inline-block">
+            <ArrowRight className={`${arrowSize} absolute transition-all duration-300 group-hover:translate-x-6 group-hover:opacity-0`} />
+            <ArrowRight className={`${arrowSize} absolute -translate-x-6 opacity-0 transition-all duration-300 group-hover:translate-x-0 group-hover:opacity-100`} />
+          </span>
         )}
       </button>
     );
   }
 
   return (
-    <Link 
+    <Link
       to={to}
       className={baseClasses}
     >
       <span>{text}</span>
       {showArrow && (
-        <ArrowRight className={`${arrowSize} ml-2 transition-transform duration-200 group-hover:translate-x-1`} />
+        <span className="relative ml-2 w-4 overflow-hidden inline-block">
+          <ArrowRight className={`${arrowSize} absolute transition-all duration-300 group-hover:translate-x-6 group-hover:opacity-0`} />
+          <ArrowRight className={`${arrowSize} absolute -translate-x-6 opacity-0 transition-all duration-300 group-hover:translate-x-0 group-hover:opacity-100`} />
+        </span>
       )}
     </Link>
   );
