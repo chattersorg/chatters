@@ -304,7 +304,17 @@ const AdminAccountDetail = () => {
         })
       });
 
-      const result = await response.json();
+      // Log the raw response for debugging
+      const responseText = await response.text();
+      console.log('API Response Status:', response.status);
+      console.log('API Response Text:', responseText);
+
+      let result;
+      try {
+        result = JSON.parse(responseText);
+      } catch (parseError) {
+        throw new Error(`Invalid JSON response: ${responseText.substring(0, 100)}...`);
+      }
 
       if (!response.ok) {
         throw new Error(result.error || 'Failed to populate demo data');
