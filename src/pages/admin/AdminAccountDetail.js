@@ -230,10 +230,10 @@ const AdminAccountDetail = () => {
     setDateRangeForAccount({ accountId: account.id, accountName: account.name, dataType });
     setShowDateRangePicker(true);
 
-    // Set default date range (last 14 days)
+    // Set default date range (last 7 days)
     const endDate = new Date();
     const startDate = new Date();
-    startDate.setDate(startDate.getDate() - 14);
+    startDate.setDate(startDate.getDate() - 7);
 
     setSelectedDateRange({
       startDate: startDate.toISOString().split('T')[0],
@@ -256,9 +256,9 @@ const AdminAccountDetail = () => {
     const { accountId, accountName, dataType = 'all' } = dateRangeForAccount;
     const dayCount = Math.ceil((new Date(selectedDateRange.endDate) - new Date(selectedDateRange.startDate)) / (1000 * 60 * 60 * 24)) + 1;
 
-    // Validate date range (max 30 days to prevent timeout)
-    if (dayCount > 30) {
-      toast.error(`Date range too large (${dayCount} days). Maximum 30 days per request. Please select a shorter range.`);
+    // Validate date range (max 7 days to prevent timeout)
+    if (dayCount > 7) {
+      toast.error(`Date range too large (${dayCount} days). Maximum 7 days per request. Please select a shorter range.`);
       return;
     }
 
@@ -270,10 +270,10 @@ const AdminAccountDetail = () => {
     };
 
     const dataTypeDetails = {
-      feedback: `- 30 feedback sessions per day\n- ~81 feedback items per day\n- Random staff resolution (60% of items older than 2 days)`,
+      feedback: `- 5 feedback sessions per day\n- ~13 feedback items per day\n- Random staff resolution (60% of items older than 2 days)`,
       reviews: `- 1 Google rating per day (1-5 stars)\n- 1 TripAdvisor rating per day (1-5 stars)\n- Daily rating trend snapshots`,
-      nps: `- 20 NPS submissions per day (0-10 scores)\n- Realistic email send/response timestamps`,
-      all: `- 30 feedback sessions (~81 items, 60% resolved)\n- 20 NPS submissions\n- 2 rating scores (Google + TripAdvisor)\n- 2 rating snapshots`
+      nps: `- 5 NPS submissions per day (0-10 scores)\n- Realistic email send/response timestamps`,
+      all: `- 5 feedback sessions (~13 items, 60% resolved)\n- 5 NPS submissions\n- 2 rating scores (Google + TripAdvisor)\n- 2 rating snapshots`
     };
 
     if (!window.confirm(
@@ -900,7 +900,7 @@ const AdminAccountDetail = () => {
                   )}
                 </p>
                 <p className="text-xs text-gray-500 mt-2">
-                  <strong>Note:</strong> Maximum 30 days per request. For larger ranges, make multiple requests.
+                  <strong>Note:</strong> Maximum 7 days per request. For larger ranges, make multiple requests.
                 </p>
               </div>
             </div>

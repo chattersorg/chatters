@@ -110,9 +110,9 @@ async function populateFeedback(venues, dates, stats) {
 
       stats.datesProcessed++;
 
-      // Create 30 sessions per day
+      // Create 5 sessions per day (reduced for faster execution)
       const sessionsToInsert = [];
-      for (let i = 0; i < 30; i++) {
+      for (let i = 0; i < 5; i++) {
         const sessionTime = setTimeOfDay(new Date(dateStr), 11, 21);
         const sessionId = uuidv4();
 
@@ -324,8 +324,8 @@ async function populateNPS(venues, dates, stats) {
 
       const npsToInsert = [];
 
-      // 20 NPS submissions per day
-      for (let i = 0; i < 20; i++) {
+      // 5 NPS submissions per day (reduced for faster execution)
+      for (let i = 0; i < 5; i++) {
         const visitTime = setTimeOfDay(new Date(dateStr), 11, 21);
         const scheduledDate = new Date(visitTime.getTime() + 24 * 60 * 60 * 1000);
         const sentDate = new Date(scheduledDate.getTime() + randomInt(0, 30) * 60 * 1000);
@@ -422,10 +422,10 @@ module.exports = async function handler(req, res) {
       dates.push(new Date(d).toISOString().split('T')[0]);
     }
 
-    // LIMIT: Max 30 days per request to prevent timeout (Pro plan = 60s limit)
-    if (dates.length > 30) {
+    // LIMIT: Max 7 days per request to prevent timeout
+    if (dates.length > 7) {
       return res.status(400).json({
-        error: `Too many days requested (${dates.length}). Maximum 30 days per request to prevent timeout. Please make multiple requests.`
+        error: `Too many days requested (${dates.length}). Maximum 7 days per request to prevent timeout. Please make multiple requests.`
       });
     }
 
