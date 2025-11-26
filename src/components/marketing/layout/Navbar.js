@@ -193,6 +193,7 @@ const Navbar = ({ overlay = false }) => {
                   </div>
                 </div>
               </Link>
+              </div>
             </div>
           </div>
         </div>
