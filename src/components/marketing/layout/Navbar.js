@@ -272,14 +272,14 @@ const Navbar = ({ overlay = false }) => {
   };
 
   return (
-    <nav className={overlay ? 'fixed top-0 inset-x-0 z-50 font-satoshi' : 'sticky top-0 z-50 font-satoshi p-4'}>
-      <div className={overlay ? 'mx-auto max-w-[1400px] px-4' : 'max-w-[1400px] mx-auto bg-white rounded-2xl shadow-lg border border-gray-200'}>
-        <div className={overlay ? 'mt-4 rounded-2xl border border-gray-200/60 bg-white/70 backdrop-blur supports-[backdrop-filter]:bg-white/50' : ''}>
+    <nav className='fixed top-0 inset-x-0 z-50 font-satoshi bg-white border-b border-gray-200'>
+      <div className='mx-auto max-w-[1400px] px-4'>
+        <div>
           <div className="flex justify-between items-center h-16 px-6">
             {/* Left: Logo + Desktop Nav */}
             <div className="flex items-center space-x-8">
               <Link to="/" className="flex-shrink-0">
-                <img src={isDevSite() ? "/img/CTS_DEV_LOGO.svg" : "/img/Logo.svg"} alt="Chatters Logo" className="h-8" />
+                <img src="/img/chatters_logo_new.svg" alt="Chatters Logo" className="h-8" />
               </Link>
 
               <div className="hidden lg:flex lg:items-center lg:space-x-8 relative">
@@ -351,7 +351,7 @@ const Navbar = ({ overlay = false }) => {
 
       {/* Mobile menu */}
       {isMobileMenuOpen && (
-        <div className="lg:hidden bg-white mt-2 rounded-2xl border border-gray-200 shadow-2xl mx-4 max-h-[80vh] overflow-y-auto">
+        <div className="lg:hidden bg-white border-t border-gray-200 shadow-2xl max-h-[80vh] overflow-y-auto">
           <div className="px-4 pt-4 pb-6 space-y-4 font-satoshi">
             <div>
               <p className="text-sm font-semibold text-green-600 mb-2">Product - Core Features</p>

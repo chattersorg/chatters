@@ -64,7 +64,7 @@ const LandingPage = () => {
   };
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-white pt-16">
       <Helmet>
         <title>Restaurant Feedback Software UK | Prevent Bad Reviews | Chatters</title>
         <meta 
@@ -149,7 +149,7 @@ const LandingPage = () => {
         </script>
       </Helmet>
 
-      <Navbar overlay/>
+      <Navbar />
 
       <Hero />
 
