@@ -49,7 +49,7 @@ const NewSite = () => {
         <div className="w-full px-[30px] py-4">
           <div className="flex items-center justify-between">
             {/* Left side: Logo + Nav Links */}
-            <div className="flex items-center space-x-8">
+            <div className="flex items-end space-x-8">
               {/* Logo */}
               <Link to="/" className="flex items-center">
                 <img
@@ -60,7 +60,7 @@ const NewSite = () => {
               </Link>
 
               {/* Desktop Navigation */}
-              <div className="hidden lg:flex items-center space-x-8">
+              <div className="hidden lg:flex items-end space-x-8">
                 {/* Product Dropdown */}
                 <div
                   className="relative"
