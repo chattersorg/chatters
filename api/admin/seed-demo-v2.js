@@ -487,10 +487,10 @@ module.exports = async function handler(req, res) {
       dates.push(new Date(d).toISOString().split('T')[0]);
     }
 
-    // LIMIT: Max 3 days per request to prevent timeout
-    if (dates.length > 3) {
+    // LIMIT: Max 1 day per request to prevent timeout
+    if (dates.length > 1) {
       return res.status(400).json({
-        error: `Too many days requested (${dates.length}). Maximum 3 days per request to prevent timeout. Please make multiple requests.`
+        error: `Too many days requested (${dates.length}). Maximum 1 day per request to prevent timeout. Please make multiple requests.`
       });
     }
 
