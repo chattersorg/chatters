@@ -85,13 +85,13 @@ const Navbar = ({ overlay = false }) => {
   const ProductDropdown = ({ isVisible }) => {
     return (
       <div
-        className={`fixed left-4 right-4 top-20 z-[60] transition-all duration-400 ease-out transform ${
+        className={`fixed left-0 right-0 top-16 z-[60] transition-all duration-400 ease-out transform ${
           isVisible ? 'opacity-100 visible translate-y-0 scale-100' : 'opacity-0 invisible -translate-y-4 scale-95'
         }`}
         onMouseEnter={handleDropdownContentEnter}
         onMouseLeave={handleDropdownContentLeave}
       >
-        <div className="max-w-[1400px] mx-auto bg-white rounded-2xl shadow-2xl border border-gray-200 py-4 px-4">
+        <div className="w-full bg-white border-b border-gray-200 shadow-2xl py-4 px-8">
           <div className="grid grid-cols-3 gap-4">
             {/* Column 1: Core Features */}
             <div>
@@ -214,13 +214,13 @@ const Navbar = ({ overlay = false }) => {
 
     return (
       <div
-        className={`fixed left-4 right-4 top-20 z-[60] transition-all duration-400 ease-out transform ${
+        className={`fixed left-0 right-0 top-16 z-[60] transition-all duration-400 ease-out transform ${
           isVisible ? 'opacity-100 visible translate-y-0 scale-100' : 'opacity-0 invisible -translate-y-4 scale-95'
         }`}
         onMouseEnter={handleDropdownContentEnter}
         onMouseLeave={handleDropdownContentLeave}
       >
-        <div className="max-w-[1400px] mx-auto bg-white rounded-2xl shadow-2xl border border-gray-200 py-4 px-4">
+        <div className="w-full bg-white border-b border-gray-200 shadow-2xl py-4 px-8">
           <div className="grid grid-cols-2 gap-2">
             {links.map((link) =>
               link.path.startsWith('http') ? (

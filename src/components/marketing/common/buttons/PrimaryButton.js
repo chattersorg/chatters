@@ -25,6 +25,7 @@ const PrimaryButton = ({
   `.trim();
 
   const arrowSize = size === 'sm' ? 'w-4 h-4' : size === 'md' ? 'w-4 h-4' : 'w-5 h-5';
+  const containerWidth = size === 'sm' ? 'w-4 h-4' : size === 'md' ? 'w-4 h-4' : 'w-5 h-5';
 
   if (type === 'button') {
     return (
@@ -34,9 +35,9 @@ const PrimaryButton = ({
       >
         <span>{text}</span>
         {showArrow && (
-          <span className="relative ml-2 w-4 overflow-hidden inline-block">
-            <ArrowRight className={`${arrowSize} absolute transition-all duration-300 group-hover:translate-x-6 group-hover:opacity-0`} />
-            <ArrowRight className={`${arrowSize} absolute -translate-x-6 opacity-0 transition-all duration-300 group-hover:translate-x-0 group-hover:opacity-100`} />
+          <span className={`relative ml-2 ${containerWidth} overflow-hidden inline-block`}>
+            <ArrowRight className={`${arrowSize} absolute top-0 left-0 transition-all duration-300 group-hover:translate-x-6 group-hover:opacity-0`} />
+            <ArrowRight className={`${arrowSize} absolute top-0 left-0 -translate-x-6 opacity-0 transition-all duration-300 group-hover:translate-x-0 group-hover:opacity-100`} />
           </span>
         )}
       </button>
@@ -50,9 +51,9 @@ const PrimaryButton = ({
     >
       <span>{text}</span>
       {showArrow && (
-        <span className="relative ml-2 w-4 overflow-hidden inline-block">
-          <ArrowRight className={`${arrowSize} absolute transition-all duration-300 group-hover:translate-x-6 group-hover:opacity-0`} />
-          <ArrowRight className={`${arrowSize} absolute -translate-x-6 opacity-0 transition-all duration-300 group-hover:translate-x-0 group-hover:opacity-100`} />
+        <span className={`relative ml-2 ${containerWidth} overflow-hidden inline-block`}>
+          <ArrowRight className={`${arrowSize} absolute top-0 left-0 transition-all duration-300 group-hover:translate-x-6 group-hover:opacity-0`} />
+          <ArrowRight className={`${arrowSize} absolute top-0 left-0 -translate-x-6 opacity-0 transition-all duration-300 group-hover:translate-x-0 group-hover:opacity-100`} />
         </span>
       )}
     </Link>
