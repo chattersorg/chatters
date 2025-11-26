@@ -9,7 +9,7 @@ const ReviewFilters = ({ value, onChange }) => {
   ];
 
   return (
-    <div className="bg-white rounded-lg border border-gray-200 p-2">
+    <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-2">
       <div className="flex gap-2">
         {filters.map((filter) => (
           <button
@@ -18,7 +18,7 @@ const ReviewFilters = ({ value, onChange }) => {
             className={`flex-1 px-4 py-3 rounded-lg text-sm font-medium transition-all ${
               value === filter.value
                 ? 'bg-custom-black text-white shadow-md'
-                : 'text-gray-700 hover:bg-gray-100'
+                : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'
             }`}
           >
             <span className="mr-2">{filter.icon}</span>

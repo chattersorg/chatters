@@ -9,25 +9,25 @@ const ReviewStats = ({ stats }) => {
       label: 'Total Reviews',
       value: stats.total,
       icon: '📊',
-      color: 'bg-blue-50 text-blue-700'
+      color: 'bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300'
     },
     {
       label: 'Needs Reply',
       value: stats.unresponded,
       icon: '💬',
-      color: 'bg-orange-50 text-orange-700'
+      color: 'bg-orange-50 dark:bg-orange-900/30 text-orange-700 dark:text-orange-300'
     },
     {
       label: 'Average Rating',
       value: `${stats.avgRating} ⭐`,
       icon: '⭐',
-      color: 'bg-yellow-50 text-yellow-700'
+      color: 'bg-yellow-50 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-300'
     },
     {
       label: 'Responded',
       value: stats.responded,
       icon: '✅',
-      color: 'bg-green-50 text-green-700'
+      color: 'bg-green-50 dark:bg-green-900/30 text-green-700 dark:text-green-300'
     }
   ];
 
@@ -36,7 +36,7 @@ const ReviewStats = ({ stats }) => {
       {statCards.map((stat, index) => (
         <div
           key={index}
-          className={`${stat.color} rounded-lg p-6 border border-gray-200`}
+          className={`${stat.color} rounded-lg p-6 border border-gray-200 dark:border-gray-700`}
         >
           <div className="flex items-center justify-between">
             <div>

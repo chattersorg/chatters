@@ -643,56 +643,56 @@ const ReportBuilderTab = () => {
   return (
     <div className="space-y-6">
       {/* Report Configuration */}
-      <div className="bg-white rounded-lg border border-gray-200 p-4">
-        <h3 className="text-base font-medium text-gray-900 mb-3">Report Configuration</h3>
-        
+      <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-4">
+        <h3 className="text-base font-medium text-gray-900 dark:text-white mb-3">Report Configuration</h3>
+
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
           {/* Date Range */}
           <div className="space-y-1.5">
-            <label className="block text-sm font-medium text-gray-700">Date Range</label>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Date Range</label>
             <Popover open={dateRangeDropdownOpen} onOpenChange={setDateRangeDropdownOpen}>
               <PopoverTrigger asChild>
                 <Button
                   variant="outline"
                   role="combobox"
                   aria-expanded={dateRangeDropdownOpen}
-                  className="w-full justify-between text-left font-normal h-auto py-2 px-3 bg-white shadow-sm border-gray-300 hover:border-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 rounded-lg"
+                  className="w-full justify-between text-left font-normal h-auto py-2 px-3 bg-white dark:bg-gray-700 shadow-sm border-gray-300 dark:border-gray-600 hover:border-gray-400 dark:hover:border-gray-500 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 rounded-lg"
                 >
                   <div className="flex items-center space-x-2">
-                    <Calendar className="h-4 w-4 text-gray-400" />
-                    <span className="text-sm font-medium text-gray-900">{dateRange.label}</span>
+                    <Calendar className="h-4 w-4 text-gray-400 dark:text-gray-400" />
+                    <span className="text-sm font-medium text-gray-900 dark:text-gray-100">{dateRange.label}</span>
                   </div>
                   <ChevronDown className={cn("ml-2 h-4 w-4 shrink-0 opacity-50 transition-transform duration-200", dateRangeDropdownOpen && "transform rotate-180")} />
                 </Button>
               </PopoverTrigger>
-              <PopoverContent className="w-full p-0 bg-white border border-gray-200 shadow-lg rounded-lg" align="start">
+              <PopoverContent className="w-full p-0 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 shadow-lg rounded-lg" align="start">
                 <div className="py-2 px-2">
                   <div className="grid grid-cols-2 gap-1 max-h-72 overflow-y-auto">
                     {dateRangeOptions.map((option, index) => {
                       const optionValue = option.getValue();
                       const isSelected = dateRange.label === option.label;
-                      
+
                       return (
-                        <div key={index} 
+                        <div key={index}
                           className={cn(
-                            "flex items-center justify-between px-3 py-2 hover:bg-gray-50 cursor-pointer transition-colors duration-150 rounded-md",
-                            isSelected && "bg-blue-50 border border-blue-200"
+                            "flex items-center justify-between px-3 py-2 hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer transition-colors duration-150 rounded-md",
+                            isSelected && "bg-blue-50 dark:bg-blue-900/30 border border-blue-200 dark:border-blue-700"
                           )}
                           onClick={() => handleDateRangeSelect(option)}
                         >
                           <div className="flex flex-col flex-1 min-w-0">
                             <span className={cn(
                               "text-sm font-medium",
-                              isSelected ? "text-blue-700" : "text-gray-900"
+                              isSelected ? "text-blue-700 dark:text-blue-400" : "text-gray-900 dark:text-gray-100"
                             )}>
                               {option.label}
                             </span>
-                            <span className="text-xs text-gray-500 truncate">
+                            <span className="text-xs text-gray-500 dark:text-gray-400 truncate">
                               {formatDateForDisplay(optionValue.startDate)} - {formatDateForDisplay(optionValue.endDate)}
                             </span>
                           </div>
                           {isSelected && (
-                            <Check className="h-3 w-3 text-blue-600 ml-2 flex-shrink-0" strokeWidth={2} />
+                            <Check className="h-3 w-3 text-blue-600 dark:text-blue-400 ml-2 flex-shrink-0" strokeWidth={2} />
                           )}
                         </div>
                       );
@@ -705,7 +705,7 @@ const ReportBuilderTab = () => {
 
           {/* Metrics Dropdown */}
           <div className="space-y-1.5">
-            <label className="block text-sm font-medium text-gray-700">
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
               Metrics ({selectedMetrics.length} selected)
             </label>
             <Popover open={metricsDropdownOpen} onOpenChange={setMetricsDropdownOpen}>
@@ -715,33 +715,33 @@ const ReportBuilderTab = () => {
                   role="combobox"
                   aria-expanded={metricsDropdownOpen}
                   className={cn(
-                    "w-full justify-between text-left font-normal h-auto py-2 px-3 bg-white shadow-sm border-gray-300 hover:border-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 rounded-lg",
-                    selectedMetrics.length === 0 && "text-gray-500"
+                    "w-full justify-between text-left font-normal h-auto py-2 px-3 bg-white dark:bg-gray-700 shadow-sm border-gray-300 dark:border-gray-600 hover:border-gray-400 dark:hover:border-gray-500 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 rounded-lg",
+                    selectedMetrics.length === 0 && "text-gray-500 dark:text-gray-400"
                   )}
                 >
-                  <span className="block truncate">
-                    {selectedMetrics.length === 0 
-                      ? 'Select metrics...' 
+                  <span className="block truncate dark:text-gray-100">
+                    {selectedMetrics.length === 0
+                      ? 'Select metrics...'
                       : `${selectedMetrics.length} metric${selectedMetrics.length !== 1 ? 's' : ''} selected`
                     }
                   </span>
                   <ChevronDown className={cn("ml-2 h-4 w-4 shrink-0 opacity-50 transition-transform duration-200", metricsDropdownOpen && "transform rotate-180")} />
                 </Button>
               </PopoverTrigger>
-              <PopoverContent className="w-full p-0 bg-white border border-gray-200 shadow-lg rounded-lg" align="start">
+              <PopoverContent className="w-full p-0 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 shadow-lg rounded-lg" align="start">
                 <div className="max-h-72 overflow-y-auto">
                   <div className="py-1">
                     {availableMetrics.map(metric => (
-                      <div key={metric.id} 
-                        className="flex items-start space-x-2 px-3 py-2 hover:bg-gray-50 cursor-pointer transition-colors duration-150"
+                      <div key={metric.id}
+                        className="flex items-start space-x-2 px-3 py-2 hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer transition-colors duration-150"
                         onClick={() => handleMetricToggle(metric.id)}
                       >
                         <div className="flex items-center justify-center w-4 h-4 mt-0.5">
                           <div className={cn(
                             "w-4 h-4 border-2 rounded flex items-center justify-center transition-all duration-200",
-                            selectedMetrics.includes(metric.id) 
-                              ? "bg-blue-600 border-blue-600" 
-                              : "border-gray-300 hover:border-blue-400"
+                            selectedMetrics.includes(metric.id)
+                              ? "bg-blue-600 border-blue-600"
+                              : "border-gray-300 dark:border-gray-600 hover:border-blue-400 dark:hover:border-blue-400"
                           )}>
                             {selectedMetrics.includes(metric.id) && (
                               <Check className="h-3 w-3 text-white" strokeWidth={2} />
@@ -749,8 +749,8 @@ const ReportBuilderTab = () => {
                           </div>
                         </div>
                         <div className="flex-1 min-w-0">
-                          <div className="text-sm font-medium text-gray-900">{metric.label}</div>
-                          <div className="text-xs text-gray-500 leading-tight">{metric.description}</div>
+                          <div className="text-sm font-medium text-gray-900 dark:text-gray-100">{metric.label}</div>
+                          <div className="text-xs text-gray-500 dark:text-gray-400 leading-tight">{metric.description}</div>
                         </div>
                       </div>
                     ))}
@@ -762,7 +762,7 @@ const ReportBuilderTab = () => {
 
           {/* Venues Dropdown */}
           <div className="space-y-1.5">
-            <label className="block text-sm font-medium text-gray-700">
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
               Locations ({selectedVenues.length} selected)
             </label>
             <Popover open={venuesDropdownOpen} onOpenChange={setVenuesDropdownOpen}>
@@ -772,40 +772,40 @@ const ReportBuilderTab = () => {
                   role="combobox"
                   aria-expanded={venuesDropdownOpen}
                   className={cn(
-                    "w-full justify-between text-left font-normal h-auto py-2 px-3 bg-white shadow-sm border-gray-300 hover:border-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 rounded-lg",
-                    selectedVenues.length === 0 && "text-gray-500"
+                    "w-full justify-between text-left font-normal h-auto py-2 px-3 bg-white dark:bg-gray-700 shadow-sm border-gray-300 dark:border-gray-600 hover:border-gray-400 dark:hover:border-gray-500 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 rounded-lg",
+                    selectedVenues.length === 0 && "text-gray-500 dark:text-gray-400"
                   )}
                 >
-                  <span className="block truncate">
-                    {selectedVenues.length === 0 
-                      ? 'Select locations...' 
+                  <span className="block truncate dark:text-gray-100">
+                    {selectedVenues.length === 0
+                      ? 'Select locations...'
                       : `${selectedVenues.length} location${selectedVenues.length !== 1 ? 's' : ''} selected`
                     }
                   </span>
                   <ChevronDown className={cn("ml-2 h-4 w-4 shrink-0 opacity-50 transition-transform duration-200", venuesDropdownOpen && "transform rotate-180")} />
                 </Button>
               </PopoverTrigger>
-              <PopoverContent className="w-full p-0 bg-white border border-gray-200 shadow-lg rounded-lg" align="start">
+              <PopoverContent className="w-full p-0 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 shadow-lg rounded-lg" align="start">
                 <div className="max-h-48 overflow-y-auto">
                   <div className="py-1">
                     {availableVenues.map(venue => (
-                      <div key={venue.id} 
-                        className="flex items-center space-x-2 px-3 py-2 hover:bg-gray-50 cursor-pointer transition-colors duration-150"
+                      <div key={venue.id}
+                        className="flex items-center space-x-2 px-3 py-2 hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer transition-colors duration-150"
                         onClick={() => handleVenueToggle(venue.id)}
                       >
                         <div className="flex items-center justify-center w-4 h-4">
                           <div className={cn(
                             "w-4 h-4 border-2 rounded flex items-center justify-center transition-all duration-200",
-                            selectedVenues.includes(venue.id) 
-                              ? "bg-blue-600 border-blue-600" 
-                              : "border-gray-300 hover:border-blue-400"
+                            selectedVenues.includes(venue.id)
+                              ? "bg-blue-600 border-blue-600"
+                              : "border-gray-300 dark:border-gray-600 hover:border-blue-400 dark:hover:border-blue-400"
                           )}>
                             {selectedVenues.includes(venue.id) && (
                               <Check className="h-3 w-3 text-white" strokeWidth={2} />
                             )}
                           </div>
                         </div>
-                        <span className="text-sm text-gray-900 font-medium">{venue.name}</span>
+                        <span className="text-sm text-gray-900 dark:text-gray-100 font-medium">{venue.name}</span>
                       </div>
                     ))}
                   </div>
@@ -818,12 +818,12 @@ const ReportBuilderTab = () => {
         {/* Generate Button */}
         <div className="mt-4 flex items-center justify-between">
           <div>
-            {error && <p className="text-red-600 text-sm font-medium">{error}</p>}
+            {error && <p className="text-red-600 dark:text-red-400 text-sm font-medium">{error}</p>}
           </div>
           <Button
             onClick={generateReport}
             disabled={isGenerating || selectedMetrics.length === 0 || selectedVenues.length === 0 || !dateRange.startDate || !dateRange.endDate}
-            className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed font-medium transition-all duration-200 shadow-sm hover:shadow-md"
+            className="px-6 py-2 bg-blue-600 dark:bg-blue-600 text-white rounded-lg hover:bg-blue-700 dark:hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed font-medium transition-all duration-200 shadow-sm hover:shadow-md"
             size="default"
           >
             {isGenerating ? (
@@ -843,42 +843,42 @@ const ReportBuilderTab = () => {
 
       {/* Report Results */}
       {reportData && (
-        <div className="bg-white rounded-lg border border-gray-200 p-6">
+        <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-6">
           <div className="flex items-center justify-between mb-4">
-            <h3 className="text-lg font-medium text-gray-900">
+            <h3 className="text-lg font-medium text-gray-900 dark:text-white">
               Report Results ({reportData.rows?.length || 0} rows)
             </h3>
             <Button
               onClick={exportToCSV}
-              className="bg-green-600 hover:bg-green-700 text-white shadow-sm hover:shadow-md transition-all duration-200"
+              className="bg-green-600 hover:bg-green-700 dark:bg-green-600 dark:hover:bg-green-700 text-white shadow-sm hover:shadow-md transition-all duration-200"
               size="sm"
             >
               Export CSV
             </Button>
           </div>
-          
+
           {reportData.rows?.length > 0 ? (
             <div className="overflow-x-auto">
-              <table className="min-w-full divide-y divide-gray-200">
-                <thead className="bg-gray-50">
+              <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                <thead className="bg-gray-50 dark:bg-gray-900">
                   <tr>
                     {reportData.columns.map((column, index) => (
                       <th
                         key={index}
-                        className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                        className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider"
                       >
                         {column}
                       </th>
                     ))}
                   </tr>
                 </thead>
-                <tbody className="bg-white divide-y divide-gray-200">
+                <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
                   {reportData.rows.map((row, rowIndex) => (
-                    <tr key={rowIndex} className={rowIndex % 2 === 0 ? 'bg-white' : 'bg-gray-50'}>
+                    <tr key={rowIndex} className={rowIndex % 2 === 0 ? 'bg-white dark:bg-gray-800' : 'bg-gray-50 dark:bg-gray-900'}>
                       {row.map((cell, cellIndex) => (
                         <td
                           key={cellIndex}
-                          className="px-6 py-4 whitespace-nowrap text-sm text-gray-900"
+                          className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100"
                         >
                           {cell}
                         </td>
@@ -889,7 +889,7 @@ const ReportBuilderTab = () => {
               </table>
             </div>
           ) : (
-            <div className="text-center py-8 text-gray-500">
+            <div className="text-center py-8 text-gray-500 dark:text-gray-400">
               <p>No data found for the selected criteria.</p>
             </div>
           )}

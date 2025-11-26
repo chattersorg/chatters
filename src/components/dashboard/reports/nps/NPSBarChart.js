@@ -93,8 +93,8 @@ const NPSBarChart = ({ npsData, loading }) => {
     return (
       <div className="flex-1 flex items-center justify-center">
         <div className="text-center">
-          <div className="w-8 h-8 border-2 border-gray-300 border-t-blue-600 rounded-full animate-spin mx-auto mb-2" />
-          <p className="text-sm text-gray-500">Loading NPS data...</p>
+          <div className="w-8 h-8 border-2 border-gray-300 dark:border-gray-700 border-t-blue-600 dark:border-t-blue-400 rounded-full animate-spin mx-auto mb-2" />
+          <p className="text-sm text-gray-500 dark:text-gray-400">Loading NPS data...</p>
         </div>
       </div>
     );
@@ -105,8 +105,8 @@ const NPSBarChart = ({ npsData, loading }) => {
       <div className="flex-1 flex items-center justify-center">
         <div className="text-center py-8">
           <div className="text-4xl mb-2">📊</div>
-          <p className="text-gray-500 text-sm">No NPS data available</p>
-          <p className="text-gray-400 text-xs mt-1">for this period</p>
+          <p className="text-gray-500 dark:text-gray-400 text-sm">No NPS data available</p>
+          <p className="text-gray-400 dark:text-gray-500 text-xs mt-1">for this period</p>
         </div>
       </div>
     );

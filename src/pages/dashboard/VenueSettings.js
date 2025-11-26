@@ -415,8 +415,8 @@ const VenueSettingsPage = () => {
           {loadingMetrics ? (
             <div className="flex items-center justify-center py-12">
               <div className="text-center">
-                <div className="w-8 h-8 border-2 border-gray-300 border-t-blue-600 rounded-full animate-spin mx-auto mb-4" />
-                <span className="text-gray-600">Loading venue metrics...</span>
+                <div className="w-8 h-8 border-2 border-gray-300 dark:border-gray-700 border-t-blue-600 dark:border-t-blue-400 rounded-full animate-spin mx-auto mb-4" />
+                <span className="text-gray-600 dark:text-gray-400">Loading venue metrics...</span>
               </div>
             </div>
           ) : (
@@ -425,13 +425,13 @@ const VenueSettingsPage = () => {
               <div className="hidden lg:block overflow-x-auto">
                 <table className="w-full">
                   <thead>
-                    <tr className="border-b border-gray-200">
-                      <th className="text-left py-3 px-4 text-sm font-semibold text-gray-700">Venue</th>
-                      <th className="text-left py-3 px-4 text-sm font-semibold text-gray-700">Location</th>
-                      <th className="text-center py-3 px-4 text-sm font-semibold text-gray-700">NPS Score</th>
-                      <th className="text-center py-3 px-4 text-sm font-semibold text-gray-700">Feedback</th>
-                      <th className="text-center py-3 px-4 text-sm font-semibold text-gray-700">Resolution</th>
-                      <th className="text-right py-3 px-4 text-sm font-semibold text-gray-700">Actions</th>
+                    <tr className="border-b border-gray-200 dark:border-gray-700">
+                      <th className="text-left py-3 px-4 text-sm font-semibold text-gray-700 dark:text-gray-300">Venue</th>
+                      <th className="text-left py-3 px-4 text-sm font-semibold text-gray-700 dark:text-gray-300">Location</th>
+                      <th className="text-center py-3 px-4 text-sm font-semibold text-gray-700 dark:text-gray-300">NPS Score</th>
+                      <th className="text-center py-3 px-4 text-sm font-semibold text-gray-700 dark:text-gray-300">Feedback</th>
+                      <th className="text-center py-3 px-4 text-sm font-semibold text-gray-700 dark:text-gray-300">Resolution</th>
+                      <th className="text-right py-3 px-4 text-sm font-semibold text-gray-700 dark:text-gray-300">Actions</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -444,20 +444,20 @@ const VenueSettingsPage = () => {
                       return (
                         <tr
                           key={venue.id}
-                          className={`border-b border-gray-100 transition-colors ${
-                            isActive ? 'bg-blue-50' : 'hover:bg-gray-50'
+                          className={`border-b border-gray-100 dark:border-gray-800 transition-colors ${
+                            isActive ? 'bg-blue-50 dark:bg-blue-900/30' : 'hover:bg-gray-50 dark:hover:bg-gray-800'
                           }`}
                         >
                           {/* Venue Name */}
                           <td className="py-4 px-4">
                             <div className="flex items-center gap-3">
-                              <div className={`p-2 rounded-lg ${isActive ? 'bg-blue-100' : 'bg-gray-100'}`}>
-                                <Building2 className={`w-5 h-5 ${isActive ? 'text-blue-600' : 'text-gray-600'}`} />
+                              <div className={`p-2 rounded-lg ${isActive ? 'bg-blue-100 dark:bg-blue-800' : 'bg-gray-100 dark:bg-gray-800'}`}>
+                                <Building2 className={`w-5 h-5 ${isActive ? 'text-blue-600 dark:text-blue-400' : 'text-gray-600 dark:text-gray-400'}`} />
                               </div>
                               <div>
-                                <div className="font-semibold text-gray-900">{venue.name}</div>
+                                <div className="font-semibold text-gray-900 dark:text-white">{venue.name}</div>
                                 {isActive && (
-                                  <span className="inline-block px-2 py-0.5 text-xs font-medium text-blue-700 bg-blue-200 rounded-full mt-1">
+                                  <span className="inline-block px-2 py-0.5 text-xs font-medium text-blue-700 dark:text-blue-300 bg-blue-200 dark:bg-blue-800 rounded-full mt-1">
                                     Active
                                   </span>
                                 )}
@@ -468,14 +468,14 @@ const VenueSettingsPage = () => {
                           {/* Location */}
                           <td className="py-4 px-4">
                             {venue.address ? (
-                              <div className="text-sm text-gray-600">
+                              <div className="text-sm text-gray-600 dark:text-gray-400">
                                 <div>{venue.address.city || venue.address.line1}</div>
                                 {venue.address.postalCode && (
-                                  <div className="text-xs text-gray-500">{venue.address.postalCode}</div>
+                                  <div className="text-xs text-gray-500 dark:text-gray-500">{venue.address.postalCode}</div>
                                 )}
                               </div>
                             ) : (
-                              <span className="text-sm text-gray-400">-</span>
+                              <span className="text-sm text-gray-400 dark:text-gray-500">-</span>
                             )}
                           </td>
 
@@ -492,8 +492,8 @@ const VenueSettingsPage = () => {
                           {/* Total Feedback */}
                           <td className="py-4 px-4 text-center">
                             <div className="flex items-center justify-center gap-2">
-                              <MessageSquare className="w-4 h-4 text-gray-400" />
-                              <span className="text-sm font-semibold text-gray-900">
+                              <MessageSquare className="w-4 h-4 text-gray-400 dark:text-gray-500" />
+                              <span className="text-sm font-semibold text-gray-900 dark:text-white">
                                 {metrics.totalFeedback || 0}
                               </span>
                             </div>
@@ -502,7 +502,7 @@ const VenueSettingsPage = () => {
                           {/* Resolution Rate */}
                           <td className="py-4 px-4 text-center">
                             <div className="flex items-center justify-center gap-2">
-                              <CheckCircle className="w-4 h-4 text-gray-400" />
+                              <CheckCircle className="w-4 h-4 text-gray-400 dark:text-gray-500" />
                               <span className={`px-2 py-1 rounded text-xs font-semibold ${getResolutionBadge(metrics.resolutionRate || 0)}`}>
                                 {metrics.resolutionRate || 0}%
                               </span>
@@ -515,7 +515,7 @@ const VenueSettingsPage = () => {
                               {!isActive && (
                                 <button
                                   onClick={() => setCurrentVenue(venue.id)}
-                                  className="px-3 py-1.5 text-sm font-medium text-blue-600 hover:text-blue-700 hover:bg-blue-50 rounded-lg transition-colors flex items-center gap-1.5"
+                                  className="px-3 py-1.5 text-sm font-medium text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 hover:bg-blue-50 dark:hover:bg-blue-900/30 rounded-lg transition-colors flex items-center gap-1.5"
                                 >
                                   Switch
                                   <ChevronRight className="w-3.5 h-3.5" />
@@ -524,7 +524,7 @@ const VenueSettingsPage = () => {
                               {!isActive && allVenues.length > 1 && (
                                 <button
                                   onClick={() => setDeleteConfirm({ venueId: venue.id, venueName: venue.name })}
-                                  className="p-2 rounded-lg text-red-600 hover:bg-red-50 transition-colors"
+                                  className="p-2 rounded-lg text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/30 transition-colors"
                                   title="Delete venue"
                                 >
                                   <Trash2 className="w-4 h-4" />
@@ -552,25 +552,25 @@ const VenueSettingsPage = () => {
                       key={venue.id}
                       className={`p-4 rounded-lg border-2 transition-all ${
                         isActive
-                          ? 'border-blue-500 bg-blue-50'
-                          : 'border-gray-200 bg-white'
+                          ? 'border-blue-500 dark:border-blue-600 bg-blue-50 dark:bg-blue-900/30'
+                          : 'border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800'
                       }`}
                     >
                       {/* Venue Header */}
                       <div className="flex items-start gap-3 mb-4">
-                        <div className={`p-2 rounded-lg ${isActive ? 'bg-blue-100' : 'bg-gray-100'}`}>
-                          <Building2 className={`w-5 h-5 ${isActive ? 'text-blue-600' : 'text-gray-600'}`} />
+                        <div className={`p-2 rounded-lg ${isActive ? 'bg-blue-100 dark:bg-blue-800' : 'bg-gray-100 dark:bg-gray-700'}`}>
+                          <Building2 className={`w-5 h-5 ${isActive ? 'text-blue-600 dark:text-blue-400' : 'text-gray-600 dark:text-gray-400'}`} />
                         </div>
                         <div className="flex-1">
-                          <h3 className="font-semibold text-gray-900">{venue.name}</h3>
+                          <h3 className="font-semibold text-gray-900 dark:text-white">{venue.name}</h3>
                           {venue.address && (
-                            <p className="text-sm text-gray-600 mt-1">
+                            <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
                               {venue.address.city || venue.address.line1}
                               {venue.address.postalCode && ` ${venue.address.postalCode}`}
                             </p>
                           )}
                           {isActive && (
-                            <span className="inline-block px-2 py-0.5 text-xs font-medium text-blue-700 bg-blue-200 rounded-full mt-2">
+                            <span className="inline-block px-2 py-0.5 text-xs font-medium text-blue-700 dark:text-blue-300 bg-blue-200 dark:bg-blue-800 rounded-full mt-2">
                               Active
                             </span>
                           )}
@@ -580,23 +580,23 @@ const VenueSettingsPage = () => {
                       {/* Metrics Grid */}
                       <div className="grid grid-cols-3 gap-3 mb-4">
                         <div className="text-center">
-                          <div className="text-xs text-gray-500 mb-1">NPS Score</div>
+                          <div className="text-xs text-gray-500 dark:text-gray-400 mb-1">NPS Score</div>
                           <span className={`px-2 py-1 rounded-full text-sm font-bold ${npsBadge.color} inline-flex items-center gap-1`}>
                             {NPSIcon && <NPSIcon className="w-3 h-3" />}
                             {npsBadge.label}
                           </span>
                         </div>
                         <div className="text-center">
-                          <div className="text-xs text-gray-500 mb-1">Feedback</div>
+                          <div className="text-xs text-gray-500 dark:text-gray-400 mb-1">Feedback</div>
                           <div className="flex items-center justify-center gap-1">
-                            <MessageSquare className="w-3 h-3 text-gray-400" />
-                            <span className="text-sm font-semibold text-gray-900">
+                            <MessageSquare className="w-3 h-3 text-gray-400 dark:text-gray-500" />
+                            <span className="text-sm font-semibold text-gray-900 dark:text-white">
                               {metrics.totalFeedback || 0}
                             </span>
                           </div>
                         </div>
                         <div className="text-center">
-                          <div className="text-xs text-gray-500 mb-1">Resolved</div>
+                          <div className="text-xs text-gray-500 dark:text-gray-400 mb-1">Resolved</div>
                           <span className={`px-2 py-1 rounded text-xs font-semibold ${getResolutionBadge(metrics.resolutionRate || 0)}`}>
                             {metrics.resolutionRate || 0}%
                           </span>
@@ -608,7 +608,7 @@ const VenueSettingsPage = () => {
                         {!isActive && (
                           <button
                             onClick={() => setCurrentVenue(venue.id)}
-                            className="flex-1 px-3 py-2 text-sm font-medium text-blue-600 hover:text-blue-700 hover:bg-blue-50 rounded-lg transition-colors flex items-center justify-center gap-1.5"
+                            className="flex-1 px-3 py-2 text-sm font-medium text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 hover:bg-blue-50 dark:hover:bg-blue-900/30 rounded-lg transition-colors flex items-center justify-center gap-1.5"
                           >
                             Switch
                             <ChevronRight className="w-4 h-4" />
@@ -617,7 +617,7 @@ const VenueSettingsPage = () => {
                         {!isActive && allVenues.length > 1 && (
                           <button
                             onClick={() => setDeleteConfirm({ venueId: venue.id, venueName: venue.name })}
-                            className="px-3 py-2 text-sm font-medium text-red-600 hover:bg-red-50 rounded-lg transition-colors flex items-center justify-center gap-1.5"
+                            className="px-3 py-2 text-sm font-medium text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/30 rounded-lg transition-colors flex items-center justify-center gap-1.5"
                             title="Delete venue"
                           >
                             <Trash2 className="w-4 h-4" />
@@ -631,14 +631,14 @@ const VenueSettingsPage = () => {
               </div>
 
               {/* Info Section */}
-              <div className="mt-6 p-4 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg border border-blue-200">
+              <div className="mt-6 p-4 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/30 dark:to-indigo-900/30 rounded-lg border border-blue-200 dark:border-blue-800">
                 <div className="flex items-start gap-3">
-                  <div className="p-2 bg-blue-100 rounded-lg">
-                    <Building2 className="w-5 h-5 text-blue-600" />
+                  <div className="p-2 bg-blue-100 dark:bg-blue-800 rounded-lg">
+                    <Building2 className="w-5 h-5 text-blue-600 dark:text-blue-400" />
                   </div>
                   <div>
-                    <h4 className="font-semibold text-gray-900 mb-1">Performance Metrics</h4>
-                    <p className="text-sm text-gray-600">
+                    <h4 className="font-semibold text-gray-900 dark:text-white mb-1">Performance Metrics</h4>
+                    <p className="text-sm text-gray-600 dark:text-gray-400">
                       All metrics shown are based on the last 30 days of activity. Click <strong>Switch</strong> to change your active venue.
                     </p>
                   </div>
@@ -734,24 +734,24 @@ const VenueSettingsPage = () => {
 
         {/* Create Venue Confirmation Modal */}
         {showCreateWarning && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-            <div className="bg-white rounded-xl p-6 max-w-md w-full shadow-2xl">
+          <div className="fixed inset-0 bg-black bg-opacity-50 dark:bg-opacity-70 flex items-center justify-center z-50 p-4">
+            <div className="bg-white dark:bg-gray-900 rounded-xl p-6 max-w-md w-full shadow-2xl">
               <div className="flex items-center gap-3 mb-4">
-                <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0">
-                  <AlertTriangle className="w-6 h-6 text-blue-600" />
+                <div className="w-12 h-12 bg-blue-100 dark:bg-blue-900 rounded-full flex items-center justify-center flex-shrink-0">
+                  <AlertTriangle className="w-6 h-6 text-blue-600 dark:text-blue-400" />
                 </div>
-                <h3 className="text-xl font-bold text-gray-900">Add New Venue?</h3>
+                <h3 className="text-xl font-bold text-gray-900 dark:text-white">Add New Venue?</h3>
               </div>
 
-              <p className="text-gray-600 mb-4 leading-relaxed">
+              <p className="text-gray-600 dark:text-gray-400 mb-4 leading-relaxed">
                 You're about to create <strong>"{newVenue.name}"</strong>.
               </p>
 
-              <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 mb-6">
-                <p className="text-sm text-blue-800">
+              <div className="bg-blue-50 dark:bg-blue-900/30 border border-blue-200 dark:border-blue-800 rounded-lg p-3 mb-6">
+                <p className="text-sm text-blue-800 dark:text-blue-300">
                   <strong>Billing Information:</strong>
                 </p>
-                <ul className="text-sm text-blue-700 mt-2 space-y-1 ml-4">
+                <ul className="text-sm text-blue-700 dark:text-blue-400 mt-2 space-y-1 ml-4">
                   <li>• This venue will be added to your subscription</li>
                   <li>• You'll be charged on your next billing date</li>
                   <li>• Cost: £149/month or £1,430/year per venue</li>
@@ -763,14 +763,14 @@ const VenueSettingsPage = () => {
                 <button
                   onClick={handleCreateVenue}
                   disabled={venueLoading}
-                  className="flex-1 bg-blue-600 text-white px-6 py-2.5 rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed font-medium"
+                  className="flex-1 bg-blue-600 dark:bg-blue-700 text-white px-6 py-2.5 rounded-lg hover:bg-blue-700 dark:hover:bg-blue-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed font-medium"
                 >
                   {venueLoading ? 'Creating...' : 'Yes, Create Venue'}
                 </button>
                 <button
                   onClick={() => setShowCreateWarning(false)}
                   disabled={venueLoading}
-                  className="px-6 py-2.5 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors font-medium disabled:opacity-50"
+                  className="px-6 py-2.5 bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors font-medium disabled:opacity-50"
                 >
                   Cancel
                 </button>
@@ -781,24 +781,24 @@ const VenueSettingsPage = () => {
 
         {/* Delete Confirmation Modal */}
         {deleteConfirm && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-            <div className="bg-white rounded-xl p-6 max-w-md w-full shadow-2xl">
+          <div className="fixed inset-0 bg-black bg-opacity-50 dark:bg-opacity-70 flex items-center justify-center z-50 p-4">
+            <div className="bg-white dark:bg-gray-900 rounded-xl p-6 max-w-md w-full shadow-2xl">
               <div className="flex items-center gap-3 mb-4">
-                <div className="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center flex-shrink-0">
-                  <AlertTriangle className="w-6 h-6 text-red-600" />
+                <div className="w-12 h-12 bg-red-100 dark:bg-red-900 rounded-full flex items-center justify-center flex-shrink-0">
+                  <AlertTriangle className="w-6 h-6 text-red-600 dark:text-red-400" />
                 </div>
-                <h3 className="text-xl font-bold text-gray-900">Delete Venue?</h3>
+                <h3 className="text-xl font-bold text-gray-900 dark:text-white">Delete Venue?</h3>
               </div>
 
-              <p className="text-gray-600 mb-4 leading-relaxed">
+              <p className="text-gray-600 dark:text-gray-400 mb-4 leading-relaxed">
                 Are you sure you want to delete <strong>"{deleteConfirm.venueName}"</strong>?
               </p>
 
-              <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3 mb-6">
-                <p className="text-sm text-yellow-800">
+              <div className="bg-yellow-50 dark:bg-yellow-900/30 border border-yellow-200 dark:border-yellow-800 rounded-lg p-3 mb-6">
+                <p className="text-sm text-yellow-800 dark:text-yellow-300">
                   <strong>Important:</strong> This will:
                 </p>
-                <ul className="text-sm text-yellow-700 mt-2 space-y-1 ml-4">
+                <ul className="text-sm text-yellow-700 dark:text-yellow-400 mt-2 space-y-1 ml-4">
                   <li>• Permanently delete all venue data</li>
                   <li>• Remove all staff assignments</li>
                   <li>• Delete all feedback and analytics</li>
@@ -810,14 +810,14 @@ const VenueSettingsPage = () => {
                 <button
                   onClick={handleDeleteVenue}
                   disabled={deleteLoading}
-                  className="flex-1 bg-red-600 text-white px-6 py-2.5 rounded-lg hover:bg-red-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed font-medium"
+                  className="flex-1 bg-red-600 dark:bg-red-700 text-white px-6 py-2.5 rounded-lg hover:bg-red-700 dark:hover:bg-red-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed font-medium"
                 >
                   {deleteLoading ? 'Deleting...' : 'Yes, Delete Venue'}
                 </button>
                 <button
                   onClick={() => setDeleteConfirm(null)}
                   disabled={deleteLoading}
-                  className="px-6 py-2.5 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors font-medium disabled:opacity-50"
+                  className="px-6 py-2.5 bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors font-medium disabled:opacity-50"
                 >
                   Cancel
                 </button>
