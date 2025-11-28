@@ -41,6 +41,11 @@ import RetailSolution from './pages/marketing/solutions/RetailSolution';
 import EventSolution from './pages/marketing/solutions/EventSolution';
 import PubsBarsSolution from './pages/marketing/solutions/PubsBarsSolution';
 
+import RestaurantsIndustry from './pages/marketing/industries/Restaurants';
+import HotelsIndustry from './pages/marketing/industries/Hotels';
+import RetailIndustry from './pages/marketing/industries/Retail';
+import EventsIndustry from './pages/marketing/industries/Events';
+
 import NewSite from './pages/marketing/NewSite';
 
 const MarketingRoutes = () => {
@@ -89,6 +94,12 @@ const MarketingRoutes = () => {
       <Route path="/solutions/pubs-bars" element={<PubsBarsSolution />} />
       <Route path="/solutions/retail" element={<RetailSolution />} />
       <Route path="/solutions/events" element={<EventSolution />} />
+
+      {/* 🏭 Industry Pages */}
+      <Route path="/industries/restaurants" element={<RestaurantsIndustry />} />
+      <Route path="/industries/hotels" element={<HotelsIndustry />} />
+      <Route path="/industries/retail" element={<RetailIndustry />} />
+      <Route path="/industries/events" element={<EventsIndustry />} />
 
       {/* 🆕 New Site (Rebrand Test) */}
       <Route path="/new-site" element={<NewSite />} />
