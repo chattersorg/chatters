@@ -35,55 +35,55 @@ const Hero = () => {
 
         {/* Floorplan tables - Left side */}
         {/* Table 1 - Round, green (good) */}
-        <div className="absolute top-[15%] left-[5%] w-16 h-16 rounded-full bg-emerald-500/20 border-2 border-emerald-500 shadow-[0_0_25px_rgba(16,185,129,0.3)]"></div>
+        <div className="absolute top-[15%] left-[5%] w-16 h-16 rounded-full bg-emerald-500/40 border-[3px] border-emerald-500 shadow-[0_0_30px_rgba(16,185,129,0.5)]"></div>
 
         {/* Table 2 - Rectangle, yellow (moderate) */}
-        <div className="absolute top-[25%] left-[12%] w-20 h-12 rounded-lg bg-amber-500/20 border-2 border-amber-500 shadow-[0_0_25px_rgba(245,158,11,0.3)]"></div>
+        <div className="absolute top-[25%] left-[12%] w-20 h-12 rounded-lg bg-amber-500/40 border-[3px] border-amber-500 shadow-[0_0_30px_rgba(245,158,11,0.5)]"></div>
 
         {/* Table 3 - Square, blue (neutral) */}
-        <div className="absolute top-[40%] left-[3%] w-14 h-14 rounded-md bg-[#4E74FF]/20 border-2 border-[#4E74FF] shadow-[0_0_25px_rgba(78,116,255,0.3)]"></div>
+        <div className="absolute top-[40%] left-[3%] w-14 h-14 rounded-md bg-[#4E74FF]/40 border-[3px] border-[#4E74FF] shadow-[0_0_30px_rgba(78,116,255,0.5)]"></div>
 
         {/* Table 4 - Round, red (urgent) */}
-        <div className="absolute top-[55%] left-[10%] w-12 h-12 rounded-full bg-red-500/20 border-2 border-red-500 shadow-[0_0_25px_rgba(239,68,68,0.3)]"></div>
+        <div className="absolute top-[55%] left-[10%] w-12 h-12 rounded-full bg-red-500/40 border-[3px] border-red-500 shadow-[0_0_30px_rgba(239,68,68,0.5)]"></div>
 
         {/* Table 5 - Rectangle, green */}
-        <div className="absolute top-[70%] left-[4%] w-24 h-10 rounded-lg bg-emerald-500/20 border-2 border-emerald-500 shadow-[0_0_25px_rgba(16,185,129,0.3)]"></div>
+        <div className="absolute top-[70%] left-[4%] w-24 h-10 rounded-lg bg-emerald-500/40 border-[3px] border-emerald-500 shadow-[0_0_30px_rgba(16,185,129,0.5)]"></div>
 
         {/* Table 6 - Square, yellow */}
-        <div className="absolute top-[82%] left-[14%] w-16 h-16 rounded-md bg-amber-500/20 border-2 border-amber-500 shadow-[0_0_25px_rgba(245,158,11,0.3)]"></div>
+        <div className="absolute top-[82%] left-[14%] w-16 h-16 rounded-md bg-amber-500/40 border-[3px] border-amber-500 shadow-[0_0_30px_rgba(245,158,11,0.5)]"></div>
 
         {/* Floorplan tables - Right side */}
         {/* Table 7 - Rectangle, red (urgent) */}
-        <div className="absolute top-[12%] right-[8%] w-20 h-12 rounded-lg bg-red-500/20 border-2 border-red-500 shadow-[0_0_25px_rgba(239,68,68,0.3)]"></div>
+        <div className="absolute top-[12%] right-[8%] w-20 h-12 rounded-lg bg-red-500/40 border-[3px] border-red-500 shadow-[0_0_30px_rgba(239,68,68,0.5)]"></div>
 
         {/* Table 8 - Round, green */}
-        <div className="absolute top-[28%] right-[3%] w-14 h-14 rounded-full bg-emerald-500/20 border-2 border-emerald-500 shadow-[0_0_25px_rgba(16,185,129,0.3)]"></div>
+        <div className="absolute top-[28%] right-[3%] w-14 h-14 rounded-full bg-emerald-500/40 border-[3px] border-emerald-500 shadow-[0_0_30px_rgba(16,185,129,0.5)]"></div>
 
         {/* Table 9 - Square, blue */}
-        <div className="absolute top-[42%] right-[12%] w-12 h-12 rounded-md bg-[#4E74FF]/20 border-2 border-[#4E74FF] shadow-[0_0_25px_rgba(78,116,255,0.3)]"></div>
+        <div className="absolute top-[42%] right-[12%] w-12 h-12 rounded-md bg-[#4E74FF]/40 border-[3px] border-[#4E74FF] shadow-[0_0_30px_rgba(78,116,255,0.5)]"></div>
 
         {/* Table 10 - Round, yellow */}
-        <div className="absolute top-[58%] right-[5%] w-16 h-16 rounded-full bg-amber-500/20 border-2 border-amber-500 shadow-[0_0_25px_rgba(245,158,11,0.3)]"></div>
+        <div className="absolute top-[58%] right-[5%] w-16 h-16 rounded-full bg-amber-500/40 border-[3px] border-amber-500 shadow-[0_0_30px_rgba(245,158,11,0.5)]"></div>
 
         {/* Table 11 - Rectangle, green */}
-        <div className="absolute top-[72%] right-[10%] w-18 h-10 rounded-lg bg-emerald-500/20 border-2 border-emerald-500 shadow-[0_0_25px_rgba(16,185,129,0.3)]"></div>
+        <div className="absolute top-[72%] right-[10%] w-18 h-10 rounded-lg bg-emerald-500/40 border-[3px] border-emerald-500 shadow-[0_0_30px_rgba(16,185,129,0.5)]"></div>
 
         {/* Table 12 - Square, red */}
-        <div className="absolute top-[85%] right-[4%] w-14 h-14 rounded-md bg-red-500/20 border-2 border-red-500 shadow-[0_0_25px_rgba(239,68,68,0.3)]"></div>
+        <div className="absolute top-[85%] right-[4%] w-14 h-14 rounded-md bg-red-500/40 border-[3px] border-red-500 shadow-[0_0_30px_rgba(239,68,68,0.5)]"></div>
 
         {/* Floorplan tables - Top edge */}
         {/* Table 13 - Round, blue */}
-        <div className="absolute top-[5%] left-[25%] w-12 h-12 rounded-full bg-[#4E74FF]/20 border-2 border-[#4E74FF] shadow-[0_0_25px_rgba(78,116,255,0.3)]"></div>
+        <div className="absolute top-[5%] left-[25%] w-12 h-12 rounded-full bg-[#4E74FF]/40 border-[3px] border-[#4E74FF] shadow-[0_0_30px_rgba(78,116,255,0.5)]"></div>
 
         {/* Table 14 - Rectangle, green */}
-        <div className="absolute top-[8%] right-[28%] w-16 h-10 rounded-lg bg-emerald-500/20 border-2 border-emerald-500 shadow-[0_0_25px_rgba(16,185,129,0.3)]"></div>
+        <div className="absolute top-[8%] right-[28%] w-16 h-10 rounded-lg bg-emerald-500/40 border-[3px] border-emerald-500 shadow-[0_0_30px_rgba(16,185,129,0.5)]"></div>
 
         {/* Floorplan tables - Bottom edge */}
         {/* Table 15 - Square, yellow */}
-        <div className="absolute bottom-[8%] left-[28%] w-14 h-14 rounded-md bg-amber-500/20 border-2 border-amber-500 shadow-[0_0_25px_rgba(245,158,11,0.3)]"></div>
+        <div className="absolute bottom-[8%] left-[28%] w-14 h-14 rounded-md bg-amber-500/40 border-[3px] border-amber-500 shadow-[0_0_30px_rgba(245,158,11,0.5)]"></div>
 
         {/* Table 16 - Round, green */}
-        <div className="absolute bottom-[5%] right-[25%] w-16 h-16 rounded-full bg-emerald-500/20 border-2 border-emerald-500 shadow-[0_0_25px_rgba(16,185,129,0.3)]"></div>
+        <div className="absolute bottom-[5%] right-[25%] w-16 h-16 rounded-full bg-emerald-500/40 border-[3px] border-emerald-500 shadow-[0_0_30px_rgba(16,185,129,0.5)]"></div>
 
         {/* Center fade for better text readability */}
         <div className="absolute inset-0 bg-gradient-to-r from-white/90 via-white/70 to-white/90"></div>
@@ -99,8 +99,8 @@ const Hero = () => {
 
           {/* Main Headline */}
           <h1 className="text-4xl sm:text-5xl lg:text-6xl xl:text-7xl font-bold text-gray-900 leading-tight mb-6">
-            <span className="text-gray-500">Catch Problems</span> Before They Become{' '}
-            <span className="text-gray-500">1-Star Reviews</span>
+            <span className="text-[#4E74FF]">Catch Problems</span> Before They Become{' '}
+            <span className="text-[#4E74FF]">1-Star Reviews</span>
           </h1>
 
           {/* Subheadline */}
