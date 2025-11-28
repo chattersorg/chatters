@@ -60,7 +60,7 @@ const Hero = () => {
               {/* Floating phone mockup */}
               <div className="absolute -bottom-6 -left-6 w-40 sm:w-48">
                 <img
-                  src="https://placehold.co/200x350/e2e8f0/475569?text=Mobile+Feedback"
+                  src="/img/homepage/homepage-phone.png"
                   alt="Guest feedback form on mobile"
                   className="w-full rounded-xl shadow-xl border-4 border-white"
                 />
