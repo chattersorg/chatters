@@ -48,7 +48,7 @@ const Hero = () => {
           </div>
 
           {/* Right Column - Visuals */}
-          <div className="order-2 lg:order-2 relative px-4 sm:px-0">
+          <div className="order-2 lg:order-2 relative px-4 sm:px-0 mt-8 lg:mt-0">
             <div className="relative mx-4 sm:mx-0">
               {/* MacBook-style mockup */}
               <div className="bg-gray-900 rounded-xl p-2 pb-3 shadow-2xl">
