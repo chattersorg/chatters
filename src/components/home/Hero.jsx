@@ -62,7 +62,7 @@ const Hero = () => {
                 <img
                   src="/img/homepage/homepage-phone.png"
                   alt="Guest feedback form on mobile"
-                  className="w-full rounded-xl shadow-xl border-4 border-white"
+                  className="w-full rounded-xl shadow-xl"
                 />
               </div>
 
