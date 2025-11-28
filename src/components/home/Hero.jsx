@@ -8,7 +8,7 @@ const Hero = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid lg:grid-cols-2 gap-12 lg:gap-16 items-center">
           {/* Left Column - Text */}
-          <div className="order-2 lg:order-1">
+          <div className="order-1 lg:order-1">
             {/* Eyebrow */}
             <p className="text-sm font-semibold uppercase tracking-wide text-[#41C74E] mb-4">
               Built for UK Hospitality
@@ -48,8 +48,8 @@ const Hero = () => {
           </div>
 
           {/* Right Column - Visuals */}
-          <div className="order-1 lg:order-2 relative">
-            <div className="relative">
+          <div className="order-2 lg:order-2 relative px-4 sm:px-0">
+            <div className="relative mx-4 sm:mx-0">
               {/* MacBook-style mockup */}
               <div className="bg-gray-900 rounded-xl p-2 pb-3 shadow-2xl">
                 {/* Browser top bar */}
