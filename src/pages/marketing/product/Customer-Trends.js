@@ -225,7 +225,7 @@ const WhyItMatters = () => {
   const benefits = [
     {
       title: 'Catch issues early',
-      description: 'Spot problems when they're small and fixable.',
+      description: "Spot problems when they're small and fixable.",
     },
     {
       title: 'Understand seasonality',

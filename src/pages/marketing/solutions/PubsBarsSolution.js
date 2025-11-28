@@ -225,7 +225,7 @@ const WhyPubsChoose = () => {
   const benefits = [
     {
       title: 'Catch issues during service',
-      description: 'Don't wait until the next day to find out something went wrong.',
+      description: "Don't wait until the next day to find out something went wrong.",
     },
     {
       title: 'Keep regulars coming back',
@@ -281,7 +281,7 @@ const Features = () => {
     {
       icon: Bell,
       title: 'Real-Time Alerts',
-      description: 'Staff notified instantly when something's wrong.',
+      description: "Staff notified instantly when something's wrong.",
     },
     {
       icon: TrendingUp,

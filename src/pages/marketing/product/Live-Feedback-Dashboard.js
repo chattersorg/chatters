@@ -175,7 +175,7 @@ const HowItWorks = () => {
     {
       number: '4',
       title: 'Take action or mark resolved',
-      description: 'Keep your team aligned on what's been handled.',
+      description: "Keep your team aligned on what's been handled.",
     },
     {
       number: '5',
@@ -229,7 +229,7 @@ const WhyOperators = () => {
     },
     {
       title: 'Better shift handovers',
-      description: 'Incoming managers can scan the day's feedback in seconds.',
+      description: "Incoming managers can scan the day's feedback in seconds.",
     },
     {
       title: 'Faster resolution',
@@ -237,7 +237,7 @@ const WhyOperators = () => {
     },
     {
       title: 'Team accountability',
-      description: 'See who's handling what — and how quickly.',
+      description: "See who's handling what — and how quickly.",
     },
     {
       title: 'Informed decisions',

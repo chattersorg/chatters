@@ -225,15 +225,15 @@ const WhyItMatters = () => {
   const benefits = [
     {
       title: 'Catch problems early',
-      description: 'See when a venue's ratings start to slip.',
+      description: "See when a venue's ratings start to slip.",
     },
     {
       title: 'Share best practices',
-      description: 'Learn what's working at your top sites.',
+      description: "Learn what's working at your top sites.",
     },
     {
       title: 'Allocate resources smarter',
-      description: 'Focus support where it's needed most.',
+      description: "Focus support where it's needed most.",
     },
     {
       title: 'Drive healthy competition',

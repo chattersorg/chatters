@@ -160,7 +160,7 @@ const HowItWorks = () => {
     {
       number: '1',
       title: 'Add your team to Chatters',
-      description: 'Names, roles, and email addresses — that's it.',
+      description: "Names, roles, and email addresses — that's it.",
     },
     {
       number: '2',

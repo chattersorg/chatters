@@ -286,7 +286,7 @@ const Features = () => {
     {
       icon: Mail,
       title: 'Branded Emails',
-      description: 'Recognition emails match your venue's look.',
+      description: "Recognition emails match your venue's look.",
     },
     {
       icon: Award,
@@ -296,7 +296,7 @@ const Features = () => {
     {
       icon: TrendingUp,
       title: 'Recognition Reports',
-      description: 'See who's getting praised — and how often.',
+      description: "See who's getting praised — and how often.",
     },
   ];
 
