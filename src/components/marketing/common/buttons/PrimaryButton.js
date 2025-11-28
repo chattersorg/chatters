@@ -18,8 +18,8 @@ const PrimaryButton = ({
   };
 
   const baseClasses = `
-    group inline-flex items-center bg-[#41C74E] text-white rounded-lg font-semibold
-    hover:bg-[#38b043] transition-all duration-200 font-satoshi shadow-lg hover:shadow-xl
+    group inline-flex items-center bg-[#4E74FF] text-white rounded-lg font-semibold
+    hover:bg-[#2F5CFF] transition-all duration-200 font-satoshi shadow-lg hover:shadow-xl
     overflow-hidden relative
     ${sizeClasses[size]} ${className}
   `.trim();

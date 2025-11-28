@@ -41,7 +41,7 @@ const EventSolution = () => {
 
       <ContentSplit
         eyebrow="Built for Events"
-        eyebrowColour = "text-green-600/80"
+        eyebrowColour = "text-blue-600/80"
         title="Fix event issues while they're still happening."
         description="From AV problems to catering concerns, Chatters helps your event team resolve issues instantly. Turn event hiccups into seamless experiences."
         bullets={[
@@ -57,47 +57,47 @@ const EventSolution = () => {
 
       <FeatureGrid
         eyebrow="Event Benefits"
-        eyebrowColour = "text-green-600/80"
+        eyebrowColour = "text-blue-600/80"
         title="Why event teams choose Chatters"
         description="From event coordinators to venue staff, Chatters fits into your event workflow and helps you create unforgettable experiences."
         gradientDirection="bg-gradient-to-b"
-        backgroundGradient="from-white to-green-50"
+        backgroundGradient="from-white to-blue-50"
         dottedBackground = {true}
         orbGlow
         cols={{ base: 1, sm: 2, md: 3, lg: 3 }}
         items={[
           {
-            icon: <Bell className="w-6 h-6 text-green-600" />,
+            icon: <Bell className="w-6 h-6 text-blue-600" />,
             title: "Live event alerts",
             description:
               "Event staff get instant notifications about issues while the event is still in progress.",
           },
           {
-            icon: <CheckCircle className="w-6 h-6 text-green-600" />,
+            icon: <CheckCircle className="w-6 h-6 text-blue-600" />,
             title: "Attendee-friendly feedback",
             description:
               "Simple QR codes allow attendees to report issues without disrupting the event experience.",
           },
           {
-            icon: <BarChart3 className="w-6 h-6 text-green-600" />,
+            icon: <BarChart3 className="w-6 h-6 text-blue-600" />,
             title: "Event performance tracking",
             description:
               "Monitor satisfaction across different event segments and improve future events.",
           },
           {
-            icon: <Shield className="w-6 h-6 text-green-600" />,
+            icon: <Shield className="w-6 h-6 text-blue-600" />,
             title: "Reputation protection",
             description:
               "Address event issues before attendees post on social media or review platforms.",
           },
           {
-            icon: <Zap className="w-6 h-6 text-green-600" />,
+            icon: <Zap className="w-6 h-6 text-blue-600" />,
             title: "Multi-event ready",
             description:
               "Manage feedback across multiple events with centralized reporting and insights.",
           },
           {
-            icon: <Check className="w-6 h-6 text-green-600" />,
+            icon: <Check className="w-6 h-6 text-blue-600" />,
             title: "Build attendee loyalty",
             description:
               "Turn event problems into service recovery moments that create lasting impressions.",
@@ -108,13 +108,13 @@ const EventSolution = () => {
 
       <FAQSection
         eyebrow="Event FAQ"
-        eyebrowColour = "text-green-600/80"
+        eyebrowColour = "text-blue-600/80"
         title="Everything you need to know"
         description="If you have a different question, contact us and we'll help."
         dottedBackground
         orbGlow
         wavyBottom = {false}
-        backgroundGradient="from-white via-white to-green-50"
+        backgroundGradient="from-white via-white to-blue-50"
         gradientDirection="bg-gradient-to-b"
         defaultOpenIndex={0}
         faqs={[
@@ -131,7 +131,7 @@ const EventSolution = () => {
         buttonText="Book a Demo"
         buttonLink="/demo"
         gradientDirection="bg-gradient-to-r"
-        backgroundGradient="from-green-50 via-white to-teal-50"
+        backgroundGradient="from-blue-50 via-white to-teal-50"
       />
 
       <Footer />

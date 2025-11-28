@@ -324,26 +324,18 @@ const Sidebar = ({ collapsed, setCollapsed }) => {
         <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-800">
           {!collapsed && (
             <div className="flex flex-col gap-1">
-              {isDevSite() ? (
-                <>
+              <>
                   <img
-                    src="/img/chatters-icon-black.svg"
+                    src="/img/logo/chatters-logo-black-2025.svg"
                     alt="Chatters"
                     className="h-6 w-auto block dark:hidden"
                   />
                   <img
-                    src="/img/chatters-icon-white.svg"
+                    src="/img/logo/chatters-logo-white-2025.svg"
                     alt="Chatters"
                     className="h-6 w-auto hidden dark:block"
                   />
                 </>
-              ) : (
-                <img
-                  src="https://www.getchatters.com/img/Logo.svg"
-                  alt="Chatters"
-                  className="h-6 w-auto"
-                />
-              )}
               <ImpersonationBanner />
             </div>
           )}

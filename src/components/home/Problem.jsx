@@ -2,7 +2,7 @@ import React from 'react';
 
 const Problem = () => {
   return (
-    <section className="bg-slate-900 py-20 lg:py-24">
+    <section className="bg-slate-900 pt-40 lg:pt-48 pb-20 lg:pb-24">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="max-w-4xl mx-auto text-center">
           {/* Section Title */}

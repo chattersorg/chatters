@@ -27,7 +27,7 @@ const Hero = () => {
           {/* Left Column - Text */}
           <div className="order-1 lg:order-1">
             {/* Eyebrow */}
-            <p className="text-sm font-semibold uppercase tracking-wide text-[#41C74E] mb-4">
+            <p className="text-sm font-semibold uppercase tracking-wide text-[#4E74FF] mb-4">
               Kiosk Mode
             </p>
 
@@ -45,7 +45,7 @@ const Hero = () => {
             <div className="flex flex-col sm:flex-row gap-4">
               <Link
                 to="/try"
-                className="inline-flex items-center justify-center px-8 py-4 text-lg font-semibold text-white bg-[#41C74E] rounded-lg hover:bg-[#38b043] transition-all duration-200 shadow-lg hover:shadow-xl"
+                className="inline-flex items-center justify-center px-8 py-4 text-lg font-semibold text-white bg-[#4E74FF] rounded-lg hover:bg-[#2F5CFF] transition-all duration-200 shadow-lg hover:shadow-xl"
               >
                 Start Free Trial
                 <ArrowRight className="ml-2 w-5 h-5" />
@@ -69,7 +69,7 @@ const Hero = () => {
                   <div className="flex gap-1.5">
                     <div className="w-3 h-3 rounded-full bg-red-500"></div>
                     <div className="w-3 h-3 rounded-full bg-yellow-500"></div>
-                    <div className="w-3 h-3 rounded-full bg-green-500"></div>
+                    <div className="w-3 h-3 rounded-full bg-blue-500"></div>
                   </div>
                 </div>
                 {/* Screen content */}
@@ -153,8 +153,8 @@ const CommandCentre = () => {
                 key={index}
                 className="flex items-center gap-4 p-4 bg-gray-50 rounded-xl"
               >
-                <div className="flex-shrink-0 w-12 h-12 bg-[#41C74E]/10 rounded-xl flex items-center justify-center">
-                  <item.icon className="w-6 h-6 text-[#41C74E]" />
+                <div className="flex-shrink-0 w-12 h-12 bg-[#4E74FF]/10 rounded-xl flex items-center justify-center">
+                  <item.icon className="w-6 h-6 text-[#4E74FF]" />
                 </div>
                 <span className="text-lg text-gray-900 font-medium">{item.text}</span>
               </div>
@@ -220,7 +220,7 @@ const HowItWorks = () => {
             {steps.map((step, index) => (
               <div key={index} className="relative flex gap-6 pb-12 last:pb-0">
                 {/* Number circle */}
-                <div className="flex-shrink-0 w-12 h-12 bg-[#41C74E] rounded-full flex items-center justify-center text-white font-bold text-lg z-10">
+                <div className="flex-shrink-0 w-12 h-12 bg-[#4E74FF] rounded-full flex items-center justify-center text-white font-bold text-lg z-10">
                   {step.number}
                 </div>
 
@@ -316,7 +316,7 @@ const WhyOperators = () => {
               key={index}
               className="flex gap-4 items-start bg-gray-50 rounded-xl p-6"
             >
-              <div className="flex-shrink-0 w-8 h-8 bg-[#41C74E] rounded-full flex items-center justify-center">
+              <div className="flex-shrink-0 w-8 h-8 bg-[#4E74FF] rounded-full flex items-center justify-center">
                 <Check className="w-5 h-5 text-white" />
               </div>
               <div>
@@ -371,11 +371,11 @@ const Features = () => {
           {features.map((feature, index) => (
             <div
               key={index}
-              className="bg-white rounded-2xl border border-gray-200 p-6 hover:border-[#41C74E]/50 hover:shadow-md transition-all duration-300"
+              className="bg-white rounded-2xl border border-gray-200 p-6 hover:border-[#4E74FF]/50 hover:shadow-md transition-all duration-300"
             >
               {/* Icon */}
-              <div className="inline-flex items-center justify-center w-14 h-14 bg-[#41C74E]/10 rounded-xl mb-4">
-                <feature.icon className="w-7 h-7 text-[#41C74E]" />
+              <div className="inline-flex items-center justify-center w-14 h-14 bg-[#4E74FF]/10 rounded-xl mb-4">
+                <feature.icon className="w-7 h-7 text-[#4E74FF]" />
               </div>
 
               {/* Title */}
@@ -433,7 +433,7 @@ const RealExample = () => {
             </p>
 
             {/* Outcome Card */}
-            <div className="bg-green-50 border border-green-200 rounded-xl p-6">
+            <div className="bg-blue-50 border border-green-200 rounded-xl p-6">
               <p className="text-gray-700 mb-4">
                 At the end of the night, they leave a review:
               </p>
@@ -502,7 +502,7 @@ const FinalCTA = () => {
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
             <Link
               to="/try"
-              className="inline-flex items-center justify-center px-8 py-4 text-lg font-semibold text-white bg-[#41C74E] rounded-lg hover:bg-[#38b043] transition-all duration-200 shadow-lg hover:shadow-xl"
+              className="inline-flex items-center justify-center px-8 py-4 text-lg font-semibold text-white bg-[#4E74FF] rounded-lg hover:bg-[#2F5CFF] transition-all duration-200 shadow-lg hover:shadow-xl"
             >
               Start Free Trial
               <ArrowRight className="ml-2 w-5 h-5" />

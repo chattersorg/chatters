@@ -39,7 +39,7 @@ const Testimonials = () => {
             >
               {/* Quote Icon */}
               <div className="absolute top-6 right-6">
-                <Quote className="w-8 h-8 text-[#41C74E]/30" />
+                <Quote className="w-8 h-8 text-[#4E74FF]/30" />
               </div>
 
               {/* Quote Text */}

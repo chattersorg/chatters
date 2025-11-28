@@ -60,7 +60,7 @@ const NewSite = () => {
               </Link>
               <Link
                 to="/demo"
-                className="bg-[#41C74E] text-white px-6 py-2 rounded-lg hover:bg-[#38b043] transition-colors text-sm font-semibold"
+                className="bg-[#4E74FF] text-white px-6 py-2 rounded-lg hover:bg-[#2F5CFF] transition-colors text-sm font-semibold"
               >
                 Get Started
               </Link>
@@ -97,7 +97,7 @@ const NewSite = () => {
                 </Link>
                 <Link
                   to="/demo"
-                  className="block bg-[#41C74E] text-white px-6 py-2 rounded-lg hover:bg-[#38b043] transition-colors text-sm font-semibold text-center"
+                  className="block bg-[#4E74FF] text-white px-6 py-2 rounded-lg hover:bg-[#2F5CFF] transition-colors text-sm font-semibold text-center"
                 >
                   Get Started
                 </Link>
@@ -120,7 +120,7 @@ const NewSite = () => {
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
               <Link
                 to="/demo"
-                className="bg-[#41C74E] text-white px-8 py-4 rounded-lg hover:bg-[#38b043] transition-colors text-base font-semibold flex items-center gap-2"
+                className="bg-[#4E74FF] text-white px-8 py-4 rounded-lg hover:bg-[#2F5CFF] transition-colors text-base font-semibold flex items-center gap-2"
               >
                 Start Free Trial
                 <ArrowRight className="w-5 h-5" />
@@ -136,15 +136,15 @@ const NewSite = () => {
             {/* Trust Indicators */}
             <div className="mt-16 flex flex-col sm:flex-row items-center justify-center gap-8 text-sm text-gray-600">
               <div className="flex items-center gap-2">
-                <CheckCircle className="w-5 h-5 text-[#41C74E]" />
+                <CheckCircle className="w-5 h-5 text-[#4E74FF]" />
                 <span>Free 14-day trial</span>
               </div>
               <div className="flex items-center gap-2">
-                <CheckCircle className="w-5 h-5 text-[#41C74E]" />
+                <CheckCircle className="w-5 h-5 text-[#4E74FF]" />
                 <span>No credit card required</span>
               </div>
               <div className="flex items-center gap-2">
-                <CheckCircle className="w-5 h-5 text-[#41C74E]" />
+                <CheckCircle className="w-5 h-5 text-[#4E74FF]" />
                 <span>500+ venues trust Chatters</span>
               </div>
             </div>
@@ -252,7 +252,7 @@ const NewSite = () => {
             </div>
 
             <div>
-              <div className="text-5xl font-bold text-[#41C74E] mb-4">03</div>
+              <div className="text-5xl font-bold text-[#4E74FF] mb-4">03</div>
               <h3 className="text-2xl font-semibold text-gray-900 mb-4">Problems Become Wins</h3>
               <p className="text-gray-600 leading-relaxed">
                 Resolve issues on the spot, track who fixed what, and direct happy customers to leave glowing public reviews.
@@ -322,21 +322,21 @@ const NewSite = () => {
               </p>
               <ul className="space-y-4">
                 <li className="flex items-start gap-3">
-                  <CheckCircle className="w-6 h-6 text-[#41C74E] flex-shrink-0 mt-1" />
+                  <CheckCircle className="w-6 h-6 text-[#4E74FF] flex-shrink-0 mt-1" />
                   <div>
                     <div className="font-semibold text-gray-900 mb-1">Catch Issues Early</div>
                     <div className="text-gray-600">Get notified the moment a customer has a problem</div>
                   </div>
                 </li>
                 <li className="flex items-start gap-3">
-                  <CheckCircle className="w-6 h-6 text-[#41C74E] flex-shrink-0 mt-1" />
+                  <CheckCircle className="w-6 h-6 text-[#4E74FF] flex-shrink-0 mt-1" />
                   <div>
                     <div className="font-semibold text-gray-900 mb-1">Turn Detractors Into Promoters</div>
                     <div className="text-gray-600">Resolve complaints before they become public reviews</div>
                   </div>
                 </li>
                 <li className="flex items-start gap-3">
-                  <CheckCircle className="w-6 h-6 text-[#41C74E] flex-shrink-0 mt-1" />
+                  <CheckCircle className="w-6 h-6 text-[#4E74FF] flex-shrink-0 mt-1" />
                   <div>
                     <div className="font-semibold text-gray-900 mb-1">Boost Positive Reviews</div>
                     <div className="text-gray-600">Direct happy customers to leave reviews where it matters</div>
@@ -375,7 +375,7 @@ const NewSite = () => {
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
             <Link
               to="/demo"
-              className="bg-[#41C74E] text-white px-8 py-4 rounded-lg hover:bg-[#38b043] transition-colors text-base font-semibold"
+              className="bg-[#4E74FF] text-white px-8 py-4 rounded-lg hover:bg-[#2F5CFF] transition-colors text-base font-semibold"
             >
               Start Free Trial
             </Link>

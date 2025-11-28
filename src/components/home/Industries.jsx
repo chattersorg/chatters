@@ -40,11 +40,11 @@ const Industries = () => {
           {industries.map((industry, index) => (
             <div
               key={index}
-              className="bg-white rounded-2xl border border-gray-200 p-6 hover:border-[#41C74E]/50 hover:shadow-md transition-all duration-300"
+              className="bg-white rounded-2xl border border-gray-200 p-6 hover:border-[#4E74FF]/50 hover:shadow-md transition-all duration-300"
             >
               {/* Icon */}
-              <div className="inline-flex items-center justify-center w-14 h-14 bg-[#41C74E]/10 rounded-xl mb-4">
-                <industry.icon className="w-7 h-7 text-[#41C74E]" />
+              <div className="inline-flex items-center justify-center w-14 h-14 bg-[#4E74FF]/10 rounded-xl mb-4">
+                <industry.icon className="w-7 h-7 text-[#4E74FF]" />
               </div>
 
               {/* Title */}

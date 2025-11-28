@@ -42,7 +42,7 @@ const MultiLocationControlProduct = () => {
 
       <ContentSplit reversed
         eyebrow="Enterprise Scale"
-        eyebrowColour='text-green-600'
+        eyebrowColour='text-blue-600'
         title="One dashboard for all your locations."
         description="Whether you have 2 locations or 200, manage customer feedback across your entire network from a single, powerful dashboard that scales with your business."
         bullets={[
@@ -58,7 +58,7 @@ const MultiLocationControlProduct = () => {
 
       <ProductFeaturesShowcase
         eyebrow="Scale Intelligence"
-        eyebrowColour='text-green-600'
+        eyebrowColour='text-blue-600'
         title="Manage your entire network like a single location."
         description="Our multi-location platform gives you the tools to maintain consistent quality, compare performance, and identify opportunities across your entire business network."
         primaryCta={{ label: "Scale your feedback", to: "/signup" }}
@@ -94,47 +94,47 @@ const MultiLocationControlProduct = () => {
 
       <FeatureGrid
         eyebrow="Multi-Location Benefits"
-        eyebrowColour='text-green-600'
+        eyebrowColour='text-blue-600'
         title="Why multi-location businesses choose Chatters"
         description="Scale your customer experience management across locations while maintaining the personal touch that makes each site unique."
         gradientDirection="bg-gradient-to-b"
-        backgroundGradient="from-white to-green-50"
+        backgroundGradient="from-white to-blue-50"
         dottedBackground={true}
         orbGlow
         cols={{ base: 1, sm: 2, md: 3, lg: 3 }}
         items={[
           {
-            icon: <Building className="w-6 h-6 text-green-600" />,
+            icon: <Building className="w-6 h-6 text-blue-600" />,
             title: "Centralized control",
             description:
               "Manage all locations from one dashboard while giving local teams the tools they need to succeed.",
           },
           {
-            icon: <MapPin className="w-6 h-6 text-green-600" />,
+            icon: <MapPin className="w-6 h-6 text-blue-600" />,
             title: "Location-specific insights",
             description:
               "Drill down into individual location performance with detailed analytics and trend tracking.",
           },
           {
-            icon: <Users className="w-6 h-6 text-green-600" />,
+            icon: <Users className="w-6 h-6 text-blue-600" />,
             title: "Role-based permissions",
             description:
               "Give regional managers, area directors, and local staff appropriate access levels and capabilities.",
           },
           {
-            icon: <BarChart2 className="w-6 h-6 text-green-600" />,
+            icon: <BarChart2 className="w-6 h-6 text-blue-600" />,
             title: "Performance benchmarking",
             description:
               "Compare satisfaction scores across locations to identify best practices and improvement opportunities.",
           },
           {
-            icon: <Globe className="w-6 h-6 text-green-600" />,
+            icon: <Globe className="w-6 h-6 text-blue-600" />,
             title: "Scalable infrastructure",
             description:
               "Our platform grows with your business - add new locations easily without complexity.",
           },
           {
-            icon: <Shield className="w-6 h-6 text-green-600" />,
+            icon: <Shield className="w-6 h-6 text-blue-600" />,
             title: "Brand consistency",
             description:
               "Ensure consistent customer experience standards across all locations while allowing local flexibility.",
@@ -145,13 +145,13 @@ const MultiLocationControlProduct = () => {
 
       <FAQSection
         eyebrow="Multi-Location FAQ"
-        eyebrowColour='text-green-600'
+        eyebrowColour='text-blue-600'
         title="Everything you need to know"
         description="If you have a different question, contact us and we'll help."
         dottedBackground
         orbGlow
         wavyBottom={false}
-        backgroundGradient="from-white via-white to-green-50"
+        backgroundGradient="from-white via-white to-blue-50"
         gradientDirection="bg-gradient-to-b"
         defaultOpenIndex={0}
         faqs={[
@@ -168,7 +168,7 @@ const MultiLocationControlProduct = () => {
         buttonText="Book a Demo"
         buttonLink="/demo"
         gradientDirection="bg-gradient-to-r"
-        backgroundGradient="from-green-50 via-white to-teal-50"
+        backgroundGradient="from-blue-50 via-white to-teal-50"
       />
 
 

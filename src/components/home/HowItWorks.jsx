@@ -51,8 +51,8 @@ const HowItWorks = () => {
               )}
 
               {/* Icon */}
-              <div className="inline-flex items-center justify-center w-16 h-16 bg-[#41C74E]/10 rounded-2xl mb-4">
-                <step.icon className="w-8 h-8 text-[#41C74E]" />
+              <div className="inline-flex items-center justify-center w-16 h-16 bg-[#4E74FF]/10 rounded-2xl mb-4">
+                <step.icon className="w-8 h-8 text-[#4E74FF]" />
               </div>
 
               {/* Step Number */}
@@ -77,7 +77,7 @@ const HowItWorks = () => {
         <div className="text-center">
           <Link
             to="/demo"
-            className="inline-flex items-center text-[#41C74E] font-semibold hover:text-[#38b043] transition-colors"
+            className="inline-flex items-center text-[#4E74FF] font-semibold hover:text-[#2F5CFF] transition-colors"
           >
             See It In Action
             <ArrowRight className="ml-2 w-5 h-5" />

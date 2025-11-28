@@ -90,11 +90,11 @@ const Navbar = ({ overlay = false }) => {
     setDropdownTimer(timer);
   };
 
-  // Product Dropdown - 4-column layout, positioned under nav item
+  // Product Dropdown - 4-column layout, positioned to not go off screen
   const ProductDropdown = ({ isVisible }) => {
     return (
       <div
-        className={`absolute left-1/2 -translate-x-1/2 top-full pt-2 z-[60] transition-all duration-200 ease-out ${
+        className={`absolute left-0 top-full pt-2 z-[60] transition-all duration-200 ease-out ${
           isVisible ? 'opacity-100 visible translate-y-0' : 'opacity-0 invisible -translate-y-1 pointer-events-none'
         }`}
         onMouseEnter={handleDropdownContentEnter}
@@ -115,7 +115,7 @@ const Navbar = ({ overlay = false }) => {
                         className="block group"
                         onClick={() => setActiveDropdown(null)}
                       >
-                        <span className="text-sm font-medium text-gray-900 group-hover:text-[#41C74E] transition-colors duration-150">
+                        <span className="text-sm font-medium text-gray-900 group-hover:text-[#4E74FF] transition-colors duration-150">
                           {link.name}
                         </span>
                         <span className="block text-xs text-gray-500 mt-0.5">
@@ -152,7 +152,7 @@ const Navbar = ({ overlay = false }) => {
                 className="block group"
                 onClick={() => setActiveDropdown(null)}
               >
-                <span className="text-sm font-medium text-gray-900 group-hover:text-[#41C74E] transition-colors duration-150">
+                <span className="text-sm font-medium text-gray-900 group-hover:text-[#4E74FF] transition-colors duration-150">
                   {link.name}
                 </span>
                 <span className="block text-xs text-gray-500 mt-0.5">
@@ -188,7 +188,7 @@ const Navbar = ({ overlay = false }) => {
                   className="block group"
                   onClick={() => setActiveDropdown(null)}
                 >
-                  <span className="text-sm font-medium text-gray-900 group-hover:text-[#41C74E] transition-colors duration-150">
+                  <span className="text-sm font-medium text-gray-900 group-hover:text-[#4E74FF] transition-colors duration-150">
                     {link.name}
                   </span>
                   <span className="block text-xs text-gray-500 mt-0.5">
@@ -202,7 +202,7 @@ const Navbar = ({ overlay = false }) => {
                   className="block group"
                   onClick={() => setActiveDropdown(null)}
                 >
-                  <span className="text-sm font-medium text-gray-900 group-hover:text-[#41C74E] transition-colors duration-150">
+                  <span className="text-sm font-medium text-gray-900 group-hover:text-[#4E74FF] transition-colors duration-150">
                     {link.name}
                   </span>
                   <span className="block text-xs text-gray-500 mt-0.5">
@@ -224,7 +224,7 @@ const Navbar = ({ overlay = false }) => {
           {/* Left: Logo + Desktop Nav */}
           <div className="flex items-center space-x-8">
             <Link to="/" className="flex-shrink-0">
-              <img src="/img/chatters_logo_new.svg" alt="Chatters Logo" className="h-6" />
+              <img src="/img/logo/chatters-logo-2025.svg" alt="Chatters Logo" className="h-6" />
             </Link>
 
             <div className="hidden lg:flex lg:items-center lg:space-x-6">
@@ -233,7 +233,7 @@ const Navbar = ({ overlay = false }) => {
                 onMouseEnter={() => handleDropdownEnter('product')}
                 onMouseLeave={handleDropdownLeave}
               >
-                <div className="text-sm font-medium text-gray-700 hover:text-[#41C74E] flex items-center cursor-pointer transition-colors duration-150 py-5">
+                <div className="text-sm font-medium text-gray-700 hover:text-[#4E74FF] flex items-center cursor-pointer transition-colors duration-150 py-5">
                   Product <ChevronDown className={`ml-1 h-4 w-4 transition-transform duration-200 ${activeDropdown === 'product' ? 'rotate-180' : ''}`} />
                 </div>
                 <ProductDropdown isVisible={activeDropdown === 'product'} />
@@ -244,7 +244,7 @@ const Navbar = ({ overlay = false }) => {
                 onMouseEnter={() => handleDropdownEnter('solutions')}
                 onMouseLeave={handleDropdownLeave}
               >
-                <div className="text-sm font-medium text-gray-700 hover:text-[#41C74E] flex items-center cursor-pointer transition-colors duration-150 py-5">
+                <div className="text-sm font-medium text-gray-700 hover:text-[#4E74FF] flex items-center cursor-pointer transition-colors duration-150 py-5">
                   Solutions <ChevronDown className={`ml-1 h-4 w-4 transition-transform duration-200 ${activeDropdown === 'solutions' ? 'rotate-180' : ''}`} />
                 </div>
                 <SolutionsDropdown isVisible={activeDropdown === 'solutions'} />
@@ -255,7 +255,7 @@ const Navbar = ({ overlay = false }) => {
                 onMouseEnter={() => handleDropdownEnter('resources')}
                 onMouseLeave={handleDropdownLeave}
               >
-                <div className="text-sm font-medium text-gray-700 hover:text-[#41C74E] flex items-center cursor-pointer transition-colors duration-150 py-5">
+                <div className="text-sm font-medium text-gray-700 hover:text-[#4E74FF] flex items-center cursor-pointer transition-colors duration-150 py-5">
                   Resources <ChevronDown className={`ml-1 h-4 w-4 transition-transform duration-200 ${activeDropdown === 'resources' ? 'rotate-180' : ''}`} />
                 </div>
                 <ResourcesDropdown isVisible={activeDropdown === 'resources'} />
@@ -263,7 +263,7 @@ const Navbar = ({ overlay = false }) => {
 
               <Link
                 to="/pricing"
-                className={`text-sm font-medium transition-colors duration-150 py-5 ${isActive('/pricing') ? 'text-[#41C74E]' : 'text-gray-700 hover:text-[#41C74E]'}`}
+                className={`text-sm font-medium transition-colors duration-150 py-5 ${isActive('/pricing') ? 'text-[#4E74FF]' : 'text-gray-700 hover:text-[#4E74FF]'}`}
               >
                 Pricing
               </Link>
@@ -274,7 +274,7 @@ const Navbar = ({ overlay = false }) => {
           <div className="hidden lg:flex lg:items-center lg:space-x-4">
             <Link
               to={getDashboardUrl('/signin')}
-              className="text-sm font-medium text-gray-700 hover:text-[#41C74E] transition-colors duration-150"
+              className="text-sm font-medium text-gray-700 hover:text-[#4E74FF] transition-colors duration-150"
             >
               Log in
             </Link>
@@ -312,7 +312,7 @@ const Navbar = ({ overlay = false }) => {
                           onClick={() => setIsMobileMenuOpen(false)}
                           className="block"
                         >
-                          <span className="text-sm text-gray-700 hover:text-[#41C74E]">{link.name}</span>
+                          <span className="text-sm text-gray-700 hover:text-[#4E74FF]">{link.name}</span>
                           <span className="block text-xs text-gray-400">{link.desc}</span>
                         </Link>
                       ))}
@@ -333,7 +333,7 @@ const Navbar = ({ overlay = false }) => {
                     onClick={() => setIsMobileMenuOpen(false)}
                     className="block"
                   >
-                    <span className="text-sm text-gray-700 hover:text-[#41C74E]">{link.name}</span>
+                    <span className="text-sm text-gray-700 hover:text-[#4E74FF]">{link.name}</span>
                     <span className="block text-xs text-gray-400">{link.desc}</span>
                   </Link>
                 ))}
@@ -353,7 +353,7 @@ const Navbar = ({ overlay = false }) => {
                       rel="noopener noreferrer"
                       className="block"
                     >
-                      <span className="text-sm text-gray-700 hover:text-[#41C74E]">{link.name}</span>
+                      <span className="text-sm text-gray-700 hover:text-[#4E74FF]">{link.name}</span>
                       <span className="block text-xs text-gray-400">{link.desc}</span>
                     </a>
                   ) : (
@@ -363,7 +363,7 @@ const Navbar = ({ overlay = false }) => {
                       onClick={() => setIsMobileMenuOpen(false)}
                       className="block"
                     >
-                      <span className="text-sm text-gray-700 hover:text-[#41C74E]">{link.name}</span>
+                      <span className="text-sm text-gray-700 hover:text-[#4E74FF]">{link.name}</span>
                       <span className="block text-xs text-gray-400">{link.desc}</span>
                     </Link>
                   )
@@ -376,7 +376,7 @@ const Navbar = ({ overlay = false }) => {
               <Link
                 to="/pricing"
                 onClick={() => setIsMobileMenuOpen(false)}
-                className="block text-sm font-medium text-gray-700 hover:text-[#41C74E]"
+                className="block text-sm font-medium text-gray-700 hover:text-[#4E74FF]"
               >
                 Pricing
               </Link>

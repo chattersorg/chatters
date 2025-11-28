@@ -34,7 +34,7 @@ const Pricing = () => {
 
             <Link
               to="/demo"
-              className="inline-flex items-center justify-center px-8 py-4 text-lg font-semibold text-white bg-[#41C74E] rounded-lg hover:bg-[#38b043] transition-all duration-200 shadow-lg hover:shadow-xl"
+              className="inline-flex items-center justify-center px-8 py-4 text-lg font-semibold text-white bg-[#4E74FF] rounded-lg hover:bg-[#2F5CFF] transition-all duration-200 shadow-lg hover:shadow-xl"
             >
               Book a Demo
               <ArrowRight className="ml-2 w-5 h-5" />

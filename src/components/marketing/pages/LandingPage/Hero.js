@@ -171,7 +171,7 @@ const Hero = ({
             >
               <Link
                 to={primaryCta.to}
-                className="px-5 py-2.5 rounded-lg text-sm font-medium transition-all flex items-center gap-2 relative overflow-hidden bg-[#41C74E] text-white hover:bg-[#38b043] shadow-lg hover:shadow-xl font-satoshi"
+                className="px-5 py-2.5 rounded-lg text-sm font-medium transition-all flex items-center gap-2 relative overflow-hidden bg-[#4E74FF] text-white hover:bg-[#2F5CFF] shadow-lg hover:shadow-xl font-satoshi"
               >
                 <span>{primaryCta.label}</span>
                 <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">

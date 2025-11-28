@@ -33,7 +33,7 @@ const Differentiator = () => {
                 className="flex gap-4 items-start bg-gray-50 rounded-xl p-6"
               >
                 {/* Checkmark */}
-                <div className="flex-shrink-0 w-8 h-8 bg-[#41C74E] rounded-full flex items-center justify-center">
+                <div className="flex-shrink-0 w-8 h-8 bg-[#4E74FF] rounded-full flex items-center justify-center">
                   <Check className="w-5 h-5 text-white" />
                 </div>
 
