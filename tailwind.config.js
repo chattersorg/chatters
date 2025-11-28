@@ -4,6 +4,9 @@ module.exports = {
   content: ["./src/**/*.{js,jsx,ts,tsx}"],
   theme: {
     extend: {
+      backgroundImage: {
+        'gradient-radial': 'radial-gradient(var(--tw-gradient-stops))',
+      },
       fontFamily: {
         sans: ['var(--font-dashboard)', 'ui-sans-serif', 'system-ui'],
         'marketing': ['var(--font-marketing)', 'ui-sans-serif', 'system-ui'],
