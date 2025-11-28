@@ -24,16 +24,22 @@ import QuestionManagementProduct from './pages/marketing/product/QuestionManagem
 import BusinessIntelligenceProduct from './pages/marketing/product/BusinessIntelligence';
 import IntelligenceProduct from './pages/marketing/product/Intelligence';
 import StaffLeaderboardPage from './pages/marketing/product/StaffLeaderboardPage';
-import StaffRecognitionPage from './pages/marketing/product/StaffRecognition';
+import StaffRecognitionPage from './pages/marketing/product/Staff-Recognition';
+import StaffMetricsPage from './pages/marketing/product/Staff-Metrics';
 import NPSScoringPage from './pages/marketing/product/NPSScoring';
 import MultiLocationControlProduct from './pages/marketing/product/Multi-Location-Control';
+import MultiVenueAnalyticsPage from './pages/marketing/product/Multi-Venue-Analytics';
 import KioskModeProduct from './pages/marketing/product/Kiosk-Mode';
 import RealTimeAlertsProduct from './pages/marketing/product/Real-Time-Alerts';
+import LiveFeedbackDashboardPage from './pages/marketing/product/Live-Feedback-Dashboard';
+import ReviewBoostingPage from './pages/marketing/product/Review-Boosting';
+import CustomerTrendsPage from './pages/marketing/product/Customer-Trends';
 
 import RestaurantSolution from './pages/marketing/solutions/RestaurantSolution';
 import HotelSolution from './pages/marketing/solutions/HotelSolution';
 import RetailSolution from './pages/marketing/solutions/RetailSolution';
 import EventSolution from './pages/marketing/solutions/EventSolution';
+import PubsBarsSolution from './pages/marketing/solutions/PubsBarsSolution';
 
 import NewSite from './pages/marketing/NewSite';
 
@@ -66,15 +72,21 @@ const MarketingRoutes = () => {
       <Route path="/product/business-intelligence" element={<BusinessIntelligenceProduct />} />
       <Route path="/product/intelligence" element={<IntelligenceProduct />} />
       <Route path="/product/multi-location-control" element={<MultiLocationControlProduct />} />
+      <Route path="/product/multi-venue-analytics" element={<MultiVenueAnalyticsPage />} />
       <Route path="/product/kiosk-mode" element={<KioskModeProduct />} />
       <Route path="/product/real-time-alerts" element={<RealTimeAlertsProduct />} />
+      <Route path="/product/live-feedback-dashboard" element={<LiveFeedbackDashboardPage />} />
+      <Route path="/product/review-boosting" element={<ReviewBoostingPage />} />
       <Route path="/product/staff-leaderboard" element={<StaffLeaderboardPage />} />
       <Route path="/product/staff-recognition" element={<StaffRecognitionPage />} />
+      <Route path="/product/staff-metrics" element={<StaffMetricsPage />} />
       <Route path="/product/nps-scoring" element={<NPSScoringPage />} />
+      <Route path="/product/customer-trends" element={<CustomerTrendsPage />} />
 
       {/* 🏢 Solutions Pages */}
       <Route path="/solutions/restaurants" element={<RestaurantSolution />} />
       <Route path="/solutions/hotels" element={<HotelSolution />} />
+      <Route path="/solutions/pubs-bars" element={<PubsBarsSolution />} />
       <Route path="/solutions/retail" element={<RetailSolution />} />
       <Route path="/solutions/events" element={<EventSolution />} />
 
