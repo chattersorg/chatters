@@ -1,179 +1,560 @@
 import React from 'react';
+import { Link } from 'react-router-dom';
 import { Helmet } from 'react-helmet';
-import { Tablet, Wifi, Lock, Palette, Zap, Touchpad } from 'lucide-react';
+import {
+  ArrowRight,
+  Star,
+  Eye,
+  Bell,
+  Table2,
+  Zap,
+  Check,
+  Clock,
+  Monitor,
+  Users,
+  TrendingUp,
+  Circle
+} from 'lucide-react';
 import Navbar from '../../../components/marketing/layout/Navbar';
-import PageHeader from '../../../components/marketing/common/sections/PageHeader';
-import ContentSplit from '../../../components/marketing/common/sections/ContentSplit';
-import ProductFeaturesShowcase from '../../../components/marketing/common/sections/ProductFeaturesShowcase';
-import FeatureGrid from '../../../components/marketing/common/sections/FeatureGrid';
-import FAQSection from '../../../components/marketing/common/sections/FAQSection';
-import CTA from '../../../components/marketing/common/sections/CTA';
 import Footer from '../../../components/marketing/layout/Footer';
 
-const KioskModeProduct = () => {
+// SECTION 1 — HERO
+const Hero = () => {
   return (
-    <div className="min-h-screen bg-white">
+    <section className="bg-white py-20 lg:py-24">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="grid lg:grid-cols-2 gap-12 lg:gap-16 items-center">
+          {/* Left Column - Text */}
+          <div className="order-1 lg:order-1">
+            {/* Eyebrow */}
+            <p className="text-sm font-semibold uppercase tracking-wide text-[#41C74E] mb-4">
+              Kiosk Mode
+            </p>
+
+            {/* H1 */}
+            <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-gray-900 leading-tight mb-6">
+              One Screen. Every Table. Nothing Missed.
+            </h1>
+
+            {/* Subheadline */}
+            <p className="text-xl text-gray-600 mb-8 leading-relaxed">
+              A live dashboard designed for front-of-house — showing real-time alerts, table statuses, and guest requests on a single screen.
+            </p>
+
+            {/* Buttons */}
+            <div className="flex flex-col sm:flex-row gap-4">
+              <Link
+                to="/try"
+                className="inline-flex items-center justify-center px-8 py-4 text-lg font-semibold text-white bg-[#41C74E] rounded-lg hover:bg-[#38b043] transition-all duration-200 shadow-lg hover:shadow-xl"
+              >
+                Start Free Trial
+                <ArrowRight className="ml-2 w-5 h-5" />
+              </Link>
+              <Link
+                to="/demo"
+                className="inline-flex items-center justify-center px-8 py-4 text-lg font-semibold text-gray-900 bg-white border-2 border-gray-300 rounded-lg hover:border-gray-400 hover:bg-gray-50 transition-all duration-200"
+              >
+                Book a Demo
+              </Link>
+            </div>
+          </div>
+
+          {/* Right Column - Visuals */}
+          <div className="order-2 lg:order-2 relative px-4 sm:px-0 mt-8 lg:mt-0">
+            <div className="relative mx-4 sm:mx-0">
+              {/* MacBook-style mockup */}
+              <div className="bg-gray-900 rounded-xl p-2 pb-3 shadow-2xl">
+                {/* Browser top bar */}
+                <div className="flex items-center gap-2 px-2 pb-2">
+                  <div className="flex gap-1.5">
+                    <div className="w-3 h-3 rounded-full bg-red-500"></div>
+                    <div className="w-3 h-3 rounded-full bg-yellow-500"></div>
+                    <div className="w-3 h-3 rounded-full bg-green-500"></div>
+                  </div>
+                </div>
+                {/* Screen content */}
+                <img
+                  src="https://placehold.co/550x400/e2e8f0/475569?text=Kiosk+Mode+Dashboard"
+                  alt="Kiosk Mode dashboard showing live table overview"
+                  className="w-full rounded-lg"
+                />
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+};
+
+// SECTION 2 — THE PROBLEM
+const Problem = () => {
+  return (
+    <section className="bg-slate-900 py-20 lg:py-24">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="max-w-4xl mx-auto text-center">
+          {/* Section Title */}
+          <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-white mb-8">
+            Busy Service Creates Blind Spots
+          </h2>
+
+          {/* Body Text */}
+          <div className="text-xl text-slate-300 space-y-6">
+            <p>
+              When the floor is packed, it's easy to miss what matters most.
+              <br />
+              Staff are moving fast. Feedback is coming in. Alerts are firing.
+              <br />
+              But who's watching?
+            </p>
+
+            <p className="text-white font-semibold text-2xl">
+              Kiosk Mode puts everything you need on one always-on screen.
+            </p>
+
+            <p>
+              No digging. No refreshing. Just clarity.
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+};
+
+// SECTION 3 — COMMAND CENTRE
+const CommandCentre = () => {
+  const features = [
+    { icon: Bell, text: 'Live alerts for every table' },
+    { icon: Table2, text: 'Table-level feedback summaries' },
+    { icon: Zap, text: 'Assistance requests as they arrive' },
+    { icon: Eye, text: 'Unresolved issues highlighted' },
+    { icon: Clock, text: 'Time-since-submission for every guest' },
+  ];
+
+  return (
+    <section className="bg-white py-20 lg:py-24">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="max-w-4xl mx-auto">
+          {/* Section Heading */}
+          <div className="text-center mb-12">
+            <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-gray-900 mb-4">
+              Your Command Centre for Service
+            </h2>
+            <p className="text-lg text-gray-600">
+              Kiosk Mode is a live view of your venue — built to run all shift long.
+            </p>
+          </div>
+
+          {/* Feature Items */}
+          <div className="space-y-4 mb-12">
+            {features.map((item, index) => (
+              <div
+                key={index}
+                className="flex items-center gap-4 p-4 bg-gray-50 rounded-xl"
+              >
+                <div className="flex-shrink-0 w-12 h-12 bg-[#41C74E]/10 rounded-xl flex items-center justify-center">
+                  <item.icon className="w-6 h-6 text-[#41C74E]" />
+                </div>
+                <span className="text-lg text-gray-900 font-medium">{item.text}</span>
+              </div>
+            ))}
+          </div>
+
+          {/* Closing Line */}
+          <p className="text-center text-xl font-bold text-gray-900">
+            One screen. Full awareness. No tab-switching.
+          </p>
+        </div>
+      </div>
+    </section>
+  );
+};
+
+// SECTION 4 — HOW IT WORKS
+const HowItWorks = () => {
+  const steps = [
+    {
+      number: '1',
+      title: 'Open Kiosk Mode on any screen',
+      description: 'A tablet, monitor, or wall-mounted display.',
+    },
+    {
+      number: '2',
+      title: 'New feedback, alerts, and requests stream in live',
+      description: 'Everything appears automatically — no manual refresh needed.',
+    },
+    {
+      number: '3',
+      title: 'Staff see colour-coded priorities at a glance',
+      description: 'Red = urgent. Amber = needs attention. Blue = info only.',
+    },
+    {
+      number: '4',
+      title: 'One tap claims a task',
+      description: 'Staff take ownership, preventing double-handling.',
+    },
+    {
+      number: '5',
+      title: 'Resolved items disappear from the screen',
+      description: 'Only active, relevant alerts remain visible.',
+    },
+  ];
+
+  return (
+    <section className="bg-gray-50 py-20 lg:py-24">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        {/* Section Heading */}
+        <div className="text-center mb-16">
+          <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-gray-900">
+            How It Works
+          </h2>
+        </div>
+
+        {/* Steps Timeline */}
+        <div className="max-w-3xl mx-auto">
+          <div className="relative">
+            {/* Vertical line */}
+            <div className="absolute left-6 top-0 bottom-0 w-0.5 bg-gray-200 hidden sm:block"></div>
+
+            {steps.map((step, index) => (
+              <div key={index} className="relative flex gap-6 pb-12 last:pb-0">
+                {/* Number circle */}
+                <div className="flex-shrink-0 w-12 h-12 bg-[#41C74E] rounded-full flex items-center justify-center text-white font-bold text-lg z-10">
+                  {step.number}
+                </div>
+
+                {/* Content */}
+                <div className="flex-1 pt-1">
+                  <h3 className="text-xl font-bold text-gray-900 mb-2">
+                    {step.title}
+                  </h3>
+                  <p className="text-gray-600">
+                    {step.description}
+                  </p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Colour-Coded Priority Callout */}
+        <div className="max-w-3xl mx-auto mt-16">
+          <div className="bg-white rounded-xl border border-gray-200 p-6">
+            <h3 className="text-lg font-bold text-gray-900 mb-4 text-center">
+              Colour-Coded Priority System
+            </h3>
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+              <div className="flex items-center gap-3 p-3 bg-red-50 rounded-lg">
+                <Circle className="w-6 h-6 fill-red-500 text-red-500" />
+                <div>
+                  <p className="font-semibold text-gray-900">Red</p>
+                  <p className="text-sm text-gray-600">Urgent issue</p>
+                </div>
+              </div>
+              <div className="flex items-center gap-3 p-3 bg-amber-50 rounded-lg">
+                <Circle className="w-6 h-6 fill-amber-500 text-amber-500" />
+                <div>
+                  <p className="font-semibold text-gray-900">Amber</p>
+                  <p className="text-sm text-gray-600">Needs attention</p>
+                </div>
+              </div>
+              <div className="flex items-center gap-3 p-3 bg-blue-50 rounded-lg">
+                <Circle className="w-6 h-6 fill-blue-500 text-blue-500" />
+                <div>
+                  <p className="font-semibold text-gray-900">Blue</p>
+                  <p className="text-sm text-gray-600">Info only</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+};
+
+// SECTION 5 — WHY OPERATORS DEPEND ON IT
+const WhyOperators = () => {
+  const benefits = [
+    {
+      title: 'Faster responses',
+      description: 'Staff spot issues the moment they arise.',
+    },
+    {
+      title: 'No forgotten tables',
+      description: 'Every request stays visible until resolved.',
+    },
+    {
+      title: 'Clearer team coordination',
+      description: 'Everyone sees the same view — no confusion.',
+    },
+    {
+      title: 'Fewer complaints',
+      description: 'Problems are handled before they escalate.',
+    },
+    {
+      title: 'Service that feels seamless',
+      description: 'Guests notice when nothing slips through the cracks.',
+    },
+  ];
+
+  return (
+    <section className="bg-white py-20 lg:py-24">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        {/* Section Heading */}
+        <div className="text-center mb-16">
+          <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-gray-900">
+            Why Operators Depend on Kiosk Mode
+          </h2>
+        </div>
+
+        {/* Benefits Grid */}
+        <div className="max-w-4xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-6">
+          {benefits.map((benefit, index) => (
+            <div
+              key={index}
+              className="flex gap-4 items-start bg-gray-50 rounded-xl p-6"
+            >
+              <div className="flex-shrink-0 w-8 h-8 bg-[#41C74E] rounded-full flex items-center justify-center">
+                <Check className="w-5 h-5 text-white" />
+              </div>
+              <div>
+                <h3 className="font-bold text-gray-900 mb-1">{benefit.title}</h3>
+                <p className="text-gray-600">{benefit.description}</p>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+};
+
+// SECTION 6 — FEATURES
+const Features = () => {
+  const features = [
+    {
+      icon: Monitor,
+      title: 'Auto-Refresh',
+      description: 'The screen updates on its own — no manual action needed.',
+    },
+    {
+      icon: TrendingUp,
+      title: 'Priority Sorting',
+      description: 'Most urgent alerts always rise to the top.',
+    },
+    {
+      icon: Users,
+      title: 'Multi-Staff View',
+      description: 'Anyone can claim and resolve tasks.',
+    },
+    {
+      icon: Zap,
+      title: 'Works on Any Device',
+      description: 'Tablets, TVs, or monitors — plug in and go.',
+    },
+  ];
+
+  return (
+    <section className="bg-gray-50 py-20 lg:py-24">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        {/* Section Heading */}
+        <div className="text-center mb-16">
+          <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-gray-900">
+            Built for High-Pressure Hospitality
+          </h2>
+        </div>
+
+        {/* Feature Cards */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+          {features.map((feature, index) => (
+            <div
+              key={index}
+              className="bg-white rounded-2xl border border-gray-200 p-6 hover:border-[#41C74E]/50 hover:shadow-md transition-all duration-300"
+            >
+              {/* Icon */}
+              <div className="inline-flex items-center justify-center w-14 h-14 bg-[#41C74E]/10 rounded-xl mb-4">
+                <feature.icon className="w-7 h-7 text-[#41C74E]" />
+              </div>
+
+              {/* Title */}
+              <h3 className="text-lg font-bold text-gray-900 mb-2">
+                {feature.title}
+              </h3>
+
+              {/* Description */}
+              <p className="text-gray-600 text-sm leading-relaxed">
+                {feature.description}
+              </p>
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+};
+
+// SECTION 7 — REAL EXAMPLE
+const RealExample = () => {
+  return (
+    <section className="bg-white py-20 lg:py-24">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="max-w-3xl mx-auto">
+          {/* Section Heading */}
+          <div className="text-center mb-12">
+            <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-gray-900">
+              What It Looks Like on the Floor
+            </h2>
+          </div>
+
+          {/* Story */}
+          <div className="space-y-8">
+            <p className="text-lg text-gray-700">
+              It's a packed Saturday night. Thirty covers just arrived for a private party. The floor team's stretched thin.
+            </p>
+
+            <p className="text-lg text-gray-700">
+              A guest on Table 4 submits feedback: slow service, 2 stars. On the Kiosk screen, the alert appears in red.
+            </p>
+
+            {/* Alert Callout */}
+            <div className="bg-red-50 border-l-4 border-red-400 p-6 rounded-r-xl">
+              <div className="flex items-center gap-3">
+                <Circle className="w-5 h-5 fill-red-500 text-red-500" />
+                <p className="text-lg text-gray-800 font-medium">
+                  Table 4 — Low rating — "Service a bit slow tonight"
+                </p>
+              </div>
+            </div>
+
+            <p className="text-lg text-gray-700">
+              The host spots it, taps Acknowledge, walks over, and checks in with the table. A quick apology and a round of drinks later, the couple's settled.
+            </p>
+
+            {/* Outcome Card */}
+            <div className="bg-green-50 border border-green-200 rounded-xl p-6">
+              <p className="text-gray-700 mb-4">
+                At the end of the night, they leave a review:
+              </p>
+
+              <div className="flex items-center gap-1 mb-3">
+                {[1, 2, 3, 4, 5].map((star) => (
+                  <Star key={star} className="w-6 h-6 fill-yellow-400 text-yellow-400" />
+                ))}
+              </div>
+
+              <p className="text-lg text-gray-800 italic">
+                "The place was heaving but staff still made time for us. Felt looked after."
+              </p>
+            </div>
+
+            {/* Closing Line */}
+            <p className="text-xl font-bold text-gray-900 text-center">
+              Without Kiosk Mode, that issue would've been missed. With it — one screen, instant awareness.
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+};
+
+// SECTION 8 — TESTIMONIAL
+const Testimonial = () => {
+  return (
+    <section className="bg-gray-50 py-20 lg:py-24">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="max-w-3xl mx-auto text-center">
+          {/* Quote */}
+          <blockquote className="text-2xl sm:text-3xl text-gray-700 italic mb-8 leading-relaxed">
+            "Kiosk Mode is always running in our pass. It's the first thing the team checks during busy service."
+          </blockquote>
+
+          {/* Attribution */}
+          <div className="flex items-center justify-center gap-4">
+            <div className="w-14 h-14 bg-gray-300 rounded-full flex items-center justify-center">
+              <span className="text-gray-600 font-semibold text-xl">D</span>
+            </div>
+            <div className="text-left">
+              <p className="font-bold text-gray-900">Daniel Price</p>
+              <p className="text-gray-600">GM, The Royal Oak Group</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+};
+
+// SECTION 9 — FINAL CTA
+const FinalCTA = () => {
+  return (
+    <section className="bg-slate-900 py-20 lg:py-24">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="max-w-4xl mx-auto text-center">
+          {/* Headline */}
+          <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-white mb-10">
+            See everything. Miss nothing. Serve faster.
+          </h2>
+
+          {/* Buttons */}
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+            <Link
+              to="/try"
+              className="inline-flex items-center justify-center px-8 py-4 text-lg font-semibold text-white bg-[#41C74E] rounded-lg hover:bg-[#38b043] transition-all duration-200 shadow-lg hover:shadow-xl"
+            >
+              Start Free Trial
+              <ArrowRight className="ml-2 w-5 h-5" />
+            </Link>
+            <Link
+              to="/demo"
+              className="inline-flex items-center justify-center px-8 py-4 text-lg font-semibold text-white bg-transparent border-2 border-white rounded-lg hover:bg-white/10 transition-all duration-200"
+            >
+              Book a Demo
+            </Link>
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+};
+
+// MAIN PAGE COMPONENT
+const KioskModePage = () => {
+  return (
+    <div className="min-h-screen bg-white pt-16">
       <Helmet>
-        <title>Kiosk Mode | Chatters - Dedicated Feedback Stations</title>
+        <title>Kiosk Mode | Live Dashboard for Front-of-House | Chatters</title>
         <meta
           name="description"
-          content="Turn any tablet into a dedicated feedback kiosk. Perfect for retail stores, hotels, and high-traffic areas where QR codes aren't practical."
+          content="One screen. Every table. Nothing missed. Kiosk Mode is a live dashboard showing real-time alerts, table statuses, and guest requests on a single screen for hospitality teams."
         />
         <meta
           name="keywords"
-          content="feedback kiosk, tablet feedback, in-store feedback, retail feedback kiosk, customer feedback station, touch screen feedback"
+          content="kiosk mode, hospitality dashboard, live alerts, front of house display, restaurant management, real-time feedback display, table management"
         />
         <meta property="og:title" content="Kiosk Mode | Chatters" />
-        <meta property="og:description" content="Transform any tablet into a professional feedback kiosk with Chatters' dedicated kiosk mode." />
+        <meta property="og:description" content="One screen. Every table. Nothing missed. Live dashboard for front-of-house teams." />
         <meta property="og:type" content="website" />
         <link rel="canonical" href="https://getchatters.com/product/kiosk-mode" />
       </Helmet>
 
-      {/* Overlay navbar sits above the hero */}
-      <Navbar overlay />
+      <Navbar />
 
-      <PageHeader
-        title="Kiosk Mode That Turns Any Tablet Into a Feedback Station"
-        description="Create dedicated spots where your staff can view and respond to customer feedback in real-time. Perfect for retail stores, hotels, and anywhere you want to make feedback convenient."
-        backgroundGradient="from-white to-orange-200"
-        showSubtitle={true}
-        subtitle="Kiosk Mode"
-      />
-
-      <ContentSplit
-        eyebrow="Dedicated Stations"
-        eyebrowColour='text-orange-600'
-        title="A simple view, respond, and manage feedback interface."
-        description="No fluff, no distractions. Just a clean, focused interface that lets your team see customer feedback and respond instantly."
-        bullets={[
-          "Works on any tablet or desktop",
-          "Secure kiosk mode lockdown", 
-          "Easy to manage",
-        ]}
-        primaryCta={{ label: "See Kiosk Mode", to: "/demo" }}
-        secondaryCta={{ label: "Pricing", to: "/pricing" }}
-        image={{ src: "/img/mock-kiosk.png", alt: "Feedback kiosk interface" }}
-      />
-
-      <ProductFeaturesShowcase
-        eyebrow="Kiosk Intelligence"
-        eyebrowColour='text-orange-600'
-        title="Place your station anywhere, receive feedback instantly."
-        description="Kiosk mode is designed for security, ease of use, and flexibility. Turn any tablet into a professional feedback station that captures customer insights in real-time."
-        primaryCta={{ label: "See Kiosk Mode", to: "/demo" }}
-        secondaryCta={{ label: "Pricing", to: "/pricing" }}
-        features={[
-          {
-            id: "setup",
-            eyebrow: "Easy Setup",
-            title: "Turn tablets or laptops into kiosks instantly",
-            description: "Just click 'Kiosk Mode' in the Chatters dashboard to transform any device into a dedicated feedback station.",
-            bullets: ["No additional devices", "Instant setup", "Easy to use"],
-            // image: { src: "/img/mock-setup.png", alt: "Kiosk setup process" },
-          },
-          {
-            id: "design",
-            eyebrow: "Real-time",
-            title: "No wasting time waiting",
-            description: "No waiting around, or refreshing, feedback is displayed instantly as it comes in. Your team can respond immediately to customer concerns.",
-            bullets: ["Live updates ", "Offline mode", "Instant notifications"],
-            // image: { src: "/img/mock-design.png", alt: "Kiosk customisation" },
-          },
-          {
-            id: "security",
-            eyebrow: "Secure Mode",
-            title: "Locked down for security",
-            description: "Kiosk mode prevents your staff from accessing other apps or settings, keeping your device secure while allowing feedback resolution.",
-            bullets: ["App lockdown", "Auto-reset timer", "Tamper protection"],
-            // image: { src: "/img/mock-security.png", alt: "Security features" },
-          },
-        ]}
-      />
-
-
-      <FeatureGrid
-        eyebrow="Kiosk Benefits"
-        eyebrowColour='text-orange-600'
-        title="Why businesses choose kiosk mode"
-        description="Dedicated feedback stations increase response rates and provide a professional way to gather customer insights in high-traffic areas."
-        gradientDirection="bg-gradient-to-b"
-        backgroundGradient="from-white to-orange-50"
-        dottedBackground={true}
-        orbGlow
-        cols={{ base: 1, sm: 2, md: 3, lg: 3 }}
-        items={[
-          {
-            icon: <Tablet className="w-6 h-6 text-orange-600" />,
-            title: "Universal compatibility",
-            description:
-              "Works with any iPad, Android tablet, or touch screen device you already own - no special hardware needed.",
-          },
-          {
-            icon: <Touchpad className="w-6 h-6 text-orange-600" />,
-            title: "Touch-optimized interface",
-            description:
-              "Large buttons and touch-friendly design makes it easy for customers of all ages to leave feedback.",
-          },
-          {
-            icon: <Wifi className="w-6 h-6 text-orange-600" />,
-            title: "Works offline",
-            description:
-              "Feedback is stored locally when internet is unavailable and syncs automatically when connection returns.",
-          },
-          {
-            icon: <Lock className="w-6 h-6 text-orange-600" />,
-            title: "Secure kiosk mode",
-            description:
-              "Prevents access to other apps or settings while allowing customers to submit feedback freely.",
-          },
-          {
-            icon: <Palette className="w-6 h-6 text-orange-600" />,
-            title: "Complete customization",
-            description:
-              "Match your brand with custom colors, logos, fonts, and layouts that fit your business perfectly.",
-          },
-          {
-            icon: <Zap className="w-6 h-6 text-orange-600" />,
-            title: "Higher response rates",
-            description:
-              "Dedicated stations catch customers at the right moment, increasing feedback completion rates significantly.",
-          },
-        ]}
-        wavyBottom={true}
-      />
-
-      <FAQSection
-        eyebrow="Kiosk FAQ"
-        eyebrowColour='text-orange-600'
-        title="Everything you need to know"
-        description="If you have a different question, contact us and we'll help."
-        dottedBackground
-        orbGlow
-        wavyBottom={false}
-        backgroundGradient="from-white via-white to-orange-50"
-        gradientDirection="bg-gradient-to-b"
-        defaultOpenIndex={0}
-        faqs={[
-          { q: "What devices work with kiosk mode?", a: "Any iPad (iOS 12+) or Android tablet (Android 8+) works perfectly. We also support Windows tablets and touch screen computers." },
-          { q: "How secure is kiosk mode?", a: "Very secure - customers can only access the feedback form. The device is locked from other apps, settings, or web browsing." },
-          { q: "What if the internet goes down?", a: "Kiosks continue working offline, storing feedback locally. Data syncs automatically when internet returns - you'll never lose responses." },
-          { q: "Can I customise how the kiosk looks?", a: "Completely - customise colours, logos, fonts, button styles, and layout to match your brand perfectly." },
-        ]}
-      />
-
-      <CTA 
-        title="Turn any tablet into a professional feedback station" 
-        subtitle="Start your free trial and create branded kiosks that increase customer feedback participation."
-        buttonText="Book a Demo"
-        buttonLink="/demo"
-        gradientDirection="bg-gradient-to-r"
-        backgroundGradient="from-orange-50 via-white to-yellow-50"
-      />
-
+      <Hero />
+      <Problem />
+      <CommandCentre />
+      <HowItWorks />
+      <WhyOperators />
+      <Features />
+      <RealExample />
+      <Testimonial />
+      <FinalCTA />
 
       <Footer />
     </div>
   );
 };
 
-export default KioskModeProduct;
+export default KioskModePage;
