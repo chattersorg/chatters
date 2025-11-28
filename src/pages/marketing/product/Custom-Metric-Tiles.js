@@ -4,14 +4,14 @@ import { Helmet } from 'react-helmet';
 import {
   ArrowRight,
   Star,
-  LineChart,
-  PieChart,
-  Award,
+  LayoutDashboard,
+  Building2,
+  Users,
+  Layers,
   TrendingUp,
-  Download,
   Check,
-  Calendar,
-  BarChart3
+  Target,
+  Sliders
 } from 'lucide-react';
 import Navbar from '../../../components/marketing/layout/Navbar';
 import Footer from '../../../components/marketing/layout/Footer';
@@ -24,15 +24,15 @@ const Hero = () => {
         <div className="grid lg:grid-cols-2 gap-12 lg:gap-16 items-center">
           <div className="order-1 lg:order-1">
             <p className="text-sm font-semibold uppercase tracking-wide text-[#4E74FF] mb-4">
-              Business Intelligence
+              Custom Metric Tiles
             </p>
 
             <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-gray-900 leading-tight mb-6">
-              Turn Service Data Into Strategic Decisions
+              Build the Dashboard That Matches How You Operate
             </h1>
 
             <p className="text-xl text-gray-600 mb-8 leading-relaxed">
-              Business Intelligence gives operators historical trends, comparative insights, and long-term performance patterns — ideal for planning, reporting, and leadership decisions.
+              Custom Metric Tiles let you track the metrics that matter most to your venues — from service speed and cleanliness to food accuracy and guest satisfaction.
             </p>
 
             <div className="flex flex-col sm:flex-row gap-4">
@@ -63,8 +63,8 @@ const Hero = () => {
                   </div>
                 </div>
                 <img
-                  src="https://placehold.co/550x400/e2e8f0/475569?text=BI+Dashboard+View"
-                  alt="Business Intelligence dashboard"
+                  src="https://placehold.co/550x400/e2e8f0/475569?text=Custom+Metric+Tiles"
+                  alt="Custom metric tiles dashboard"
                   className="w-full rounded-lg"
                 />
               </div>
@@ -79,11 +79,11 @@ const Hero = () => {
 // SECTION 2 — THE PROBLEM
 const Problem = () => {
   const items = [
-    'How has service changed over the last month?',
-    'Which improvements made a difference?',
-    'Are issues seasonal or constant?',
-    'Which venues are improving fastest?',
-    'Where should training budget go?',
+    'A pub focuses on ambience',
+    'A hotel bar cares about service speed',
+    'A restaurant cares about food accuracy',
+    'A food hall cares about table turnover',
+    'Groups care about consistency',
   ];
 
   return (
@@ -91,12 +91,12 @@ const Problem = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="max-w-4xl mx-auto text-center">
           <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-white mb-8">
-            The Problem: Most Decisions Are Based on Snapshots, Not Trends
+            The Problem: Every Venue Operates Differently
           </h2>
 
           <div className="text-xl text-slate-300 space-y-6">
             <p>
-              Daily service feedback is useful. But strategy requires time:
+              Most dashboards assume every venue works the same way. But:
             </p>
 
             <ul className="space-y-2 text-left max-w-md mx-auto">
@@ -109,11 +109,11 @@ const Problem = () => {
             </ul>
 
             <p className="text-white font-semibold text-2xl pt-4">
-              Without long-term analysis, decisions rely on instinct — not truth.
+              One-size-fits-all dashboards don't work.
             </p>
 
             <p>
-              Business Intelligence provides the bigger picture.
+              Custom Metric Tiles let you build dashboards that reflect your real-world priorities.
             </p>
           </div>
         </div>
@@ -122,33 +122,33 @@ const Problem = () => {
   );
 };
 
-// SECTION 3 — WHAT IT REVEALS
-const WhatItReveals = () => {
+// SECTION 3 — WHAT YOU CAN TRACK
+const WhatYouTrack = () => {
   const features = [
     {
-      icon: Calendar,
-      title: 'Month-to-month performance changes',
-      description: 'Understand long-term improvements or declines.'
+      icon: Target,
+      title: 'Your most important metrics',
+      description: 'Speed, friendliness, accuracy, cleanliness — whatever drives your venue.'
     },
     {
-      icon: PieChart,
-      title: 'Category performance over time',
-      description: 'Service, food, drinks, ambience — historically tracked.'
+      icon: Building2,
+      title: 'Venue-specific priorities',
+      description: "Each site can focus on what's relevant to them."
     },
     {
-      icon: BarChart3,
-      title: 'Menu and product trends',
-      description: 'See which items consistently cause issues.'
+      icon: Layers,
+      title: 'Service category breakdowns',
+      description: 'Food, drink, service, ambience, experience.'
     },
     {
       icon: TrendingUp,
-      title: 'Staff-level improvement (over weeks)',
-      description: 'Track development, not daily fluctuation.'
+      title: 'Real-time trend tracking',
+      description: 'See improvement (or decline) instantly.'
     },
     {
-      icon: Award,
-      title: 'Venue benchmarking (historical)',
-      description: 'Rank locations based on long-term data.'
+      icon: Users,
+      title: 'Multi-venue metric alignment',
+      description: 'Create shared standards across your group.'
     },
   ];
 
@@ -158,7 +158,7 @@ const WhatItReveals = () => {
         <div className="max-w-4xl mx-auto">
           <div className="text-center mb-12">
             <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-gray-900 mb-4">
-              What Business Intelligence Reveals
+              What Custom Metrics Let You Track
             </h2>
           </div>
 
@@ -189,28 +189,28 @@ const HowItWorks = () => {
   const steps = [
     {
       number: '1',
-      title: 'Feedback is aggregated across weeks and months',
-      description: 'You see the story over time.',
+      title: 'Choose the metrics that matter',
+      description: 'Select from proven hospitality measures or create your own.',
     },
     {
       number: '2',
-      title: 'Data is segmented automatically',
-      description: 'By category, venue, hour, shift, or week.',
+      title: 'Build your dashboard visually',
+      description: 'Drag tiles to create layouts per venue or group.',
     },
     {
       number: '3',
-      title: 'Trends visualised clearly',
-      description: 'Graphs, charts, and summaries.',
+      title: 'Metrics update live',
+      description: 'Tiles refresh instantly with new guest feedback.',
     },
     {
       number: '4',
-      title: 'Insights used for planning',
-      description: 'Training, staffing, menu design, budgets.',
+      title: 'Compare across venues',
+      description: 'Spot strengths and weaknesses in seconds.',
     },
     {
       number: '5',
-      title: 'Strategic improvements trackable',
-      description: 'Measure if initiatives are working.',
+      title: 'Adjust anytime',
+      description: 'Season, menu changes, events, new management — everything adapts.',
     },
   ];
 
@@ -254,24 +254,24 @@ const HowItWorks = () => {
 const WhyOperators = () => {
   const benefits = [
     {
-      title: 'Better forecasting',
-      description: 'Plan staff, training, and resources with confidence.',
+      title: 'Make performance clear and actionable',
+      description: 'Teams understand exactly what success looks like.',
     },
     {
-      title: 'Smarter menu decisions',
-      description: 'Identify dishes that consistently cause issues.',
+      title: 'Empower managers',
+      description: 'Dashboards that match their operation.',
     },
     {
-      title: 'Stronger leadership conversations',
-      description: 'Show real improvement — or decline — with evidence.',
+      title: 'Remove noise',
+      description: 'Focus on what matters — nothing more.',
     },
     {
-      title: 'Better investment decisions',
-      description: 'Spend time and budget where impact will be highest.',
+      title: 'Excellent for multi-venue rollout',
+      description: 'Consistent standards across every site.',
     },
     {
-      title: 'Clear performance narrative',
-      description: 'Easy to share with owners, boards, and senior staff.',
+      title: 'Turn metrics into meaningful discussions',
+      description: 'Perfect for weekly meetings.',
     },
   ];
 
@@ -280,7 +280,7 @@ const WhyOperators = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-16">
           <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-gray-900">
-            Why Operators Depend on Business Intelligence
+            Why Operators Depend on Custom Metric Tiles
           </h2>
         </div>
 
@@ -309,29 +309,29 @@ const WhyOperators = () => {
 const Features = () => {
   const features = [
     {
-      icon: LineChart,
-      title: 'Multi-Week Trend Graphs',
-      description: 'Month-by-month shifts.',
+      icon: LayoutDashboard,
+      title: 'Live Metric Tiles',
+      description: 'Visual clarity for service, speed, friendliness, accuracy, and more.',
     },
     {
-      icon: PieChart,
-      title: 'Category Impact Analysis',
-      description: 'Which areas most affect ratings.',
+      icon: Building2,
+      title: 'Venue-Specific Dashboards',
+      description: "Each site sees what's relevant to them.",
     },
     {
-      icon: Award,
-      title: 'Venue Benchmark Reports',
-      description: 'Rank venues over time.',
+      icon: Users,
+      title: 'Group Leadership Mode',
+      description: 'Compare metrics across multiple venues.',
+    },
+    {
+      icon: Layers,
+      title: 'Category Breakdown Filters',
+      description: 'Food, service, drinks, ambience, overall.',
     },
     {
       icon: TrendingUp,
-      title: 'Staff Improvement Tracking',
-      description: 'Identify long-term development.',
-    },
-    {
-      icon: Download,
-      title: 'Exportable PDFs/CSVs',
-      description: 'Perfect for leadership meetings.',
+      title: 'Trend Direction Arrows',
+      description: 'Instant clarity on improvement or decline.',
     },
   ];
 
@@ -340,7 +340,7 @@ const Features = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-16">
           <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-gray-900">
-            Built for Strategic Decision-Making
+            Built for Hospitality Performance
           </h2>
         </div>
 
@@ -377,34 +377,42 @@ const InAction = () => {
         <div className="max-w-3xl mx-auto">
           <div className="text-center mb-12">
             <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-gray-900">
-              Business Intelligence in Action
+              Custom Metrics in Action
             </h2>
           </div>
 
           <div className="space-y-8">
             <p className="text-lg text-gray-700">
-              A regional operations director reviews quarterly BI data:
+              A restaurant group launches a new seasonal menu.
+            </p>
+
+            <p className="text-lg text-gray-700">
+              They add metric tiles for:
             </p>
 
             <div className="bg-gray-50 border border-gray-200 rounded-xl p-6 space-y-3">
-              <p className="text-gray-700">• Drink speed slowed steadily across 3 months</p>
-              <p className="text-gray-700">• Food accuracy improved after a menu refresh</p>
-              <p className="text-gray-700">• Service friendliness dipped during winter weekends</p>
-              <p className="text-gray-700">• One venue outperformed all others for attentiveness</p>
+              <p className="text-gray-700">• Food accuracy</p>
+              <p className="text-gray-700">• Serving temperature</p>
+              <p className="text-gray-700">• Wait time</p>
+              <p className="text-gray-700">• Taste satisfaction</p>
             </div>
 
             <p className="text-lg text-gray-700">
-              She:
+              Within days, the tiles show:
             </p>
 
             <div className="bg-gray-50 border border-gray-200 rounded-xl p-6 space-y-3">
-              <p className="text-gray-700">• Schedules a bartending refresher</p>
-              <p className="text-gray-700">• Replicates the successful venue's training</p>
-              <p className="text-gray-700">• Adjusts winter staffing patterns</p>
+              <p className="text-gray-700">• One venue slow on mains</p>
+              <p className="text-gray-700">• One venue consistently praised for flavour</p>
+              <p className="text-gray-700">• One venue inconsistent during peak hours</p>
             </div>
 
             <p className="text-lg text-gray-700">
-              A month later:
+              Teams adjust. Performance stabilises.
+            </p>
+
+            <p className="text-lg text-gray-700">
+              A new review appears:
             </p>
 
             <div className="bg-blue-50 border border-green-200 rounded-xl p-6">
@@ -415,7 +423,7 @@ const InAction = () => {
               </div>
 
               <p className="text-lg text-gray-800 italic">
-                "Service was exceptional this time — the team were on it from start to finish."
+                "Seasonal menu was amazing — everything came out hot and fast. Really impressed."
               </p>
             </div>
           </div>
@@ -432,16 +440,16 @@ const Testimonial = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="max-w-3xl mx-auto text-center">
           <blockquote className="text-2xl sm:text-3xl text-gray-700 italic mb-8 leading-relaxed">
-            "This is the data we use in board meetings now. It's improved decision-making across the group."
+            "We finally have dashboards that match how our venues actually operate. It's made team performance conversations so much easier."
           </blockquote>
 
           <div className="flex items-center justify-center gap-4">
             <div className="w-14 h-14 bg-gray-300 rounded-full flex items-center justify-center">
-              <span className="text-gray-600 font-semibold text-xl">H</span>
+              <span className="text-gray-600 font-semibold text-xl">S</span>
             </div>
             <div className="text-left">
-              <p className="font-bold text-gray-900">Hannah Patel</p>
-              <p className="text-gray-600">Head of Operations, Northfield Hospitality Group</p>
+              <p className="font-bold text-gray-900">Sarah Kent</p>
+              <p className="text-gray-600">Operations Director, The Urban Fork Group</p>
             </div>
           </div>
         </div>
@@ -457,7 +465,7 @@ const FinalCTA = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="max-w-4xl mx-auto text-center">
           <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-white mb-10">
-            See the bigger picture. Make smarter decisions.
+            Track what matters. Improve what counts.
           </h2>
 
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
@@ -482,30 +490,30 @@ const FinalCTA = () => {
 };
 
 // MAIN PAGE COMPONENT
-const BusinessIntelligencePage = () => {
+const CustomMetricTilesPage = () => {
   return (
     <div className="min-h-screen bg-white pt-16">
       <Helmet>
-        <title>Business Intelligence | Strategic Service Insights | Chatters</title>
+        <title>Custom Metric Tiles | Build Your Own Dashboard | Chatters</title>
         <meta
           name="description"
-          content="Turn service data into strategic decisions. Business Intelligence gives operators historical trends, comparative insights, and long-term performance patterns."
+          content="Build the dashboard that matches how you operate. Custom Metric Tiles let you track the metrics that matter most to your venues — from service speed to guest satisfaction."
         />
         <meta
           name="keywords"
-          content="business intelligence, hospitality BI, service analytics, performance trends, strategic insights, hospitality reporting"
+          content="custom metrics, dashboard tiles, hospitality metrics, venue performance, custom dashboard, performance tracking"
         />
-        <meta property="og:title" content="Business Intelligence | Chatters" />
-        <meta property="og:description" content="Turn service data into strategic decisions. Historical trends and long-term insights." />
+        <meta property="og:title" content="Custom Metric Tiles | Chatters" />
+        <meta property="og:description" content="Build the dashboard that matches how you operate. Track what matters most." />
         <meta property="og:type" content="website" />
-        <link rel="canonical" href="https://getchatters.com/analytics/business-intelligence" />
+        <link rel="canonical" href="https://getchatters.com/multi-venue/metrics" />
       </Helmet>
 
       <Navbar />
 
       <Hero />
       <Problem />
-      <WhatItReveals />
+      <WhatYouTrack />
       <HowItWorks />
       <WhyOperators />
       <Features />
@@ -518,4 +526,4 @@ const BusinessIntelligencePage = () => {
   );
 };
 
-export default BusinessIntelligencePage;
+export default CustomMetricTilesPage;

@@ -4,15 +4,15 @@ import { Helmet } from 'react-helmet';
 import {
   ArrowRight,
   Star,
-  Building2,
-  BarChart3,
-  TrendingUp,
-  GitCompare,
-  Check,
-  Map,
-  Target,
+  Grid3X3,
+  PieChart,
   LineChart,
-  Layers
+  Users,
+  Download,
+  Check,
+  TrendingUp,
+  Building2,
+  BarChart3
 } from 'lucide-react';
 import Navbar from '../../../components/marketing/layout/Navbar';
 import Footer from '../../../components/marketing/layout/Footer';
@@ -29,11 +29,11 @@ const Hero = () => {
             </p>
 
             <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-gray-900 leading-tight mb-6">
-              Compare Every Venue. Spot Every Trend.
+              Turn Group Data Into Group Decisions
             </h1>
 
             <p className="text-xl text-gray-600 mb-8 leading-relaxed">
-              See how each location is performing side-by-side — ratings, response times, and guest sentiment across your entire portfolio.
+              Multi-Venue Analytics reveals cross-location patterns, performance trends, and operational insights — helping hospitality groups scale consistency and excellence.
             </p>
 
             <div className="flex flex-col sm:flex-row gap-4">
@@ -65,7 +65,7 @@ const Hero = () => {
                 </div>
                 <img
                   src="https://placehold.co/550x400/e2e8f0/475569?text=Multi-Venue+Analytics"
-                  alt="Multi-venue analytics dashboard comparing locations"
+                  alt="Multi-venue analytics dashboard"
                   className="w-full rounded-lg"
                 />
               </div>
@@ -79,27 +79,41 @@ const Hero = () => {
 
 // SECTION 2 — THE PROBLEM
 const Problem = () => {
+  const items = [
+    'Each location',
+    "Each manager's phone",
+    'Each shift',
+    'Each spreadsheet',
+  ];
+
   return (
     <section className="bg-slate-900 py-20 lg:py-24">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="max-w-4xl mx-auto text-center">
           <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-white mb-8">
-            Running Multiple Sites Without Visibility Is Risky
+            The Problem: Venue Data Stays Siloed
           </h2>
 
           <div className="text-xl text-slate-300 space-y-6">
             <p>
-              When you operate more than one venue, it's easy for problems to hide.
-              <br />
-              One site might be struggling — but you won't know until it's too late.
-            </p>
-
-            <p className="text-white font-semibold text-2xl">
-              You need a bird's-eye view of every location, every day.
+              Individual venue feedback is useful. But patterns across multiple venues are powerful — and most operators never see them.
             </p>
 
             <p>
-              Multi-Venue Analytics gives you that — so you can spot issues, share best practices, and raise the bar everywhere.
+              Why? Because data stays trapped in:
+            </p>
+
+            <ul className="space-y-2 text-left max-w-md mx-auto">
+              {items.map((item, index) => (
+                <li key={index} className="flex items-center gap-3">
+                  <span className="text-slate-400">•</span>
+                  <span>{item}</span>
+                </li>
+              ))}
+            </ul>
+
+            <p className="text-white font-semibold text-2xl pt-4">
+              Multi-Venue Analytics connects the dots automatically — so you see the truth across your entire operation.
             </p>
           </div>
         </div>
@@ -108,14 +122,34 @@ const Problem = () => {
   );
 };
 
-// SECTION 3 — WHAT YOU GET
-const WhatYouGet = () => {
+// SECTION 3 — WHAT IT REVEALS
+const WhatItReveals = () => {
   const features = [
-    { icon: GitCompare, text: 'Side-by-side venue comparisons' },
-    { icon: TrendingUp, text: 'Performance trends per location' },
-    { icon: Star, text: 'Average ratings by venue' },
-    { icon: BarChart3, text: 'Response time benchmarks' },
-    { icon: Map, text: 'Regional and group-level views' },
+    {
+      icon: BarChart3,
+      title: 'Cross-venue comparisons',
+      description: 'Spot your highest and lowest performers instantly.'
+    },
+    {
+      icon: PieChart,
+      title: 'Category insight',
+      description: 'Service, food, drinks, ambience — by venue.'
+    },
+    {
+      icon: TrendingUp,
+      title: 'Trend behaviour over time',
+      description: 'See where performance is rising or slipping.'
+    },
+    {
+      icon: Users,
+      title: 'Regional & area leader visibility',
+      description: 'Give leadership the clarity they need.'
+    },
+    {
+      icon: Building2,
+      title: 'Group-wide performance drivers',
+      description: "Understand what's working — and replicate it."
+    },
   ];
 
   return (
@@ -124,30 +158,26 @@ const WhatYouGet = () => {
         <div className="max-w-4xl mx-auto">
           <div className="text-center mb-12">
             <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-gray-900 mb-4">
-              Your Entire Portfolio at a Glance
+              What Multi-Venue Analytics Reveals
             </h2>
-            <p className="text-lg text-gray-600">
-              See everything. Miss nothing.
-            </p>
           </div>
 
           <div className="space-y-4 mb-12">
             {features.map((item, index) => (
               <div
                 key={index}
-                className="flex items-center gap-4 p-4 bg-gray-50 rounded-xl"
+                className="flex items-start gap-4 p-4 bg-gray-50 rounded-xl"
               >
                 <div className="flex-shrink-0 w-12 h-12 bg-[#4E74FF]/10 rounded-xl flex items-center justify-center">
                   <item.icon className="w-6 h-6 text-[#4E74FF]" />
                 </div>
-                <span className="text-lg text-gray-900 font-medium">{item.text}</span>
+                <div>
+                  <span className="text-lg text-gray-900 font-medium">{item.title}</span>
+                  <p className="text-gray-600">{item.description}</p>
+                </div>
               </div>
             ))}
           </div>
-
-          <p className="text-center text-xl font-bold text-gray-900">
-            One dashboard. Every venue. Complete clarity.
-          </p>
         </div>
       </div>
     </section>
@@ -159,28 +189,28 @@ const HowItWorks = () => {
   const steps = [
     {
       number: '1',
-      title: 'Connect all your venues',
-      description: 'Each location feeds into one central dashboard.',
+      title: 'Each venue collects feedback normally',
+      description: 'No extra work required.',
     },
     {
       number: '2',
-      title: 'View the portfolio summary',
-      description: 'See all venues ranked by key metrics.',
+      title: 'Chatters pulls everything into a group-level view',
+      description: 'One dashboard, complete clarity.',
     },
     {
       number: '3',
-      title: 'Drill into any location',
-      description: 'Click through for venue-specific detail.',
+      title: 'Trends are highlighted automatically',
+      description: 'No manual spreadsheet work.',
     },
     {
       number: '4',
-      title: 'Compare side by side',
-      description: 'Select venues to see performance differences.',
+      title: 'Teams take data-driven action',
+      description: 'Support weak venues, scale strong ones.',
     },
     {
       number: '5',
-      title: 'Spot trends and outliers',
-      description: 'Identify which sites are improving — and which need help.',
+      title: 'Operators make better decisions',
+      description: 'Smart insights → smart management.',
     },
   ];
 
@@ -220,28 +250,28 @@ const HowItWorks = () => {
   );
 };
 
-// SECTION 5 — WHY IT MATTERS
-const WhyItMatters = () => {
+// SECTION 5 — WHY OPERATORS DEPEND ON IT
+const WhyOperators = () => {
   const benefits = [
     {
-      title: 'Catch problems early',
-      description: "See when a venue's ratings start to slip.",
+      title: 'Scale best practices',
+      description: 'What works in one venue can work across all.',
     },
     {
-      title: 'Share best practices',
-      description: "Learn what's working at your top sites.",
+      title: 'Fix recurring issues quickly',
+      description: 'Spot patterns early.',
     },
     {
-      title: 'Allocate resources smarter',
-      description: "Focus support where it's needed most.",
+      title: 'Improve consistency',
+      description: 'Guests expect the same standard everywhere.',
     },
     {
-      title: 'Drive healthy competition',
-      description: 'Let venues see how they stack up.',
+      title: 'Make informed staffing decisions',
+      description: 'Data → smarter resource allocation.',
     },
     {
-      title: 'Report to stakeholders',
-      description: 'Show performance across the portfolio with confidence.',
+      title: 'Strengthen leadership',
+      description: 'Give managers clarity and confidence.',
     },
   ];
 
@@ -250,7 +280,7 @@ const WhyItMatters = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-16">
           <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-gray-900">
-            Why Multi-Venue Analytics Matters
+            Why Operators Depend on Multi-Venue Analytics
           </h2>
         </div>
 
@@ -279,24 +309,29 @@ const WhyItMatters = () => {
 const Features = () => {
   const features = [
     {
-      icon: Layers,
-      title: 'Portfolio Overview',
-      description: 'All venues ranked on one screen.',
+      icon: Grid3X3,
+      title: 'Cross-Venue Comparison Grid',
+      description: 'Everything side-by-side.',
+    },
+    {
+      icon: PieChart,
+      title: 'Category Analysis',
+      description: 'Know which venues excel in food, service, drinks, ambience.',
     },
     {
       icon: LineChart,
-      title: 'Trend Charts',
-      description: 'See performance changes over time.',
+      title: 'Performance Trends',
+      description: 'Visualise improvement or decline.',
     },
     {
-      icon: Target,
-      title: 'Benchmarking',
-      description: 'Compare against group averages.',
+      icon: Users,
+      title: 'Regional & Area Manager Modes',
+      description: 'Perfect for portfolio oversight.',
     },
     {
-      icon: Building2,
-      title: 'Regional Grouping',
-      description: 'Organise by region, brand, or manager.',
+      icon: Download,
+      title: 'Exportable Reports',
+      description: 'Ideal for leadership meetings.',
     },
   ];
 
@@ -305,11 +340,11 @@ const Features = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-16">
           <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-gray-900">
-            Built for Multi-Site Operators
+            Features Built for Group-Level Insight
           </h2>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 max-w-5xl mx-auto">
           {features.map((feature, index) => (
             <div
               key={index}
@@ -334,55 +369,58 @@ const Features = () => {
   );
 };
 
-// SECTION 7 — REAL EXAMPLE
-const RealExample = () => {
+// SECTION 7 — IN ACTION
+const InAction = () => {
   return (
     <section className="bg-white py-20 lg:py-24">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="max-w-3xl mx-auto">
           <div className="text-center mb-12">
             <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-gray-900">
-              Portfolio Intelligence in Action
+              Multi-Venue Analytics in Action
             </h2>
           </div>
 
           <div className="space-y-8">
             <p className="text-lg text-gray-700">
-              An operations director opens the Multi-Venue Analytics dashboard on Monday morning. Eight venues are displayed in a ranked list:
+              A hospitality group sees inconsistent ratings across locations.
+            </p>
+
+            <p className="text-lg text-gray-700">
+              Analytics reveals:
             </p>
 
             <div className="bg-gray-50 border border-gray-200 rounded-xl p-6 space-y-3">
-              <p className="text-gray-700">• <span className="font-semibold">The Grove</span> — 4.8 avg rating, 1:45 response time</p>
-              <p className="text-gray-700">• <span className="font-semibold">The Waterside</span> — 4.6 avg rating, 2:10 response time</p>
-              <p className="text-gray-700">• <span className="font-semibold">Market Square</span> — 4.5 avg rating, 2:30 response time</p>
-              <p className="text-gray-700">• ...</p>
-              <p className="text-red-600">• <span className="font-semibold">The Old Mill</span> — 3.9 avg rating, 4:15 response time ⚠️</p>
+              <p className="text-gray-700">• Two venues with slow service during lunch</p>
+              <p className="text-gray-700">• One venue with standout friendliness</p>
+              <p className="text-gray-700">• One venue with repeated food accuracy issues</p>
             </div>
 
             <p className="text-lg text-gray-700">
-              The Old Mill stands out. The director drills in and sees response times have doubled over two weeks. A call to the GM reveals a staffing gap on weekends.
+              The operator:
+            </p>
+
+            <div className="bg-gray-50 border border-gray-200 rounded-xl p-6 space-y-3">
+              <p className="text-gray-700">• Sends support to the slow venues</p>
+              <p className="text-gray-700">• Highlights the "friendly" venue as a model</p>
+              <p className="text-gray-700">• Works with the kitchen team on accuracy</p>
+            </div>
+
+            <p className="text-lg text-gray-700">
+              A guest later leaves:
             </p>
 
             <div className="bg-blue-50 border border-green-200 rounded-xl p-6">
-              <p className="text-gray-700 mb-4">
-                Two weeks later, after adding weekend cover:
-              </p>
-
               <div className="flex items-center gap-1 mb-3">
-                {[1, 2, 3, 4].map((star) => (
-                  <Star key={star} className="w-6 h-6 fill-yellow-400 text-yellow-400" />
+                {[1, 2, 3, 4, 5].map((star) => (
+                  <Star key={star} className="w-5 h-5 fill-yellow-400 text-yellow-400" />
                 ))}
-                <Star className="w-6 h-6 fill-yellow-400 text-yellow-400" />
               </div>
 
               <p className="text-lg text-gray-800 italic">
-                The Old Mill — 4.4 avg rating, 2:05 response time ✓
+                "Visited two branches — both excellent. Love how consistent they are."
               </p>
             </div>
-
-            <p className="text-xl font-bold text-gray-900 text-center">
-              That insight would have been invisible without cross-venue comparison.
-            </p>
           </div>
         </div>
       </div>
@@ -397,16 +435,16 @@ const Testimonial = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="max-w-3xl mx-auto text-center">
           <blockquote className="text-2xl sm:text-3xl text-gray-700 italic mb-8 leading-relaxed">
-            "Multi-Venue Analytics gives me the visibility I need to run 12 sites without surprises. I can see problems before they hit reviews."
+            "For the first time, we have a clear, reliable view across all our venues. It's transformed how we run the group."
           </blockquote>
 
           <div className="flex items-center justify-center gap-4">
             <div className="w-14 h-14 bg-gray-300 rounded-full flex items-center justify-center">
-              <span className="text-gray-600 font-semibold text-xl">J</span>
+              <span className="text-gray-600 font-semibold text-xl">H</span>
             </div>
             <div className="text-left">
-              <p className="font-bold text-gray-900">James Fletcher</p>
-              <p className="text-gray-600">COO, The Dining Collective</p>
+              <p className="font-bold text-gray-900">Hannah Patel</p>
+              <p className="text-gray-600">Head of Ops, Northfield Hospitality Group</p>
             </div>
           </div>
         </div>
@@ -422,7 +460,7 @@ const FinalCTA = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="max-w-4xl mx-auto text-center">
           <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-white mb-10">
-            One portfolio. One dashboard. Total visibility.
+            See the patterns. Make the changes. Scale what works.
           </h2>
 
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
@@ -451,30 +489,30 @@ const MultiVenueAnalyticsPage = () => {
   return (
     <div className="min-h-screen bg-white pt-16">
       <Helmet>
-        <title>Multi-Venue Analytics | Cross-Location Performance | Chatters</title>
+        <title>Multi-Venue Analytics | Cross-Location Performance Insights | Chatters</title>
         <meta
           name="description"
-          content="Compare every venue. Spot every trend. See how each location is performing side-by-side with ratings, response times, and guest sentiment across your portfolio."
+          content="Turn group data into group decisions. Multi-Venue Analytics reveals cross-location patterns, performance trends, and operational insights for hospitality groups."
         />
         <meta
           name="keywords"
-          content="multi-venue analytics, multi-location reporting, hospitality portfolio, cross-venue comparison, restaurant group analytics, hotel chain performance"
+          content="multi-venue analytics, cross-location analytics, hospitality group insights, restaurant chain analytics, performance patterns, group reporting"
         />
         <meta property="og:title" content="Multi-Venue Analytics | Chatters" />
-        <meta property="og:description" content="Compare every venue. Spot every trend. Cross-location performance analytics." />
+        <meta property="og:description" content="Turn group data into group decisions. Cross-location patterns and performance insights." />
         <meta property="og:type" content="website" />
-        <link rel="canonical" href="https://getchatters.com/product/multi-venue-analytics" />
+        <link rel="canonical" href="https://getchatters.com/multi-venue/analytics" />
       </Helmet>
 
       <Navbar />
 
       <Hero />
       <Problem />
-      <WhatYouGet />
+      <WhatItReveals />
       <HowItWorks />
-      <WhyItMatters />
+      <WhyOperators />
       <Features />
-      <RealExample />
+      <InAction />
       <Testimonial />
       <FinalCTA />
 

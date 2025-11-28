@@ -174,7 +174,7 @@ const HowItWorks = () => {
     {
       number: '4',
       title: 'Filter by shift, role, or location',
-      description: 'See who's winning on Friday nights, at brunch, or across all venues.',
+      description: "See who's winning on Friday nights, at brunch, or across all venues.",
     },
     {
       number: '5',
@@ -224,7 +224,7 @@ const WhyOperators = () => {
   const benefits = [
     {
       title: 'Visibility without micromanaging',
-      description: 'Know who's performing — without hovering.',
+      description: "Know who's performing — without hovering.",
     },
     {
       title: 'Fair recognition based on data',
@@ -300,7 +300,7 @@ const Features = () => {
     {
       icon: TrendingUp,
       title: 'Performance Trends',
-      description: 'Track who's improving — and who might need support.',
+      description: "Track who's improving — and who might need support.",
     },
   ];
 
