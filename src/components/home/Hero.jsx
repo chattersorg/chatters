@@ -50,12 +50,23 @@ const Hero = () => {
           {/* Right Column - Visuals */}
           <div className="order-1 lg:order-2 relative">
             <div className="relative">
-              {/* Main dashboard image */}
-              <img
-                src="/img/homepage/homepage-hero-2.png"
-                alt="Chatters dashboard showing real-time guest feedback alerts"
-                className="w-full rounded-2xl shadow-2xl"
-              />
+              {/* MacBook-style mockup */}
+              <div className="bg-gray-900 rounded-xl p-2 pb-3 shadow-2xl">
+                {/* Browser top bar */}
+                <div className="flex items-center gap-2 px-2 pb-2">
+                  <div className="flex gap-1.5">
+                    <div className="w-3 h-3 rounded-full bg-red-500"></div>
+                    <div className="w-3 h-3 rounded-full bg-yellow-500"></div>
+                    <div className="w-3 h-3 rounded-full bg-green-500"></div>
+                  </div>
+                </div>
+                {/* Screen content */}
+                <img
+                  src="/img/homepage/homepage-hero-2.png"
+                  alt="Chatters dashboard showing real-time guest feedback alerts"
+                  className="w-full rounded-lg"
+                />
+              </div>
 
               {/* Floating phone mockup */}
               <div className="absolute -bottom-6 -left-6 w-40 sm:w-48">
