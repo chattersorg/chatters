@@ -4,14 +4,12 @@ import { Helmet } from 'react-helmet';
 import {
   ArrowRight,
   Star,
-  ThumbsUp,
-  ExternalLink,
-  TrendingUp,
-  MessageSquare,
   Check,
-  Filter,
-  Sparkles,
-  Target
+  ExternalLink,
+  Zap,
+  Palette,
+  TrendingUp,
+  Building2
 } from 'lucide-react';
 import Navbar from '../../../components/marketing/layout/Navbar';
 import Footer from '../../../components/marketing/layout/Footer';
@@ -28,11 +26,11 @@ const Hero = () => {
             </p>
 
             <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-gray-900 leading-tight mb-6">
-              Turn Happy Guests Into 5-Star Reviews
+              Turn Happy Guests Into Public 5-Star Reviews
             </h1>
 
             <p className="text-xl text-gray-600 mb-8 leading-relaxed">
-              Automatically prompt satisfied guests to leave reviews on Google and TripAdvisor — right when they're most likely to do it.
+              Chatters guides satisfied guests to Google and TripAdvisor at the perfect moment — boosting your ratings with zero extra work for your team.
             </p>
 
             <div className="flex flex-col sm:flex-row gap-4">
@@ -59,7 +57,7 @@ const Hero = () => {
                   <div className="flex gap-1.5">
                     <div className="w-3 h-3 rounded-full bg-red-500"></div>
                     <div className="w-3 h-3 rounded-full bg-yellow-500"></div>
-                    <div className="w-3 h-3 rounded-full bg-blue-500"></div>
+                    <div className="w-3 h-3 rounded-full bg-green-500"></div>
                   </div>
                 </div>
                 <img
@@ -76,45 +74,73 @@ const Hero = () => {
   );
 };
 
-// SECTION 2 — THE PROBLEM
+// SECTION 2 — THE PROBLEM (Dark Background)
 const Problem = () => {
+  const problems = [
+    'Great experiences go unnoticed',
+    'Negative reviews overshadow positives',
+    "Online ratings don't reflect reality",
+    'New customers trust an unfair impression',
+  ];
+
   return (
     <section className="bg-slate-900 py-20 lg:py-24">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="max-w-4xl mx-auto text-center">
           <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-white mb-8">
-            Happy Guests Rarely Leave Reviews
+            The Problem: Happy Guests Rarely Leave Reviews
           </h2>
 
-          <div className="text-xl text-slate-300 space-y-6">
+          <div className="text-xl text-slate-300 space-y-6 mb-10">
             <p>
-              Most guests who love their experience never think to leave a review.
-              <br />
-              But unhappy guests? They can't wait to share their frustration.
+              Unhappy guests post reviews. Happy guests usually don't.
             </p>
-
-            <p className="text-white font-semibold text-2xl">
-              Only 1 in 10 satisfied customers leave reviews unprompted.
-            </p>
-
             <p>
-              Review Boosting flips the script — asking happy guests at the perfect moment.
+              That imbalance hurts hospitality venues:
             </p>
           </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 max-w-2xl mx-auto mb-10">
+            {problems.map((problem, index) => (
+              <div key={index} className="flex items-center gap-3 text-left">
+                <div className="w-2 h-2 bg-red-400 rounded-full flex-shrink-0"></div>
+                <span className="text-slate-300">{problem}</span>
+              </div>
+            ))}
+          </div>
+
+          <p className="text-xl text-white font-semibold">
+            Chatters fixes this by capturing happy moments in the moment — and turning them into public 5-star reviews.
+          </p>
         </div>
       </div>
     </section>
   );
 };
 
-// SECTION 3 — HOW IT WORKS
-const HowItWorksSection = () => {
+// SECTION 3 — HOW REVIEW BOOSTING WORKS
+const HowItWorks = () => {
   const features = [
-    { icon: MessageSquare, text: 'Guest submits feedback via QR code' },
-    { icon: Filter, text: 'Chatters identifies high ratings (4-5 stars)' },
-    { icon: ThumbsUp, text: 'Happy guests see a "Share your experience" prompt' },
-    { icon: ExternalLink, text: 'One tap takes them to Google or TripAdvisor' },
-    { icon: Star, text: 'Your online reputation grows automatically' },
+    {
+      title: 'Identify satisfied guests',
+      description: 'Triggered automatically when guests leave a 4 or 5-star rating.',
+    },
+    {
+      title: 'Direct them to Google or TripAdvisor',
+      description: "Sent at the exact moment they're most likely to leave a review.",
+    },
+    {
+      title: 'Zero friction',
+      description: 'One tap, right from the thank-you screen.',
+    },
+    {
+      title: 'Fully automated for your team',
+      description: 'No staff involvement. No manual follow-ups.',
+    },
+    {
+      title: 'Timing is everything',
+      description: "Guests are prompted when they're happiest — right after a great experience.",
+    },
   ];
 
   return (
@@ -122,31 +148,27 @@ const HowItWorksSection = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="max-w-4xl mx-auto">
           <div className="text-center mb-12">
-            <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-gray-900 mb-4">
+            <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-gray-900">
               How Review Boosting Works
             </h2>
-            <p className="text-lg text-gray-600">
-              A seamless flow that converts satisfaction into public praise.
-            </p>
           </div>
 
-          <div className="space-y-4 mb-12">
+          <div className="space-y-4">
             {features.map((item, index) => (
               <div
                 key={index}
-                className="flex items-center gap-4 p-4 bg-gray-50 rounded-xl"
+                className="flex items-start gap-4 p-5 bg-gray-50 rounded-xl"
               >
-                <div className="flex-shrink-0 w-12 h-12 bg-[#4E74FF]/10 rounded-xl flex items-center justify-center">
-                  <item.icon className="w-6 h-6 text-[#4E74FF]" />
+                <div className="flex-shrink-0 w-8 h-8 bg-[#4E74FF] rounded-full flex items-center justify-center mt-0.5">
+                  <Check className="w-5 h-5 text-white" />
                 </div>
-                <span className="text-lg text-gray-900 font-medium">{item.text}</span>
+                <div>
+                  <h3 className="text-lg font-bold text-gray-900 mb-1">{item.title}</h3>
+                  <p className="text-gray-600">{item.description}</p>
+                </div>
               </div>
             ))}
           </div>
-
-          <p className="text-center text-xl font-bold text-gray-900">
-            No awkward asks. No begging. Just smart timing.
-          </p>
         </div>
       </div>
     </section>
@@ -158,37 +180,37 @@ const TheFlow = () => {
   const steps = [
     {
       number: '1',
-      title: 'Guest scans QR code',
-      description: 'After their meal, they share their experience.',
+      title: 'Guest gives a high rating',
+      description: '4 or 5 stars triggers the review pathway.',
     },
     {
       number: '2',
-      title: 'Chatters checks the rating',
-      description: 'Only guests who rated 4 or 5 stars see the prompt.',
+      title: 'Chatters displays a branded review prompt',
+      description: 'Clear, friendly, no pressure.',
     },
     {
       number: '3',
-      title: 'Review prompt appears',
-      description: '"Loved your visit? Share it on Google!"',
+      title: 'Guest taps to open Google or TripAdvisor',
+      description: 'No searching or extra steps.',
     },
     {
       number: '4',
-      title: 'Guest taps through',
-      description: 'One click opens Google or TripAdvisor, pre-loaded.',
+      title: 'They leave a positive public review',
+      description: 'Captured at the ideal moment.',
     },
     {
       number: '5',
-      title: 'Review goes live',
-      description: 'Your rating improves. Your reputation grows.',
+      title: 'Your ratings grow naturally',
+      description: 'More reviews. Better averages. Stronger reputation.',
     },
   ];
 
   return (
-    <section className="bg-gray-50 py-20 lg:py-24">
+    <section className="bg-white py-20 lg:py-24">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-16">
           <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-gray-900">
-            The Guest Journey
+            The Flow
           </h2>
         </div>
 
@@ -219,37 +241,37 @@ const TheFlow = () => {
   );
 };
 
-// SECTION 5 — WHY IT WORKS
-const WhyItWorks = () => {
+// SECTION 5 — WHY OPERATORS DEPEND ON REVIEW BOOSTING
+const WhyOperators = () => {
   const benefits = [
     {
-      title: 'Perfect timing',
-      description: 'Guests are asked when their experience is fresh.',
+      title: 'More positive reviews',
+      description: 'Turn everyday happy moments into public social proof.',
     },
     {
-      title: 'Zero friction',
-      description: 'One tap to leave a review — no searching required.',
+      title: 'Higher average rating',
+      description: 'Reduce the impact of occasional negative reviews.',
     },
     {
-      title: 'Only happy guests',
-      description: 'Low ratings are filtered out automatically.',
+      title: 'Improved local ranking',
+      description: 'More Google reviews = more visibility.',
     },
     {
-      title: 'Platform choice',
-      description: 'Guests can choose Google, TripAdvisor, or both.',
+      title: 'Consistent reputation building',
+      description: 'Every day, without manual effort.',
     },
     {
-      title: 'Measurable results',
-      description: 'Track how many reviews each campaign generates.',
+      title: 'Supports your brand',
+      description: 'Your best moments become your online identity.',
     },
   ];
 
   return (
-    <section className="bg-white py-20 lg:py-24">
+    <section className="bg-gray-50 py-20 lg:py-24">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-16">
           <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-gray-900">
-            Why Review Boosting Works
+            Why Operators Depend on Review Boosting
           </h2>
         </div>
 
@@ -257,7 +279,7 @@ const WhyItWorks = () => {
           {benefits.map((benefit, index) => (
             <div
               key={index}
-              className="flex gap-4 items-start bg-gray-50 rounded-xl p-6"
+              className="flex gap-4 items-start bg-white rounded-xl p-6 border border-gray-200"
             >
               <div className="flex-shrink-0 w-8 h-8 bg-[#4E74FF] rounded-full flex items-center justify-center">
                 <Check className="w-5 h-5 text-white" />
@@ -274,41 +296,46 @@ const WhyItWorks = () => {
   );
 };
 
-// SECTION 6 — FEATURES
+// SECTION 6 — FEATURES BUILT FOR HOSPITALITY MARKETING
 const Features = () => {
   const features = [
     {
-      icon: Target,
-      title: 'Smart Targeting',
-      description: 'Only prompt guests who rated 4+ stars.',
+      icon: ExternalLink,
+      title: 'Automatic Review Routing',
+      description: 'Guide guests directly to Google or TripAdvisor.',
     },
     {
-      icon: Sparkles,
-      title: 'Custom Messages',
-      description: 'Personalise the prompt with your venue name.',
+      icon: Zap,
+      title: 'Smart Triggers',
+      description: 'Only show prompts to guests who rate highly.',
+    },
+    {
+      icon: Palette,
+      title: 'Branded Review Screens',
+      description: 'Your logo, your colours, your experience.',
     },
     {
       icon: TrendingUp,
-      title: 'Conversion Tracking',
-      description: 'See how many guests clicked through.',
+      title: 'Review Trend Insights',
+      description: 'Track improvement over time.',
     },
     {
-      icon: ExternalLink,
-      title: 'Multi-Platform',
-      description: 'Google, TripAdvisor, or your choice.',
+      icon: Building2,
+      title: 'Multi-Venue Reputation Management',
+      description: 'Compare ratings across locations.',
     },
   ];
 
   return (
-    <section className="bg-gray-50 py-20 lg:py-24">
+    <section className="bg-white py-20 lg:py-24">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-16">
           <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-gray-900">
-            Built for Results
+            Features Built for Hospitality Marketing
           </h2>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 max-w-5xl mx-auto">
           {features.map((feature, index) => (
             <div
               key={index}
@@ -333,51 +360,39 @@ const Features = () => {
   );
 };
 
-// SECTION 7 — REAL EXAMPLE
-const RealExample = () => {
+// SECTION 7 — REVIEW BOOSTING IN ACTION
+const InAction = () => {
   return (
     <section className="bg-white py-20 lg:py-24">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="max-w-3xl mx-auto">
           <div className="text-center mb-12">
             <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-gray-900">
-              Real Results
+              Review Boosting in Action
             </h2>
           </div>
 
           <div className="space-y-8">
             <p className="text-lg text-gray-700">
-              A family finishes Sunday lunch. Great food, friendly service. They scan the QR code and leave a 5-star rating with a lovely comment.
+              A guest leaves a 5-star rating after a great experience.
             </p>
 
-            <div className="bg-blue-50 border-l-4 border-blue-400 p-6 rounded-r-xl">
+            <p className="text-lg text-gray-700">
+              Chatters immediately displays a friendly prompt:
+            </p>
+
+            <div className="bg-gray-100 border-l-4 border-[#4E74FF] p-6 rounded-r-xl">
               <p className="text-lg text-gray-800 italic">
-                "Thank you for your feedback! Loved your visit? Share it on Google — it means the world to us."
+                "Thanks for your feedback! Would you mind leaving us a quick Google review?"
               </p>
             </div>
 
             <p className="text-lg text-gray-700">
-              They tap the button. Google opens. They paste their comment and hit submit.
+              They tap once. They post a 5-star review. It helps attract new guests — instantly.
             </p>
 
-            <div className="bg-blue-50 border border-green-200 rounded-xl p-6">
-              <p className="text-gray-700 mb-4">
-                The next day, a new review appears:
-              </p>
-
-              <div className="flex items-center gap-1 mb-3">
-                {[1, 2, 3, 4, 5].map((star) => (
-                  <Star key={star} className="w-6 h-6 fill-yellow-400 text-yellow-400" />
-                ))}
-              </div>
-
-              <p className="text-lg text-gray-800 italic">
-                "Brilliant Sunday roast — kids loved it. Staff were fantastic. Will be back!"
-              </p>
-            </div>
-
             <p className="text-xl font-bold text-gray-900 text-center">
-              That review would never have happened without the prompt.
+              That's the power of timing.
             </p>
           </div>
         </div>
@@ -389,20 +404,20 @@ const RealExample = () => {
 // SECTION 8 — TESTIMONIAL
 const Testimonial = () => {
   return (
-    <section className="bg-gray-50 py-20 lg:py-24">
+    <section className="bg-white py-20 lg:py-24">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="max-w-3xl mx-auto text-center">
           <blockquote className="text-2xl sm:text-3xl text-gray-700 italic mb-8 leading-relaxed">
-            "Our Google rating went from 4.2 to 4.6 in three months. Review Boosting made all the difference."
+            "Our Google reviews skyrocketed once we turned this on. We now get positive reviews every single night — automatically."
           </blockquote>
 
           <div className="flex items-center justify-center gap-4">
             <div className="w-14 h-14 bg-gray-300 rounded-full flex items-center justify-center">
-              <span className="text-gray-600 font-semibold text-xl">S</span>
+              <span className="text-gray-600 font-semibold text-xl">L</span>
             </div>
             <div className="text-left">
-              <p className="font-bold text-gray-900">Sophie Turner</p>
-              <p className="text-gray-600">Owner, The Meadow Kitchen</p>
+              <p className="font-bold text-gray-900">Liam Harris</p>
+              <p className="text-gray-600">Manager, The Brass & Oak</p>
             </div>
           </div>
         </div>
@@ -418,7 +433,7 @@ const FinalCTA = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="max-w-4xl mx-auto text-center">
           <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-white mb-10">
-            Your happy guests are your best marketing. Let them share it.
+            Every happy guest is a potential 5-star review. Capture them.
           </h2>
 
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
@@ -466,11 +481,11 @@ const ReviewBoostingPage = () => {
 
       <Hero />
       <Problem />
-      <HowItWorksSection />
+      <HowItWorks />
       <TheFlow />
-      <WhyItWorks />
+      <WhyOperators />
       <Features />
-      <RealExample />
+      <InAction />
       <Testimonial />
       <FinalCTA />
 
