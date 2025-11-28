@@ -52,7 +52,7 @@ const Hero = () => {
             <div className="relative">
               {/* Main dashboard image */}
               <img
-                src="https://placehold.co/600x450/e2e8f0/475569?text=Dashboard+Alert+Demo"
+                src="/img/homepage/homepage-hero-2.png"
                 alt="Chatters dashboard showing real-time guest feedback alerts"
                 className="w-full rounded-2xl shadow-2xl"
               />
@@ -62,7 +62,7 @@ const Hero = () => {
                 <img
                   src="/img/homepage/homepage-phone.png"
                   alt="Guest feedback form on mobile"
-                  className="w-full rounded-xl shadow-xl"
+                  className="w-full"
                 />
               </div>
 
