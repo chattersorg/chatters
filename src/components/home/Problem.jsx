@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { User, DoorOpen, Star, AlertTriangle, Clock, X, MessageSquareOff } from 'lucide-react';
+import { User, DoorOpen, Star, AlertTriangle, Clock, MessageSquareOff, Frown, VolumeX, LogOut, Smartphone } from 'lucide-react';
 
 // Animated guest journey showing the problem
 const GuestJourneyGraphic = () => {
@@ -13,12 +13,20 @@ const GuestJourneyGraphic = () => {
   }, []);
 
   const steps = [
-    { id: 0, label: 'Guest frustrated', emoji: '😤' },
-    { id: 1, label: 'Stays silent', emoji: '🤐' },
-    { id: 2, label: 'Leaves quietly', emoji: '🚶' },
-    { id: 3, label: 'Posts 1-star review', emoji: '⭐' },
-    { id: 4, label: 'Manager sees too late', emoji: '😱' },
+    { id: 0, label: 'Guest frustrated', icon: Frown },
+    { id: 1, label: 'Stays silent', icon: VolumeX },
+    { id: 2, label: 'Leaves quietly', icon: LogOut },
+    { id: 3, label: 'Posts 1-star review', icon: Smartphone },
+    { id: 4, label: 'Manager sees too late', icon: AlertTriangle },
   ];
+
+  // Icon for step indicator
+  const StepIcon = ({ step, isActive, isPast }) => {
+    const Icon = step.icon;
+    return (
+      <Icon className={`w-5 h-5 ${isActive ? 'text-white' : isPast ? 'text-white/70' : 'text-slate-400'}`} />
+    );
+  };
 
   // Visual components for each step
   const StepVisual = ({ index }) => {
@@ -39,8 +47,8 @@ const GuestJourneyGraphic = () => {
             </div>
             {/* Frustration indicator */}
             {isActive && (
-              <div className="absolute -top-12 left-1/2 -translate-x-1/2 text-xl animate-bounce">
-                😤
+              <div className="absolute -top-12 left-1/2 -translate-x-1/2 w-6 h-6 bg-red-500 rounded-full flex items-center justify-center animate-bounce">
+                <Frown className="w-4 h-4 text-white" />
               </div>
             )}
             {/* Food on table */}
@@ -56,11 +64,6 @@ const GuestJourneyGraphic = () => {
             }`}>
               <MessageSquareOff className={`w-6 h-6 ${isActive ? 'text-amber-400' : 'text-slate-500'}`} />
             </div>
-            {isActive && (
-              <div className="absolute -top-2 left-1/2 -translate-x-1/2 text-xl">
-                🤐
-              </div>
-            )}
           </div>
         );
 
@@ -126,15 +129,10 @@ const GuestJourneyGraphic = () => {
             </div>
             {/* Too late indicator */}
             {isActive && (
-              <>
-                <div className="absolute -top-5 left-1/2 -translate-x-1/2 bg-red-500 text-white text-[9px] px-1.5 py-0.5 rounded-full whitespace-nowrap flex items-center gap-0.5">
-                  <Clock className="w-2.5 h-2.5" />
-                  Too late!
-                </div>
-                <div className="absolute -bottom-5 left-1/2 -translate-x-1/2 text-lg">
-                  😱
-                </div>
-              </>
+              <div className="absolute -top-5 left-1/2 -translate-x-1/2 bg-red-500 text-white text-[9px] px-1.5 py-0.5 rounded-full whitespace-nowrap flex items-center gap-0.5">
+                <Clock className="w-2.5 h-2.5" />
+                Too late!
+              </div>
             )}
           </div>
         );
@@ -146,28 +144,22 @@ const GuestJourneyGraphic = () => {
 
   return (
     <div className="bg-slate-800/50 rounded-2xl p-6 lg:p-8 max-w-3xl mx-auto">
-      {/* Combined visual + indicators in one aligned grid */}
-      <div className="flex items-end justify-between max-w-2xl mx-auto">
+      {/* Visuals row - horizontally aligned */}
+      <div className="flex justify-between max-w-2xl mx-auto mb-6">
         {steps.map((step, index) => (
-          <div key={step.id} className="flex flex-col items-center relative">
-            {/* Visual above */}
-            <div className="h-24 flex items-end justify-center mb-4">
+          <div key={`visual-${step.id}`} className="flex-1 flex justify-center">
+            <div className="h-20 flex items-center justify-center">
               <StepVisual index={index} />
             </div>
+          </div>
+        ))}
+      </div>
 
-            {/* Connector arrow to next step */}
-            {index < steps.length - 1 && (
-              <div className="absolute top-12 -right-4 sm:-right-6 lg:-right-8 w-8 sm:w-12 lg:w-16 flex items-center z-10">
-                <div className={`flex-1 h-0.5 transition-colors duration-500 ${
-                  activeStep > index ? 'bg-red-500' : 'bg-slate-700'
-                }`}></div>
-                <div className={`w-0 h-0 border-t-4 border-b-4 border-l-6 border-t-transparent border-b-transparent transition-colors duration-500 ${
-                  activeStep > index ? 'border-l-red-500' : 'border-l-slate-700'
-                }`} style={{ borderLeftWidth: '6px' }}></div>
-              </div>
-            )}
-
-            {/* Step indicator dot */}
+      {/* Step indicators row - horizontally aligned */}
+      <div className="flex justify-between max-w-2xl mx-auto">
+        {steps.map((step, index) => (
+          <div key={`indicator-${step.id}`} className="flex-1 flex flex-col items-center">
+            {/* Step indicator dot with icon */}
             <div
               className={`w-10 h-10 rounded-full flex items-center justify-center transition-all duration-300 ${
                 activeStep === index
@@ -177,7 +169,11 @@ const GuestJourneyGraphic = () => {
                   : 'bg-slate-700'
               }`}
             >
-              <span className="text-lg">{step.emoji}</span>
+              <StepIcon
+                step={step}
+                isActive={activeStep === index}
+                isPast={activeStep > index}
+              />
             </div>
 
             {/* Label */}
