@@ -26,116 +26,52 @@ import Footer from '../../../components/marketing/layout/Footer';
 // ANIMATED HERO MOCKUP
 // ─────────────────────────────────────────────────────────────
 const RealTimeAlertsMockup = () => {
-  const [alerts, setAlerts] = useState([]);
-  const [acknowledgedId, setAcknowledgedId] = useState(null);
-  const [resolvedId, setResolvedId] = useState(null);
-  const [cycle, setCycle] = useState(0);
+  const [currentSet, setCurrentSet] = useState(0);
+  const [isTransitioning, setIsTransitioning] = useState(false);
 
-  const alertsData = [
-    {
-      id: 1,
-      table: 'Table 8',
-      rating: 2,
-      message: 'Food taking quite a while',
-      time: 'Just now',
-      severity: 'urgent',
-    },
-    {
-      id: 2,
-      table: 'Table 3',
-      rating: 3,
-      message: 'Could use some help here',
-      time: '1 min ago',
-      severity: 'attention',
-    },
-    {
-      id: 3,
-      table: 'Table 12',
-      rating: 4,
-      message: 'Great service so far!',
-      time: '3 min ago',
-      severity: 'positive',
-    },
+  // Multiple sets of 3 alerts that rotate
+  const alertSets = [
+    [
+      { id: 1, table: 'Table 8', rating: 2, message: 'Food taking quite a while', time: 'Just now', severity: 'urgent' },
+      { id: 2, table: 'Table 3', rating: 3, message: 'Could use some help here', time: '1 min ago', severity: 'attention' },
+      { id: 3, table: 'Table 12', rating: 5, message: 'Great service so far!', time: '3 min ago', severity: 'positive' },
+    ],
+    [
+      { id: 4, table: 'Table 5', rating: 2, message: 'Order seems to be wrong', time: 'Just now', severity: 'urgent' },
+      { id: 5, table: 'Table 14', rating: 4, message: 'Lovely atmosphere tonight', time: '2 min ago', severity: 'positive' },
+      { id: 6, table: 'Table 9', rating: 3, message: 'Waiting for drinks', time: '4 min ago', severity: 'attention' },
+    ],
+    [
+      { id: 7, table: 'Table 2', rating: 1, message: 'Very disappointed with wait', time: 'Just now', severity: 'urgent' },
+      { id: 8, table: 'Table 7', rating: 5, message: 'Best meal we have had!', time: '1 min ago', severity: 'positive' },
+      { id: 9, table: 'Table 11', rating: 3, message: 'Table needs cleaning', time: '3 min ago', severity: 'attention' },
+    ],
   ];
 
   useEffect(() => {
-    // Animation cycle
-    const runCycle = () => {
-      // Reset state
-      setAlerts([]);
-      setAcknowledgedId(null);
-      setResolvedId(null);
-
-      // Alert 1 appears
+    const interval = setInterval(() => {
+      setIsTransitioning(true);
       setTimeout(() => {
-        setAlerts([alertsData[0]]);
-      }, 500);
+        setCurrentSet((prev) => (prev + 1) % alertSets.length);
+        setIsTransitioning(false);
+      }, 300);
+    }, 4000);
 
-      // Alert 2 appears
-      setTimeout(() => {
-        setAlerts([alertsData[0], alertsData[1]]);
-      }, 1200);
+    return () => clearInterval(interval);
+  }, []);
 
-      // Alert 3 appears
-      setTimeout(() => {
-        setAlerts([alertsData[0], alertsData[1], alertsData[2]]);
-      }, 1900);
-
-      // First alert gets acknowledged
-      setTimeout(() => {
-        setAcknowledgedId(1);
-      }, 3000);
-
-      // First alert gets resolved
-      setTimeout(() => {
-        setResolvedId(1);
-      }, 4500);
-
-      // Cycle complete, restart
-      setTimeout(() => {
-        setCycle(c => c + 1);
-      }, 6500);
-    };
-
-    runCycle();
-  }, [cycle]);
-
-  const getSeverityStyles = (severity, isAcknowledged, isResolved) => {
-    if (isResolved) {
-      return {
-        bg: 'bg-emerald-50 border-emerald-200',
-        badge: 'bg-emerald-500',
-        icon: 'text-emerald-500',
-      };
-    }
-    if (isAcknowledged) {
-      return {
-        bg: 'bg-blue-50 border-blue-200',
-        badge: 'bg-blue-500',
-        icon: 'text-blue-500',
-      };
-    }
+  const getSeverityStyles = (severity) => {
     switch (severity) {
       case 'urgent':
-        return {
-          bg: 'bg-red-50 border-red-200',
-          badge: 'bg-red-500',
-          icon: 'text-red-500',
-        };
+        return { bg: 'bg-red-50 border-red-200', badge: 'bg-red-500' };
       case 'attention':
-        return {
-          bg: 'bg-amber-50 border-amber-200',
-          badge: 'bg-amber-500',
-          icon: 'text-amber-500',
-        };
+        return { bg: 'bg-amber-50 border-amber-200', badge: 'bg-amber-500' };
       default:
-        return {
-          bg: 'bg-emerald-50 border-emerald-200',
-          badge: 'bg-emerald-500',
-          icon: 'text-emerald-500',
-        };
+        return { bg: 'bg-emerald-50 border-emerald-200', badge: 'bg-emerald-500' };
     }
   };
+
+  const currentAlerts = alertSets[currentSet];
 
   return (
     <div className="bg-slate-900 rounded-xl p-4 h-full">
@@ -147,49 +83,43 @@ const RealTimeAlertsMockup = () => {
         </div>
         <div className="flex items-center gap-2">
           <Bell className="w-4 h-4 text-slate-400" />
-          <span className="text-xs text-slate-400">{alerts.length} active</span>
+          <span className="text-xs text-slate-400">3 active</span>
         </div>
       </div>
 
       {/* Alerts List */}
-      <div className="space-y-3">
-        {alerts.map((alert, index) => {
-          const isAcknowledged = acknowledgedId === alert.id;
-          const isResolved = resolvedId === alert.id;
-          const styles = getSeverityStyles(alert.severity, isAcknowledged, isResolved);
+      <div className={`space-y-3 transition-opacity duration-300 ${isTransitioning ? 'opacity-0' : 'opacity-100'}`}>
+        {currentAlerts.map((alert, index) => {
+          const styles = getSeverityStyles(alert.severity);
 
           return (
             <div
               key={alert.id}
-              className={`rounded-lg border p-3 transition-all duration-500 ${styles.bg} ${
-                index === 0 && !isAcknowledged && !isResolved ? 'ring-2 ring-red-300 animate-pulse' : ''
+              className={`rounded-lg border p-3 ${styles.bg} ${
+                index === 0 && alert.severity === 'urgent' ? 'ring-2 ring-red-300' : ''
               }`}
-              style={{
-                animation: `slideIn 0.4s ease-out`,
-                animationDelay: `${index * 0.1}s`,
-              }}
             >
               <div className="flex items-start justify-between gap-3">
                 <div className="flex-1 min-w-0">
                   {/* Header Row */}
                   <div className="flex items-center gap-2 mb-1.5">
                     <span className="font-semibold text-sm text-slate-800">{alert.table}</span>
-                    {alert.severity === 'urgent' && !isAcknowledged && !isResolved && (
+                    {alert.severity === 'urgent' && (
                       <span className="flex items-center gap-1 text-[10px] font-medium text-red-600 bg-red-100 px-1.5 py-0.5 rounded-full">
                         <AlertTriangle className="w-2.5 h-2.5" />
                         Urgent
                       </span>
                     )}
-                    {isAcknowledged && !isResolved && (
-                      <span className="flex items-center gap-1 text-[10px] font-medium text-blue-600 bg-blue-100 px-1.5 py-0.5 rounded-full">
-                        <User className="w-2.5 h-2.5" />
-                        Sarah responding
+                    {alert.severity === 'attention' && (
+                      <span className="flex items-center gap-1 text-[10px] font-medium text-amber-600 bg-amber-100 px-1.5 py-0.5 rounded-full">
+                        <Clock className="w-2.5 h-2.5" />
+                        Needs attention
                       </span>
                     )}
-                    {isResolved && (
+                    {alert.severity === 'positive' && (
                       <span className="flex items-center gap-1 text-[10px] font-medium text-emerald-600 bg-emerald-100 px-1.5 py-0.5 rounded-full">
                         <CheckCircle className="w-2.5 h-2.5" />
-                        Resolved
+                        Happy guest
                       </span>
                     )}
                   </div>
@@ -221,34 +151,26 @@ const RealTimeAlertsMockup = () => {
 
                 {/* Action Button */}
                 <div className="flex-shrink-0">
-                  {!isAcknowledged && !isResolved && alert.severity === 'urgent' && (
-                    <button className="w-8 h-8 bg-red-500 hover:bg-red-600 rounded-lg flex items-center justify-center transition-colors">
+                  {alert.severity === 'urgent' && (
+                    <button className="w-8 h-8 bg-red-500 rounded-lg flex items-center justify-center">
                       <Bell className="w-4 h-4 text-white" />
                     </button>
                   )}
-                  {isAcknowledged && !isResolved && (
-                    <div className="w-8 h-8 bg-blue-500 rounded-lg flex items-center justify-center">
+                  {alert.severity === 'attention' && (
+                    <button className="w-8 h-8 bg-amber-500 rounded-lg flex items-center justify-center">
                       <Clock className="w-4 h-4 text-white" />
-                    </div>
+                    </button>
                   )}
-                  {isResolved && (
-                    <div className="w-8 h-8 bg-emerald-500 rounded-lg flex items-center justify-center">
+                  {alert.severity === 'positive' && (
+                    <button className="w-8 h-8 bg-emerald-500 rounded-lg flex items-center justify-center">
                       <CheckCircle className="w-4 h-4 text-white" />
-                    </div>
+                    </button>
                   )}
                 </div>
               </div>
             </div>
           );
         })}
-
-        {/* Empty state */}
-        {alerts.length === 0 && (
-          <div className="text-center py-8">
-            <Bell className="w-8 h-8 text-slate-600 mx-auto mb-2" />
-            <p className="text-sm text-slate-500">Waiting for alerts...</p>
-          </div>
-        )}
       </div>
 
       {/* Footer Stats */}
@@ -276,20 +198,6 @@ const RealTimeAlertsMockup = () => {
           </div>
         </div>
       </div>
-
-      {/* Animation keyframes */}
-      <style jsx>{`
-        @keyframes slideIn {
-          from {
-            opacity: 0;
-            transform: translateX(-20px);
-          }
-          to {
-            opacity: 1;
-            transform: translateX(0);
-          }
-        }
-      `}</style>
     </div>
   );
 };
