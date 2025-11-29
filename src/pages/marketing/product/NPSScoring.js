@@ -66,13 +66,53 @@ const Hero = () => (
                 my.getchatters.com/nps
               </div>
             </div>
-            {/* Screenshot Placeholder */}
-            <div className="aspect-[4/3] bg-gradient-to-br from-slate-50 to-slate-100 flex items-center justify-center">
-              <img
-                src="https://placehold.co/800x600/f8fafc/64748b?text=NPS+Dashboard"
-                alt="NPS scoring dashboard"
-                className="w-full h-full object-cover"
-              />
+            {/* NPS Dashboard Mockup */}
+            <div className="bg-white p-4">
+              {/* NPS Score Display */}
+              <div className="text-center mb-4">
+                <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-gradient-to-br from-[#4E74FF] to-[#2F5CFF] mb-2">
+                  <span className="text-white text-2xl font-bold">+47</span>
+                </div>
+                <p className="text-gray-600 text-sm">Your NPS Score</p>
+              </div>
+
+              {/* Breakdown */}
+              <div className="grid grid-cols-3 gap-2 mb-4">
+                <div className="bg-emerald-50 rounded-lg p-2 text-center">
+                  <div className="flex items-center justify-center gap-1 mb-1">
+                    <ThumbsUp className="w-3 h-3 text-emerald-600" />
+                  </div>
+                  <p className="text-emerald-700 text-lg font-bold">62%</p>
+                  <p className="text-gray-500 text-[10px]">Promoters</p>
+                </div>
+                <div className="bg-amber-50 rounded-lg p-2 text-center">
+                  <div className="flex items-center justify-center gap-1 mb-1">
+                    <Minus className="w-3 h-3 text-amber-600" />
+                  </div>
+                  <p className="text-amber-700 text-lg font-bold">23%</p>
+                  <p className="text-gray-500 text-[10px]">Passives</p>
+                </div>
+                <div className="bg-red-50 rounded-lg p-2 text-center">
+                  <div className="flex items-center justify-center gap-1 mb-1">
+                    <ThumbsDown className="w-3 h-3 text-red-600" />
+                  </div>
+                  <p className="text-red-700 text-lg font-bold">15%</p>
+                  <p className="text-gray-500 text-[10px]">Detractors</p>
+                </div>
+              </div>
+
+              {/* Trend Line */}
+              <div className="bg-gray-50 rounded-lg p-3">
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-gray-600 text-xs">Trend</span>
+                  <span className="text-emerald-600 text-xs font-medium">+6 this month</span>
+                </div>
+                <div className="flex items-end justify-between h-8 gap-1">
+                  {[35, 38, 42, 41, 45, 47].map((h, i) => (
+                    <div key={i} className="flex-1 bg-[#4E74FF] rounded-t" style={{height: `${(h/50)*100}%`}}></div>
+                  ))}
+                </div>
+              </div>
             </div>
           </div>
         </div>

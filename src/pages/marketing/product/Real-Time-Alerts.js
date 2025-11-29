@@ -26,39 +26,11 @@ import Footer from '../../../components/marketing/layout/Footer';
 // ANIMATED HERO MOCKUP
 // ─────────────────────────────────────────────────────────────
 const RealTimeAlertsMockup = () => {
-  const [currentSet, setCurrentSet] = useState(0);
-  const [isTransitioning, setIsTransitioning] = useState(false);
-
-  // Multiple sets of 3 alerts that rotate
-  const alertSets = [
-    [
-      { id: 1, table: 'Table 8', rating: 2, message: 'Food taking quite a while', time: 'Just now', severity: 'urgent' },
-      { id: 2, table: 'Table 3', rating: 3, message: 'Could use some help here', time: '1 min ago', severity: 'attention' },
-      { id: 3, table: 'Table 12', rating: 5, message: 'Great service so far!', time: '3 min ago', severity: 'positive' },
-    ],
-    [
-      { id: 4, table: 'Table 5', rating: 2, message: 'Order seems to be wrong', time: 'Just now', severity: 'urgent' },
-      { id: 5, table: 'Table 14', rating: 4, message: 'Lovely atmosphere tonight', time: '2 min ago', severity: 'positive' },
-      { id: 6, table: 'Table 9', rating: 3, message: 'Waiting for drinks', time: '4 min ago', severity: 'attention' },
-    ],
-    [
-      { id: 7, table: 'Table 2', rating: 1, message: 'Very disappointed with wait', time: 'Just now', severity: 'urgent' },
-      { id: 8, table: 'Table 7', rating: 5, message: 'Best meal we have had!', time: '1 min ago', severity: 'positive' },
-      { id: 9, table: 'Table 11', rating: 3, message: 'Table needs cleaning', time: '3 min ago', severity: 'attention' },
-    ],
+  const alerts = [
+    { id: 1, table: 'Table 8', rating: 2, message: 'Food taking quite a while', time: 'Just now', severity: 'urgent' },
+    { id: 2, table: 'Table 3', rating: 3, message: 'Could use some help here', time: '1 min ago', severity: 'attention' },
+    { id: 3, table: 'Table 12', rating: 5, message: 'Great service so far!', time: '3 min ago', severity: 'positive' },
   ];
-
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setIsTransitioning(true);
-      setTimeout(() => {
-        setCurrentSet((prev) => (prev + 1) % alertSets.length);
-        setIsTransitioning(false);
-      }, 300);
-    }, 4000);
-
-    return () => clearInterval(interval);
-  }, []);
 
   const getSeverityStyles = (severity) => {
     switch (severity) {
@@ -70,8 +42,6 @@ const RealTimeAlertsMockup = () => {
         return { bg: 'bg-emerald-50 border-emerald-200', badge: 'bg-emerald-500' };
     }
   };
-
-  const currentAlerts = alertSets[currentSet];
 
   return (
     <div className="bg-slate-900 rounded-xl p-4 h-full">
@@ -88,8 +58,8 @@ const RealTimeAlertsMockup = () => {
       </div>
 
       {/* Alerts List */}
-      <div className={`space-y-3 transition-opacity duration-300 ${isTransitioning ? 'opacity-0' : 'opacity-100'}`}>
-        {currentAlerts.map((alert, index) => {
+      <div className="space-y-3">
+        {alerts.map((alert, index) => {
           const styles = getSeverityStyles(alert.severity);
 
           return (

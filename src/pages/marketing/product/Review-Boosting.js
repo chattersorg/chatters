@@ -60,11 +60,46 @@ const Hero = () => {
                     <div className="w-3 h-3 rounded-full bg-green-500"></div>
                   </div>
                 </div>
-                <img
-                  src="https://placehold.co/550x400/e2e8f0/475569?text=Review+Prompt+Screen"
-                  alt="Review boosting prompt shown to happy guests"
-                  className="w-full rounded-lg"
-                />
+                {/* Review Boosting Mockup - Phone Screen */}
+                <div className="bg-white rounded-lg p-6 flex justify-center">
+                  <div className="w-48 bg-gray-900 rounded-3xl p-2">
+                    <div className="bg-white rounded-2xl overflow-hidden">
+                      {/* Phone Content */}
+                      <div className="p-4 text-center">
+                        {/* Success Icon */}
+                        <div className="w-12 h-12 bg-emerald-100 rounded-full flex items-center justify-center mx-auto mb-3">
+                          <Check className="w-6 h-6 text-emerald-600" />
+                        </div>
+
+                        <h4 className="text-gray-900 text-sm font-semibold mb-1">Thanks for your feedback!</h4>
+                        <p className="text-gray-500 text-xs mb-4">Would you share your experience?</p>
+
+                        {/* Star Rating Display */}
+                        <div className="flex justify-center gap-1 mb-4">
+                          {[1,2,3,4,5].map(s => <Star key={s} className="w-5 h-5 fill-yellow-400 text-yellow-400" />)}
+                        </div>
+
+                        {/* Review Buttons */}
+                        <div className="space-y-2">
+                          <button className="w-full bg-white border border-gray-200 rounded-lg py-2 px-3 flex items-center justify-center gap-2 hover:bg-gray-50">
+                            <div className="w-4 h-4 bg-[#4285F4] rounded-sm flex items-center justify-center">
+                              <span className="text-white text-[8px] font-bold">G</span>
+                            </div>
+                            <span className="text-gray-700 text-xs font-medium">Review on Google</span>
+                          </button>
+                          <button className="w-full bg-white border border-gray-200 rounded-lg py-2 px-3 flex items-center justify-center gap-2 hover:bg-gray-50">
+                            <div className="w-4 h-4 bg-[#00AF87] rounded-full flex items-center justify-center">
+                              <span className="text-white text-[8px] font-bold">T</span>
+                            </div>
+                            <span className="text-gray-700 text-xs font-medium">Review on TripAdvisor</span>
+                          </button>
+                        </div>
+
+                        <p className="text-gray-400 text-[10px] mt-3">It only takes a moment</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
           </div>

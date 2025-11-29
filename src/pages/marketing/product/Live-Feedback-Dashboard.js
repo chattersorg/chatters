@@ -63,11 +63,56 @@ const Hero = () => {
                     <div className="w-3 h-3 rounded-full bg-blue-500"></div>
                   </div>
                 </div>
-                <img
-                  src="https://placehold.co/550x400/e2e8f0/475569?text=Live+Dashboard+View"
-                  alt="Live Feedback Dashboard showing real-time guest comments"
-                  className="w-full rounded-lg"
-                />
+                {/* Live Dashboard Mockup */}
+                <div className="bg-white rounded-lg p-4">
+                  {/* Header */}
+                  <div className="flex items-center justify-between mb-4 pb-3 border-b border-gray-100">
+                    <div className="flex items-center gap-2">
+                      <div className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse"></div>
+                      <span className="text-gray-900 text-sm font-medium">Live Feed</span>
+                    </div>
+                    <span className="text-gray-400 text-xs">12 today</span>
+                  </div>
+
+                  {/* Feedback Items */}
+                  <div className="space-y-3">
+                    <div className="bg-gray-50 rounded-lg p-3">
+                      <div className="flex items-center justify-between mb-2">
+                        <span className="text-gray-900 text-xs font-medium">Table 4</span>
+                        <div className="flex gap-0.5">
+                          {[1,2,3,4,5].map(s => <Star key={s} className={`w-3 h-3 ${s <= 5 ? 'fill-yellow-400 text-yellow-400' : 'text-gray-200'}`} />)}
+                        </div>
+                      </div>
+                      <p className="text-gray-600 text-xs">Amazing service tonight!</p>
+                      <span className="text-gray-400 text-[10px]">2 min ago</span>
+                    </div>
+
+                    <div className="bg-gray-50 rounded-lg p-3">
+                      <div className="flex items-center justify-between mb-2">
+                        <span className="text-gray-900 text-xs font-medium">Table 9</span>
+                        <div className="flex gap-0.5">
+                          {[1,2,3,4,5].map(s => <Star key={s} className={`w-3 h-3 ${s <= 4 ? 'fill-yellow-400 text-yellow-400' : 'text-gray-200'}`} />)}
+                        </div>
+                      </div>
+                      <p className="text-gray-600 text-xs">Food was great, bit of a wait</p>
+                      <span className="text-gray-400 text-[10px]">8 min ago</span>
+                    </div>
+
+                    <div className="bg-red-50 border border-red-100 rounded-lg p-3">
+                      <div className="flex items-center justify-between mb-2">
+                        <div className="flex items-center gap-2">
+                          <span className="text-gray-900 text-xs font-medium">Table 7</span>
+                          <span className="bg-red-100 text-red-600 text-[10px] px-1.5 py-0.5 rounded">Alert</span>
+                        </div>
+                        <div className="flex gap-0.5">
+                          {[1,2,3,4,5].map(s => <Star key={s} className={`w-3 h-3 ${s <= 2 ? 'fill-yellow-400 text-yellow-400' : 'text-gray-200'}`} />)}
+                        </div>
+                      </div>
+                      <p className="text-gray-600 text-xs">Still waiting for drinks</p>
+                      <span className="text-gray-400 text-[10px]">12 min ago</span>
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
           </div>

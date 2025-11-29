@@ -63,11 +63,95 @@ const Hero = () => {
                     <div className="w-3 h-3 rounded-full bg-blue-500"></div>
                   </div>
                 </div>
-                <img
-                  src="https://placehold.co/550x400/e2e8f0/475569?text=Staff+Metrics+Dashboard"
-                  alt="Staff metrics dashboard showing team performance"
-                  className="w-full rounded-lg"
-                />
+                {/* Staff Metrics Mockup */}
+                <div className="bg-white rounded-lg p-4">
+                  {/* Header */}
+                  <div className="flex items-center justify-between mb-4 pb-3 border-b border-gray-100">
+                    <span className="text-gray-900 text-sm font-medium">Team Performance</span>
+                    <span className="text-gray-400 text-xs">This Week</span>
+                  </div>
+
+                  {/* Staff Members */}
+                  <div className="space-y-3">
+                    <div className="bg-gray-50 rounded-lg p-3">
+                      <div className="flex items-center justify-between mb-2">
+                        <div className="flex items-center gap-2">
+                          <div className="w-8 h-8 bg-[#4E74FF] rounded-full flex items-center justify-center">
+                            <span className="text-white text-xs font-medium">SC</span>
+                          </div>
+                          <div>
+                            <p className="text-gray-900 text-xs font-medium">Sarah Chen</p>
+                            <p className="text-gray-400 text-[10px]">42 tables served</p>
+                          </div>
+                        </div>
+                        <div className="text-right">
+                          <div className="flex gap-0.5">
+                            {[1,2,3,4,5].map(s => <Star key={s} className="w-3 h-3 fill-yellow-400 text-yellow-400" />)}
+                          </div>
+                          <p className="text-gray-400 text-[10px]">4.9 avg</p>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <div className="flex-1 bg-gray-200 rounded-full h-1.5">
+                          <div className="bg-emerald-500 h-1.5 rounded-full" style={{width: '98%'}}></div>
+                        </div>
+                        <span className="text-emerald-600 text-[10px] font-medium">98%</span>
+                      </div>
+                    </div>
+
+                    <div className="bg-gray-50 rounded-lg p-3">
+                      <div className="flex items-center justify-between mb-2">
+                        <div className="flex items-center gap-2">
+                          <div className="w-8 h-8 bg-amber-500 rounded-full flex items-center justify-center">
+                            <span className="text-white text-xs font-medium">TJ</span>
+                          </div>
+                          <div>
+                            <p className="text-gray-900 text-xs font-medium">Tom Jones</p>
+                            <p className="text-gray-400 text-[10px]">38 tables served</p>
+                          </div>
+                        </div>
+                        <div className="text-right">
+                          <div className="flex gap-0.5">
+                            {[1,2,3,4,5].map(s => <Star key={s} className={`w-3 h-3 ${s <= 4 ? 'fill-yellow-400 text-yellow-400' : 'text-gray-200'}`} />)}
+                          </div>
+                          <p className="text-gray-400 text-[10px]">4.6 avg</p>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <div className="flex-1 bg-gray-200 rounded-full h-1.5">
+                          <div className="bg-amber-500 h-1.5 rounded-full" style={{width: '92%'}}></div>
+                        </div>
+                        <span className="text-amber-600 text-[10px] font-medium">92%</span>
+                      </div>
+                    </div>
+
+                    <div className="bg-gray-50 rounded-lg p-3">
+                      <div className="flex items-center justify-between mb-2">
+                        <div className="flex items-center gap-2">
+                          <div className="w-8 h-8 bg-emerald-500 rounded-full flex items-center justify-center">
+                            <span className="text-white text-xs font-medium">EW</span>
+                          </div>
+                          <div>
+                            <p className="text-gray-900 text-xs font-medium">Emma Wilson</p>
+                            <p className="text-gray-400 text-[10px]">35 tables served</p>
+                          </div>
+                        </div>
+                        <div className="text-right">
+                          <div className="flex gap-0.5">
+                            {[1,2,3,4,5].map(s => <Star key={s} className={`w-3 h-3 ${s <= 4 ? 'fill-yellow-400 text-yellow-400' : 'text-gray-200'}`} />)}
+                          </div>
+                          <p className="text-gray-400 text-[10px]">4.7 avg</p>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <div className="flex-1 bg-gray-200 rounded-full h-1.5">
+                          <div className="bg-emerald-500 h-1.5 rounded-full" style={{width: '94%'}}></div>
+                        </div>
+                        <span className="text-emerald-600 text-[10px] font-medium">94%</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
           </div>

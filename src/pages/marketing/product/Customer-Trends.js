@@ -63,11 +63,58 @@ const Hero = () => {
                     <div className="w-3 h-3 rounded-full bg-blue-500"></div>
                   </div>
                 </div>
-                <img
-                  src="https://placehold.co/550x400/e2e8f0/475569?text=Customer+Trends+Charts"
-                  alt="Customer trends dashboard showing feedback patterns"
-                  className="w-full rounded-lg"
-                />
+                {/* Customer Trends Mockup */}
+                <div className="bg-white rounded-lg p-4">
+                  {/* Header */}
+                  <div className="flex items-center justify-between mb-4 pb-3 border-b border-gray-100">
+                    <span className="text-gray-900 text-sm font-medium">Trend Analysis</span>
+                    <span className="text-gray-400 text-xs">Last 30 Days</span>
+                  </div>
+
+                  {/* Mini Chart Representation */}
+                  <div className="mb-4">
+                    <div className="flex items-end justify-between h-20 gap-1">
+                      {[65, 70, 68, 75, 72, 78, 82, 85, 80, 88, 92, 90].map((h, i) => (
+                        <div key={i} className="flex-1 bg-[#4E74FF]/20 rounded-t" style={{height: `${h}%`}}>
+                          <div className="w-full bg-[#4E74FF] rounded-t" style={{height: '40%'}}></div>
+                        </div>
+                      ))}
+                    </div>
+                    <div className="flex justify-between mt-1">
+                      <span className="text-gray-400 text-[10px]">Week 1</span>
+                      <span className="text-gray-400 text-[10px]">Week 4</span>
+                    </div>
+                  </div>
+
+                  {/* Trending Keywords */}
+                  <div className="mb-3">
+                    <p className="text-gray-500 text-xs font-medium mb-2">Trending Keywords</p>
+                    <div className="flex flex-wrap gap-1">
+                      <span className="bg-emerald-100 text-emerald-700 text-[10px] px-2 py-1 rounded-full">friendly +24</span>
+                      <span className="bg-emerald-100 text-emerald-700 text-[10px] px-2 py-1 rounded-full">quick +18</span>
+                      <span className="bg-amber-100 text-amber-700 text-[10px] px-2 py-1 rounded-full">wait -5</span>
+                      <span className="bg-emerald-100 text-emerald-700 text-[10px] px-2 py-1 rounded-full">delicious +12</span>
+                    </div>
+                  </div>
+
+                  {/* Quick Stats */}
+                  <div className="grid grid-cols-2 gap-2">
+                    <div className="bg-gray-50 rounded-lg p-2">
+                      <div className="flex items-center gap-1">
+                        <TrendingUp className="w-3 h-3 text-emerald-500" />
+                        <span className="text-emerald-600 text-xs font-medium">+0.3</span>
+                      </div>
+                      <p className="text-gray-500 text-[10px]">Rating trend</p>
+                    </div>
+                    <div className="bg-gray-50 rounded-lg p-2">
+                      <div className="flex items-center gap-1">
+                        <Calendar className="w-3 h-3 text-[#4E74FF]" />
+                        <span className="text-gray-900 text-xs font-medium">Saturday</span>
+                      </div>
+                      <p className="text-gray-500 text-[10px]">Best day</p>
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
           </div>

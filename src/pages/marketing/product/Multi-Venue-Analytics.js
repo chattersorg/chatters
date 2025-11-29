@@ -63,11 +63,70 @@ const Hero = () => {
                     <div className="w-3 h-3 rounded-full bg-blue-500"></div>
                   </div>
                 </div>
-                <img
-                  src="https://placehold.co/550x400/e2e8f0/475569?text=Multi-Venue+Analytics"
-                  alt="Multi-venue analytics dashboard"
-                  className="w-full rounded-lg"
-                />
+                {/* Multi-Venue Analytics Mockup */}
+                <div className="bg-white rounded-lg p-4">
+                  {/* Header */}
+                  <div className="flex items-center justify-between mb-4 pb-3 border-b border-gray-100">
+                    <span className="text-gray-900 text-sm font-medium">Group Analytics</span>
+                    <span className="text-gray-400 text-xs">This Month</span>
+                  </div>
+
+                  {/* Summary Stats */}
+                  <div className="grid grid-cols-3 gap-2 mb-4">
+                    <div className="bg-[#4E74FF]/10 rounded-lg p-2 text-center">
+                      <p className="text-[#4E74FF] text-lg font-bold">4.5</p>
+                      <p className="text-gray-500 text-[10px]">Avg Rating</p>
+                    </div>
+                    <div className="bg-emerald-50 rounded-lg p-2 text-center">
+                      <p className="text-emerald-600 text-lg font-bold">+12%</p>
+                      <p className="text-gray-500 text-[10px]">vs Last Month</p>
+                    </div>
+                    <div className="bg-amber-50 rounded-lg p-2 text-center">
+                      <p className="text-amber-600 text-lg font-bold">847</p>
+                      <p className="text-gray-500 text-[10px]">Responses</p>
+                    </div>
+                  </div>
+
+                  {/* Comparison Bars */}
+                  <div className="space-y-3">
+                    <div>
+                      <div className="flex justify-between text-xs mb-1">
+                        <span className="text-gray-600">Service</span>
+                        <span className="text-gray-900 font-medium">4.7</span>
+                      </div>
+                      <div className="bg-gray-100 rounded-full h-2">
+                        <div className="bg-[#4E74FF] h-2 rounded-full" style={{width: '94%'}}></div>
+                      </div>
+                    </div>
+                    <div>
+                      <div className="flex justify-between text-xs mb-1">
+                        <span className="text-gray-600">Food Quality</span>
+                        <span className="text-gray-900 font-medium">4.5</span>
+                      </div>
+                      <div className="bg-gray-100 rounded-full h-2">
+                        <div className="bg-[#4E74FF] h-2 rounded-full" style={{width: '90%'}}></div>
+                      </div>
+                    </div>
+                    <div>
+                      <div className="flex justify-between text-xs mb-1">
+                        <span className="text-gray-600">Wait Time</span>
+                        <span className="text-gray-900 font-medium">4.1</span>
+                      </div>
+                      <div className="bg-gray-100 rounded-full h-2">
+                        <div className="bg-amber-500 h-2 rounded-full" style={{width: '82%'}}></div>
+                      </div>
+                    </div>
+                    <div>
+                      <div className="flex justify-between text-xs mb-1">
+                        <span className="text-gray-600">Ambience</span>
+                        <span className="text-gray-900 font-medium">4.6</span>
+                      </div>
+                      <div className="bg-gray-100 rounded-full h-2">
+                        <div className="bg-[#4E74FF] h-2 rounded-full" style={{width: '92%'}}></div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
           </div>

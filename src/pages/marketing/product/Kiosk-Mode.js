@@ -72,12 +72,72 @@ const Hero = () => {
                     <div className="w-3 h-3 rounded-full bg-blue-500"></div>
                   </div>
                 </div>
-                {/* Screen content */}
-                <img
-                  src="https://placehold.co/550x400/e2e8f0/475569?text=Kiosk+Mode+Dashboard"
-                  alt="Kiosk Mode dashboard showing live table overview"
-                  className="w-full rounded-lg"
-                />
+                {/* Screen content - Kiosk Mode Mockup */}
+                <div className="bg-slate-800 rounded-lg p-4">
+                  {/* Header */}
+                  <div className="flex items-center justify-between mb-4">
+                    <div className="flex items-center gap-2">
+                      <div className="w-2 h-2 bg-emerald-400 rounded-full"></div>
+                      <span className="text-white text-sm font-medium">Kiosk Mode</span>
+                    </div>
+                    <span className="text-slate-400 text-xs">Live</span>
+                  </div>
+
+                  {/* Floor Plan Grid */}
+                  <div className="grid grid-cols-4 gap-2 mb-4">
+                    {/* Tables */}
+                    <div className="bg-emerald-500/30 border border-emerald-500 rounded-lg p-2 text-center">
+                      <span className="text-emerald-400 text-xs font-medium">T1</span>
+                    </div>
+                    <div className="bg-emerald-500/30 border border-emerald-500 rounded-lg p-2 text-center">
+                      <span className="text-emerald-400 text-xs font-medium">T2</span>
+                    </div>
+                    <div className="bg-amber-500/30 border border-amber-500 rounded-lg p-2 text-center">
+                      <span className="text-amber-400 text-xs font-medium">T3</span>
+                    </div>
+                    <div className="bg-emerald-500/30 border border-emerald-500 rounded-lg p-2 text-center">
+                      <span className="text-emerald-400 text-xs font-medium">T4</span>
+                    </div>
+                    <div className="bg-red-500/30 border border-red-500 rounded-lg p-2 text-center">
+                      <span className="text-red-400 text-xs font-medium">T5</span>
+                    </div>
+                    <div className="bg-emerald-500/30 border border-emerald-500 rounded-lg p-2 text-center">
+                      <span className="text-emerald-400 text-xs font-medium">T6</span>
+                    </div>
+                    <div className="bg-emerald-500/30 border border-emerald-500 rounded-lg p-2 text-center">
+                      <span className="text-emerald-400 text-xs font-medium">T7</span>
+                    </div>
+                    <div className="bg-amber-500/30 border border-amber-500 rounded-lg p-2 text-center">
+                      <span className="text-amber-400 text-xs font-medium">T8</span>
+                    </div>
+                  </div>
+
+                  {/* Priority Queue */}
+                  <div className="space-y-2">
+                    <p className="text-slate-400 text-xs font-medium">Priority Queue</p>
+                    <div className="bg-red-500/20 border border-red-500/50 rounded-lg p-2 flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <div className="w-1.5 h-1.5 bg-red-500 rounded-full"></div>
+                        <span className="text-white text-xs">Table 5</span>
+                      </div>
+                      <span className="text-red-400 text-xs">2 min</span>
+                    </div>
+                    <div className="bg-amber-500/20 border border-amber-500/50 rounded-lg p-2 flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <div className="w-1.5 h-1.5 bg-amber-500 rounded-full"></div>
+                        <span className="text-white text-xs">Table 3</span>
+                      </div>
+                      <span className="text-amber-400 text-xs">5 min</span>
+                    </div>
+                    <div className="bg-amber-500/20 border border-amber-500/50 rounded-lg p-2 flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <div className="w-1.5 h-1.5 bg-amber-500 rounded-full"></div>
+                        <span className="text-white text-xs">Table 8</span>
+                      </div>
+                      <span className="text-amber-400 text-xs">8 min</span>
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
           </div>

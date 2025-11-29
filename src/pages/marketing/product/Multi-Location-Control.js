@@ -63,11 +63,93 @@ const Hero = () => {
                     <div className="w-3 h-3 rounded-full bg-blue-500"></div>
                   </div>
                 </div>
-                <img
-                  src="https://placehold.co/550x400/e2e8f0/475569?text=Multi-Location+Dashboard"
-                  alt="Multi-location dashboard showing all venues"
-                  className="w-full rounded-lg"
-                />
+                {/* Multi-Location Control Mockup */}
+                <div className="bg-white rounded-lg p-4">
+                  {/* Header */}
+                  <div className="flex items-center justify-between mb-4 pb-3 border-b border-gray-100">
+                    <span className="text-gray-900 text-sm font-medium">All Venues</span>
+                    <span className="text-gray-400 text-xs">5 locations</span>
+                  </div>
+
+                  {/* Venue Cards */}
+                  <div className="space-y-2">
+                    <div className="bg-emerald-50 border border-emerald-100 rounded-lg p-3 flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        <div className="w-8 h-8 bg-emerald-500 rounded-lg flex items-center justify-center">
+                          <Building2 className="w-4 h-4 text-white" />
+                        </div>
+                        <div>
+                          <p className="text-gray-900 text-xs font-medium">The Crown</p>
+                          <p className="text-gray-400 text-[10px]">Manchester</p>
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        <div className="flex items-center gap-1">
+                          <Star className="w-3 h-3 fill-yellow-400 text-yellow-400" />
+                          <span className="text-gray-900 text-xs font-medium">4.8</span>
+                        </div>
+                        <span className="text-emerald-600 text-[10px]">+0.2</span>
+                      </div>
+                    </div>
+
+                    <div className="bg-emerald-50 border border-emerald-100 rounded-lg p-3 flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        <div className="w-8 h-8 bg-emerald-500 rounded-lg flex items-center justify-center">
+                          <Building2 className="w-4 h-4 text-white" />
+                        </div>
+                        <div>
+                          <p className="text-gray-900 text-xs font-medium">The Royal Oak</p>
+                          <p className="text-gray-400 text-[10px]">Leeds</p>
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        <div className="flex items-center gap-1">
+                          <Star className="w-3 h-3 fill-yellow-400 text-yellow-400" />
+                          <span className="text-gray-900 text-xs font-medium">4.6</span>
+                        </div>
+                        <span className="text-emerald-600 text-[10px]">+0.1</span>
+                      </div>
+                    </div>
+
+                    <div className="bg-amber-50 border border-amber-100 rounded-lg p-3 flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        <div className="w-8 h-8 bg-amber-500 rounded-lg flex items-center justify-center">
+                          <Building2 className="w-4 h-4 text-white" />
+                        </div>
+                        <div>
+                          <p className="text-gray-900 text-xs font-medium">The Anchor</p>
+                          <p className="text-gray-400 text-[10px]">Sheffield</p>
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        <div className="flex items-center gap-1">
+                          <Star className="w-3 h-3 fill-yellow-400 text-yellow-400" />
+                          <span className="text-gray-900 text-xs font-medium">4.2</span>
+                        </div>
+                        <span className="text-amber-600 text-[10px]">-0.1</span>
+                      </div>
+                    </div>
+
+                    <div className="bg-red-50 border border-red-100 rounded-lg p-3 flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        <div className="w-8 h-8 bg-red-500 rounded-lg flex items-center justify-center">
+                          <Building2 className="w-4 h-4 text-white" />
+                        </div>
+                        <div>
+                          <p className="text-gray-900 text-xs font-medium">The Fox</p>
+                          <p className="text-gray-400 text-[10px]">Liverpool</p>
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        <div className="flex items-center gap-1">
+                          <Star className="w-3 h-3 fill-yellow-400 text-yellow-400" />
+                          <span className="text-gray-900 text-xs font-medium">3.8</span>
+                        </div>
+                        <span className="text-red-600 text-[10px]">-0.3</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
