@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Helmet } from 'react-helmet';
 import {
@@ -12,10 +12,287 @@ import {
   ArrowUpCircle,
   Circle,
   MousePointerClick,
-  ClipboardCheck
+  ClipboardCheck,
+  Bell,
+  AlertTriangle,
+  CheckCircle,
+  User,
+  Smartphone
 } from 'lucide-react';
 import Navbar from '../../../components/marketing/layout/Navbar';
 import Footer from '../../../components/marketing/layout/Footer';
+
+// ─────────────────────────────────────────────────────────────
+// ANIMATED HERO MOCKUP
+// ─────────────────────────────────────────────────────────────
+const RealTimeAlertsMockup = () => {
+  const [alerts, setAlerts] = useState([]);
+  const [acknowledgedId, setAcknowledgedId] = useState(null);
+  const [resolvedId, setResolvedId] = useState(null);
+  const [cycle, setCycle] = useState(0);
+
+  const alertsData = [
+    {
+      id: 1,
+      table: 'Table 8',
+      rating: 2,
+      message: 'Food taking quite a while',
+      time: 'Just now',
+      severity: 'urgent',
+    },
+    {
+      id: 2,
+      table: 'Table 3',
+      rating: 3,
+      message: 'Could use some help here',
+      time: '1 min ago',
+      severity: 'attention',
+    },
+    {
+      id: 3,
+      table: 'Table 12',
+      rating: 4,
+      message: 'Great service so far!',
+      time: '3 min ago',
+      severity: 'positive',
+    },
+  ];
+
+  useEffect(() => {
+    // Animation cycle
+    const runCycle = () => {
+      // Reset state
+      setAlerts([]);
+      setAcknowledgedId(null);
+      setResolvedId(null);
+
+      // Alert 1 appears
+      setTimeout(() => {
+        setAlerts([alertsData[0]]);
+      }, 500);
+
+      // Alert 2 appears
+      setTimeout(() => {
+        setAlerts([alertsData[0], alertsData[1]]);
+      }, 1200);
+
+      // Alert 3 appears
+      setTimeout(() => {
+        setAlerts([alertsData[0], alertsData[1], alertsData[2]]);
+      }, 1900);
+
+      // First alert gets acknowledged
+      setTimeout(() => {
+        setAcknowledgedId(1);
+      }, 3000);
+
+      // First alert gets resolved
+      setTimeout(() => {
+        setResolvedId(1);
+      }, 4500);
+
+      // Cycle complete, restart
+      setTimeout(() => {
+        setCycle(c => c + 1);
+      }, 6500);
+    };
+
+    runCycle();
+  }, [cycle]);
+
+  const getSeverityStyles = (severity, isAcknowledged, isResolved) => {
+    if (isResolved) {
+      return {
+        bg: 'bg-emerald-50 border-emerald-200',
+        badge: 'bg-emerald-500',
+        icon: 'text-emerald-500',
+      };
+    }
+    if (isAcknowledged) {
+      return {
+        bg: 'bg-blue-50 border-blue-200',
+        badge: 'bg-blue-500',
+        icon: 'text-blue-500',
+      };
+    }
+    switch (severity) {
+      case 'urgent':
+        return {
+          bg: 'bg-red-50 border-red-200',
+          badge: 'bg-red-500',
+          icon: 'text-red-500',
+        };
+      case 'attention':
+        return {
+          bg: 'bg-amber-50 border-amber-200',
+          badge: 'bg-amber-500',
+          icon: 'text-amber-500',
+        };
+      default:
+        return {
+          bg: 'bg-emerald-50 border-emerald-200',
+          badge: 'bg-emerald-500',
+          icon: 'text-emerald-500',
+        };
+    }
+  };
+
+  return (
+    <div className="bg-slate-900 rounded-xl p-4 h-full">
+      {/* Header */}
+      <div className="flex items-center justify-between mb-4">
+        <div className="flex items-center gap-2">
+          <div className="w-2.5 h-2.5 bg-emerald-400 rounded-full animate-pulse"></div>
+          <span className="text-sm font-medium text-white">Live Alerts</span>
+        </div>
+        <div className="flex items-center gap-2">
+          <Bell className="w-4 h-4 text-slate-400" />
+          <span className="text-xs text-slate-400">{alerts.length} active</span>
+        </div>
+      </div>
+
+      {/* Alerts List */}
+      <div className="space-y-3">
+        {alerts.map((alert, index) => {
+          const isAcknowledged = acknowledgedId === alert.id;
+          const isResolved = resolvedId === alert.id;
+          const styles = getSeverityStyles(alert.severity, isAcknowledged, isResolved);
+
+          return (
+            <div
+              key={alert.id}
+              className={`rounded-lg border p-3 transition-all duration-500 ${styles.bg} ${
+                index === 0 && !isAcknowledged && !isResolved ? 'ring-2 ring-red-300 animate-pulse' : ''
+              }`}
+              style={{
+                animation: `slideIn 0.4s ease-out`,
+                animationDelay: `${index * 0.1}s`,
+              }}
+            >
+              <div className="flex items-start justify-between gap-3">
+                <div className="flex-1 min-w-0">
+                  {/* Header Row */}
+                  <div className="flex items-center gap-2 mb-1.5">
+                    <span className="font-semibold text-sm text-slate-800">{alert.table}</span>
+                    {alert.severity === 'urgent' && !isAcknowledged && !isResolved && (
+                      <span className="flex items-center gap-1 text-[10px] font-medium text-red-600 bg-red-100 px-1.5 py-0.5 rounded-full">
+                        <AlertTriangle className="w-2.5 h-2.5" />
+                        Urgent
+                      </span>
+                    )}
+                    {isAcknowledged && !isResolved && (
+                      <span className="flex items-center gap-1 text-[10px] font-medium text-blue-600 bg-blue-100 px-1.5 py-0.5 rounded-full">
+                        <User className="w-2.5 h-2.5" />
+                        Sarah responding
+                      </span>
+                    )}
+                    {isResolved && (
+                      <span className="flex items-center gap-1 text-[10px] font-medium text-emerald-600 bg-emerald-100 px-1.5 py-0.5 rounded-full">
+                        <CheckCircle className="w-2.5 h-2.5" />
+                        Resolved
+                      </span>
+                    )}
+                  </div>
+
+                  {/* Message */}
+                  <p className="text-xs text-slate-600 mb-2">"{alert.message}"</p>
+
+                  {/* Footer */}
+                  <div className="flex items-center gap-3">
+                    <div className="flex items-center gap-0.5">
+                      {[1, 2, 3, 4, 5].map((star) => (
+                        <Star
+                          key={star}
+                          className={`w-3 h-3 ${
+                            star <= alert.rating
+                              ? alert.rating <= 2
+                                ? 'fill-red-400 text-red-400'
+                                : alert.rating <= 3
+                                ? 'fill-amber-400 text-amber-400'
+                                : 'fill-emerald-400 text-emerald-400'
+                              : 'text-slate-300'
+                          }`}
+                        />
+                      ))}
+                    </div>
+                    <span className="text-[10px] text-slate-500">{alert.time}</span>
+                  </div>
+                </div>
+
+                {/* Action Button */}
+                <div className="flex-shrink-0">
+                  {!isAcknowledged && !isResolved && alert.severity === 'urgent' && (
+                    <button className="w-8 h-8 bg-red-500 hover:bg-red-600 rounded-lg flex items-center justify-center transition-colors">
+                      <Bell className="w-4 h-4 text-white" />
+                    </button>
+                  )}
+                  {isAcknowledged && !isResolved && (
+                    <div className="w-8 h-8 bg-blue-500 rounded-lg flex items-center justify-center">
+                      <Clock className="w-4 h-4 text-white" />
+                    </div>
+                  )}
+                  {isResolved && (
+                    <div className="w-8 h-8 bg-emerald-500 rounded-lg flex items-center justify-center">
+                      <CheckCircle className="w-4 h-4 text-white" />
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+          );
+        })}
+
+        {/* Empty state */}
+        {alerts.length === 0 && (
+          <div className="text-center py-8">
+            <Bell className="w-8 h-8 text-slate-600 mx-auto mb-2" />
+            <p className="text-sm text-slate-500">Waiting for alerts...</p>
+          </div>
+        )}
+      </div>
+
+      {/* Footer Stats */}
+      <div className="mt-4 pt-3 border-t border-slate-700">
+        <div className="flex items-center justify-between text-[11px]">
+          <div className="flex items-center gap-2">
+            <span className="flex items-center gap-1 text-slate-400">
+              <Clock className="w-3 h-3" />
+              Avg response: 47s
+            </span>
+          </div>
+          <div className="flex items-center gap-3">
+            <span className="flex items-center gap-1">
+              <span className="w-2 h-2 bg-red-500 rounded-full"></span>
+              <span className="text-red-400">1</span>
+            </span>
+            <span className="flex items-center gap-1">
+              <span className="w-2 h-2 bg-amber-500 rounded-full"></span>
+              <span className="text-amber-400">1</span>
+            </span>
+            <span className="flex items-center gap-1">
+              <span className="w-2 h-2 bg-emerald-500 rounded-full"></span>
+              <span className="text-emerald-400">1</span>
+            </span>
+          </div>
+        </div>
+      </div>
+
+      {/* Animation keyframes */}
+      <style jsx>{`
+        @keyframes slideIn {
+          from {
+            opacity: 0;
+            transform: translateX(-20px);
+          }
+          to {
+            opacity: 1;
+            transform: translateX(0);
+          }
+        }
+      `}</style>
+    </div>
+  );
+};
 
 // SECTION 1 — HERO
 const Hero = () => {
@@ -61,22 +338,9 @@ const Hero = () => {
           {/* Right Column - Visuals */}
           <div className="order-2 lg:order-2 relative px-4 sm:px-0 mt-8 lg:mt-0">
             <div className="relative mx-4 sm:mx-0">
-              {/* MacBook-style mockup */}
-              <div className="bg-gray-900 rounded-xl p-2 pb-3 shadow-2xl">
-                {/* Browser top bar */}
-                <div className="flex items-center gap-2 px-2 pb-2">
-                  <div className="flex gap-1.5">
-                    <div className="w-3 h-3 rounded-full bg-red-500"></div>
-                    <div className="w-3 h-3 rounded-full bg-yellow-500"></div>
-                    <div className="w-3 h-3 rounded-full bg-blue-500"></div>
-                  </div>
-                </div>
-                {/* Screen content */}
-                <img
-                  src="https://placehold.co/550x400/e2e8f0/475569?text=Alert+Notification+Demo"
-                  alt="Real-time alert notification appearing on dashboard"
-                  className="w-full rounded-lg"
-                />
+              {/* Animated Mockup */}
+              <div className="bg-slate-100 rounded-2xl p-4 shadow-2xl">
+                <RealTimeAlertsMockup />
               </div>
             </div>
           </div>
