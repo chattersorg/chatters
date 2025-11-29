@@ -9,9 +9,9 @@ const Footer = () => {
           {/* Brand / About */}
           <div>
             <img
-              src="/img/Logo.svg"
+              src="/img/logo/chatters-large-logo-white.svg"
               alt="Chatters"
-              className="h-8 w-auto mb-4 filter invert"
+              className="h-8 w-auto mb-4"
             />
             <p className="text-gray-400 leading-relaxed font-satoshi">
               The leading feedback management platform for hospitality
