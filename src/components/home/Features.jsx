@@ -82,11 +82,6 @@ const LiveDashboardMockup = () => {
         ))}
       </div>
 
-      {/* Stats Bar */}
-      <div className="mt-3 pt-2 border-t border-slate-700 flex justify-between text-[10px] text-slate-400">
-        <span>Today: 24 responses</span>
-        <span>Avg: 4.2 ★</span>
-      </div>
     </div>
   );
 };
