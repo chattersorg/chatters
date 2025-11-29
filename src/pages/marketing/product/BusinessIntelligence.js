@@ -62,11 +62,57 @@ const Hero = () => {
                     <div className="w-3 h-3 rounded-full bg-blue-500"></div>
                   </div>
                 </div>
-                <img
-                  src="https://placehold.co/550x400/e2e8f0/475569?text=BI+Dashboard+View"
-                  alt="Business Intelligence dashboard"
-                  className="w-full rounded-lg"
-                />
+                {/* Business Intelligence Mockup */}
+                <div className="bg-white rounded-lg p-4">
+                  {/* Header */}
+                  <div className="flex items-center justify-between mb-4 pb-3 border-b border-gray-100">
+                    <div className="flex items-center gap-2">
+                      <BarChart3 className="w-4 h-4 text-[#4E74FF]" />
+                      <span className="text-gray-900 text-sm font-medium">Business Intelligence</span>
+                    </div>
+                    <span className="text-gray-400 text-xs">Q4 2024</span>
+                  </div>
+
+                  {/* Trend Chart */}
+                  <div className="mb-4">
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="text-gray-600 text-xs">Rating Trend</span>
+                      <span className="text-emerald-600 text-xs font-medium flex items-center gap-1">
+                        <TrendingUp className="w-3 h-3" /> +0.4
+                      </span>
+                    </div>
+                    <div className="flex items-end justify-between h-16 gap-1">
+                      {[4.1, 4.2, 4.1, 4.3, 4.4, 4.3, 4.5, 4.6, 4.5, 4.6, 4.7, 4.5].map((v, i) => (
+                        <div key={i} className="flex-1 bg-[#4E74FF] rounded-t opacity-60 hover:opacity-100 transition-opacity" style={{height: `${(v/5)*100}%`}}></div>
+                      ))}
+                    </div>
+                    <div className="flex justify-between mt-1">
+                      <span className="text-gray-400 text-[10px]">Oct</span>
+                      <span className="text-gray-400 text-[10px]">Nov</span>
+                      <span className="text-gray-400 text-[10px]">Dec</span>
+                    </div>
+                  </div>
+
+                  {/* Key Metrics */}
+                  <div className="grid grid-cols-2 gap-2 mb-3">
+                    <div className="bg-gray-50 rounded-lg p-2">
+                      <p className="text-gray-500 text-[10px] mb-1">Avg Response</p>
+                      <p className="text-gray-900 text-sm font-bold">52s</p>
+                      <span className="text-emerald-600 text-[10px]">-8s vs last quarter</span>
+                    </div>
+                    <div className="bg-gray-50 rounded-lg p-2">
+                      <p className="text-gray-500 text-[10px] mb-1">Issues Resolved</p>
+                      <p className="text-gray-900 text-sm font-bold">94%</p>
+                      <span className="text-emerald-600 text-[10px]">+6% vs last quarter</span>
+                    </div>
+                  </div>
+
+                  {/* Export Button */}
+                  <button className="w-full bg-gray-100 hover:bg-gray-200 rounded-lg py-2 flex items-center justify-center gap-2 transition-colors">
+                    <Download className="w-3 h-3 text-gray-600" />
+                    <span className="text-gray-600 text-xs font-medium">Export Report</span>
+                  </button>
+                </div>
               </div>
             </div>
           </div>

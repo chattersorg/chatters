@@ -57,15 +57,6 @@ const Hero = () => (
         {/* Right Column - Product Screenshot */}
         <div className="relative">
           <div className="bg-white rounded-xl shadow-2xl border border-gray-200 overflow-hidden">
-            {/* Browser Chrome */}
-            <div className="bg-gray-100 px-4 py-3 border-b border-gray-200 flex items-center gap-2">
-              <div className="w-3 h-3 rounded-full bg-red-400"></div>
-              <div className="w-3 h-3 rounded-full bg-yellow-400"></div>
-              <div className="w-3 h-3 rounded-full bg-green-400"></div>
-              <div className="ml-4 flex-1 bg-white rounded-md px-3 py-1 text-sm text-gray-400">
-                my.getchatters.com/nps
-              </div>
-            </div>
             {/* NPS Dashboard Mockup */}
             <div className="bg-white p-4">
               {/* NPS Score Display */}

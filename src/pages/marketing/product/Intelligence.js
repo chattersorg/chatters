@@ -62,11 +62,73 @@ const Hero = () => {
                     <div className="w-3 h-3 rounded-full bg-blue-500"></div>
                   </div>
                 </div>
-                <img
-                  src="https://placehold.co/550x400/e2e8f0/475569?text=Sentiment+Analysis+View"
-                  alt="Sentiment analysis dashboard"
-                  className="w-full rounded-lg"
-                />
+                {/* Intelligence/Sentiment Analysis Mockup */}
+                <div className="bg-white rounded-lg p-4">
+                  {/* Header */}
+                  <div className="flex items-center justify-between mb-4 pb-3 border-b border-gray-100">
+                    <div className="flex items-center gap-2">
+                      <Brain className="w-4 h-4 text-[#4E74FF]" />
+                      <span className="text-gray-900 text-sm font-medium">Sentiment Analysis</span>
+                    </div>
+                    <span className="text-gray-400 text-xs">Live</span>
+                  </div>
+
+                  {/* Analyzed Feedback */}
+                  <div className="space-y-3">
+                    <div className="bg-gray-50 rounded-lg p-3">
+                      <div className="flex items-center justify-between mb-2">
+                        <span className="text-gray-900 text-xs font-medium">Table 6</span>
+                        <div className="flex items-center gap-1">
+                          {[1,2,3,4].map(s => <Star key={s} className="w-3 h-3 fill-yellow-400 text-yellow-400" />)}
+                          <Star className="w-3 h-3 text-gray-200" />
+                        </div>
+                      </div>
+                      <p className="text-gray-600 text-xs mb-2">"Food was delicious but we waited ages for our mains"</p>
+                      <div className="flex flex-wrap gap-1">
+                        <span className="bg-emerald-100 text-emerald-700 text-[10px] px-2 py-0.5 rounded-full flex items-center gap-1">
+                          <Heart className="w-2.5 h-2.5" /> Food quality
+                        </span>
+                        <span className="bg-red-100 text-red-700 text-[10px] px-2 py-0.5 rounded-full flex items-center gap-1">
+                          <AlertTriangle className="w-2.5 h-2.5" /> Wait time
+                        </span>
+                      </div>
+                    </div>
+
+                    <div className="bg-gray-50 rounded-lg p-3">
+                      <div className="flex items-center justify-between mb-2">
+                        <span className="text-gray-900 text-xs font-medium">Table 2</span>
+                        <div className="flex items-center gap-1">
+                          {[1,2,3,4,5].map(s => <Star key={s} className="w-3 h-3 fill-yellow-400 text-yellow-400" />)}
+                        </div>
+                      </div>
+                      <p className="text-gray-600 text-xs mb-2">"Emma was fantastic, best service we've had!"</p>
+                      <div className="flex flex-wrap gap-1">
+                        <span className="bg-emerald-100 text-emerald-700 text-[10px] px-2 py-0.5 rounded-full flex items-center gap-1">
+                          <Sparkles className="w-2.5 h-2.5" /> Staff mention
+                        </span>
+                        <span className="bg-emerald-100 text-emerald-700 text-[10px] px-2 py-0.5 rounded-full flex items-center gap-1">
+                          <Heart className="w-2.5 h-2.5" /> Service
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* Sentiment Summary */}
+                    <div className="grid grid-cols-3 gap-2 pt-2">
+                      <div className="text-center">
+                        <p className="text-emerald-600 text-lg font-bold">72%</p>
+                        <p className="text-gray-400 text-[10px]">Positive</p>
+                      </div>
+                      <div className="text-center">
+                        <p className="text-gray-500 text-lg font-bold">18%</p>
+                        <p className="text-gray-400 text-[10px]">Neutral</p>
+                      </div>
+                      <div className="text-center">
+                        <p className="text-red-500 text-lg font-bold">10%</p>
+                        <p className="text-gray-400 text-[10px]">Negative</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
           </div>

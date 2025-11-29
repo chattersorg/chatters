@@ -63,11 +63,48 @@ const Hero = () => {
                     <div className="w-3 h-3 rounded-full bg-blue-500"></div>
                   </div>
                 </div>
-                <img
-                  src="https://placehold.co/550x400/e2e8f0/475569?text=Recognition+Email"
-                  alt="Staff recognition email preview"
-                  className="w-full rounded-lg"
-                />
+                {/* Staff Recognition Mockup - Email Preview */}
+                <div className="bg-white rounded-lg p-4">
+                  {/* Email Header */}
+                  <div className="border-b border-gray-100 pb-3 mb-3">
+                    <div className="flex items-center gap-2 mb-2">
+                      <div className="w-8 h-8 bg-[#4E74FF] rounded-full flex items-center justify-center">
+                        <Sparkles className="w-4 h-4 text-white" />
+                      </div>
+                      <div>
+                        <p className="text-gray-900 text-xs font-medium">Chatters Recognition</p>
+                        <p className="text-gray-400 text-[10px]">to: sarah.chen@venue.com</p>
+                      </div>
+                    </div>
+                    <p className="text-gray-900 text-sm font-semibold">You've been mentioned by a guest!</p>
+                  </div>
+
+                  {/* Email Body */}
+                  <div className="space-y-3">
+                    <div className="bg-gradient-to-r from-[#4E74FF]/10 to-emerald-50 rounded-lg p-3 text-center">
+                      <Award className="w-10 h-10 text-[#4E74FF] mx-auto mb-2" />
+                      <p className="text-gray-900 text-sm font-semibold mb-1">Great job, Sarah!</p>
+                      <p className="text-gray-500 text-xs">A guest just praised your service</p>
+                    </div>
+
+                    <div className="bg-gray-50 rounded-lg p-3">
+                      <div className="flex items-center gap-1 mb-2">
+                        {[1,2,3,4,5].map(s => <Star key={s} className="w-4 h-4 fill-yellow-400 text-yellow-400" />)}
+                      </div>
+                      <p className="text-gray-700 text-xs italic mb-2">
+                        "Sarah was absolutely wonderful! She made our anniversary dinner so special. Thank you!"
+                      </p>
+                      <p className="text-gray-400 text-[10px]">Table 12 • Today at 8:45 PM</p>
+                    </div>
+
+                    <div className="text-center">
+                      <span className="inline-flex items-center gap-1 text-[#4E74FF] text-xs font-medium">
+                        <Heart className="w-3 h-3 fill-[#4E74FF]" />
+                        Keep up the great work!
+                      </span>
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
           </div>

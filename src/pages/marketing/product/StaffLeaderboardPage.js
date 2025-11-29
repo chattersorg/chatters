@@ -62,11 +62,82 @@ const Hero = () => {
                     <div className="w-3 h-3 rounded-full bg-blue-500"></div>
                   </div>
                 </div>
-                <img
-                  src="https://placehold.co/550x400/e2e8f0/475569?text=Staff+Leaderboard"
-                  alt="Staff leaderboard showing top performers"
-                  className="w-full rounded-lg"
-                />
+                {/* Staff Leaderboard Mockup */}
+                <div className="bg-white rounded-lg p-4">
+                  {/* Header */}
+                  <div className="flex items-center justify-between mb-4 pb-3 border-b border-gray-100">
+                    <div className="flex items-center gap-2">
+                      <Trophy className="w-4 h-4 text-[#4E74FF]" />
+                      <span className="text-gray-900 text-sm font-medium">Leaderboard</span>
+                    </div>
+                    <span className="text-gray-400 text-xs">This Week</span>
+                  </div>
+
+                  {/* Top 3 Podium */}
+                  <div className="flex items-end justify-center gap-2 mb-4">
+                    {/* 2nd Place */}
+                    <div className="text-center">
+                      <div className="w-10 h-10 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-1">
+                        <span className="text-gray-700 text-xs font-medium">TJ</span>
+                      </div>
+                      <div className="bg-gray-200 rounded-t-lg w-12 h-12 flex items-center justify-center">
+                        <span className="text-gray-600 text-sm font-bold">2</span>
+                      </div>
+                    </div>
+                    {/* 1st Place */}
+                    <div className="text-center">
+                      <div className="w-12 h-12 bg-yellow-100 rounded-full flex items-center justify-center mx-auto mb-1 ring-2 ring-yellow-400">
+                        <span className="text-yellow-700 text-sm font-medium">SC</span>
+                      </div>
+                      <div className="bg-yellow-400 rounded-t-lg w-14 h-16 flex items-center justify-center">
+                        <Trophy className="w-5 h-5 text-yellow-800" />
+                      </div>
+                    </div>
+                    {/* 3rd Place */}
+                    <div className="text-center">
+                      <div className="w-10 h-10 bg-amber-50 rounded-full flex items-center justify-center mx-auto mb-1">
+                        <span className="text-amber-700 text-xs font-medium">EW</span>
+                      </div>
+                      <div className="bg-amber-200 rounded-t-lg w-12 h-10 flex items-center justify-center">
+                        <span className="text-amber-700 text-sm font-bold">3</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Leaderboard List */}
+                  <div className="space-y-2">
+                    <div className="flex items-center justify-between bg-yellow-50 border border-yellow-100 rounded-lg p-2">
+                      <div className="flex items-center gap-2">
+                        <span className="w-5 h-5 bg-yellow-400 rounded-full flex items-center justify-center text-[10px] font-bold text-yellow-800">1</span>
+                        <span className="text-gray-900 text-xs font-medium">Sarah Chen</span>
+                      </div>
+                      <div className="flex items-center gap-1">
+                        <Star className="w-3 h-3 fill-yellow-400 text-yellow-400" />
+                        <span className="text-gray-900 text-xs font-medium">4.9</span>
+                      </div>
+                    </div>
+                    <div className="flex items-center justify-between bg-gray-50 rounded-lg p-2">
+                      <div className="flex items-center gap-2">
+                        <span className="w-5 h-5 bg-gray-300 rounded-full flex items-center justify-center text-[10px] font-bold text-gray-600">2</span>
+                        <span className="text-gray-900 text-xs font-medium">Tom Jones</span>
+                      </div>
+                      <div className="flex items-center gap-1">
+                        <Star className="w-3 h-3 fill-yellow-400 text-yellow-400" />
+                        <span className="text-gray-900 text-xs font-medium">4.7</span>
+                      </div>
+                    </div>
+                    <div className="flex items-center justify-between bg-gray-50 rounded-lg p-2">
+                      <div className="flex items-center gap-2">
+                        <span className="w-5 h-5 bg-amber-200 rounded-full flex items-center justify-center text-[10px] font-bold text-amber-700">3</span>
+                        <span className="text-gray-900 text-xs font-medium">Emma Wilson</span>
+                      </div>
+                      <div className="flex items-center gap-1">
+                        <Star className="w-3 h-3 fill-yellow-400 text-yellow-400" />
+                        <span className="text-gray-900 text-xs font-medium">4.6</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
