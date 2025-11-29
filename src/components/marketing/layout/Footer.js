@@ -121,14 +121,6 @@ const Footer = () => {
             <ul className="space-y-2 text-gray-400 font-satoshi">
               <li>
                 <a
-                  href="/about"
-                  className="hover:text-white transition-colors"
-                >
-                  About
-                </a>
-              </li>
-              <li>
-                <a
                   href="/blog"
                   className="hover:text-white transition-colors"
                 >

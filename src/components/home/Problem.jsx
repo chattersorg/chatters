@@ -7,10 +7,19 @@ const GuestJourneyGraphic = () => {
 
   useEffect(() => {
     const interval = setInterval(() => {
-      setActiveStep((prev) => (prev + 1) % 5);
+      setActiveStep((prev) => {
+        // When we reach step 5 (all lit), reset to 0 after a pause
+        if (prev >= 4) {
+          return 0;
+        }
+        return prev + 1;
+      });
     }, 2000);
     return () => clearInterval(interval);
   }, []);
+
+  // Check if a step should be lit (active or already passed)
+  const isLit = (index) => index <= activeStep;
 
   const steps = [
     { id: 0, label: 'Guest frustrated', icon: Frown },
@@ -21,33 +30,33 @@ const GuestJourneyGraphic = () => {
   ];
 
   // Icon for step indicator
-  const StepIcon = ({ step, isActive, isPast }) => {
+  const StepIcon = ({ step, isActive, isLit }) => {
     const Icon = step.icon;
     return (
-      <Icon className={`w-5 h-5 ${isActive ? 'text-white' : isPast ? 'text-white/70' : 'text-slate-400'}`} />
+      <Icon className={`w-5 h-5 ${isLit ? 'text-white' : 'text-slate-400'}`} />
     );
   };
 
   // Visual components for each step
   const StepVisual = ({ index }) => {
     const isActive = activeStep === index;
-    const isPast = activeStep > index;
+    const stepIsLit = isLit(index);
 
     switch (index) {
       case 0: // Guest frustrated at table
         return (
-          <div className={`relative transition-all duration-500 ${isActive ? 'scale-110' : isPast ? 'scale-100 opacity-60' : 'scale-90 opacity-40'}`}>
+          <div className={`relative transition-all duration-500 ${stepIsLit ? 'scale-100' : 'scale-90 opacity-40'}`}>
             {/* Table */}
             <div className="w-14 h-8 bg-slate-700 rounded-lg border-2 border-slate-600 mx-auto"></div>
             {/* Person at table */}
             <div className={`absolute -top-7 left-1/2 -translate-x-1/2 w-9 h-9 rounded-full flex items-center justify-center transition-colors duration-300 ${
-              isActive ? 'bg-red-500' : 'bg-slate-600'
+              stepIsLit ? 'bg-red-500' : 'bg-slate-600'
             }`}>
               <User className="w-5 h-5 text-white" />
             </div>
             {/* Frustration indicator */}
-            {isActive && (
-              <div className="absolute -top-12 left-1/2 -translate-x-1/2 w-6 h-6 bg-red-500 rounded-full flex items-center justify-center animate-bounce">
+            {stepIsLit && (
+              <div className={`absolute -top-12 left-1/2 -translate-x-1/2 w-6 h-6 bg-red-500 rounded-full flex items-center justify-center ${isActive ? 'animate-bounce' : ''}`}>
                 <Frown className="w-4 h-4 text-white" />
               </div>
             )}
@@ -58,27 +67,27 @@ const GuestJourneyGraphic = () => {
 
       case 1: // Stays silent
         return (
-          <div className={`relative transition-all duration-500 ${isActive ? 'scale-110' : isPast ? 'scale-100 opacity-60' : 'scale-90 opacity-40'}`}>
+          <div className={`relative transition-all duration-500 ${stepIsLit ? 'scale-100' : 'scale-90 opacity-40'}`}>
             <div className={`w-12 h-12 rounded-full flex items-center justify-center border-2 transition-all duration-300 mx-auto ${
-              isActive ? 'bg-amber-500/20 border-amber-500' : 'bg-slate-700/50 border-slate-600'
+              stepIsLit ? 'bg-amber-500/20 border-amber-500' : 'bg-slate-700/50 border-slate-600'
             }`}>
-              <MessageSquareOff className={`w-6 h-6 ${isActive ? 'text-amber-400' : 'text-slate-500'}`} />
+              <MessageSquareOff className={`w-6 h-6 ${stepIsLit ? 'text-amber-400' : 'text-slate-500'}`} />
             </div>
           </div>
         );
 
       case 2: // Leaves quietly
         return (
-          <div className={`relative transition-all duration-500 ${isActive ? 'scale-110' : isPast ? 'scale-100 opacity-60' : 'scale-90 opacity-40'}`}>
+          <div className={`relative transition-all duration-500 ${stepIsLit ? 'scale-100' : 'scale-90 opacity-40'}`}>
             {/* Door */}
             <div className={`w-10 h-14 rounded-t-lg border-2 flex items-center justify-center transition-colors duration-300 mx-auto ${
-              isActive ? 'bg-slate-600 border-amber-500' : 'bg-slate-700 border-slate-600'
+              stepIsLit ? 'bg-slate-600 border-amber-500' : 'bg-slate-700 border-slate-600'
             }`}>
-              <DoorOpen className={`w-5 h-5 ${isActive ? 'text-amber-400' : 'text-slate-500'}`} />
+              <DoorOpen className={`w-5 h-5 ${stepIsLit ? 'text-amber-400' : 'text-slate-500'}`} />
             </div>
             {/* Person leaving */}
-            {isActive && (
-              <div className="absolute left-0 top-1/2 -translate-y-1/2 w-7 h-7 bg-amber-500 rounded-full flex items-center justify-center animate-[slideRight_1s_ease-in-out_infinite]">
+            {stepIsLit && (
+              <div className={`absolute left-0 top-1/2 -translate-y-1/2 w-7 h-7 bg-amber-500 rounded-full flex items-center justify-center ${isActive ? 'animate-[slideRight_1s_ease-in-out_infinite]' : ''}`}>
                 <User className="w-4 h-4 text-white" />
               </div>
             )}
@@ -87,16 +96,16 @@ const GuestJourneyGraphic = () => {
 
       case 3: // Posts 1-star review
         return (
-          <div className={`relative transition-all duration-500 ${isActive ? 'scale-110' : isPast ? 'scale-100 opacity-60' : 'scale-90 opacity-40'}`}>
+          <div className={`relative transition-all duration-500 ${stepIsLit ? 'scale-100' : 'scale-90 opacity-40'}`}>
             {/* Phone */}
             <div className={`w-11 h-[70px] rounded-xl border-2 p-1 transition-colors duration-300 mx-auto ${
-              isActive ? 'bg-slate-800 border-red-500' : 'bg-slate-700 border-slate-600'
+              stepIsLit ? 'bg-slate-800 border-red-500' : 'bg-slate-700 border-slate-600'
             }`}>
               <div className="w-full h-full bg-slate-900 rounded-lg p-1 flex flex-col">
                 <div className="text-[5px] text-slate-400 mb-0.5">Review</div>
                 {/* Stars */}
                 <div className="flex gap-0.5 mb-1 justify-center">
-                  <Star className={`w-2 h-2 ${isActive ? 'fill-red-500 text-red-500' : 'fill-slate-600 text-slate-600'}`} />
+                  <Star className={`w-2 h-2 ${stepIsLit ? 'fill-red-500 text-red-500' : 'fill-slate-600 text-slate-600'}`} />
                   <Star className="w-2 h-2 text-slate-600" />
                   <Star className="w-2 h-2 text-slate-600" />
                   <Star className="w-2 h-2 text-slate-600" />
@@ -108,7 +117,7 @@ const GuestJourneyGraphic = () => {
                   <div className="h-0.5 bg-slate-700 rounded w-3/4"></div>
                 </div>
                 {/* Post button */}
-                {isActive && (
+                {stepIsLit && (
                   <div className="bg-red-500 rounded text-[4px] text-white text-center py-0.5 mt-auto">
                     Posted
                   </div>
@@ -120,15 +129,15 @@ const GuestJourneyGraphic = () => {
 
       case 4: // Manager sees too late
         return (
-          <div className={`relative transition-all duration-500 ${isActive ? 'scale-110' : isPast ? 'scale-100 opacity-60' : 'scale-90 opacity-40'}`}>
+          <div className={`relative transition-all duration-500 ${stepIsLit ? 'scale-100' : 'scale-90 opacity-40'}`}>
             {/* Manager alert */}
             <div className={`w-14 h-10 rounded-lg border-2 flex items-center justify-center transition-colors duration-300 mx-auto ${
-              isActive ? 'bg-red-900/50 border-red-500' : 'bg-slate-700 border-slate-600'
+              stepIsLit ? 'bg-red-900/50 border-red-500' : 'bg-slate-700 border-slate-600'
             }`}>
-              <AlertTriangle className={`w-5 h-5 ${isActive ? 'text-red-400' : 'text-slate-500'}`} />
+              <AlertTriangle className={`w-5 h-5 ${stepIsLit ? 'text-red-400' : 'text-slate-500'}`} />
             </div>
             {/* Too late indicator */}
-            {isActive && (
+            {stepIsLit && (
               <div className="absolute -top-5 left-1/2 -translate-x-1/2 bg-red-500 text-white text-[9px] px-1.5 py-0.5 rounded-full whitespace-nowrap flex items-center gap-0.5">
                 <Clock className="w-2.5 h-2.5" />
                 Too late!
@@ -162,24 +171,24 @@ const GuestJourneyGraphic = () => {
             {/* Step indicator dot with icon */}
             <div
               className={`w-10 h-10 rounded-full flex items-center justify-center transition-all duration-300 ${
-                activeStep === index
-                  ? 'bg-red-500 scale-110 ring-4 ring-red-500/30'
-                  : activeStep > index
-                  ? 'bg-red-500/50'
+                isLit(index)
+                  ? activeStep === index
+                    ? 'bg-red-500 scale-110 ring-4 ring-red-500/30'
+                    : 'bg-red-500'
                   : 'bg-slate-700'
               }`}
             >
               <StepIcon
                 step={step}
                 isActive={activeStep === index}
-                isPast={activeStep > index}
+                isLit={isLit(index)}
               />
             </div>
 
             {/* Label */}
             <p
               className={`text-xs mt-2 transition-colors duration-300 text-center max-w-[80px] ${
-                activeStep === index ? 'text-red-400 font-semibold' : 'text-slate-500'
+                isLit(index) ? 'text-red-400 font-semibold' : 'text-slate-500'
               }`}
             >
               {step.label}
@@ -191,10 +200,10 @@ const GuestJourneyGraphic = () => {
       {/* Impact message */}
       <div className="mt-8 text-center">
         <div className={`inline-flex items-center gap-2 px-4 py-2 rounded-full transition-all duration-500 ${
-          activeStep === 4 ? 'bg-red-500/20 border border-red-500/50' : 'bg-slate-700/50'
+          isLit(4) ? 'bg-red-500/20 border border-red-500/50' : 'bg-slate-700/50'
         }`}>
-          <AlertTriangle className={`w-4 h-4 ${activeStep === 4 ? 'text-red-400' : 'text-slate-500'}`} />
-          <span className={`text-sm ${activeStep === 4 ? 'text-red-400' : 'text-slate-400'}`}>
+          <AlertTriangle className={`w-4 h-4 ${isLit(4) ? 'text-red-400' : 'text-slate-500'}`} />
+          <span className={`text-sm ${isLit(4) ? 'text-red-400' : 'text-slate-400'}`}>
             This happens 68% of the time without real-time feedback
           </span>
         </div>
