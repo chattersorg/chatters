@@ -140,7 +140,7 @@ const KioskModeMockup = () => {
       </div>
 
       {/* Floor Plan */}
-      <div className="relative bg-slate-800 rounded-lg flex-1 min-h-[80px] mb-2">
+      <div className="relative bg-slate-800 rounded-lg flex-1 min-h-[120px] mb-2">
         {/* Grid pattern */}
         <div className="absolute inset-0 opacity-20" style={{
           backgroundImage: 'linear-gradient(to right, #475569 1px, transparent 1px), linear-gradient(to bottom, #475569 1px, transparent 1px)',
@@ -310,7 +310,7 @@ const Features = () => {
               className="bg-white rounded-2xl border border-gray-200 overflow-hidden shadow-sm hover:shadow-lg transition-shadow duration-300"
             >
               {/* Mockup */}
-              <div className="aspect-[16/10] p-4 bg-slate-100">
+              <div className="h-[280px] p-4 bg-slate-100">
                 <feature.component />
               </div>
 
