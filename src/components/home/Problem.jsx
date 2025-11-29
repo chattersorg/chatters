@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { User, DoorOpen, Star, AlertTriangle, Clock, X } from 'lucide-react';
+import { User, DoorOpen, Star, AlertTriangle, Clock, X, MessageSquareOff } from 'lucide-react';
 
 // Animated guest journey showing the problem
 const GuestJourneyGraphic = () => {
@@ -13,225 +13,181 @@ const GuestJourneyGraphic = () => {
   }, []);
 
   const steps = [
-    { id: 0, label: 'Guest frustrated', delay: 0 },
-    { id: 1, label: 'Stays silent', delay: 1 },
-    { id: 2, label: 'Leaves quietly', delay: 2 },
-    { id: 3, label: 'Posts 1-star review', delay: 3 },
-    { id: 4, label: 'Manager sees too late', delay: 4 },
+    { id: 0, label: 'Guest frustrated', emoji: '😤' },
+    { id: 1, label: 'Stays silent', emoji: '🤐' },
+    { id: 2, label: 'Leaves quietly', emoji: '🚶' },
+    { id: 3, label: 'Posts 1-star review', emoji: '⭐' },
+    { id: 4, label: 'Manager sees too late', emoji: '😱' },
   ];
 
-  return (
-    <div className="bg-slate-800/50 rounded-2xl p-6 lg:p-8 max-w-4xl mx-auto">
-      {/* Main visual area */}
-      <div className="relative h-48 mb-8">
-        {/* Restaurant scene background */}
-        <div className="absolute inset-0 flex items-center justify-center">
-          {/* Table representation */}
-          <div className="relative">
-            {/* The journey path */}
-            <svg className="absolute inset-0 w-full h-full" style={{ width: '600px', height: '180px', left: '-250px', top: '-40px' }}>
-              <defs>
-                <linearGradient id="pathGradient" x1="0%" y1="0%" x2="100%" y2="0%">
-                  <stop offset="0%" stopColor="#ef4444" stopOpacity="0.3" />
-                  <stop offset="100%" stopColor="#ef4444" stopOpacity="0.1" />
-                </linearGradient>
-              </defs>
-              {/* Dotted path line */}
-              <path
-                d="M 50 90 Q 150 90 200 70 Q 250 50 350 50 Q 450 50 500 90 Q 550 130 580 130"
-                fill="none"
-                stroke="url(#pathGradient)"
-                strokeWidth="3"
-                strokeDasharray="8 8"
-                className="opacity-50"
-              />
-            </svg>
+  // Visual components for each step
+  const StepVisual = ({ index }) => {
+    const isActive = activeStep === index;
+    const isPast = activeStep > index;
 
-            {/* Step 1: At table - frustrated */}
-            <div
-              className={`absolute transition-all duration-500 ${
-                activeStep >= 0 ? 'opacity-100 scale-100' : 'opacity-0 scale-75'
-              }`}
-              style={{ left: '-200px', top: '20px' }}
-            >
-              <div className={`relative ${activeStep === 0 ? 'animate-pulse' : ''}`}>
-                {/* Table */}
-                <div className="w-16 h-10 bg-slate-700 rounded-lg border-2 border-slate-600"></div>
-                {/* Person at table */}
-                <div className={`absolute -top-8 left-1/2 -translate-x-1/2 w-10 h-10 rounded-full flex items-center justify-center transition-colors duration-300 ${
-                  activeStep === 0 ? 'bg-red-500' : 'bg-slate-600'
-                }`}>
-                  <User className="w-5 h-5 text-white" />
-                </div>
-                {/* Frustration indicator */}
-                {activeStep === 0 && (
-                  <div className="absolute -top-12 left-1/2 -translate-x-1/2 bg-red-500 text-white text-xs px-2 py-1 rounded-full animate-bounce">
-                    😤
-                  </div>
-                )}
-                {/* Food on table */}
-                <div className="absolute top-2 left-1/2 -translate-x-1/2 w-4 h-3 bg-slate-500 rounded"></div>
-              </div>
+    switch (index) {
+      case 0: // Guest frustrated at table
+        return (
+          <div className={`relative transition-all duration-500 ${isActive ? 'scale-110' : isPast ? 'scale-100 opacity-60' : 'scale-90 opacity-40'}`}>
+            {/* Table */}
+            <div className="w-14 h-8 bg-slate-700 rounded-lg border-2 border-slate-600 mx-auto"></div>
+            {/* Person at table */}
+            <div className={`absolute -top-7 left-1/2 -translate-x-1/2 w-9 h-9 rounded-full flex items-center justify-center transition-colors duration-300 ${
+              isActive ? 'bg-red-500' : 'bg-slate-600'
+            }`}>
+              <User className="w-5 h-5 text-white" />
             </div>
-
-            {/* Step 2: Silent - not complaining */}
-            <div
-              className={`absolute transition-all duration-500 ${
-                activeStep >= 1 ? 'opacity-100 scale-100' : 'opacity-0 scale-75'
-              }`}
-              style={{ left: '-80px', top: '-10px' }}
-            >
-              <div className={`relative ${activeStep === 1 ? 'animate-pulse' : ''}`}>
-                {/* Thought bubble showing they're not speaking up */}
-                <div className={`w-14 h-14 rounded-full flex items-center justify-center border-2 transition-all duration-300 ${
-                  activeStep === 1 ? 'bg-amber-500/20 border-amber-500' : 'bg-slate-700/50 border-slate-600'
-                }`}>
-                  <div className="text-center">
-                    <X className={`w-5 h-5 mx-auto ${activeStep === 1 ? 'text-amber-400' : 'text-slate-500'}`} />
-                    <span className="text-[8px] text-slate-400">silent</span>
-                  </div>
-                </div>
+            {/* Frustration indicator */}
+            {isActive && (
+              <div className="absolute -top-12 left-1/2 -translate-x-1/2 text-xl animate-bounce">
+                😤
               </div>
-            </div>
+            )}
+            {/* Food on table */}
+            <div className="absolute top-1.5 left-1/2 -translate-x-1/2 w-3 h-2 bg-slate-500 rounded"></div>
+          </div>
+        );
 
-            {/* Step 3: Walking out */}
-            <div
-              className={`absolute transition-all duration-500 ${
-                activeStep >= 2 ? 'opacity-100 scale-100' : 'opacity-0 scale-75'
-              }`}
-              style={{ left: '60px', top: '-20px' }}
-            >
-              <div className={`relative ${activeStep === 2 ? '' : ''}`}>
-                {/* Door */}
-                <div className={`w-12 h-16 rounded-t-lg border-2 flex items-center justify-center transition-colors duration-300 ${
-                  activeStep === 2 ? 'bg-slate-600 border-amber-500' : 'bg-slate-700 border-slate-600'
-                }`}>
-                  <DoorOpen className={`w-6 h-6 ${activeStep === 2 ? 'text-amber-400' : 'text-slate-500'}`} />
-                </div>
-                {/* Person leaving */}
-                {activeStep === 2 && (
-                  <div className="absolute -left-6 top-1/2 -translate-y-1/2 w-8 h-8 bg-amber-500 rounded-full flex items-center justify-center animate-[slideRight_1s_ease-in-out_infinite]">
-                    <User className="w-4 h-4 text-white" />
-                  </div>
-                )}
+      case 1: // Stays silent
+        return (
+          <div className={`relative transition-all duration-500 ${isActive ? 'scale-110' : isPast ? 'scale-100 opacity-60' : 'scale-90 opacity-40'}`}>
+            <div className={`w-12 h-12 rounded-full flex items-center justify-center border-2 transition-all duration-300 mx-auto ${
+              isActive ? 'bg-amber-500/20 border-amber-500' : 'bg-slate-700/50 border-slate-600'
+            }`}>
+              <MessageSquareOff className={`w-6 h-6 ${isActive ? 'text-amber-400' : 'text-slate-500'}`} />
+            </div>
+            {isActive && (
+              <div className="absolute -top-2 left-1/2 -translate-x-1/2 text-xl">
+                🤐
               </div>
-            </div>
+            )}
+          </div>
+        );
 
-            {/* Step 4: Phone with 1-star review */}
-            <div
-              className={`absolute transition-all duration-500 ${
-                activeStep >= 3 ? 'opacity-100 scale-100' : 'opacity-0 scale-75'
-              }`}
-              style={{ left: '180px', top: '10px' }}
-            >
-              <div className={`relative ${activeStep === 3 ? 'animate-pulse' : ''}`}>
-                {/* Phone */}
-                <div className={`w-14 h-24 rounded-xl border-2 p-1 transition-colors duration-300 ${
-                  activeStep === 3 ? 'bg-slate-800 border-red-500' : 'bg-slate-700 border-slate-600'
-                }`}>
-                  {/* Screen content */}
-                  <div className="w-full h-full bg-slate-900 rounded-lg p-1.5 flex flex-col">
-                    <div className="text-[6px] text-slate-400 mb-1">Review</div>
-                    {/* Stars */}
-                    <div className="flex gap-0.5 mb-1">
-                      <Star className={`w-2.5 h-2.5 ${activeStep === 3 ? 'fill-red-500 text-red-500' : 'fill-slate-600 text-slate-600'}`} />
-                      <Star className="w-2.5 h-2.5 text-slate-600" />
-                      <Star className="w-2.5 h-2.5 text-slate-600" />
-                      <Star className="w-2.5 h-2.5 text-slate-600" />
-                      <Star className="w-2.5 h-2.5 text-slate-600" />
-                    </div>
-                    {/* Review text lines */}
-                    <div className="space-y-0.5">
-                      <div className="h-1 bg-slate-700 rounded w-full"></div>
-                      <div className="h-1 bg-slate-700 rounded w-3/4"></div>
-                      <div className="h-1 bg-slate-700 rounded w-1/2"></div>
-                    </div>
-                    {/* Post button */}
-                    {activeStep === 3 && (
-                      <div className="mt-auto bg-red-500 rounded text-[5px] text-white text-center py-0.5">
-                        Posted
-                      </div>
-                    )}
-                  </div>
-                </div>
+      case 2: // Leaves quietly
+        return (
+          <div className={`relative transition-all duration-500 ${isActive ? 'scale-110' : isPast ? 'scale-100 opacity-60' : 'scale-90 opacity-40'}`}>
+            {/* Door */}
+            <div className={`w-10 h-14 rounded-t-lg border-2 flex items-center justify-center transition-colors duration-300 mx-auto ${
+              isActive ? 'bg-slate-600 border-amber-500' : 'bg-slate-700 border-slate-600'
+            }`}>
+              <DoorOpen className={`w-5 h-5 ${isActive ? 'text-amber-400' : 'text-slate-500'}`} />
+            </div>
+            {/* Person leaving */}
+            {isActive && (
+              <div className="absolute left-0 top-1/2 -translate-y-1/2 w-7 h-7 bg-amber-500 rounded-full flex items-center justify-center animate-[slideRight_1s_ease-in-out_infinite]">
+                <User className="w-4 h-4 text-white" />
               </div>
-            </div>
+            )}
+          </div>
+        );
 
-            {/* Step 5: Manager seeing too late */}
-            <div
-              className={`absolute transition-all duration-500 ${
-                activeStep >= 4 ? 'opacity-100 scale-100' : 'opacity-0 scale-75'
-              }`}
-              style={{ left: '300px', top: '30px' }}
-            >
-              <div className={`relative ${activeStep === 4 ? 'animate-pulse' : ''}`}>
-                {/* Manager with laptop */}
-                <div className={`w-16 h-12 rounded-lg border-2 flex items-center justify-center transition-colors duration-300 ${
-                  activeStep === 4 ? 'bg-red-900/50 border-red-500' : 'bg-slate-700 border-slate-600'
-                }`}>
-                  <div className="text-center">
-                    <AlertTriangle className={`w-5 h-5 mx-auto ${activeStep === 4 ? 'text-red-400' : 'text-slate-500'}`} />
-                  </div>
+      case 3: // Posts 1-star review
+        return (
+          <div className={`relative transition-all duration-500 ${isActive ? 'scale-110' : isPast ? 'scale-100 opacity-60' : 'scale-90 opacity-40'}`}>
+            {/* Phone */}
+            <div className={`w-11 h-[70px] rounded-xl border-2 p-1 transition-colors duration-300 mx-auto ${
+              isActive ? 'bg-slate-800 border-red-500' : 'bg-slate-700 border-slate-600'
+            }`}>
+              <div className="w-full h-full bg-slate-900 rounded-lg p-1 flex flex-col">
+                <div className="text-[5px] text-slate-400 mb-0.5">Review</div>
+                {/* Stars */}
+                <div className="flex gap-0.5 mb-1 justify-center">
+                  <Star className={`w-2 h-2 ${isActive ? 'fill-red-500 text-red-500' : 'fill-slate-600 text-slate-600'}`} />
+                  <Star className="w-2 h-2 text-slate-600" />
+                  <Star className="w-2 h-2 text-slate-600" />
+                  <Star className="w-2 h-2 text-slate-600" />
+                  <Star className="w-2 h-2 text-slate-600" />
                 </div>
-                {/* Too late indicator */}
-                {activeStep === 4 && (
-                  <div className="absolute -top-6 left-1/2 -translate-x-1/2 bg-red-500 text-white text-[10px] px-2 py-1 rounded-full whitespace-nowrap flex items-center gap-1">
-                    <Clock className="w-3 h-3" />
-                    Too late!
-                  </div>
-                )}
-                {/* Reaction */}
-                {activeStep === 4 && (
-                  <div className="absolute -bottom-4 left-1/2 -translate-x-1/2 text-lg">
-                    😱
+                {/* Review text lines */}
+                <div className="space-y-0.5 flex-1">
+                  <div className="h-0.5 bg-slate-700 rounded w-full"></div>
+                  <div className="h-0.5 bg-slate-700 rounded w-3/4"></div>
+                </div>
+                {/* Post button */}
+                {isActive && (
+                  <div className="bg-red-500 rounded text-[4px] text-white text-center py-0.5 mt-auto">
+                    Posted
                   </div>
                 )}
               </div>
             </div>
           </div>
-        </div>
-      </div>
+        );
 
-      {/* Step indicators */}
-      <div className="flex items-center justify-between max-w-2xl mx-auto">
-        {steps.map((step, index) => (
-          <div key={step.id} className="flex items-center">
-            <div className="flex flex-col items-center">
-              <div
-                className={`w-10 h-10 rounded-full flex items-center justify-center transition-all duration-300 ${
-                  activeStep === index
-                    ? 'bg-red-500 scale-110'
-                    : activeStep > index
-                    ? 'bg-red-500/50'
-                    : 'bg-slate-700'
-                }`}
-              >
-                <span className="text-lg">
-                  {index === 0 && '😤'}
-                  {index === 1 && '🤐'}
-                  {index === 2 && '🚶'}
-                  {index === 3 && '⭐'}
-                  {index === 4 && '😱'}
-                </span>
-              </div>
-              <p
-                className={`text-xs mt-2 transition-colors duration-300 text-center max-w-[70px] ${
-                  activeStep === index ? 'text-red-400 font-semibold' : 'text-slate-500'
-                }`}
-              >
-                {step.label}
-              </p>
+      case 4: // Manager sees too late
+        return (
+          <div className={`relative transition-all duration-500 ${isActive ? 'scale-110' : isPast ? 'scale-100 opacity-60' : 'scale-90 opacity-40'}`}>
+            {/* Manager alert */}
+            <div className={`w-14 h-10 rounded-lg border-2 flex items-center justify-center transition-colors duration-300 mx-auto ${
+              isActive ? 'bg-red-900/50 border-red-500' : 'bg-slate-700 border-slate-600'
+            }`}>
+              <AlertTriangle className={`w-5 h-5 ${isActive ? 'text-red-400' : 'text-slate-500'}`} />
             </div>
-            {/* Connector line */}
+            {/* Too late indicator */}
+            {isActive && (
+              <>
+                <div className="absolute -top-5 left-1/2 -translate-x-1/2 bg-red-500 text-white text-[9px] px-1.5 py-0.5 rounded-full whitespace-nowrap flex items-center gap-0.5">
+                  <Clock className="w-2.5 h-2.5" />
+                  Too late!
+                </div>
+                <div className="absolute -bottom-5 left-1/2 -translate-x-1/2 text-lg">
+                  😱
+                </div>
+              </>
+            )}
+          </div>
+        );
+
+      default:
+        return null;
+    }
+  };
+
+  return (
+    <div className="bg-slate-800/50 rounded-2xl p-6 lg:p-8 max-w-3xl mx-auto">
+      {/* Combined visual + indicators in one aligned grid */}
+      <div className="flex items-end justify-between max-w-2xl mx-auto">
+        {steps.map((step, index) => (
+          <div key={step.id} className="flex flex-col items-center relative">
+            {/* Visual above */}
+            <div className="h-24 flex items-end justify-center mb-4">
+              <StepVisual index={index} />
+            </div>
+
+            {/* Connector arrow to next step */}
             {index < steps.length - 1 && (
-              <div className="hidden sm:block w-8 lg:w-12 h-0.5 mx-1 lg:mx-2">
-                <div
-                  className={`h-full transition-all duration-500 ${
-                    activeStep > index ? 'bg-red-500' : 'bg-slate-700'
-                  }`}
-                />
+              <div className="absolute top-12 -right-4 sm:-right-6 lg:-right-8 w-8 sm:w-12 lg:w-16 flex items-center z-10">
+                <div className={`flex-1 h-0.5 transition-colors duration-500 ${
+                  activeStep > index ? 'bg-red-500' : 'bg-slate-700'
+                }`}></div>
+                <div className={`w-0 h-0 border-t-4 border-b-4 border-l-6 border-t-transparent border-b-transparent transition-colors duration-500 ${
+                  activeStep > index ? 'border-l-red-500' : 'border-l-slate-700'
+                }`} style={{ borderLeftWidth: '6px' }}></div>
               </div>
             )}
+
+            {/* Step indicator dot */}
+            <div
+              className={`w-10 h-10 rounded-full flex items-center justify-center transition-all duration-300 ${
+                activeStep === index
+                  ? 'bg-red-500 scale-110 ring-4 ring-red-500/30'
+                  : activeStep > index
+                  ? 'bg-red-500/50'
+                  : 'bg-slate-700'
+              }`}
+            >
+              <span className="text-lg">{step.emoji}</span>
+            </div>
+
+            {/* Label */}
+            <p
+              className={`text-xs mt-2 transition-colors duration-300 text-center max-w-[80px] ${
+                activeStep === index ? 'text-red-400 font-semibold' : 'text-slate-500'
+              }`}
+            >
+              {step.label}
+            </p>
           </div>
         ))}
       </div>
@@ -289,7 +245,7 @@ const Problem = () => {
       <style jsx>{`
         @keyframes slideRight {
           0%, 100% { transform: translateX(0) translateY(-50%); }
-          50% { transform: translateX(10px) translateY(-50%); }
+          50% { transform: translateX(8px) translateY(-50%); }
         }
       `}</style>
     </section>
