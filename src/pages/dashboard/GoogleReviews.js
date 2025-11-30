@@ -278,7 +278,7 @@ const DemoReviewCard = ({ review, onReplySuccess }) => {
 const GoogleReviewsPage = () => {
   usePageTitle('Google Reviews');
 
-  const { venueId, venueName, accountId } = useVenue();
+  const { venueId, venueName } = useVenue();
   const [reviews, setReviews] = useState([]);
   const [stats, setStats] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -288,6 +288,7 @@ const GoogleReviewsPage = () => {
   const [hasPermission, setHasPermission] = useState(true);
   const [isDemoMode, setIsDemoMode] = useState(false);
   const [demoReviews, setDemoReviews] = useState([]);
+  const [accountId, setAccountId] = useState(null);
 
   useEffect(() => {
     if (venueId) {
@@ -334,8 +335,22 @@ const GoogleReviewsPage = () => {
 
   const checkConnectionAndPermissions = async () => {
     try {
+      // First, fetch the venue's account_id to check if it's the demo account
+      const { data: venueData, error: venueError } = await supabase
+        .from('venues')
+        .select('account_id')
+        .eq('id', venueId)
+        .single();
+
+      if (venueError) {
+        console.error('Error fetching venue:', venueError);
+      }
+
+      const fetchedAccountId = venueData?.account_id;
+      setAccountId(fetchedAccountId);
+
       // Check if this is the demo account
-      if (accountId === DEMO_ACCOUNT_ID) {
+      if (fetchedAccountId === DEMO_ACCOUNT_ID) {
         setIsDemoMode(true);
         setIsConnected(true); // Pretend we're connected for demo
         setLoading(false);
