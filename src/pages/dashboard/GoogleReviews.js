@@ -334,6 +334,7 @@ const GoogleReviewsPage = () => {
   };
 
   const checkConnectionAndPermissions = async () => {
+    setLoading(true);
     try {
       // First, fetch the venue's account_id to check if it's the demo account
       const { data: venueData, error: venueError } = await supabase
@@ -344,6 +345,8 @@ const GoogleReviewsPage = () => {
 
       if (venueError) {
         console.error('Error fetching venue:', venueError);
+        setLoading(false);
+        return;
       }
 
       const fetchedAccountId = venueData?.account_id;
@@ -359,7 +362,10 @@ const GoogleReviewsPage = () => {
 
       // Get auth token
       const { data: { session } } = await supabase.auth.getSession();
-      if (!session) return;
+      if (!session) {
+        setLoading(false);
+        return;
+      }
 
       // Check if venue has Google connected
       const response = await fetch(`/api/google?action=status&venueId=${venueId}`, {
@@ -393,6 +399,8 @@ const GoogleReviewsPage = () => {
       }
     } catch (error) {
       console.error('Error checking connection:', error);
+    } finally {
+      setLoading(false);
     }
   };
 
