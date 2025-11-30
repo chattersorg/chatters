@@ -104,24 +104,26 @@ const FormattedMessage = ({ content }) => {
 };
 
 const AIChat = () => {
-  usePageTitle('AI Chat');
+  usePageTitle('Chatters Intelligence');
   const { venueId, allVenues } = useVenue();
 
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
-  const messagesEndRef = useRef(null);
-  const inputRef = useRef(null);
+    const inputRef = useRef(null);
 
   // Get current venue name
   const currentVenue = allVenues.find(v => v.id === venueId);
   const venueName = currentVenue?.name || 'your venue';
 
-  // Scroll to bottom when new messages arrive
+  // Scroll to bottom of messages container when new messages arrive
+  const messagesContainerRef = useRef(null);
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [messages]);
+    if (messagesContainerRef.current) {
+      messagesContainerRef.current.scrollTop = messagesContainerRef.current.scrollHeight;
+    }
+  }, [messages, loading]);
 
   // Focus input on mount
   useEffect(() => {
@@ -187,10 +189,10 @@ const AIChat = () => {
   };
 
   return (
-    <div className="h-[calc(100vh-8rem)] flex flex-col">
+    <div className="h-[calc(100vh-8rem)] flex flex-col overflow-hidden">
       {/* Header */}
       <div className="mb-4">
-        <h1 className="text-2xl font-semibold text-gray-900 dark:text-white">AI Chat</h1>
+        <h1 className="text-2xl font-semibold text-gray-900 dark:text-white">Chatters Intelligence</h1>
         <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
           Ask questions about your feedback data in plain English
         </p>
@@ -199,7 +201,7 @@ const AIChat = () => {
       {/* Chat Container */}
       <div className="flex-1 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl overflow-hidden flex flex-col">
         {/* Messages Area */}
-        <div className="flex-1 overflow-y-auto p-4 space-y-4">
+        <div ref={messagesContainerRef} className="flex-1 overflow-y-auto p-4 space-y-4">
           {messages.length === 0 ? (
             // Empty state with suggestions
             <div className="h-full flex flex-col items-center justify-center text-center px-4">
@@ -278,8 +280,7 @@ const AIChat = () => {
                 </div>
               )}
 
-              <div ref={messagesEndRef} />
-            </>
+                          </>
           )}
         </div>
 

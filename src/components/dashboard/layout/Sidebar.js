@@ -58,7 +58,7 @@ const venueNavItems = [
     color: 'text-violet-600',
     subItems: [
       { label: 'Weekly Insights', path: '/ai-insights', icon: Sparkles },
-      { label: 'AI Chat', path: '/ai-chat', icon: MessageSquare }
+      { label: 'Chatters Intelligence', path: '/ai-chat', icon: MessageSquare }
     ]
   },
   {
