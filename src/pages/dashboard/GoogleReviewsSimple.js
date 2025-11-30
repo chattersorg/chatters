@@ -409,25 +409,16 @@ const GoogleReviewsSimplePage = () => {
   // Demo mode - show full review management with fake data
   if (isDemoMode) {
     return (
-      <div className="space-y-6 max-w-4xl">
+      <div className="space-y-6">
         {/* Header */}
-        <div>
-          <h1 className="text-3xl font-bold text-gray-900">Google Reviews</h1>
-          <p className="text-gray-600 mt-1">{venueName}</p>
-        </div>
-
-        {/* Demo Mode Banner */}
-        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-          <div className="flex items-start gap-3">
-            <svg className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-            </svg>
-            <div className="flex-1">
-              <h3 className="font-semibold text-blue-900">Demo Mode</h3>
-              <p className="text-sm text-blue-700 mt-1">
-                This is a demo account with sample reviews. In production, reviews sync from your connected Google Business Profile.
-              </p>
-            </div>
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-2xl font-semibold text-gray-900">Google Reviews</h1>
+            <p className="text-gray-500 text-sm mt-1">Manage and respond to your Google Business reviews</p>
+          </div>
+          <div className="flex items-center gap-2 px-3 py-1.5 bg-green-50 border border-green-200 rounded-lg">
+            <CheckCircle2 className="w-4 h-4 text-green-600" />
+            <span className="text-sm font-medium text-green-700">Connected</span>
           </div>
         </div>
 
@@ -440,8 +431,12 @@ const GoogleReviewsSimplePage = () => {
         {/* Reviews List */}
         <div className="space-y-4">
           {demoReviews.length === 0 ? (
-            <div className="bg-white rounded-lg border border-gray-200 p-8 text-center">
-              <p className="text-gray-500">No reviews match this filter.</p>
+            <div className="bg-white rounded-lg border border-gray-200 p-12 text-center">
+              <div className="w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <CheckCircle2 className="w-6 h-6 text-gray-400" />
+              </div>
+              <p className="text-gray-600 font-medium">All caught up!</p>
+              <p className="text-gray-500 text-sm mt-1">No reviews match this filter.</p>
             </div>
           ) : (
             demoReviews.map((review) => (
