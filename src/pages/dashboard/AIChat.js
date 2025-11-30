@@ -3,6 +3,106 @@ import { useVenue } from '../../context/VenueContext';
 import usePageTitle from '../../hooks/usePageTitle';
 import { Send, Sparkles, Loader2, User, Bot, AlertCircle } from 'lucide-react';
 
+// Simple markdown renderer for AI responses
+const FormattedMessage = ({ content }) => {
+  // Split content into lines for processing
+  const lines = content.split('\n');
+
+  const formatInlineText = (text) => {
+    // Handle bold (**text** or __text__)
+    const parts = [];
+    let remaining = text;
+    let key = 0;
+
+    // Process **bold** patterns
+    const boldRegex = /\*\*(.+?)\*\*/g;
+    let lastIndex = 0;
+    let match;
+
+    while ((match = boldRegex.exec(text)) !== null) {
+      // Add text before the match
+      if (match.index > lastIndex) {
+        parts.push(<span key={key++}>{text.slice(lastIndex, match.index)}</span>);
+      }
+      // Add the bold text
+      parts.push(<strong key={key++} className="font-semibold">{match[1]}</strong>);
+      lastIndex = match.index + match[0].length;
+    }
+
+    // Add remaining text
+    if (lastIndex < text.length) {
+      parts.push(<span key={key++}>{text.slice(lastIndex)}</span>);
+    }
+
+    return parts.length > 0 ? parts : text;
+  };
+
+  const renderLine = (line, idx) => {
+    // Handle headings (## Heading)
+    if (line.startsWith('## ')) {
+      return (
+        <h3 key={idx} className="font-semibold text-base mt-3 mb-1 first:mt-0">
+          {formatInlineText(line.slice(3))}
+        </h3>
+      );
+    }
+
+    // Handle bullet points (• or - or *)
+    if (line.match(/^[•\-\*]\s/)) {
+      return (
+        <li key={idx} className="ml-4 list-disc">
+          {formatInlineText(line.slice(2))}
+        </li>
+      );
+    }
+
+    // Handle empty lines
+    if (line.trim() === '') {
+      return <div key={idx} className="h-2" />;
+    }
+
+    // Regular paragraph
+    return (
+      <p key={idx} className="leading-relaxed">
+        {formatInlineText(line)}
+      </p>
+    );
+  };
+
+  // Group consecutive list items
+  const elements = [];
+  let currentList = [];
+
+  lines.forEach((line, idx) => {
+    const isBullet = line.match(/^[•\-\*]\s/);
+
+    if (isBullet) {
+      currentList.push(renderLine(line, idx));
+    } else {
+      if (currentList.length > 0) {
+        elements.push(
+          <ul key={`list-${idx}`} className="space-y-1 my-1">
+            {currentList}
+          </ul>
+        );
+        currentList = [];
+      }
+      elements.push(renderLine(line, idx));
+    }
+  });
+
+  // Don't forget trailing list items
+  if (currentList.length > 0) {
+    elements.push(
+      <ul key="list-end" className="space-y-1 my-1">
+        {currentList}
+      </ul>
+    );
+  }
+
+  return <div className="space-y-1">{elements}</div>;
+};
+
 const AIChat = () => {
   usePageTitle('AI Chat');
   const { venueId, allVenues } = useVenue();
@@ -144,9 +244,15 @@ const AIChat = () => {
                         : 'bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-gray-100 rounded-bl-md'
                     }`}
                   >
-                    <p className="text-sm whitespace-pre-wrap">{message.content}</p>
+                    {message.role === 'assistant' ? (
+                      <div className="text-sm">
+                        <FormattedMessage content={message.content} />
+                      </div>
+                    ) : (
+                      <p className="text-sm whitespace-pre-wrap">{message.content}</p>
+                    )}
                     {message.stats && (
-                      <p className="text-xs mt-2 opacity-70">
+                      <p className="text-xs mt-3 pt-2 border-t border-gray-200 dark:border-gray-700 opacity-70">
                         Based on {message.stats.feedbackCount} feedback items
                         {message.stats.npsCount > 0 && ` and ${message.stats.npsCount} NPS responses`}
                       </p>
