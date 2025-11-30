@@ -287,6 +287,7 @@ const KioskPage = () => {
   const fetchFeedback = async (venueId) => {
     const now = dayjs();
     const cutoff = now.subtract(sessionTimeoutHours, 'hour').toISOString();
+    const nowIso = now.toISOString();
 
     const { data, error } = await supabase
       .from('feedback')
@@ -294,6 +295,7 @@ const KioskPage = () => {
       .eq('venue_id', venueId)
       .eq('is_actioned', false) // Only show unresolved feedback
       .gt('created_at', cutoff)
+      .lte('created_at', nowIso) // Exclude future feedback
       .order('created_at', { ascending: false });
 
     if (error) {
@@ -343,23 +345,15 @@ const KioskPage = () => {
   const fetchAssistanceRequests = async (venueId) => {
     const now = dayjs();
     const cutoff = now.subtract(sessionTimeoutHours, 'hour').toISOString();
+    const nowIso = now.toISOString();
 
-
-    // First, let's see ALL assistance requests for this venue (no filters)
-    const { data: allData, error: allError } = await supabase
-      .from('assistance_requests')
-      .select('*')
-      .eq('venue_id', venueId)
-      .order('created_at', { ascending: false });
-
-
-    // Temporary fix: Remove staff joins to get basic functionality working
     const { data, error } = await supabase
       .from('assistance_requests')
       .select('*')
       .eq('venue_id', venueId)
       .in('status', ['pending', 'acknowledged']) // Only show unresolved requests
       .gt('created_at', cutoff)
+      .lte('created_at', nowIso) // Exclude future requests
       .order('created_at', { ascending: false });
 
     if (error) {
