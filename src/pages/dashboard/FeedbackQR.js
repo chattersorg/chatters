@@ -17,8 +17,8 @@ const FeedbackQRPage = () => {
     <div className="space-y-6">
       {/* Page Header */}
       <div className="mb-2">
-        <h1 className="text-2xl font-semibold text-gray-900">QR Code & Sharing</h1>
-        <p className="text-sm text-gray-500 mt-1">Generate QR codes and share feedback links with your customers</p>
+        <h1 className="text-2xl font-semibold text-gray-900 dark:text-white">QR Code & Sharing</h1>
+        <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">Generate QR codes and share feedback links with your customers</p>
       </div>
 
       <QRCodeSection feedbackUrl={feedbackUrl} venueId={venueId} />

@@ -247,11 +247,11 @@ const EmployeesTab = ({
           setCsvConfirmation({
             message: (
               <div>
-                <p className="mb-4">
+                <p className="mb-4 dark:text-gray-300">
                   This will replace all <strong>{existingEmployeesCount}</strong> existing employees at <strong>{venueName}</strong> with <strong>{parsedEmployees.length}</strong> new employees from your CSV.
                 </p>
-                <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3">
-                  <p className="text-sm text-custom-yellow">
+                <div className="bg-yellow-50 dark:bg-yellow-900/30 border border-yellow-200 dark:border-yellow-800 rounded-lg p-3">
+                  <p className="text-sm text-custom-yellow dark:text-yellow-400">
                     <strong>Warning:</strong> This action cannot be undone. All existing employee data will be permanently deleted.
                   </p>
                 </div>
@@ -339,16 +339,16 @@ const EmployeesTab = ({
       <div className="mb-6 lg:mb-8">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-3 sm:space-y-0">
           <div>
-            <p className="text-gray-600 text-sm">
-              {userRole === 'master' 
-                ? 'View and manage employees across all venues.' 
+            <p className="text-gray-600 dark:text-gray-400 text-sm">
+              {userRole === 'master'
+                ? 'View and manage employees across all venues.'
                 : 'View and manage employees at your venue.'}
             </p>
-            <p className="text-gray-500 text-xs mt-1">
-              Need a CSV template? <a 
-                href="/employee-template.csv" 
+            <p className="text-gray-500 dark:text-gray-400 text-xs mt-1">
+              Need a CSV template? <a
+                href="/employee-template.csv"
                 download="employee-template.csv"
-                className="text-custom-blue hover:text-blue-700 underline"
+                className="text-custom-blue dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 underline"
               >
                 Download sample file
               </a>
@@ -362,26 +362,26 @@ const EmployeesTab = ({
         {/* Search Bar */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-4">
           <div className="relative flex-1 max-w-md">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 dark:text-gray-500 w-4 h-4" />
             <input
               type="text"
               placeholder="Search employees by name, email, role, phone, location..."
               value={searchTerm}
               onChange={(e) => handleSearchChange(e.target.value)}
-              className="w-full pl-10 pr-10 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-custom-blue focus:border-custom-blue text-sm"
+              className="w-full pl-10 pr-10 py-2 border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 rounded-lg focus:ring-2 focus:ring-custom-blue focus:border-custom-blue text-sm"
             />
             {searchTerm && (
               <button
                 onClick={() => handleSearchChange('')}
-                className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300"
               >
                 <X className="w-4 h-4" />
               </button>
             )}
           </div>
-          
+
           {/* Results Summary */}
-          <div className="text-sm text-gray-600">
+          <div className="text-sm text-gray-600 dark:text-gray-400">
             {searchStats.totalFiltered > 0 ? (
               <>
                 {`Found ${searchStats.totalFiltered} employee${searchStats.totalFiltered !== 1 ? 's' : ''} at this venue`}

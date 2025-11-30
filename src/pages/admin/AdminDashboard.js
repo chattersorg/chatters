@@ -611,8 +611,8 @@ export default function AdminDashboard() {
   };
 
   // Show date range picker for demo data
-  const showDemoDataPicker = (accountId, accountName) => {
-    setDateRangeForAccount({ accountId, accountName });
+  const showDemoDataPicker = (accountId, accountName, dataType = 'all') => {
+    setDateRangeForAccount({ accountId, accountName, dataType });
     setShowDateRangePicker(true);
 
     // Set default date range (last 7 days)
@@ -640,18 +640,27 @@ export default function AdminDashboard() {
       return;
     }
 
-    const { accountId, accountName } = dateRangeForAccount;
+    const { accountId, accountName, dataType = 'all' } = dateRangeForAccount;
     const dayCount = Math.ceil((new Date(selectedDateRange.endDate) - new Date(selectedDateRange.startDate)) / (1000 * 60 * 60 * 24)) + 1;
 
+    const dataTypeLabels = {
+      feedback: 'Feedback Sessions & Responses',
+      reviews: 'Google & TripAdvisor Rating Scores',
+      nps: 'NPS Email Submissions',
+      all: 'All Demo Data'
+    };
+
+    const dataTypeDetails = {
+      feedback: `- 30 feedback sessions per day\n- ~81 feedback items per day\n- Random staff resolution (60% of items older than 2 days)`,
+      reviews: `- 1 Google rating per day (1-5 stars)\n- 1 TripAdvisor rating per day (1-5 stars)\n- Daily rating trend snapshots`,
+      nps: `- 20 NPS submissions per day (0-10 scores)\n- Realistic email send/response timestamps`,
+      all: `- 30 feedback sessions (~81 items, 60% resolved)\n- 20 NPS submissions\n- 2 rating scores (Google + TripAdvisor)\n- 2 rating snapshots`
+    };
+
     if (!window.confirm(
-      `Populate demo data for "${accountName}"?\n\n` +
+      `Populate ${dataTypeLabels[dataType]} for "${accountName}"?\n\n` +
       `Date Range: ${selectedDateRange.startDate} to ${selectedDateRange.endDate} (${dayCount} days)\n\n` +
-      `This will create PER VENUE PER DAY:\n` +
-      `- 30 feedback sessions (~81 feedback items)\n` +
-      `- 20 NPS submissions\n` +
-      `- 1 Google review\n` +
-      `- 1 historical rating snapshot\n\n` +
-      `Total per venue: ~${dayCount * 30} sessions, ~${dayCount * 81} feedback, ~${dayCount * 20} NPS, ${dayCount} reviews, ${dayCount} ratings\n\n` +
+      `Per venue, per day:\n${dataTypeDetails[dataType]}\n\n` +
       `Dates with existing data will be SKIPPED.`
     )) {
       return;
@@ -665,8 +674,8 @@ export default function AdminDashboard() {
 
       // Use production API URL for localhost, relative path for production
       const apiUrl = window.location.hostname === 'localhost'
-        ? 'https://my.getchatters.com/api/admin/seed-demo'
-        : '/api/admin/seed-demo';
+        ? 'https://my.getchatters.com/api/admin/seed-demo-v2'
+        : '/api/admin/seed-demo-v2';
 
       const response = await fetch(apiUrl, {
         method: 'POST',
@@ -677,7 +686,8 @@ export default function AdminDashboard() {
         body: JSON.stringify({
           accountId,
           startDate: selectedDateRange.startDate,
-          endDate: selectedDateRange.endDate
+          endDate: selectedDateRange.endDate,
+          dataType
         })
       });
 
@@ -687,14 +697,16 @@ export default function AdminDashboard() {
         throw new Error(result.error || 'Failed to populate demo data');
       }
 
+      const successParts = [];
+      if (result.stats.sessionsCreated) successParts.push(`${result.stats.sessionsCreated} sessions`);
+      if (result.stats.feedbackCreated) successParts.push(`${result.stats.feedbackCreated} feedback items`);
+      if (result.stats.feedbackResolved) successParts.push(`${result.stats.feedbackResolved} resolved`);
+      if (result.stats.externalRatingsCreated) successParts.push(`${result.stats.externalRatingsCreated} rating snapshots`);
+      if (result.stats.npsCreated) successParts.push(`${result.stats.npsCreated} NPS submissions`);
+      if (result.stats.datesSkipped) successParts.push(`${result.stats.datesSkipped} dates skipped`);
+
       toast.success(
-        `Demo data created successfully!\n` +
-        `${result.stats.sessionsCreated} sessions, ` +
-        `${result.stats.feedbackCreated} feedback items, ` +
-        `${result.stats.googleReviewsCreated} reviews, ` +
-        `${result.stats.npsCreated} NPS submissions, ` +
-        `${result.stats.externalRatingsCreated} rating snapshots\n` +
-        `${result.stats.datesSkipped || 0} dates skipped (existing data)`,
+        `${dataTypeLabels[dataType]} created!\n${successParts.join(', ')}`,
         { duration: 6000 }
       );
 
@@ -1725,26 +1737,68 @@ export default function AdminDashboard() {
               </div>
             </div>
 
-            <div className="mt-8 flex justify-between items-center">
-              <button
-                onClick={() => showDemoDataPicker(selectedAccount.id, selectedAccount.name)}
-                disabled={seedingDemoData}
-                className="inline-flex items-center gap-2 px-4 py-2 bg-purple-600 text-white hover:bg-purple-700 rounded-lg transition-colors disabled:opacity-50"
-                title="Populate this account with demo feedback, reviews, and ratings"
-              >
-                {seedingDemoData ? (
-                  <>
+            <div className="mt-8 border-t pt-6">
+              <h3 className="text-sm font-semibold text-gray-700 mb-3">Demo Data Population</h3>
+              <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-4">
+                <button
+                  onClick={() => showDemoDataPicker(selectedAccount.id, selectedAccount.name, 'feedback')}
+                  disabled={seedingDemoData}
+                  className="inline-flex items-center justify-center gap-2 px-3 py-2 bg-blue-600 text-white hover:bg-blue-700 rounded-lg transition-colors disabled:opacity-50 text-sm"
+                  title="Populate feedback sessions and responses with random staff resolution"
+                >
+                  {seedingDemoData ? (
                     <Loader2 className="w-4 h-4 animate-spin" />
-                    Populating...
-                  </>
-                ) : (
-                  <>
+                  ) : (
                     <Sparkles className="w-4 h-4" />
-                    Populate Demo Data
-                  </>
-                )}
-              </button>
+                  )}
+                  Feedback
+                </button>
 
+                <button
+                  onClick={() => showDemoDataPicker(selectedAccount.id, selectedAccount.name, 'reviews')}
+                  disabled={seedingDemoData}
+                  className="inline-flex items-center justify-center gap-2 px-3 py-2 bg-orange-600 text-white hover:bg-orange-700 rounded-lg transition-colors disabled:opacity-50 text-sm"
+                  title="Populate Google & TripAdvisor rating scores"
+                >
+                  {seedingDemoData ? (
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                  ) : (
+                    <Sparkles className="w-4 h-4" />
+                  )}
+                  Reviews
+                </button>
+
+                <button
+                  onClick={() => showDemoDataPicker(selectedAccount.id, selectedAccount.name, 'nps')}
+                  disabled={seedingDemoData}
+                  className="inline-flex items-center justify-center gap-2 px-3 py-2 bg-green-600 text-white hover:bg-green-700 rounded-lg transition-colors disabled:opacity-50 text-sm"
+                  title="Populate NPS email submissions"
+                >
+                  {seedingDemoData ? (
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                  ) : (
+                    <Sparkles className="w-4 h-4" />
+                  )}
+                  NPS
+                </button>
+
+                <button
+                  onClick={() => showDemoDataPicker(selectedAccount.id, selectedAccount.name, 'all')}
+                  disabled={seedingDemoData}
+                  className="inline-flex items-center justify-center gap-2 px-3 py-2 bg-purple-600 text-white hover:bg-purple-700 rounded-lg transition-colors disabled:opacity-50 text-sm font-medium"
+                  title="Populate all demo data types at once"
+                >
+                  {seedingDemoData ? (
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                  ) : (
+                    <Sparkles className="w-4 h-4" />
+                  )}
+                  All Data
+                </button>
+              </div>
+            </div>
+
+            <div className="mt-6 flex justify-end items-center">
               <div className="flex gap-3">
                 {isEditingAccount ? (
                   <>
@@ -1858,15 +1912,38 @@ export default function AdminDashboard() {
             <div className="space-y-4">
               <div>
                 <p className="text-sm text-gray-600 mb-4">
-                  Select the date range to populate with demo data for <strong>{dateRangeForAccount.accountName}</strong>.
+                  Select the date range to populate <strong>{
+                    dateRangeForAccount.dataType === 'feedback' ? 'Feedback' :
+                    dateRangeForAccount.dataType === 'reviews' ? 'Reviews' :
+                    dateRangeForAccount.dataType === 'nps' ? 'NPS' :
+                    'All Demo Data'
+                  }</strong> for <strong>{dateRangeForAccount.accountName}</strong>.
                 </p>
-                <div className="bg-purple-50 border border-purple-200 rounded-lg p-3 mb-4">
-                  <p className="text-sm text-purple-800">
+                <div className={`border rounded-lg p-3 mb-4 ${
+                  dateRangeForAccount.dataType === 'feedback' ? 'bg-blue-50 border-blue-200' :
+                  dateRangeForAccount.dataType === 'reviews' ? 'bg-orange-50 border-orange-200' :
+                  dateRangeForAccount.dataType === 'nps' ? 'bg-green-50 border-green-200' :
+                  'bg-purple-50 border-purple-200'
+                }`}>
+                  <p className={`text-sm ${
+                    dateRangeForAccount.dataType === 'feedback' ? 'text-blue-800' :
+                    dateRangeForAccount.dataType === 'reviews' ? 'text-orange-800' :
+                    dateRangeForAccount.dataType === 'nps' ? 'text-green-800' :
+                    'text-purple-800'
+                  }`}>
                     <strong>Per venue, per day:</strong><br/>
-                    • 30 feedback sessions (~81 items)<br/>
-                    • 20 NPS submissions<br/>
-                    • 1 Google review<br/>
-                    • 1 historical rating snapshot
+                    {dateRangeForAccount.dataType === 'feedback' && (
+                      <>• 30 feedback sessions (~81 items)<br/>• Random staff resolution (60% of items older than 2 days)</>
+                    )}
+                    {dateRangeForAccount.dataType === 'reviews' && (
+                      <>• 1 Google rating (1-5 stars)<br/>• 1 TripAdvisor rating (1-5 stars)<br/>• 2 daily trend snapshots</>
+                    )}
+                    {dateRangeForAccount.dataType === 'nps' && (
+                      <>• 20 NPS submissions (0-10 scores)</>
+                    )}
+                    {dateRangeForAccount.dataType === 'all' && (
+                      <>• 30 feedback sessions (~81 items, 60% resolved)<br/>• 20 NPS submissions<br/>• 2 rating scores + snapshots</>
+                    )}
                   </p>
                 </div>
               </div>

@@ -131,39 +131,7 @@ const Hero = ({
   }, [feedbackItems]);
 
   return (
-    <section className={`relative w-full bg-gradient-to-b ${backgroundGradient} overflow-hidden`}>
-      {/* Subtle dotted texture */}
-      <motion.div
-        className="absolute inset-0 pointer-events-none"
-        style={{
-          opacity: 0.07,
-          backgroundImage: `radial-gradient(circle, rgba(0,0,0,0.15) 1px, transparent 1px)`,
-          backgroundSize: "24px 24px",
-          maskImage: "radial-gradient(ellipse at center, black 70%, transparent 100%)",
-          WebkitMaskImage: "radial-gradient(ellipse at center, black 70%, transparent 100%)",
-        }}
-        initial={prefersReduced ? false : { opacity: 0 }}
-        animate={prefersReduced ? false : { opacity: 1 }}
-        transition={{ duration: 0.6, ease: "easeOut" }}
-      />
-
-      {/* Decorative blurred orbs */}
-      <motion.div
-        aria-hidden="true"
-        className="absolute -top-24 -right-24 w-80 h-80 rounded-full blur-3xl"
-        style={{ background: "radial-gradient(closest-side, rgba(168,85,247,0.25), transparent)" }}
-        initial={prefersReduced ? false : { opacity: 0, scale: 0.95 }}
-        animate={prefersReduced ? false : { opacity: 1, scale: 1 }}
-        transition={{ duration: 0.6, ease: "easeOut", delay: 0.05 }}
-      />
-      <motion.div
-        aria-hidden="true"
-        className="absolute -bottom-24 -left-24 w-96 h-96 rounded-full blur-3xl"
-        style={{ background: "radial-gradient(closest-side, rgba(59,130,246,0.22), transparent)" }}
-        initial={prefersReduced ? false : { opacity: 0, scale: 0.95 }}
-        animate={prefersReduced ? false : { opacity: 1, scale: 1 }}
-        transition={{ duration: 0.6, ease: "easeOut", delay: 0.1 }}
-      />
+    <section className={`relative w-full bg-white overflow-hidden`}>
 
       {/* Content */}
       <div className="relative max-w-[1200px] mx-auto px-6 pt-36 lg:pt-40 pb-20">
@@ -177,11 +145,14 @@ const Hero = ({
           >
             {/* Title */}
             <motion.h1
-              className="text-3xl sm:text-4xl md:text-5xl lg:text-5xl font-bold text-black mb-6 leading-[1.2]"
+              className="text-3xl sm:text-4xl md:text-5xl lg:text-5xl font-bold mb-6 leading-[1.2]"
               variants={item}
             >
-              AI-Powered intelligence that<br />
-              transforms feedback into action
+              <span className="bg-clip-text text-transparent bg-gradient-to-r from-[#FF6D6D] via-[#FFAC4E] to-[#FF6D6D] bg-[length:200%_auto] animate-gradient">
+                AI-Powered intelligence
+              </span>
+              <span className="text-black"> that<br />
+              transforms feedback into action</span>
             </motion.h1>
 
             {/* Subtitle */}
@@ -199,19 +170,19 @@ const Hero = ({
               variants={item}
             >
               <Link
-                to={secondaryCta.to}
-                className="px-5 py-2.5 rounded-lg text-sm font-medium transition-all flex items-center gap-2 relative overflow-hidden bg-black text-white hover:bg-black/90"
+                to={primaryCta.to}
+                className="px-5 py-2.5 rounded-lg text-sm font-medium transition-all flex items-center gap-2 relative overflow-hidden bg-[#4E74FF] text-white hover:bg-[#2F5CFF] shadow-lg hover:shadow-xl font-satoshi"
               >
-                <span>{secondaryCta.label}</span>
+                <span>{primaryCta.label}</span>
                 <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
                   <path d="M3.33334 8H12.6667M12.6667 8L8.00001 3.33333M12.6667 8L8.00001 12.6667" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
                 </svg>
               </Link>
               <Link
-                to={primaryCta.to}
-                className="px-5 py-2.5 rounded-lg text-sm font-medium transition-all flex items-center gap-2 relative overflow-hidden bg-[#2F5CFF] text-white hover:bg-[#2548CC]"
+                to={secondaryCta.to}
+                className="px-5 py-2.5 rounded-lg text-sm font-medium transition-all flex items-center gap-2 relative overflow-hidden bg-black text-white hover:bg-black/90 shadow-lg hover:shadow-xl font-satoshi"
               >
-                <span>{primaryCta.label}</span>
+                <span>{secondaryCta.label}</span>
                 <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
                   <path d="M3.33334 8H12.6667M12.6667 8L8.00001 3.33333M12.6667 8L8.00001 12.6667" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
                 </svg>

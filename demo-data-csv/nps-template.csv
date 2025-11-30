@@ -1,0 +1,6 @@
+customer_email,score,responded_at
+customer1@example.com,9,2025-01-15T14:00:00Z
+customer2@example.com,10,2025-01-15T16:30:00Z
+customer3@example.com,7,2025-01-15T19:45:00Z
+customer4@example.com,8,2025-01-15T21:00:00Z
+customer5@example.com,6,2025-01-15T22:15:00Z

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useMemo, useCallback, useRef } from 'react';
 import { supabase } from '../../utils/supabase';
 import { useVenue } from '../../context/VenueContext';
 import dayjs from 'dayjs';
@@ -12,6 +12,53 @@ import KioskZoneOverview from '../../components/dashboard/kiosk/KioskZoneOvervie
 import KioskPriorityQueue from '../../components/dashboard/kiosk/KioskPriorityQueue';
 
 dayjs.extend(relativeTime);
+
+// Helper to get rating from feedback item
+const getRowRating = (row) => {
+  const cand = row.session_rating ?? row.rating ?? row.score ?? null;
+  const num = typeof cand === 'number' ? cand : Number(cand);
+  return Number.isFinite(num) ? num : null;
+};
+
+// Group feedback by session and calculate priority
+const groupBySession = (feedbackItems) => {
+  const sessionMap = new Map();
+
+  for (const item of feedbackItems) {
+    const sessionId = item.session_id;
+    if (!sessionId) continue;
+
+    if (!sessionMap.has(sessionId)) {
+      sessionMap.set(sessionId, {
+        session_id: sessionId,
+        table_number: item.table_number,
+        created_at: item.created_at,
+        items: [],
+        venue_id: item.venue_id,
+      });
+    }
+
+    sessionMap.get(sessionId).items.push(item);
+  }
+
+  return Array.from(sessionMap.values())
+    .map(session => {
+      const ratings = session.items
+        .map(item => getRowRating(item))
+        .filter(rating => rating !== null);
+
+      const avgRating = ratings.length > 0
+        ? ratings.reduce((sum, rating) => sum + rating, 0) / ratings.length
+        : null;
+
+      return {
+        ...session,
+        type: 'feedback',
+        avg_rating: avgRating,
+        urgency: avgRating !== null && avgRating < 3 ? 3 : (avgRating !== null && avgRating <= 4) ? 2 : 1,
+      };
+    });
+};
 
 const KioskPage = () => {
   const { venueId, venueName, loading: venueLoading } = useVenue();
@@ -29,6 +76,7 @@ const KioskPage = () => {
   const [sessionTimeoutHours, setSessionTimeoutHours] = useState(2); // Default 2 hours
   const [exitConfirmation, setExitConfirmation] = useState(false);
   const [alertModal, setAlertModal] = useState(null);
+  const hasAutoNavigated = useRef(false);
 
   // ==== AUTO-RETURN (10s) — DISABLED ====
   // useEffect(() => {
@@ -145,6 +193,63 @@ const KioskPage = () => {
     return () => clearInterval(pollInterval);
   }, [venueId]);
 
+  // Calculate the most important/urgent item and its zone
+  // Priority: urgency band first, then oldest unresolved first within same band
+  const mostUrgentItem = useMemo(() => {
+    // Group feedback by session
+    const feedbackSessions = groupBySession(feedbackList.items || []);
+
+    // Add urgency to assistance requests (pending = highest priority)
+    const assistanceWithUrgency = assistanceRequests.map(request => ({
+      ...request,
+      type: 'assistance',
+      urgency: request.status === 'pending' ? 4 : 2,
+    }));
+
+    // Combine and sort by:
+    // 1. Urgency band (higher = more urgent)
+    // 2. Time (oldest first - address older issues before newer ones of same urgency)
+    const combined = [...feedbackSessions, ...assistanceWithUrgency];
+    const sorted = combined.sort((a, b) => {
+      // First by urgency (higher urgency first)
+      if (a.urgency !== b.urgency) return b.urgency - a.urgency;
+      // Then by time (oldest first - lower timestamp = older = higher priority)
+      return new Date(a.created_at) - new Date(b.created_at);
+    });
+
+    return sorted[0] || null;
+  }, [feedbackList.items, assistanceRequests]);
+
+  // Get the zone for the most urgent item
+  const mostUrgentZone = useMemo(() => {
+    if (!mostUrgentItem || tables.length === 0) return null;
+
+    const table = tables.find(t => String(t.table_number) === String(mostUrgentItem.table_number));
+    return table?.zone_id || null;
+  }, [mostUrgentItem, tables]);
+
+  // Auto-navigate to the most urgent zone on initial load
+  // Wait for tables to be loaded before attempting navigation
+  useEffect(() => {
+    if (!hasAutoNavigated.current && mostUrgentZone && currentView === 'overview' && tables.length > 0) {
+      hasAutoNavigated.current = true;
+      setCurrentView(mostUrgentZone);
+
+      // Also select the most urgent item for highlighting
+      if (mostUrgentItem) {
+        if (mostUrgentItem.type === 'assistance') {
+          setSelectedFeedback({
+            table_number: mostUrgentItem.table_number,
+            session_id: `assistance-${mostUrgentItem.id}`,
+            type: 'assistance'
+          });
+        } else {
+          setSelectedFeedback(mostUrgentItem);
+        }
+      }
+    }
+  }, [mostUrgentZone, mostUrgentItem, currentView, tables.length]);
+
   // Data loading
   const loadVenueSettings = async (venueId) => {
     const { data, error } = await supabase
@@ -182,6 +287,7 @@ const KioskPage = () => {
   const fetchFeedback = async (venueId) => {
     const now = dayjs();
     const cutoff = now.subtract(sessionTimeoutHours, 'hour').toISOString();
+    const nowIso = now.toISOString();
 
     const { data, error } = await supabase
       .from('feedback')
@@ -189,6 +295,7 @@ const KioskPage = () => {
       .eq('venue_id', venueId)
       .eq('is_actioned', false) // Only show unresolved feedback
       .gt('created_at', cutoff)
+      .lte('created_at', nowIso) // Exclude future feedback
       .order('created_at', { ascending: false });
 
     if (error) {
@@ -238,23 +345,15 @@ const KioskPage = () => {
   const fetchAssistanceRequests = async (venueId) => {
     const now = dayjs();
     const cutoff = now.subtract(sessionTimeoutHours, 'hour').toISOString();
+    const nowIso = now.toISOString();
 
-
-    // First, let's see ALL assistance requests for this venue (no filters)
-    const { data: allData, error: allError } = await supabase
-      .from('assistance_requests')
-      .select('*')
-      .eq('venue_id', venueId)
-      .order('created_at', { ascending: false });
-
-
-    // Temporary fix: Remove staff joins to get basic functionality working
     const { data, error } = await supabase
       .from('assistance_requests')
       .select('*')
       .eq('venue_id', venueId)
       .in('status', ['pending', 'acknowledged']) // Only show unresolved requests
       .gt('created_at', cutoff)
+      .lte('created_at', nowIso) // Exclude future requests
       .order('created_at', { ascending: false });
 
     if (error) {
@@ -441,10 +540,10 @@ const KioskPage = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 flex overflow-hidden" onClick={resetInactivityTimer}>
-      {/* Left Sidebar - Tabbed Lists */}
-      <div className="w-80 bg-white border-r border-gray-200 flex flex-col">
-        {/* Header */}
+    <div className="h-screen bg-gray-50 flex overflow-hidden" onClick={resetInactivityTimer}>
+      {/* Left Sidebar - Tabbed Lists - Fixed height, scrollable content */}
+      <div className="w-80 bg-white border-r border-gray-200 flex flex-col h-screen">
+        {/* Header - Fixed */}
         <div className="p-4 border-b border-gray-200 bg-gray-50 flex-shrink-0">
           <div className="flex items-center justify-between">
             <div>
@@ -461,7 +560,7 @@ const KioskPage = () => {
           </div>
         </div>
 
-        {/* Priority Queue Header */}
+        {/* Priority Queue Header - Fixed */}
         <div className="border-b border-gray-200 bg-gradient-to-r from-blue-50 to-red-50 flex-shrink-0">
           <div className="px-5 py-4">
             <div className="mb-3">
@@ -485,8 +584,8 @@ const KioskPage = () => {
           </div>
         </div>
 
-        {/* Unified Priority Queue */}
-        <div className="flex-1 overflow-hidden min-h-0">
+        {/* Unified Priority Queue - Scrollable */}
+        <div className="flex-1 overflow-y-auto min-h-0">
           <KioskPriorityQueue
             feedbackList={feedbackList.items || []}
             assistanceRequests={assistanceRequests}
@@ -500,11 +599,11 @@ const KioskPage = () => {
         </div>
       </div>
 
-      {/* Right Side - Floor Plan */}
-      <div className="flex-1 min-w-0 flex flex-col">
-        {/* Zone Navigation */}
+      {/* Right Side - Floor Plan - Fixed height, scrollable content */}
+      <div className="flex-1 min-w-0 flex flex-col h-screen">
+        {/* Zone Navigation - Fixed */}
         {currentView !== 'overview' && (
-          <div className="p-4 bg-white border-b border-gray-200">
+          <div className="p-4 bg-white border-b border-gray-200 flex-shrink-0">
             <div className="flex items-center justify-between">
               <button
                 onClick={handleBackToOverview}
@@ -517,8 +616,8 @@ const KioskPage = () => {
           </div>
         )}
 
-        {/* Floor Plan Area */}
-        <div className="flex-1 p-6">
+        {/* Floor Plan Area - Scrollable */}
+        <div className="flex-1 p-6 overflow-y-auto">
           {currentView === 'overview' ? (
             <KioskZoneOverview
               zones={zones}

@@ -160,27 +160,23 @@ export default async function handler(req, res) {
       return res.status(403).json({ error: 'Admin access required' });
     }
 
-    const { venueId, startDate, endDate } = req.body;
+    const { accountId, startDate, endDate } = req.body;
 
-    if (!venueId || !startDate || !endDate) {
-      return res.status(400).json({ error: 'Venue ID, start date, and end date are required' });
+    if (!accountId || !startDate || !endDate) {
+      return res.status(400).json({ error: 'Account ID, start date, and end date are required' });
     }
 
-    // Get the specific venue
-    const { data: venue, error: venueError } = await supabaseAdmin
+    // Get all venues for this account
+    const { data: venues, error: venueError } = await supabaseAdmin
       .from('venues')
       .select('id, name, table_count')
-      .eq('id', venueId)
-      .single();
+      .eq('account_id', accountId);
 
     if (venueError) throw venueError;
 
-    if (!venue) {
-      return res.status(404).json({ error: 'Venue not found' });
+    if (!venues || venues.length === 0) {
+      return res.status(404).json({ error: 'No venues found for this account' });
     }
-
-    // Put venue in array for compatibility with existing loop
-    const venues = [venue];
 
     // Generate date array
     const dates = [];

@@ -1,11 +1,297 @@
 // /src/pages/dashboard/GoogleReviewsSimple.js
 // Simplified Google Reviews page (no API quota needed)
+// Demo mode for demo account shows fake reviews with reply functionality
 import React, { useState, useEffect } from 'react';
 import { useVenue } from '../../context/VenueContext';
 import { supabase } from '../../utils/supabase';
 import usePageTitle from '../../hooks/usePageTitle';
 import { Link } from 'react-router-dom';
 import { ExternalLink, CheckCircle2 } from 'lucide-react';
+
+// Demo account ID - shows fake Google reviews for demo purposes
+const DEMO_ACCOUNT_ID = 'af1d9502-a1a9-4873-8776-9b7177ed30c3';
+
+// Demo reviews data for showcasing the feature
+const generateDemoReviews = (venueName) => {
+  const today = new Date();
+  const daysAgo = (days) => {
+    const d = new Date(today);
+    d.setDate(d.getDate() - days);
+    return d.toISOString();
+  };
+
+  return [
+    {
+      id: 'demo-1',
+      reviewer_name: 'Sarah Mitchell',
+      star_rating: 5,
+      review_text: 'Absolutely fantastic experience! The staff were incredibly attentive and the food was delicious. We had a table of 8 for my birthday and they made it so special. Will definitely be back!',
+      review_date: daysAgo(1),
+      is_replied: false,
+      review_reply: null,
+      reply_date: null,
+    },
+    {
+      id: 'demo-2',
+      reviewer_name: 'James Cooper',
+      star_rating: 2,
+      review_text: 'Waited over 40 minutes for our main course. When it arrived, my steak was overcooked despite ordering medium-rare. Staff seemed overwhelmed and didn\'t check on us once. Disappointing for what should have been a nice evening out.',
+      review_date: daysAgo(2),
+      is_replied: false,
+      review_reply: null,
+      reply_date: null,
+    },
+    {
+      id: 'demo-3',
+      reviewer_name: 'Emma Thompson',
+      star_rating: 5,
+      review_text: 'Our go-to place for Sunday lunch. The roast beef is the best in town and the Yorkshire puddings are to die for. Lovely atmosphere and friendly service every time.',
+      review_date: daysAgo(3),
+      is_replied: true,
+      review_reply: `Thank you so much Emma! We're thrilled to hear you enjoy our Sunday roasts - it's always wonderful to see you. See you next weekend! - The ${venueName} Team`,
+      reply_date: daysAgo(2),
+    },
+    {
+      id: 'demo-4',
+      reviewer_name: 'David Williams',
+      star_rating: 4,
+      review_text: 'Really good pub with great selection of craft beers. Food was tasty and portions were generous. Only giving 4 stars because it was quite loud, but that\'s to be expected on a Friday night!',
+      review_date: daysAgo(5),
+      is_replied: true,
+      review_reply: `Thanks for the kind words David! We're glad you enjoyed our craft beer selection. You're right that Friday nights can get lively - if you prefer something quieter, we'd recommend visiting on a weekday evening. Cheers! - The ${venueName} Team`,
+      reply_date: daysAgo(4),
+    },
+    {
+      id: 'demo-5',
+      reviewer_name: 'Rachel Green',
+      star_rating: 1,
+      review_text: 'Terrible service. We booked a table for 7pm and when we arrived they said they had no record of our booking. Had to wait 25 minutes for a table. Won\'t be returning.',
+      review_date: daysAgo(4),
+      is_replied: false,
+      review_reply: null,
+      reply_date: null,
+    },
+    {
+      id: 'demo-6',
+      reviewer_name: 'Michael Chen',
+      star_rating: 5,
+      review_text: 'Brought my parents here for their anniversary dinner. The private dining area was perfect and the tasting menu was exceptional. Special thanks to our server Tom who made excellent wine recommendations.',
+      review_date: daysAgo(7),
+      is_replied: true,
+      review_reply: `What a lovely way to celebrate! We're honoured you chose us for such a special occasion. We'll pass on your kind words to Tom - he'll be delighted! We hope to welcome you and your family again soon. - The ${venueName} Team`,
+      reply_date: daysAgo(6),
+    },
+    {
+      id: 'demo-7',
+      reviewer_name: 'Lucy Parker',
+      star_rating: 3,
+      review_text: 'Average experience. Food was okay but nothing special for the price. Nice decor though.',
+      review_date: daysAgo(10),
+      is_replied: false,
+      review_reply: null,
+      reply_date: null,
+    },
+  ];
+};
+
+const getDemoStats = () => ({
+  totalReviews: 47,
+  averageRating: 4.2,
+  fiveStarCount: 28,
+  fourStarCount: 9,
+  threeStarCount: 5,
+  twoStarCount: 3,
+  oneStarCount: 2,
+  unrespondedCount: 4,
+  respondedPercentage: 91,
+});
+
+// Demo Review Card with simulated reply functionality
+const DemoReviewCard = ({ review, onReplySuccess }) => {
+  const [showReplyBox, setShowReplyBox] = useState(false);
+  const [replyText, setReplyText] = useState('');
+  const [submitting, setSubmitting] = useState(false);
+  const [localReview, setLocalReview] = useState(review);
+
+  const handleSubmitReply = async () => {
+    if (!replyText.trim()) return;
+
+    setSubmitting(true);
+    await new Promise(resolve => setTimeout(resolve, 1000));
+
+    setLocalReview({
+      ...localReview,
+      is_replied: true,
+      review_reply: replyText.trim(),
+      reply_date: new Date().toISOString(),
+    });
+
+    setShowReplyBox(false);
+    setReplyText('');
+    setSubmitting(false);
+    onReplySuccess();
+  };
+
+  const formatDate = (dateString) => {
+    return new Date(dateString).toLocaleDateString('en-GB', {
+      day: 'numeric',
+      month: 'short',
+      year: 'numeric'
+    });
+  };
+
+  const renderStars = (rating) => (
+    <div className="flex items-center gap-0.5">
+      {[1, 2, 3, 4, 5].map((star) => (
+        <svg
+          key={star}
+          className={`w-5 h-5 ${star <= rating ? 'text-yellow-400 fill-current' : 'text-gray-300 fill-current'}`}
+          viewBox="0 0 20 20"
+        >
+          <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+        </svg>
+      ))}
+    </div>
+  );
+
+  return (
+    <div className="bg-white rounded-lg border border-gray-200 p-6 hover:shadow-md transition-shadow">
+      <div className="flex items-start justify-between mb-4">
+        <div className="flex items-start gap-4">
+          <div className="w-12 h-12 rounded-full bg-gray-200 flex items-center justify-center">
+            <svg className="w-6 h-6 text-gray-400" fill="currentColor" viewBox="0 0 20 20">
+              <path fillRule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clipRule="evenodd" />
+            </svg>
+          </div>
+          <div>
+            <h4 className="font-semibold text-gray-900">{localReview.reviewer_name}</h4>
+            <div className="flex items-center gap-3 mt-1">
+              {renderStars(localReview.star_rating)}
+              <span className="text-sm text-gray-500">{formatDate(localReview.review_date)}</span>
+            </div>
+          </div>
+        </div>
+        <div className="flex items-center gap-2 bg-gray-100 px-3 py-1.5 rounded-lg text-sm text-gray-700">
+          <svg className="w-4 h-4" viewBox="0 0 24 24">
+            <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+            <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+            <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
+            <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+          </svg>
+          Google
+        </div>
+      </div>
+
+      {localReview.review_text && (
+        <p className="text-gray-700 leading-relaxed mb-4">{localReview.review_text}</p>
+      )}
+
+      {localReview.is_replied ? (
+        <div className="bg-blue-50 border-l-4 border-blue-500 p-4 rounded-r-lg">
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-sm font-semibold text-blue-900">Your Reply</span>
+            <span className="text-xs text-blue-700">{formatDate(localReview.reply_date)}</span>
+          </div>
+          <p className="text-blue-900 text-sm leading-relaxed">{localReview.review_reply}</p>
+        </div>
+      ) : (
+        <div className="mt-4 pt-4 border-t border-gray-200">
+          {!showReplyBox ? (
+            <button
+              onClick={() => setShowReplyBox(true)}
+              className="inline-flex items-center px-4 py-2 bg-custom-black text-white rounded-lg hover:bg-gray-800 transition-colors"
+            >
+              <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6" />
+              </svg>
+              Reply to Review
+            </button>
+          ) : (
+            <div className="space-y-3">
+              <textarea
+                value={replyText}
+                onChange={(e) => setReplyText(e.target.value)}
+                placeholder="Write a thoughtful reply to this review..."
+                maxLength={4096}
+                rows={4}
+                className="w-full px-4 py-3 bg-white text-gray-900 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 resize-none"
+              />
+              <div className="flex items-center justify-between">
+                <span className="text-sm text-gray-500">{replyText.length} / 4096 characters</span>
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => { setShowReplyBox(false); setReplyText(''); }}
+                    disabled={submitting}
+                    className="px-4 py-2 text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors disabled:opacity-50"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    onClick={handleSubmitReply}
+                    disabled={submitting || !replyText.trim()}
+                    className="px-4 py-2 bg-custom-black text-white rounded-lg hover:bg-gray-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    {submitting ? 'Sending...' : 'Send Reply'}
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  );
+};
+
+// Review Stats Component
+const ReviewStats = ({ stats }) => (
+  <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+    <div className="bg-white rounded-lg border border-gray-200 p-4">
+      <div className="text-2xl font-bold text-gray-900">{stats.totalReviews}</div>
+      <div className="text-sm text-gray-600">Total Reviews</div>
+    </div>
+    <div className="bg-white rounded-lg border border-gray-200 p-4">
+      <div className="text-2xl font-bold text-gray-900">{stats.averageRating}</div>
+      <div className="text-sm text-gray-600">Average Rating</div>
+    </div>
+    <div className="bg-white rounded-lg border border-gray-200 p-4">
+      <div className="text-2xl font-bold text-gray-900">{stats.unrespondedCount}</div>
+      <div className="text-sm text-gray-600">Need Response</div>
+    </div>
+    <div className="bg-white rounded-lg border border-gray-200 p-4">
+      <div className="text-2xl font-bold text-gray-900">{stats.respondedPercentage}%</div>
+      <div className="text-sm text-gray-600">Response Rate</div>
+    </div>
+  </div>
+);
+
+// Review Filters Component
+const ReviewFilters = ({ value, onChange }) => {
+  const filters = [
+    { id: 'all', label: 'All Reviews' },
+    { id: 'unresponded', label: 'Need Response' },
+    { id: 'responded', label: 'Responded' },
+    { id: 'negative', label: 'Negative (1-2★)' },
+  ];
+
+  return (
+    <div className="flex flex-wrap gap-2 mb-6">
+      {filters.map((filter) => (
+        <button
+          key={filter.id}
+          onClick={() => onChange(filter.id)}
+          className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+            value === filter.id
+              ? 'bg-custom-black text-white'
+              : 'bg-white border border-gray-300 text-gray-700 hover:bg-gray-50'
+          }`}
+        >
+          {filter.label}
+        </button>
+      ))}
+    </div>
+  );
+};
 
 const GoogleReviewsSimplePage = () => {
   usePageTitle('Google Reviews');
@@ -14,6 +300,10 @@ const GoogleReviewsSimplePage = () => {
   const [isConnected, setIsConnected] = useState(false);
   const [connectionInfo, setConnectionInfo] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [isDemoMode, setIsDemoMode] = useState(false);
+  const [demoReviews, setDemoReviews] = useState([]);
+  const [stats, setStats] = useState(null);
+  const [filter, setFilter] = useState('all');
 
   useEffect(() => {
     if (venueId) {
@@ -21,10 +311,51 @@ const GoogleReviewsSimplePage = () => {
     }
   }, [venueId]);
 
+  useEffect(() => {
+    if (isDemoMode) {
+      loadDemoReviews();
+    }
+  }, [isDemoMode, filter, venueName]);
+
+  const loadDemoReviews = () => {
+    const allDemoReviews = generateDemoReviews(venueName || 'Venue');
+    let filteredReviews = allDemoReviews;
+
+    if (filter === 'unresponded') {
+      filteredReviews = allDemoReviews.filter(r => !r.is_replied);
+    } else if (filter === 'responded') {
+      filteredReviews = allDemoReviews.filter(r => r.is_replied);
+    } else if (filter === 'negative') {
+      filteredReviews = allDemoReviews.filter(r => r.star_rating <= 2);
+    }
+
+    setDemoReviews(filteredReviews);
+    setStats(getDemoStats());
+  };
+
   const checkConnection = async () => {
+    setLoading(true);
     try {
+      // First check if this is the demo account
+      const { data: venueData, error: venueError } = await supabase
+        .from('venues')
+        .select('account_id')
+        .eq('id', venueId)
+        .single();
+
+      if (!venueError && venueData?.account_id === DEMO_ACCOUNT_ID) {
+        setIsDemoMode(true);
+        setIsConnected(true);
+        setLoading(false);
+        return;
+      }
+
+      // For non-demo accounts, check actual connection
       const { data: { session } } = await supabase.auth.getSession();
-      if (!session) return;
+      if (!session) {
+        setLoading(false);
+        return;
+      }
 
       const response = await fetch(`/api/google?action=status&venueId=${venueId}`, {
         headers: { 'Authorization': `Bearer ${session.access_token}` }
@@ -70,6 +401,52 @@ const GoogleReviewsSimplePage = () => {
           >
             Connect Google Account
           </Link>
+        </div>
+      </div>
+    );
+  }
+
+  // Demo mode - show full review management with fake data
+  if (isDemoMode) {
+    return (
+      <div className="space-y-6">
+        {/* Header */}
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-2xl font-semibold text-gray-900">Google Reviews</h1>
+            <p className="text-gray-500 text-sm mt-1">Manage and respond to your Google Business reviews</p>
+          </div>
+          <div className="flex items-center gap-2 px-3 py-1.5 bg-green-50 border border-green-200 rounded-lg">
+            <CheckCircle2 className="w-4 h-4 text-green-600" />
+            <span className="text-sm font-medium text-green-700">Connected</span>
+          </div>
+        </div>
+
+        {/* Stats */}
+        {stats && <ReviewStats stats={stats} />}
+
+        {/* Filters */}
+        <ReviewFilters value={filter} onChange={setFilter} />
+
+        {/* Reviews List */}
+        <div className="space-y-4">
+          {demoReviews.length === 0 ? (
+            <div className="bg-white rounded-lg border border-gray-200 p-12 text-center">
+              <div className="w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <CheckCircle2 className="w-6 h-6 text-gray-400" />
+              </div>
+              <p className="text-gray-600 font-medium">All caught up!</p>
+              <p className="text-gray-500 text-sm mt-1">No reviews match this filter.</p>
+            </div>
+          ) : (
+            demoReviews.map((review) => (
+              <DemoReviewCard
+                key={review.id}
+                review={review}
+                onReplySuccess={loadDemoReviews}
+              />
+            ))
+          )}
         </div>
       </div>
     );

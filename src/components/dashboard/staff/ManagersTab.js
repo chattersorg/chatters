@@ -534,23 +534,23 @@ const ManagersTab = ({
       </div>
 
       {/* Managers List */}
-      <div className="bg-white border border-gray-200 rounded-lg p-4 lg:p-6">
+      <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-lg p-4 lg:p-6">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-4 space-y-2 sm:space-y-0">
-          <h3 className="text-base lg:text-lg font-medium text-gray-900">All Managers</h3>
-          <span className="text-sm text-gray-500">
+          <h3 className="text-base lg:text-lg font-medium text-gray-900 dark:text-white">All Managers</h3>
+          <span className="text-sm text-gray-500 dark:text-gray-400">
             {uniqueManagers.length} manager{uniqueManagers.length !== 1 ? 's' : ''} across all venues
           </span>
         </div>
 
         {uniqueManagers.length === 0 ? (
           <div className="text-center py-8 lg:py-12">
-            <div className="w-16 h-16 mx-auto mb-4 bg-gray-100 rounded-full flex items-center justify-center">
-              <svg className="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <div className="w-16 h-16 mx-auto mb-4 bg-gray-100 dark:bg-gray-800 rounded-full flex items-center justify-center">
+              <svg className="w-8 h-8 text-gray-400 dark:text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z" />
               </svg>
             </div>
-            <h3 className="text-lg font-medium text-gray-900 mb-2">No managers yet</h3>
-            <p className="text-gray-600 mb-4">Add your first manager to get started</p>
+            <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">No managers yet</h3>
+            <p className="text-gray-600 dark:text-gray-400 mb-4">Add your first manager to get started</p>
             <Button
               variant="primary"
               onClick={() => setShowAddForm(true)}
@@ -559,26 +559,26 @@ const ManagersTab = ({
             </Button>
           </div>
         ) : (
-          <div className="bg-white rounded-lg border border-gray-200 shadow-sm overflow-hidden">
+          <div className="bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-800 shadow-sm overflow-hidden">
             <div className="overflow-x-auto">
-              <table className="min-w-full divide-y divide-gray-200">
-                <thead className="bg-gray-50">
+              <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                <thead className="bg-gray-50 dark:bg-gray-800">
                   <tr>
-                    <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                    <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wider">
                       Manager
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                    <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wider">
                       Email
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                    <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wider">
                       Venues
                     </th>
-                    <th className="px-6 py-3 text-center text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                    <th className="px-6 py-3 text-center text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wider">
                       Actions
                     </th>
                   </tr>
                 </thead>
-                <tbody className="bg-white divide-y divide-gray-100">
+                <tbody className="bg-white dark:bg-gray-900 divide-y divide-gray-100 dark:divide-gray-700">
                   {uniqueManagers.map((manager, index) => {
                     // Get all venues for this manager
                     const managerVenues = managers
@@ -590,19 +590,19 @@ const ManagersTab = ({
                     
                     return editingManagerDetails?.user_id === manager.user_id ? (
                       // Edit mode row
-                      <tr key={`edit-${manager.user_id}`} className="bg-blue-50">
+                      <tr key={`edit-${manager.user_id}`} className="bg-blue-50 dark:bg-blue-900/20">
                         <td colSpan="4" className="px-6 py-4">
                           <div className="space-y-4">
                             <div className="flex items-center space-x-4">
-                              <div className="text-sm font-medium text-gray-900">
+                              <div className="text-sm font-medium text-gray-900 dark:text-white">
                                 {manager.users?.first_name} {manager.users?.last_name}
                               </div>
-                              <span className="text-xs text-gray-500">•</span>
-                              <div className="text-xs text-gray-500">{manager.users?.email}</div>
+                              <span className="text-xs text-gray-500 dark:text-gray-400">•</span>
+                              <div className="text-xs text-gray-500 dark:text-gray-400">{manager.users?.email}</div>
                             </div>
 
                             <div>
-                              <label className="block text-xs font-medium text-gray-700 mb-2">Venue Access</label>
+                              <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-2">Venue Access</label>
                               <div className="grid grid-cols-2 md:grid-cols-3 gap-2 max-h-32 overflow-y-auto">
                                 {allVenues.map(venue => (
                                   <label key={venue.id} className="flex items-center space-x-2 text-xs">
@@ -610,20 +610,20 @@ const ManagersTab = ({
                                       type="checkbox"
                                       checked={editingManagerDetails.venue_ids.includes(venue.id)}
                                       onChange={() => handleEditManagerVenueToggle(venue.id)}
-                                      className="rounded border-gray-300 text-blue-600 focus:ring-blue-500 h-3 w-3"
+                                      className="rounded border-gray-300 dark:border-gray-600 text-blue-600 focus:ring-blue-500 h-3 w-3"
                                       disabled={editDetailsLoading}
                                     />
-                                    <span className="text-gray-700">{venue.name}</span>
+                                    <span className="text-gray-700 dark:text-gray-300">{venue.name}</span>
                                   </label>
                                 ))}
                               </div>
                             </div>
 
-                            <div className="flex items-center justify-end space-x-2 pt-2 border-t border-blue-200">
+                            <div className="flex items-center justify-end space-x-2 pt-2 border-t border-blue-200 dark:border-blue-800">
                               <button
                                 onClick={handleCancelEditManagerDetails}
                                 disabled={editDetailsLoading}
-                                className="px-3 py-1 text-xs border border-gray-300 text-gray-600 rounded hover:bg-gray-50 disabled:opacity-50"
+                                className="px-3 py-1 text-xs border border-gray-300 dark:border-gray-600 text-gray-600 dark:text-gray-300 rounded hover:bg-gray-50 dark:hover:bg-gray-800 disabled:opacity-50"
                               >
                                 Cancel
                               </button>
@@ -640,20 +640,20 @@ const ManagersTab = ({
                       </tr>
                     ) : (
                       // View mode row
-                      <tr 
+                      <tr
                         key={manager.user_id}
-                        className={`hover:bg-blue-50 transition-colors duration-150 ${
-                          index % 2 === 0 ? 'bg-white' : 'bg-gray-50'
+                        className={`hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors duration-150 ${
+                          index % 2 === 0 ? 'bg-white dark:bg-gray-900' : 'bg-gray-50 dark:bg-gray-800/50'
                         }`}
                       >
                         {/* Manager Name */}
                         <td className="px-6 py-4 whitespace-nowrap">
                           <div className="flex items-center">
-                            <div className="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center text-sm font-medium text-gray-600 mr-3">
+                            <div className="w-10 h-10 rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center text-sm font-medium text-gray-600 dark:text-gray-300 mr-3">
                               {((manager.users?.first_name || '') + ' ' + (manager.users?.last_name || '')).split(' ').map(word => word[0]).join('').toUpperCase()}
                             </div>
                             <div>
-                              <div className="text-sm font-medium text-gray-900">
+                              <div className="text-sm font-medium text-gray-900 dark:text-white">
                                 {manager.users?.first_name} {manager.users?.last_name}
                               </div>
                             </div>
@@ -662,7 +662,7 @@ const ManagersTab = ({
 
                         {/* Email */}
                         <td className="px-6 py-4 whitespace-nowrap">
-                          <div className="text-sm text-gray-600">
+                          <div className="text-sm text-gray-600 dark:text-gray-400">
                             {manager.users?.email}
                           </div>
                         </td>
@@ -670,9 +670,9 @@ const ManagersTab = ({
 
                         {/* Venues */}
                         <td className="px-6 py-4 whitespace-nowrap">
-                          <div className="text-sm text-gray-600">
-                            {managerVenues.length === 1 
-                              ? managerVenues[0]?.name 
+                          <div className="text-sm text-gray-600 dark:text-gray-400">
+                            {managerVenues.length === 1
+                              ? managerVenues[0]?.name
                               : `${managerVenues.length} venues`
                             }
                           </div>
@@ -683,7 +683,7 @@ const ManagersTab = ({
                           <div className="flex items-center justify-center space-x-2">
                             <button
                               onClick={() => handleEditManagerDetails(manager)}
-                              className="text-blue-600 hover:text-blue-800 text-sm font-medium"
+                              className="text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 text-sm font-medium"
                             >
                               Edit
                             </button>
@@ -692,7 +692,7 @@ const ManagersTab = ({
                               <button
                                 onClick={() => handleResendInvitation(manager.users?.email)}
                                 disabled={resendingEmail === manager.users?.email}
-                                className="text-green-600 hover:text-green-800 text-sm font-medium disabled:opacity-50"
+                                className="text-green-600 dark:text-green-400 hover:text-green-800 dark:hover:text-green-300 text-sm font-medium disabled:opacity-50"
                               >
                                 {resendingEmail === manager.users?.email ? 'Sending...' : 'Resend'}
                               </button>
@@ -700,7 +700,7 @@ const ManagersTab = ({
 
                             <button
                               onClick={() => setManagerToDelete(manager)}
-                              className="text-red-600 hover:text-red-800 text-sm font-medium"
+                              className="text-red-600 dark:text-red-400 hover:text-red-800 dark:hover:text-red-300 text-sm font-medium"
                             >
                               Delete
                             </button>
@@ -721,23 +721,23 @@ const ManagersTab = ({
         <div className="mt-6 lg:mt-8">
           <button
             onClick={() => setShowDeletedManagers(!showDeletedManagers)}
-            className="w-full flex items-center justify-between bg-yellow-50 border border-yellow-200 rounded-lg p-4 hover:bg-yellow-100 transition-colors"
+            className="w-full flex items-center justify-between bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg p-4 hover:bg-yellow-100 dark:hover:bg-yellow-900/30 transition-colors"
           >
             <div className="flex items-center space-x-3">
-              <div className="w-10 h-10 bg-yellow-200 rounded-full flex items-center justify-center">
-                <svg className="w-5 h-5 text-yellow-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <div className="w-10 h-10 bg-yellow-200 dark:bg-yellow-800 rounded-full flex items-center justify-center">
+                <svg className="w-5 h-5 text-yellow-700 dark:text-yellow-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
                 </svg>
               </div>
               <div className="text-left">
-                <h3 className="text-sm font-medium text-yellow-900">
+                <h3 className="text-sm font-medium text-yellow-900 dark:text-yellow-200">
                   {deletedManagers.length} Deleted Manager{deletedManagers.length !== 1 ? 's' : ''}
                 </h3>
-                <p className="text-xs text-yellow-700">Can be recovered within 14 days</p>
+                <p className="text-xs text-yellow-700 dark:text-yellow-300">Can be recovered within 14 days</p>
               </div>
             </div>
             <svg
-              className={`w-5 h-5 text-yellow-700 transition-transform ${showDeletedManagers ? 'transform rotate-180' : ''}`}
+              className={`w-5 h-5 text-yellow-700 dark:text-yellow-300 transition-transform ${showDeletedManagers ? 'transform rotate-180' : ''}`}
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"
@@ -747,26 +747,26 @@ const ManagersTab = ({
           </button>
 
           {showDeletedManagers && (
-            <div className="mt-4 bg-white border border-yellow-200 rounded-lg overflow-hidden">
+            <div className="mt-4 bg-white dark:bg-gray-900 border border-yellow-200 dark:border-yellow-800 rounded-lg overflow-hidden">
               <div className="overflow-x-auto">
-                <table className="min-w-full divide-y divide-gray-200">
-                  <thead className="bg-gray-50">
+                <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                  <thead className="bg-gray-50 dark:bg-gray-800">
                     <tr>
-                      <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                      <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wider">
                         Manager
                       </th>
-                      <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                      <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wider">
                         Email
                       </th>
-                      <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                      <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wider">
                         Deleted
                       </th>
-                      <th className="px-6 py-3 text-center text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                      <th className="px-6 py-3 text-center text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wider">
                         Actions
                       </th>
                     </tr>
                   </thead>
-                  <tbody className="bg-white divide-y divide-gray-100">
+                  <tbody className="bg-white dark:bg-gray-900 divide-y divide-gray-100 dark:divide-gray-700">
                     {deletedManagers.map((manager, index) => {
                       const deletedDate = new Date(manager.deleted_at);
                       const daysAgo = Math.floor((Date.now() - deletedDate.getTime()) / (1000 * 60 * 60 * 24));
@@ -775,17 +775,17 @@ const ManagersTab = ({
                       return (
                         <tr
                           key={manager.id}
-                          className={`hover:bg-yellow-50 transition-colors duration-150 ${
-                            index % 2 === 0 ? 'bg-white' : 'bg-gray-50'
+                          className={`hover:bg-yellow-50 dark:hover:bg-yellow-900/20 transition-colors duration-150 ${
+                            index % 2 === 0 ? 'bg-white dark:bg-gray-900' : 'bg-gray-50 dark:bg-gray-800/50'
                           }`}
                         >
                           <td className="px-6 py-4 whitespace-nowrap">
                             <div className="flex items-center">
-                              <div className="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center text-sm font-medium text-gray-600 mr-3">
+                              <div className="w-10 h-10 rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center text-sm font-medium text-gray-600 dark:text-gray-300 mr-3">
                                 {((manager.first_name || '') + ' ' + (manager.last_name || '')).split(' ').map(word => word[0]).join('').toUpperCase()}
                               </div>
                               <div>
-                                <div className="text-sm font-medium text-gray-900">
+                                <div className="text-sm font-medium text-gray-900 dark:text-white">
                                   {manager.first_name} {manager.last_name}
                                 </div>
                               </div>
@@ -793,16 +793,16 @@ const ManagersTab = ({
                           </td>
 
                           <td className="px-6 py-4 whitespace-nowrap">
-                            <div className="text-sm text-gray-600">
+                            <div className="text-sm text-gray-600 dark:text-gray-400">
                               {manager.email}
                             </div>
                           </td>
 
                           <td className="px-6 py-4 whitespace-nowrap">
-                            <div className="text-sm text-gray-600">
+                            <div className="text-sm text-gray-600 dark:text-gray-400">
                               {daysAgo === 0 ? 'Today' : `${daysAgo} day${daysAgo !== 1 ? 's' : ''} ago`}
                             </div>
-                            <div className="text-xs text-gray-500">
+                            <div className="text-xs text-gray-500 dark:text-gray-500">
                               {daysRemaining} day{daysRemaining !== 1 ? 's' : ''} remaining
                             </div>
                           </td>
@@ -811,7 +811,7 @@ const ManagersTab = ({
                             <button
                               onClick={() => handleRecoverManager(manager.id)}
                               disabled={recoveringManager === manager.id}
-                              className="text-green-600 hover:text-green-800 text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+                              className="text-green-600 dark:text-green-400 hover:text-green-800 dark:hover:text-green-300 text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed"
                             >
                               {recoveringManager === manager.id ? 'Recovering...' : 'Recover'}
                             </button>
@@ -829,74 +829,74 @@ const ManagersTab = ({
 
       {/* Add Manager Form Modal */}
       {showAddForm && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-lg w-full max-w-lg max-h-[90vh] overflow-y-auto">
+        <div className="fixed inset-0 bg-black bg-opacity-50 dark:bg-opacity-70 flex items-center justify-center z-50 p-4">
+          <div className="bg-white dark:bg-gray-900 rounded-lg w-full max-w-lg max-h-[90vh] overflow-y-auto">
             <div className="p-4 lg:p-6">
-              <h3 className="text-lg lg:text-xl font-medium mb-4 lg:mb-6">Add New Manager</h3>
+              <h3 className="text-lg lg:text-xl font-medium text-gray-900 dark:text-white mb-4 lg:mb-6">Add New Manager</h3>
               
               <form onSubmit={handleAddManager} className="space-y-4 lg:space-y-6">
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">First Name</label>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">First Name</label>
                     <input
                       type="text"
                       value={newManager.firstName}
                       onChange={(e) => setNewManager(prev => ({ ...prev, firstName: e.target.value }))}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
+                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
                       required
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Last Name</label>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Last Name</label>
                     <input
                       type="text"
                       value={newManager.lastName}
                       onChange={(e) => setNewManager(prev => ({ ...prev, lastName: e.target.value }))}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
+                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
                       required
                     />
                   </div>
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Email</label>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Email</label>
                   <input
                     type="email"
                     value={newManager.email}
                     onChange={(e) => setNewManager(prev => ({ ...prev, email: e.target.value }))}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
+                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
                     required
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-3">Assign to Venues</label>
-                  <div className="border border-gray-200 rounded-lg p-3 max-h-48 overflow-y-auto">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">Assign to Venues</label>
+                  <div className="border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 rounded-lg p-3 max-h-48 overflow-y-auto">
                     <div className="space-y-2">
                       {allVenues.map(venue => (
-                        <label key={venue.id} className="flex items-center space-x-3 p-2 hover:bg-gray-50 rounded cursor-pointer">
+                        <label key={venue.id} className="flex items-center space-x-3 p-2 hover:bg-gray-50 dark:hover:bg-gray-700 rounded cursor-pointer">
                           <input
                             type="checkbox"
                             checked={newManager.venueIds.includes(venue.id)}
                             onChange={() => handleVenueToggle(venue.id)}
-                            className="rounded border-gray-300 text-blue-600 focus:ring-blue-500 h-4 w-4"
+                            className="rounded border-gray-300 dark:border-gray-600 text-blue-600 focus:ring-blue-500 h-4 w-4"
                           />
-                          <span className="text-sm text-gray-700 flex-1">{venue.name}</span>
+                          <span className="text-sm text-gray-700 dark:text-gray-300 flex-1">{venue.name}</span>
                         </label>
                       ))}
                     </div>
                   </div>
-                  <p className="text-xs text-gray-500 mt-2">Select at least one venue for this manager</p>
+                  <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">Select at least one venue for this manager</p>
                 </div>
 
-                <div className="flex flex-col sm:flex-row justify-end space-y-3 sm:space-y-0 sm:space-x-3 pt-4 border-t">
+                <div className="flex flex-col sm:flex-row justify-end space-y-3 sm:space-y-0 sm:space-x-3 pt-4 border-t border-gray-200 dark:border-gray-700">
                   <button
                     type="button"
                     onClick={() => {
                       setShowAddForm(false);
                       setNewManager({ firstName: '', lastName: '', email: '', venueIds: [] });
                     }}
-                    className="w-full sm:w-auto px-6 py-2 text-gray-600 border border-gray-300 rounded-lg hover:bg-gray-50 text-sm font-medium"
+                    className="w-full sm:w-auto px-6 py-2 text-gray-600 dark:text-gray-300 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 text-sm font-medium"
                   >
                     Cancel
                   </button>
@@ -916,60 +916,60 @@ const ManagersTab = ({
 
       {/* Assign Managers to Venue Modal */}
       {showAssignForm && assigningToVenue && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-lg w-full max-w-md max-h-[90vh] overflow-y-auto">
+        <div className="fixed inset-0 bg-black bg-opacity-50 dark:bg-opacity-70 flex items-center justify-center z-50 p-4">
+          <div className="bg-white dark:bg-gray-900 rounded-lg w-full max-w-md max-h-[90vh] overflow-y-auto">
             <div className="p-4 lg:p-6">
-              <h3 className="text-lg lg:text-xl font-medium mb-4 lg:mb-6">
+              <h3 className="text-lg lg:text-xl font-medium text-gray-900 dark:text-white mb-4 lg:mb-6">
                 Assign Managers to {assigningToVenue.name}
               </h3>
-              
+
               <div className="space-y-4 lg:space-y-6">
                 {uniqueManagers.length === 0 ? (
-                  <div className="text-center py-6 text-gray-500">
+                  <div className="text-center py-6 text-gray-500 dark:text-gray-400">
                     <p className="text-sm mb-2">No managers available</p>
-                    <p className="text-xs text-gray-400">Create a manager first using the "Add Manager" button</p>
+                    <p className="text-xs text-gray-400 dark:text-gray-500">Create a manager first using the "Add Manager" button</p>
                   </div>
                 ) : (
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-3">Select Managers</label>
-                    <div className="border border-gray-200 rounded-lg p-3 max-h-64 overflow-y-auto">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">Select Managers</label>
+                    <div className="border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 rounded-lg p-3 max-h-64 overflow-y-auto">
                       <div className="space-y-2">
                         {uniqueManagers.map(manager => (
-                          <label key={manager.user_id} className="flex items-center space-x-3 p-2 hover:bg-gray-50 rounded cursor-pointer">
+                          <label key={manager.user_id} className="flex items-center space-x-3 p-2 hover:bg-gray-50 dark:hover:bg-gray-700 rounded cursor-pointer">
                             <input
                               type="checkbox"
                               checked={selectedManagersForAssignment.includes(manager.user_id)}
                               onChange={() => handleManagerAssignmentToggle(manager.user_id)}
-                              className="rounded border-gray-300 text-blue-600 focus:ring-blue-500 h-4 w-4"
+                              className="rounded border-gray-300 dark:border-gray-600 text-blue-600 focus:ring-blue-500 h-4 w-4"
                             />
                             <div className="flex items-center space-x-2 flex-1">
-                              <div className="w-8 h-8 bg-gray-300 rounded-full flex items-center justify-center flex-shrink-0">
-                                <span className="text-xs font-medium text-gray-700">
+                              <div className="w-8 h-8 bg-gray-300 dark:bg-gray-700 rounded-full flex items-center justify-center flex-shrink-0">
+                                <span className="text-xs font-medium text-gray-700 dark:text-gray-300">
                                   {manager.users?.first_name?.[0]}{manager.users?.last_name?.[0]}
                                 </span>
                               </div>
                               <div className="min-w-0 flex-1">
-                                <p className="text-sm font-medium text-gray-900 truncate">
+                                <p className="text-sm font-medium text-gray-900 dark:text-white truncate">
                                   {manager.users?.first_name} {manager.users?.last_name}
                                 </p>
-                                <p className="text-xs text-gray-500 truncate">{manager.users?.email}</p>
+                                <p className="text-xs text-gray-500 dark:text-gray-400 truncate">{manager.users?.email}</p>
                               </div>
                             </div>
                           </label>
                         ))}
                       </div>
                     </div>
-                    <p className="text-xs text-gray-500 mt-2">Select managers to assign to this venue</p>
+                    <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">Select managers to assign to this venue</p>
                   </div>
                 )}
 
-                <div className="flex flex-col sm:flex-row justify-end space-y-3 sm:space-y-0 sm:space-x-3 pt-4 border-t">
+                <div className="flex flex-col sm:flex-row justify-end space-y-3 sm:space-y-0 sm:space-x-3 pt-4 border-t border-gray-200 dark:border-gray-700">
                   <button
                     onClick={() => {
                       setShowAssignForm(false);
                       setAssigningToVenue(null);
                     }}
-                    className="w-full sm:w-auto px-6 py-2 text-gray-600 border border-gray-300 rounded-lg hover:bg-gray-50 text-sm font-medium"
+                    className="w-full sm:w-auto px-6 py-2 text-gray-600 dark:text-gray-300 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 text-sm font-medium"
                   >
                     Cancel
                   </button>
@@ -992,38 +992,38 @@ const ManagersTab = ({
 
       {/* Edit Manager Venues Modal */}
       {editingManager && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-lg w-full max-w-md max-h-[90vh] overflow-y-auto">
+        <div className="fixed inset-0 bg-black bg-opacity-50 dark:bg-opacity-70 flex items-center justify-center z-50 p-4">
+          <div className="bg-white dark:bg-gray-900 rounded-lg w-full max-w-md max-h-[90vh] overflow-y-auto">
             <div className="p-4 lg:p-6">
-              <h3 className="text-lg lg:text-xl font-medium mb-4 lg:mb-6">
+              <h3 className="text-lg lg:text-xl font-medium text-gray-900 dark:text-white mb-4 lg:mb-6">
                 Edit Venues for {editingManager.users?.first_name} {editingManager.users?.last_name}
               </h3>
-              
+
               <div className="space-y-4 lg:space-y-6">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-3">Venue Access</label>
-                  <div className="border border-gray-200 rounded-lg p-3 max-h-64 overflow-y-auto">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">Venue Access</label>
+                  <div className="border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 rounded-lg p-3 max-h-64 overflow-y-auto">
                     <div className="space-y-2">
                       {allVenues.map(venue => (
-                        <label key={venue.id} className="flex items-center space-x-3 p-2 hover:bg-gray-50 rounded cursor-pointer">
+                        <label key={venue.id} className="flex items-center space-x-3 p-2 hover:bg-gray-50 dark:hover:bg-gray-700 rounded cursor-pointer">
                           <input
                             type="checkbox"
                             checked={editManagerVenues.includes(venue.id)}
                             onChange={() => handleEditVenueToggle(venue.id)}
-                            className="rounded border-gray-300 text-blue-600 focus:ring-blue-500 h-4 w-4"
+                            className="rounded border-gray-300 dark:border-gray-600 text-blue-600 focus:ring-blue-500 h-4 w-4"
                           />
-                          <span className="text-sm text-gray-700 flex-1">{venue.name}</span>
+                          <span className="text-sm text-gray-700 dark:text-gray-300 flex-1">{venue.name}</span>
                         </label>
                       ))}
                     </div>
                   </div>
-                  <p className="text-xs text-gray-500 mt-2">Select venues this manager should have access to</p>
+                  <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">Select venues this manager should have access to</p>
                 </div>
 
-                <div className="flex flex-col sm:flex-row justify-end space-y-3 sm:space-y-0 sm:space-x-3 pt-4 border-t">
+                <div className="flex flex-col sm:flex-row justify-end space-y-3 sm:space-y-0 sm:space-x-3 pt-4 border-t border-gray-200 dark:border-gray-700">
                   <button
                     onClick={() => setEditingManager(null)}
-                    className="w-full sm:w-auto px-6 py-2 text-gray-600 border border-gray-300 rounded-lg hover:bg-gray-50 text-sm font-medium"
+                    className="w-full sm:w-auto px-6 py-2 text-gray-600 dark:text-gray-300 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 text-sm font-medium"
                   >
                     Cancel
                   </button>
@@ -1044,24 +1044,24 @@ const ManagersTab = ({
 
       {/* Delete Manager Confirmation Modal */}
       {managerToDelete && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-lg w-full max-w-md">
+        <div className="fixed inset-0 bg-black bg-opacity-50 dark:bg-opacity-70 flex items-center justify-center z-50 p-4">
+          <div className="bg-white dark:bg-gray-900 rounded-lg w-full max-w-md">
             <div className="p-4 lg:p-6">
               <div className="flex items-start gap-4 mb-6">
-                <div className="w-12 h-12 bg-yellow-100 rounded-full flex items-center justify-center flex-shrink-0">
-                  <svg className="w-6 h-6 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <div className="w-12 h-12 bg-yellow-100 dark:bg-yellow-900/30 rounded-full flex items-center justify-center flex-shrink-0">
+                  <svg className="w-6 h-6 text-yellow-600 dark:text-yellow-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.95-.833-2.72 0L4.094 16.5c-.77.833.192 2.5 1.732 2.5z" />
                   </svg>
                 </div>
                 <div className="flex-1">
-                  <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                  <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
                     Delete Manager
                   </h3>
-                  <p className="text-sm text-gray-600 mb-4">
+                  <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
                     Are you sure you want to delete <strong>{managerToDelete.users?.first_name} {managerToDelete.users?.last_name}</strong>?
                   </p>
-                  <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
-                    <p className="text-sm text-blue-800">
+                  <div className="bg-blue-50 dark:bg-blue-900/30 border border-blue-200 dark:border-blue-800 rounded-lg p-3">
+                    <p className="text-sm text-blue-800 dark:text-blue-300">
                       <strong>Note:</strong> This manager can be recovered within 14 days. After 14 days, they will be permanently deleted. All their data will be preserved during the recovery period.
                     </p>
                   </div>
@@ -1072,7 +1072,7 @@ const ManagersTab = ({
                 <button
                   onClick={() => setManagerToDelete(null)}
                   disabled={deleteFormLoading}
-                  className="w-full sm:w-auto px-6 py-2 text-gray-600 border border-gray-300 rounded-lg hover:bg-gray-50 text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="w-full sm:w-auto px-6 py-2 text-gray-600 dark:text-gray-300 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   Cancel
                 </button>

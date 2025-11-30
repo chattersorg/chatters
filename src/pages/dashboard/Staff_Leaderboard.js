@@ -322,6 +322,7 @@ const StaffLeaderboard = () => {
                 variant="secondary"
                 onClick={exportLeaderboard}
                 disabled={staffStats.length === 0}
+                className="dark:bg-gray-800 dark:text-gray-200 dark:border-gray-700 dark:hover:bg-gray-700"
               >
                 <Download className="w-4 h-4 mr-2" />
                 Export
@@ -426,11 +427,11 @@ const StaffLeaderboard = () => {
           ) : (
             <div className="px-6 py-12 text-center">
               <div className="flex flex-col items-center">
-                <div className="w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center mb-3">
-                  <Trophy className="w-6 h-6 text-gray-400" />
+                <div className="w-12 h-12 bg-gray-100 dark:bg-gray-800 rounded-full flex items-center justify-center mb-3">
+                  <Trophy className="w-6 h-6 text-gray-400 dark:text-gray-500" />
                 </div>
-                <p className="text-sm font-medium text-gray-900 mb-1">No staff performance data</p>
-                <p className="text-xs text-gray-500">Data will appear here as staff resolve feedback</p>
+                <p className="text-sm font-medium text-gray-900 dark:text-white mb-1">No staff performance data</p>
+                <p className="text-xs text-gray-500 dark:text-gray-400">Data will appear here as staff resolve feedback</p>
               </div>
             </div>
           )}
@@ -439,17 +440,17 @@ const StaffLeaderboard = () => {
 
       {/* Recognition Modal */}
       {recognitionModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-xl shadow-2xl max-w-lg w-full overflow-hidden">
+        <div className="fixed inset-0 bg-black bg-opacity-50 dark:bg-opacity-70 flex items-center justify-center z-50 p-4">
+          <div className="bg-white dark:bg-gray-900 rounded-xl shadow-2xl max-w-lg w-full overflow-hidden">
             {/* Modal Header */}
-            <div className="px-6 py-4 border-b border-gray-100 flex items-center justify-between">
+            <div className="px-6 py-4 border-b border-gray-100 dark:border-gray-800 flex items-center justify-between">
               <div className="flex items-center">
-                <div className="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center mr-3">
-                  <Trophy className="w-5 h-5 text-green-600" />
+                <div className="w-10 h-10 bg-green-100 dark:bg-green-900/30 rounded-full flex items-center justify-center mr-3">
+                  <Trophy className="w-5 h-5 text-green-600 dark:text-green-400" />
                 </div>
                 <div>
-                  <h3 className="text-base font-semibold text-gray-900">Send Recognition</h3>
-                  <p className="text-sm text-gray-500">Celebrate {recognitionModal.name}'s performance</p>
+                  <h3 className="text-base font-semibold text-gray-900 dark:text-white">Send Recognition</h3>
+                  <p className="text-sm text-gray-500 dark:text-gray-400">Celebrate {recognitionModal.name}'s performance</p>
                 </div>
               </div>
               <button
@@ -458,7 +459,7 @@ const StaffLeaderboard = () => {
                   setPersonalMessage('');
                   setRecognitionMessage('');
                 }}
-                className="text-gray-400 hover:text-gray-600 transition-colors"
+                className="text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
               >
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -469,41 +470,41 @@ const StaffLeaderboard = () => {
             {/* Modal Body */}
             <div className="p-6">
               {/* Stats Summary */}
-              <div className="bg-gray-50 border border-gray-200 rounded-lg p-4 mb-4">
+              <div className="bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-4 mb-4">
                 <div className="grid grid-cols-4 gap-4 text-center">
                   <div>
-                    <div className="text-xl font-bold text-gray-900">{recognitionModal.rank}</div>
-                    <div className="text-xs text-gray-500">Rank</div>
+                    <div className="text-xl font-bold text-gray-900 dark:text-white">{recognitionModal.rank}</div>
+                    <div className="text-xs text-gray-500 dark:text-gray-400">Rank</div>
                   </div>
                   <div>
-                    <div className="text-xl font-bold text-gray-900">{recognitionModal.feedbackResolved}</div>
-                    <div className="text-xs text-gray-500">Resolved</div>
+                    <div className="text-xl font-bold text-gray-900 dark:text-white">{recognitionModal.feedbackResolved}</div>
+                    <div className="text-xs text-gray-500 dark:text-gray-400">Resolved</div>
                   </div>
                   <div>
-                    <div className="text-xl font-bold text-gray-900">{recognitionModal.feedbackCoResolved}</div>
-                    <div className="text-xs text-gray-500">Co-resolved</div>
+                    <div className="text-xl font-bold text-gray-900 dark:text-white">{recognitionModal.feedbackCoResolved}</div>
+                    <div className="text-xs text-gray-500 dark:text-gray-400">Co-resolved</div>
                   </div>
                   <div>
-                    <div className="text-xl font-bold text-blue-600">{recognitionModal.totalResolved}</div>
-                    <div className="text-xs text-gray-500">Total</div>
+                    <div className="text-xl font-bold text-blue-600 dark:text-blue-400">{recognitionModal.totalResolved}</div>
+                    <div className="text-xs text-gray-500 dark:text-gray-400">Total</div>
                   </div>
                 </div>
               </div>
 
               {/* Personal Message */}
               <div className="mb-4">
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                   Personal Message (Optional)
                 </label>
                 <textarea
                   value={personalMessage}
                   onChange={(e) => setPersonalMessage(e.target.value)}
                   placeholder="Add a personal note to make this recognition extra special..."
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none resize-none text-sm"
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none resize-none text-sm"
                   rows={3}
                   disabled={sendingRecognition}
                 />
-                <p className="mt-1 text-xs text-gray-500">
+                <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
                   This will be included in the email as a personal message from you
                 </p>
               </div>
@@ -511,8 +512,8 @@ const StaffLeaderboard = () => {
               {recognitionMessage && (
                 <div className={`mb-4 p-3 rounded-lg text-sm ${
                   recognitionMessage.includes('success')
-                    ? 'bg-green-50 border border-green-200 text-green-700'
-                    : 'bg-red-50 border border-red-200 text-red-700'
+                    ? 'bg-green-50 dark:bg-green-900/30 border border-green-200 dark:border-green-800 text-green-700 dark:text-green-300'
+                    : 'bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-300'
                 }`}>
                   {recognitionMessage}
                 </div>
@@ -520,7 +521,7 @@ const StaffLeaderboard = () => {
             </div>
 
             {/* Modal Footer */}
-            <div className="px-6 py-4 border-t border-gray-100 flex justify-end gap-3">
+            <div className="px-6 py-4 border-t border-gray-100 dark:border-gray-800 flex justify-end gap-3">
               <Button
                 variant="secondary"
                 onClick={() => {
@@ -529,6 +530,7 @@ const StaffLeaderboard = () => {
                   setRecognitionMessage('');
                 }}
                 disabled={sendingRecognition}
+                className="dark:bg-gray-800 dark:text-gray-200 dark:border-gray-700 dark:hover:bg-gray-700"
               >
                 Cancel
               </Button>

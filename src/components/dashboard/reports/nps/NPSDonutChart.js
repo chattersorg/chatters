@@ -69,8 +69,8 @@ const NPSDonutChart = ({ npsData, loading }) => {
     return (
       <div className="flex-1 flex items-center justify-center">
         <div className="text-center">
-          <div className="w-8 h-8 border-2 border-gray-300 border-t-blue-600 rounded-full animate-spin mx-auto mb-2" />
-          <p className="text-sm text-gray-500">Loading NPS data...</p>
+          <div className="w-8 h-8 border-2 border-gray-300 dark:border-gray-700 border-t-blue-600 dark:border-t-blue-400 rounded-full animate-spin mx-auto mb-2" />
+          <p className="text-sm text-gray-500 dark:text-gray-400">Loading NPS data...</p>
         </div>
       </div>
     );
@@ -81,8 +81,8 @@ const NPSDonutChart = ({ npsData, loading }) => {
       <div className="flex-1 flex items-center justify-center">
         <div className="text-center py-8">
           <div className="text-4xl mb-2">📊</div>
-          <p className="text-gray-500 text-sm">No NPS data available</p>
-          <p className="text-gray-400 text-xs mt-1">for this period</p>
+          <p className="text-gray-500 dark:text-gray-400 text-sm">No NPS data available</p>
+          <p className="text-gray-400 dark:text-gray-500 text-xs mt-1">for this period</p>
         </div>
       </div>
     );
@@ -100,13 +100,13 @@ const NPSDonutChart = ({ npsData, loading }) => {
             <div className={`text-4xl font-bold ${getScoreColor(npsData.score)}`}>
               {npsData.score}
             </div>
-            <div className="text-xs text-gray-500 mt-1">
+            <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">
               {getScoreLabel(npsData.score)}
             </div>
             {npsData.trend && (
               <div className={`flex items-center gap-1 mt-2 text-xs font-medium ${
                 npsData.trendDirection === 'up' ? 'text-green-600' :
-                npsData.trendDirection === 'down' ? 'text-red-600' : 'text-gray-500'
+                npsData.trendDirection === 'down' ? 'text-red-600' : 'text-gray-500 dark:text-gray-400'
               }`}>
                 <TrendIcon className="w-3 h-3" />
                 <span>{npsData.trend}</span>
@@ -117,42 +117,42 @@ const NPSDonutChart = ({ npsData, loading }) => {
       </div>
 
       {/* Legend */}
-      <div className="mt-4 pt-4 border-t border-gray-100">
+      <div className="mt-4 pt-4 border-t border-gray-100 dark:border-gray-800">
         <div className="grid grid-cols-3 gap-2 text-center">
           <div>
             <div className="flex items-center justify-center gap-1.5 mb-1">
               <div className="w-3 h-3 rounded-full bg-green-500"></div>
-              <span className="text-xs font-medium text-gray-700">Promoters</span>
+              <span className="text-xs font-medium text-gray-700 dark:text-gray-300">Promoters</span>
             </div>
-            <div className="text-lg font-bold text-gray-900">{npsData.promoters}</div>
-            <div className="text-xs text-gray-500">
+            <div className="text-lg font-bold text-gray-900 dark:text-white">{npsData.promoters}</div>
+            <div className="text-xs text-gray-500 dark:text-gray-400">
               {npsData.total > 0 ? Math.round((npsData.promoters / npsData.total) * 100) : 0}%
             </div>
           </div>
           <div>
             <div className="flex items-center justify-center gap-1.5 mb-1">
               <div className="w-3 h-3 rounded-full bg-yellow-500"></div>
-              <span className="text-xs font-medium text-gray-700">Passives</span>
+              <span className="text-xs font-medium text-gray-700 dark:text-gray-300">Passives</span>
             </div>
-            <div className="text-lg font-bold text-gray-900">{npsData.passives}</div>
-            <div className="text-xs text-gray-500">
+            <div className="text-lg font-bold text-gray-900 dark:text-white">{npsData.passives}</div>
+            <div className="text-xs text-gray-500 dark:text-gray-400">
               {npsData.total > 0 ? Math.round((npsData.passives / npsData.total) * 100) : 0}%
             </div>
           </div>
           <div>
             <div className="flex items-center justify-center gap-1.5 mb-1">
               <div className="w-3 h-3 rounded-full bg-red-500"></div>
-              <span className="text-xs font-medium text-gray-700">Detractors</span>
+              <span className="text-xs font-medium text-gray-700 dark:text-gray-300">Detractors</span>
             </div>
-            <div className="text-lg font-bold text-gray-900">{npsData.detractors}</div>
-            <div className="text-xs text-gray-500">
+            <div className="text-lg font-bold text-gray-900 dark:text-white">{npsData.detractors}</div>
+            <div className="text-xs text-gray-500 dark:text-gray-400">
               {npsData.total > 0 ? Math.round((npsData.detractors / npsData.total) * 100) : 0}%
             </div>
           </div>
         </div>
-        <div className="text-center mt-3 pt-3 border-t border-gray-100">
-          <span className="text-xs text-gray-500">Total Responses: </span>
-          <span className="text-xs font-semibold text-gray-700">{npsData.total}</span>
+        <div className="text-center mt-3 pt-3 border-t border-gray-100 dark:border-gray-800">
+          <span className="text-xs text-gray-500 dark:text-gray-400">Total Responses: </span>
+          <span className="text-xs font-semibold text-gray-700 dark:text-gray-300">{npsData.total}</span>
         </div>
       </div>
     </>

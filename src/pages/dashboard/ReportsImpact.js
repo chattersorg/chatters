@@ -25,11 +25,11 @@ const ReportsImpactPage = () => {
         subtitle="Measure the real-world impact of your feedback initiatives"
         actions={
           <div className="flex items-center space-x-2">
-            <label className="text-sm font-medium text-gray-700">Period:</label>
+            <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Period:</label>
             <select
               value={timeframe}
               onChange={(e) => setTimeframe(e.target.value)}
-              className="px-3 py-2 text-sm border border-gray-300 rounded-md bg-white text-gray-700 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              className="px-3 py-2 text-sm border border-gray-300 dark:border-gray-700 rounded-md bg-white dark:bg-gray-800 text-gray-700 dark:text-white shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
             >
               <option value="today">Today</option>
               <option value="yesterday">Yesterday</option>

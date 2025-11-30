@@ -41,7 +41,7 @@ const StaffRecognitionPage = () => {
 
       <ContentSplit
         eyebrow="Employee Recognition"
-        eyebrowColour='text-green-600'
+        eyebrowColour='text-blue-600'
         title="Celebrate success with one click."
         description="See who's resolving the most customer feedback and send beautiful, personalised recognition emails instantly. Turn performance data into meaningful appreciation that motivates your entire team."
         bullets={[
@@ -57,7 +57,7 @@ const StaffRecognitionPage = () => {
 
       <ProductFeaturesShowcase
         eyebrow="Recognition Made Simple"
-        eyebrowColour='text-green-600'
+        eyebrowColour='text-blue-600'
         title="From performance data to heartfelt recognition."
         description="Transform your staff leaderboard into a powerful recognition tool. Identify top performers, craft personal messages, and send beautiful branded emails that employees will actually appreciate."
         primaryCta={{ label: "Try recognition", to: "/signup" }}
@@ -92,47 +92,47 @@ const StaffRecognitionPage = () => {
 
       <FeatureGrid
         eyebrow="Recognition Benefits"
-        eyebrowColour='text-green-600'
+        eyebrowColour='text-blue-600'
         title="Why recognition drives better performance"
         description="Motivated staff deliver better customer experiences. Recognition creates a positive feedback loop that benefits employees, customers, and your bottom line."
         gradientDirection="bg-gradient-to-b"
-        backgroundGradient="from-white to-green-50"
+        backgroundGradient="from-white to-blue-50"
         dottedBackground={true}
         orbGlow
         cols={{ base: 1, sm: 2, md: 3, lg: 3 }}
         items={[
           {
-            icon: <Trophy className="w-6 h-6 text-green-600" />,
+            icon: <Trophy className="w-6 h-6 text-blue-600" />,
             title: "Boost team morale",
             description:
               "Recognition emails make employees feel valued and appreciated, improving job satisfaction and reducing turnover.",
           },
           {
-            icon: <Mail className="w-6 h-6 text-green-600" />,
+            icon: <Mail className="w-6 h-6 text-blue-600" />,
             title: "Professional recognition",
             description:
               "Beautiful branded emails with performance stats and personal messages create memorable recognition moments.",
           },
           {
-            icon: <TrendingUp className="w-6 h-6 text-green-600" />,
+            icon: <TrendingUp className="w-6 h-6 text-blue-600" />,
             title: "Encourage excellence",
             description:
               "When staff see peers recognised for great work, it motivates everyone to deliver exceptional customer service.",
           },
           {
-            icon: <Award className="w-6 h-6 text-green-600" />,
+            icon: <Award className="w-6 h-6 text-blue-600" />,
             title: "Data-driven fairness",
             description:
               "Recognition based on real performance data ensures fairness and credibility in your reward system.",
           },
           {
-            icon: <Users className="w-6 h-6 text-green-600" />,
+            icon: <Users className="w-6 h-6 text-blue-600" />,
             title: "Strengthen culture",
             description:
               "Regular recognition builds a culture of appreciation and excellence across your entire organisation.",
           },
           {
-            icon: <Star className="w-6 h-6 text-green-600" />,
+            icon: <Star className="w-6 h-6 text-blue-600" />,
             title: "Retain top talent",
             description:
               "Employees who feel recognised and valued are more likely to stay, reducing costly turnover.",
@@ -143,13 +143,13 @@ const StaffRecognitionPage = () => {
 
       <FAQSection
         eyebrow="Recognition FAQ"
-        eyebrowColour='text-green-600'
+        eyebrowColour='text-blue-600'
         title="Everything you need to know"
         description="If you have a different question, contact us and we'll help."
         dottedBackground
         orbGlow
         wavyBottom={false}
-        backgroundGradient="from-white via-white to-green-50"
+        backgroundGradient="from-white via-white to-blue-50"
         gradientDirection="bg-gradient-to-b"
         defaultOpenIndex={0}
         faqs={[
@@ -166,7 +166,7 @@ const StaffRecognitionPage = () => {
         buttonText="Book a Demo"
         buttonLink="/demo"
         gradientDirection="bg-gradient-to-r"
-        backgroundGradient="from-green-50 via-white to-emerald-50"
+        backgroundGradient="from-blue-50 via-white to-emerald-50"
       />
 
       <Footer />

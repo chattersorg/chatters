@@ -1,9 +1,9 @@
 // components/marketing/layout/Navbar.jsx
 import React, { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Menu, X, ChevronDown, BarChart3, Utensils, Building, ShoppingBag, Calendar, BookOpen, HelpCircle, FileText, GraduationCap, Trophy, Globe, Monitor, Bell, TrendingUp, Sparkles, Brain, Zap } from 'lucide-react';
+import { Menu, X, ChevronDown } from 'lucide-react';
 import PrimaryButton from '../common/buttons/PrimaryButton';
-import { getDashboardUrl, isDevSite } from '../../../utils/domainUtils';
+import { getDashboardUrl } from '../../../utils/domainUtils';
 
 const Navbar = ({ overlay = false }) => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -13,47 +13,56 @@ const Navbar = ({ overlay = false }) => {
 
   const isActive = (path) => location.pathname === path;
 
-  // Core Features Column
-  const coreProductLinks = [
-    { name: 'Question Management', path: '/product/question-management', description: 'Custom feedback forms and intelligent question flows', icon: <HelpCircle className="w-5 h-5" /> },
-    { name: 'Business Intelligence', path: '/product/business-intelligence', description: 'Advanced analytics and performance insights', icon: <BarChart3 className="w-5 h-5" /> },
-    { name: 'NPS Scoring', path: '/product/nps-scoring', description: 'Track Net Promoter Score and customer loyalty metrics', icon: <TrendingUp className="w-5 h-5" /> },
-    { name: 'Real-Time Alerts', path: '/product/real-time-alerts', description: 'Instant notifications and emergency escalation', icon: <Bell className="w-5 h-5" /> },
+  // Product dropdown structure with descriptions
+  const productCategories = [
+    {
+      title: 'Core',
+      links: [
+        { name: 'Real-Time Alerts', path: '/product/real-time-alerts', desc: 'Instant notifications for guest issues' },
+        { name: 'Kiosk Mode', path: '/product/kiosk-mode', desc: 'Live dashboard for front-of-house' },
+        { name: 'Live Feedback Dashboard', path: '/product/live-feedback-dashboard', desc: 'Real-time feed of all feedback' },
+        { name: 'Review Boosting', path: '/product/review-boosting', desc: 'Turn happy guests into 5-star reviews' },
+        { name: 'Question Management', path: '/product/question-management', desc: 'Custom feedback forms' },
+      ],
+    },
+    {
+      title: 'Team',
+      links: [
+        { name: 'Staff Leaderboard', path: '/product/staff-leaderboard', desc: 'Track team performance' },
+        { name: 'Staff Recognition', path: '/product/staff-recognition', desc: 'Automated appreciation emails' },
+        { name: 'Staff Metrics', path: '/product/staff-metrics', desc: 'Individual performance analytics' },
+      ],
+    },
+    {
+      title: 'Multi-Site',
+      links: [
+        { name: 'Multi-Location Control', path: '/product/multi-location-control', desc: 'Centralised venue management' },
+        { name: 'Multi-Venue Analytics', path: '/product/multi-venue-analytics', desc: 'Cross-location comparisons' },
+      ],
+    },
+    {
+      title: 'Intelligence',
+      links: [
+        { name: 'Chatters Intelligence', path: '/product/intelligence', desc: 'AI-powered feedback insights' },
+        { name: 'Business Intelligence', path: '/product/business-intelligence', desc: 'Advanced analytics & reports' },
+        { name: 'NPS Scoring', path: '/product/nps-scoring', desc: 'Net Promoter Score tracking' },
+        { name: 'Customer Trends', path: '/product/customer-trends', desc: 'Spot patterns over time' },
+      ],
+    },
   ];
 
-  // Team & Growth Column
-  const teamProductLinks = [
-    { name: 'Staff Leaderboard', path: '/product/staff-leaderboard', description: 'Track and celebrate team performance achievements', icon: <Trophy className="w-5 h-5" /> },
-    { name: 'Staff Recognition', path: '/product/staff-recognition', description: 'Reward top performers with automated recognition emails', icon: <Trophy className="w-5 h-5" /> },
-    { name: 'Multi-Location Control', path: '/product/multi-location-control', description: 'Centralised management for restaurant/hotel chains', icon: <Globe className="w-5 h-5" /> },
-    { name: 'Kiosk Mode', path: '/product/kiosk-mode', description: 'Tablet-based feedback stations and self-service', icon: <Monitor className="w-5 h-5" /> },
-  ];
-
-  // Chatters Intelligence Column (Full Height)
-  const intelligenceLink = {
-    name: 'Chatters Intelligence',
-    path: '/product/intelligence',
-    description: 'AI-powered insights from your customer feedback',
-    longDescription: 'Harness the power of AI to transform customer feedback into actionable intelligence. Get instant insights, identify trends, and make data-driven decisions with confidence.',
-    icon: <Sparkles className="w-6 h-6" />,
-    features: [
-      { icon: <Brain className="w-4 h-4" />, text: 'AI-Powered Analysis' },
-      { icon: <TrendingUp className="w-4 h-4" />, text: 'Predictive Insights' },
-      { icon: <Zap className="w-4 h-4" />, text: 'Instant Recommendations' },
-    ]
-  };
-
+  // Solutions dropdown structure with descriptions
   const solutionsLinks = [
-    { name: 'Restaurants', path: '/solutions/restaurants', description: 'Optimise dining experiences', icon: <Utensils className="w-5 h-5" /> },
-    { name: 'Hotels', path: '/solutions/hotels', description: 'Enhance guest satisfaction', icon: <Building className="w-5 h-5" /> },
-    { name: 'Retail', path: '/solutions/retail', description: 'Improve customer service', icon: <ShoppingBag className="w-5 h-5" /> },
-    { name: 'Events', path: '/solutions/events', description: 'Perfect event feedback', icon: <Calendar className="w-5 h-5" /> },
+    { name: 'Restaurants', path: '/solutions/restaurants', desc: 'Optimise dining experiences' },
+    { name: 'Pubs & Bars', path: '/solutions/pubs-bars', desc: 'Built for high-volume service' },
+    { name: 'Hotels', path: '/solutions/hotels', desc: 'Enhance guest satisfaction' },
   ];
 
+  // Resources dropdown structure with descriptions
   const resourcesLinks = [
-    { name: 'Documentation', path: 'https://chatters.canny.io/changelog', description: 'Learn how to use Chatters', icon: <BookOpen className="w-5 h-5" /> },
-    { name: 'Help Center', path: '/help', description: 'Get support when you need it', icon: <HelpCircle className="w-5 h-5" /> },
-    { name: 'Blog', path: '/blog', description: 'Industry insights and tips', icon: <FileText className="w-5 h-5" /> },
+    { name: 'Help Center', path: '/help', desc: 'Guides and support articles' },
+    { name: 'Blog', path: '/blog', desc: 'Industry insights and tips' },
+    { name: 'Changelog', path: 'https://chatters.canny.io/changelog', desc: 'Latest product updates' },
   ];
 
   const handleDropdownEnter = (dropdown) => {
@@ -81,187 +90,124 @@ const Navbar = ({ overlay = false }) => {
     setDropdownTimer(timer);
   };
 
-  // Product Dropdown with Three Columns
+  // Product Dropdown - 4-column layout, positioned to not go off screen
   const ProductDropdown = ({ isVisible }) => {
     return (
       <div
-        className={`fixed left-4 right-4 top-20 z-[60] transition-all duration-400 ease-out transform ${
-          isVisible ? 'opacity-100 visible translate-y-0 scale-100' : 'opacity-0 invisible -translate-y-4 scale-95'
+        className={`absolute left-0 top-full pt-2 z-[60] transition-all duration-200 ease-out ${
+          isVisible ? 'opacity-100 visible translate-y-0' : 'opacity-0 invisible -translate-y-1 pointer-events-none'
         }`}
         onMouseEnter={handleDropdownContentEnter}
         onMouseLeave={handleDropdownContentLeave}
       >
-        <div className="max-w-[1400px] mx-auto bg-white rounded-2xl shadow-2xl border border-gray-200 py-4 px-4">
-          <div className="grid grid-cols-3 gap-4">
-            {/* Column 1: Core Features */}
-            <div>
-              <h3 className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-3 px-2.5">Core Features</h3>
-              <div className="space-y-1">
-                {coreProductLinks.map((link) => (
-                  <Link
-                    key={link.name}
-                    to={link.path}
-                    className="group flex items-start space-x-2.5 p-2.5 rounded-lg hover:bg-gray-50 hover:shadow-sm transition-all duration-200"
-                    onClick={() => setActiveDropdown(null)}
-                  >
-                    <div className="flex-shrink-0 w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center text-green-600 group-hover:bg-green-600 group-hover:text-white transition-all duration-200">
-                      {link.icon}
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <div className="font-satoshi font-semibold text-black transition-colors duration-200 text-sm">
-                        {link.name}
-                      </div>
-                      <div className="mt-0.5 text-xs text-gray-600 font-satoshi leading-snug">
-                        {link.description}
-                      </div>
-                    </div>
-                  </Link>
-                ))}
-              </div>
-            </div>
-
-            {/* Column 2: Team & Growth */}
-            <div>
-              <h3 className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-3 px-2.5">Team & Growth</h3>
-              <div className="space-y-1">
-                {teamProductLinks.map((link) => (
-                  <Link
-                    key={link.name}
-                    to={link.path}
-                    className="group flex items-start space-x-2.5 p-2.5 rounded-lg hover:bg-gray-50 hover:shadow-sm transition-all duration-200"
-                    onClick={() => setActiveDropdown(null)}
-                  >
-                    <div className="flex-shrink-0 w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center text-green-600 group-hover:bg-green-600 group-hover:text-white transition-all duration-200">
-                      {link.icon}
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <div className="font-satoshi font-semibold text-black transition-colors duration-200 text-sm">
-                        {link.name}
-                      </div>
-                      <div className="mt-0.5 text-xs text-gray-600 font-satoshi leading-snug">
-                        {link.description}
-                      </div>
-                    </div>
-                  </Link>
-                ))}
-              </div>
-            </div>
-
-            {/* Column 3: Chatters Intelligence (Full Height) */}
-            <div className="bg-gradient-to-br from-purple-50 to-blue-50 rounded-xl p-4 border-2 border-purple-200">
-              <Link
-                to={intelligenceLink.path}
-                onClick={() => setActiveDropdown(null)}
-                className="group block h-full"
-              >
-                <div className="flex items-start gap-3 mb-3">
-                  <div className="flex-shrink-0 w-10 h-10 bg-gradient-to-br from-purple-500 to-blue-600 rounded-xl flex items-center justify-center text-white shadow-lg">
-                    {intelligenceLink.icon}
-                  </div>
-                  <div className="flex-1">
-                    <h3 className="font-satoshi font-bold text-gray-900 text-base mb-1 group-hover:text-purple-600 transition-colors">
-                      {intelligenceLink.name}
-                    </h3>
-                    <p className="text-xs text-gray-600 font-satoshi">
-                      {intelligenceLink.description}
-                    </p>
-                  </div>
-                </div>
-
-                <p className="text-xs text-gray-700 font-satoshi leading-relaxed mb-4">
-                  {intelligenceLink.longDescription}
-                </p>
-
-                <div className="space-y-2">
-                  {intelligenceLink.features.map((feature, idx) => (
-                    <div key={idx} className="flex items-center gap-2 text-xs text-gray-700">
-                      <div className="flex-shrink-0 w-5 h-5 bg-white/60 rounded-md flex items-center justify-center text-purple-600">
-                        {feature.icon}
-                      </div>
-                      <span className="font-satoshi font-medium">{feature.text}</span>
-                    </div>
+        <div className="bg-white rounded-xl border border-gray-200 shadow-xl p-6">
+          <div className="grid grid-cols-4 gap-8" style={{ width: '800px' }}>
+            {productCategories.map((category) => (
+              <div key={category.title}>
+                <h3 className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3">
+                  {category.title}
+                </h3>
+                <ul className="space-y-3">
+                  {category.links.map((link) => (
+                    <li key={link.name}>
+                      <Link
+                        to={link.path}
+                        className="block group"
+                        onClick={() => setActiveDropdown(null)}
+                      >
+                        <span className="text-sm font-medium text-gray-900 group-hover:text-[#4E74FF] transition-colors duration-150">
+                          {link.name}
+                        </span>
+                        <span className="block text-xs text-gray-500 mt-0.5">
+                          {link.desc}
+                        </span>
+                      </Link>
+                    </li>
                   ))}
-                </div>
-
-                <div className="mt-4 pt-3 border-t border-purple-200">
-                  <div className="inline-flex items-center gap-1.5 text-xs font-semibold text-purple-600 group-hover:text-purple-700 transition-colors">
-                    Learn more
-                    <svg className="w-3 h-3 group-hover:translate-x-0.5 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                    </svg>
-                  </div>
-                </div>
-              </Link>
-            </div>
+                </ul>
+              </div>
+            ))}
           </div>
         </div>
       </div>
     );
   };
 
-  const DropdownContent = ({ links, isVisible, colorScheme = 'green' }) => {
-    const getColorClasses = () => {
-      switch (colorScheme) {
-        case 'purple':
-          return { bg: 'bg-purple-100', text: 'text-purple-600', hover: 'group-hover:bg-purple-600' };
-        case 'blue':
-          return { bg: 'bg-blue-100', text: 'text-blue-600', hover: 'group-hover:bg-blue-600' };
-        default:
-          return { bg: 'bg-green-100', text: 'text-green-600', hover: 'group-hover:bg-green-600' };
-      }
-    };
-    const colors = getColorClasses();
-
+  // Solutions Dropdown - 3-column layout
+  const SolutionsDropdown = ({ isVisible }) => {
     return (
       <div
-        className={`fixed left-4 right-4 top-20 z-[60] transition-all duration-400 ease-out transform ${
-          isVisible ? 'opacity-100 visible translate-y-0 scale-100' : 'opacity-0 invisible -translate-y-4 scale-95'
+        className={`absolute left-1/2 -translate-x-1/2 top-full pt-2 z-[60] transition-all duration-200 ease-out ${
+          isVisible ? 'opacity-100 visible translate-y-0' : 'opacity-0 invisible -translate-y-1 pointer-events-none'
         }`}
         onMouseEnter={handleDropdownContentEnter}
         onMouseLeave={handleDropdownContentLeave}
       >
-        <div className="max-w-[1400px] mx-auto bg-white rounded-2xl shadow-2xl border border-gray-200 py-4 px-4">
-          <div className="grid grid-cols-2 gap-2">
-            {links.map((link) =>
+        <div className="bg-white rounded-xl border border-gray-200 shadow-xl p-6">
+          <div className="grid grid-cols-3 gap-6" style={{ width: '480px' }}>
+            {solutionsLinks.map((link) => (
+              <Link
+                key={link.name}
+                to={link.path}
+                className="block group"
+                onClick={() => setActiveDropdown(null)}
+              >
+                <span className="text-sm font-medium text-gray-900 group-hover:text-[#4E74FF] transition-colors duration-150">
+                  {link.name}
+                </span>
+                <span className="block text-xs text-gray-500 mt-0.5">
+                  {link.desc}
+                </span>
+              </Link>
+            ))}
+          </div>
+        </div>
+      </div>
+    );
+  };
+
+  // Resources Dropdown - 3-column layout
+  const ResourcesDropdown = ({ isVisible }) => {
+    return (
+      <div
+        className={`absolute left-1/2 -translate-x-1/2 top-full pt-2 z-[60] transition-all duration-200 ease-out ${
+          isVisible ? 'opacity-100 visible translate-y-0' : 'opacity-0 invisible -translate-y-1 pointer-events-none'
+        }`}
+        onMouseEnter={handleDropdownContentEnter}
+        onMouseLeave={handleDropdownContentLeave}
+      >
+        <div className="bg-white rounded-xl border border-gray-200 shadow-xl p-6">
+          <div className="grid grid-cols-3 gap-6" style={{ width: '480px' }}>
+            {resourcesLinks.map((link) =>
               link.path.startsWith('http') ? (
                 <a
                   key={link.name}
                   href={link.path}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="group flex items-start space-x-2.5 p-2.5 rounded-lg hover:bg-gray-50 hover:shadow-sm transition-all duration-200"
+                  className="block group"
                   onClick={() => setActiveDropdown(null)}
                 >
-                  <div className={`flex-shrink-0 w-8 h-8 ${colors.bg} rounded-lg flex items-center justify-center ${colors.text} ${colors.hover} group-hover:text-white transition-all duration-200`}>
-                    {link.icon}
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="font-satoshi font-semibold text-black transition-colors duration-200 text-sm">
-                      {link.name}
-                    </div>
-                    <div className="mt-0.5 text-xs text-gray-600 font-satoshi leading-snug">
-                      {link.description}
-                    </div>
-                  </div>
+                  <span className="text-sm font-medium text-gray-900 group-hover:text-[#4E74FF] transition-colors duration-150">
+                    {link.name}
+                  </span>
+                  <span className="block text-xs text-gray-500 mt-0.5">
+                    {link.desc}
+                  </span>
                 </a>
               ) : (
                 <Link
                   key={link.name}
                   to={link.path}
-                  className="group flex items-start space-x-2.5 p-2.5 rounded-lg hover:bg-gray-50 hover:shadow-sm transition-all duration-200"
+                  className="block group"
                   onClick={() => setActiveDropdown(null)}
                 >
-                  <div className={`flex-shrink-0 w-8 h-8 ${colors.bg} rounded-lg flex items-center justify-center ${colors.text} ${colors.hover} group-hover:text-white transition-all duration-200`}>
-                    {link.icon}
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="font-satoshi font-semibold text-black transition-colors duration-200 text-sm">
-                      {link.name}
-                    </div>
-                    <div className="mt-0.5 text-xs text-gray-600 font-satoshi leading-snug">
-                      {link.description}
-                    </div>
-                  </div>
+                  <span className="text-sm font-medium text-gray-900 group-hover:text-[#4E74FF] transition-colors duration-150">
+                    {link.name}
+                  </span>
+                  <span className="block text-xs text-gray-500 mt-0.5">
+                    {link.desc}
+                  </span>
                 </Link>
               )
             )}
@@ -272,169 +218,132 @@ const Navbar = ({ overlay = false }) => {
   };
 
   return (
-    <nav className={overlay ? 'fixed top-0 inset-x-0 z-50 font-satoshi' : 'sticky top-0 z-50 font-satoshi p-4'}>
-      <div className={overlay ? 'mx-auto max-w-[1400px] px-4' : 'max-w-[1400px] mx-auto bg-white rounded-2xl shadow-lg border border-gray-200'}>
-        <div className={overlay ? 'mt-4 rounded-2xl border border-gray-200/60 bg-white/70 backdrop-blur supports-[backdrop-filter]:bg-white/50' : ''}>
-          <div className="flex justify-between items-center h-16 px-6">
-            {/* Left: Logo + Desktop Nav */}
-            <div className="flex items-center space-x-8">
-              <Link to="/" className="flex-shrink-0">
-                <img src={isDevSite() ? "/img/CTS_DEV_LOGO.svg" : "/img/Logo.svg"} alt="Chatters Logo" className="h-8" />
-              </Link>
+    <nav className='fixed top-0 inset-x-0 z-50 w-full font-satoshi bg-white border-b border-gray-200'>
+      <div className='w-full px-4 sm:px-6 lg:px-12'>
+        <div className="flex justify-between items-center h-16">
+          {/* Left: Logo + Desktop Nav */}
+          <div className="flex items-center space-x-8">
+            <Link to="/" className="flex-shrink-0">
+              <img src="/img/logo/chatters-logo-2025.svg" alt="Chatters Logo" className="h-6" />
+            </Link>
 
-              <div className="hidden lg:flex lg:items-center lg:space-x-8 relative">
-                <div
-                  className="relative"
-                  onMouseEnter={() => handleDropdownEnter('product')}
-                  onMouseLeave={handleDropdownLeave}
-                >
-                  <div className="text-sm font-semibold text-black hover:text-green-600 flex items-center cursor-pointer transition-colors duration-200 font-satoshi">
-                    Product <ChevronDown className={`ml-1 h-4 w-4 transition-transform duration-200 ${activeDropdown === 'product' ? 'rotate-180' : ''}`} />
-                  </div>
-                  <ProductDropdown isVisible={activeDropdown === 'product'} />
+            <div className="hidden lg:flex lg:items-center lg:space-x-6">
+              <div
+                className="relative"
+                onMouseEnter={() => handleDropdownEnter('product')}
+                onMouseLeave={handleDropdownLeave}
+              >
+                <div className="text-sm font-medium text-gray-700 hover:text-[#4E74FF] flex items-center cursor-pointer transition-colors duration-150 py-5">
+                  Product <ChevronDown className={`ml-1 h-4 w-4 transition-transform duration-200 ${activeDropdown === 'product' ? 'rotate-180' : ''}`} />
                 </div>
-
-                <div
-                  className="relative"
-                  onMouseEnter={() => handleDropdownEnter('solutions')}
-                  onMouseLeave={handleDropdownLeave}
-                >
-                  <div className="text-sm font-semibold text-black hover:text-green-600 flex items-center cursor-pointer transition-colors duration-200 font-satoshi">
-                    Solutions <ChevronDown className={`ml-1 h-4 w-4 transition-transform duration-200 ${activeDropdown === 'solutions' ? 'rotate-180' : ''}`} />
-                  </div>
-                  <DropdownContent links={solutionsLinks} isVisible={activeDropdown === 'solutions'} colorScheme="purple" />
-                </div>
-
-                <div
-                  className="relative"
-                  onMouseEnter={() => handleDropdownEnter('resources')}
-                  onMouseLeave={handleDropdownLeave}
-                >
-                  <div className="text-sm font-semibold text-black hover:text-green-600 flex items-center cursor-pointer transition-colors duration-200 font-satoshi">
-                    Resources <ChevronDown className={`ml-1 h-4 w-4 transition-transform duration-200 ${activeDropdown === 'resources' ? 'rotate-180' : ''}`} />
-                  </div>
-                  <DropdownContent links={resourcesLinks} isVisible={activeDropdown === 'resources'} colorScheme="blue" />
-                </div>
-
-                <Link
-                  to="/pricing"
-                  className={`text-sm font-semibold transition-colors duration-200 font-satoshi ${isActive('/pricing') ? 'text-green-600' : 'text-black hover:text-green-600'}`}
-                >
-                  Pricing
-                </Link>
+                <ProductDropdown isVisible={activeDropdown === 'product'} />
               </div>
-            </div>
 
-            {/* Right: Auth */}
-            <div className="hidden lg:flex lg:items-center lg:space-x-4">
+              <div
+                className="relative"
+                onMouseEnter={() => handleDropdownEnter('solutions')}
+                onMouseLeave={handleDropdownLeave}
+              >
+                <div className="text-sm font-medium text-gray-700 hover:text-[#4E74FF] flex items-center cursor-pointer transition-colors duration-150 py-5">
+                  Solutions <ChevronDown className={`ml-1 h-4 w-4 transition-transform duration-200 ${activeDropdown === 'solutions' ? 'rotate-180' : ''}`} />
+                </div>
+                <SolutionsDropdown isVisible={activeDropdown === 'solutions'} />
+              </div>
+
+              <div
+                className="relative"
+                onMouseEnter={() => handleDropdownEnter('resources')}
+                onMouseLeave={handleDropdownLeave}
+              >
+                <div className="text-sm font-medium text-gray-700 hover:text-[#4E74FF] flex items-center cursor-pointer transition-colors duration-150 py-5">
+                  Resources <ChevronDown className={`ml-1 h-4 w-4 transition-transform duration-200 ${activeDropdown === 'resources' ? 'rotate-180' : ''}`} />
+                </div>
+                <ResourcesDropdown isVisible={activeDropdown === 'resources'} />
+              </div>
+
               <Link
-                to={getDashboardUrl('/signin')}
-                className="text-sm font-semibold text-black hover:text-green-600 transition-colors duration-200 font-satoshi"
+                to="/pricing"
+                className={`text-sm font-medium transition-colors duration-150 py-5 ${isActive('/pricing') ? 'text-[#4E74FF]' : 'text-gray-700 hover:text-[#4E74FF]'}`}
               >
-                Log in
+                Pricing
               </Link>
-              <PrimaryButton text="Book a Demo" to="/demo" size="sm" />
             </div>
+          </div>
 
-            {/* Mobile toggle */}
-            <div className="lg:hidden">
-              <button
-                onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-                className="text-black focus:outline-none"
-              >
-                {isMobileMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
-              </button>
-            </div>
+          {/* Right: Auth */}
+          <div className="hidden lg:flex lg:items-center lg:space-x-4">
+            <Link
+              to={getDashboardUrl('/signin')}
+              className="text-sm font-medium text-gray-700 hover:text-[#4E74FF] transition-colors duration-150"
+            >
+              Log in
+            </Link>
+            <PrimaryButton text="Book a Demo" to="/demo" size="sm" />
+          </div>
+
+          {/* Mobile toggle */}
+          <div className="lg:hidden">
+            <button
+              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+              className="text-gray-700 focus:outline-none"
+            >
+              {isMobileMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
+            </button>
           </div>
         </div>
       </div>
 
       {/* Mobile menu */}
       {isMobileMenuOpen && (
-        <div className="lg:hidden bg-white mt-2 rounded-2xl border border-gray-200 shadow-2xl mx-4 max-h-[80vh] overflow-y-auto">
-          <div className="px-4 pt-4 pb-6 space-y-4 font-satoshi">
+        <div className="lg:hidden bg-white border-t border-gray-200 shadow-xl max-h-[80vh] overflow-y-auto">
+          <div className="px-6 py-6 space-y-6">
+            {/* Product Categories */}
             <div>
-              <p className="text-sm font-semibold text-green-600 mb-2">Product - Core Features</p>
-              <div className="grid grid-cols-2 gap-2">
-                {coreProductLinks.map((link) => (
-                  <Link
-                    key={link.name}
-                    to={link.path}
-                    onClick={() => setIsMobileMenuOpen(false)}
-                    className="flex flex-col items-start space-y-2 p-3 rounded-lg hover:bg-gray-50"
-                  >
-                    <div className="flex-shrink-0 w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center text-green-600">
-                      {link.icon}
+              <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3">Product</p>
+              <div className="space-y-4">
+                {productCategories.map((category) => (
+                  <div key={category.title}>
+                    <p className="text-xs font-medium text-gray-500 mb-2">{category.title}</p>
+                    <div className="space-y-2 pl-3">
+                      {category.links.map((link) => (
+                        <Link
+                          key={link.name}
+                          to={link.path}
+                          onClick={() => setIsMobileMenuOpen(false)}
+                          className="block"
+                        >
+                          <span className="text-sm text-gray-700 hover:text-[#4E74FF]">{link.name}</span>
+                          <span className="block text-xs text-gray-400">{link.desc}</span>
+                        </Link>
+                      ))}
                     </div>
-                    <div className="text-xs font-medium text-black text-left">{link.name}</div>
-                  </Link>
+                  </div>
                 ))}
               </div>
             </div>
 
+            {/* Solutions */}
             <div>
-              <p className="text-sm font-semibold text-green-600 mb-2">Product - Team & Growth</p>
-              <div className="grid grid-cols-2 gap-2">
-                {teamProductLinks.map((link) => (
-                  <Link
-                    key={link.name}
-                    to={link.path}
-                    onClick={() => setIsMobileMenuOpen(false)}
-                    className="flex flex-col items-start space-y-2 p-3 rounded-lg hover:bg-gray-50"
-                  >
-                    <div className="flex-shrink-0 w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center text-green-600">
-                      {link.icon}
-                    </div>
-                    <div className="text-xs font-medium text-black text-left">{link.name}</div>
-                  </Link>
-                ))}
-              </div>
-            </div>
-
-            <div className="bg-gradient-to-br from-purple-50 to-blue-50 rounded-xl p-4 border-2 border-purple-200">
-              <Link
-                to={intelligenceLink.path}
-                onClick={() => setIsMobileMenuOpen(false)}
-                className="block"
-              >
-                <div className="flex items-center gap-3 mb-2">
-                  <div className="flex-shrink-0 w-10 h-10 bg-gradient-to-br from-purple-500 to-blue-600 rounded-xl flex items-center justify-center text-white">
-                    {intelligenceLink.icon}
-                  </div>
-                  <div className="flex-1">
-                    <h3 className="font-satoshi font-bold text-gray-900 text-sm">
-                      {intelligenceLink.name}
-                    </h3>
-                    <p className="text-xs text-gray-600 font-satoshi">
-                      {intelligenceLink.description}
-                    </p>
-                  </div>
-                </div>
-              </Link>
-            </div>
-
-            <div>
-              <p className="text-sm font-semibold text-purple-600 mb-2">Solutions</p>
-              <div className="grid grid-cols-2 gap-2">
+              <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3">Solutions</p>
+              <div className="space-y-2 pl-3">
                 {solutionsLinks.map((link) => (
                   <Link
                     key={link.name}
                     to={link.path}
                     onClick={() => setIsMobileMenuOpen(false)}
-                    className="flex flex-col items-start space-y-2 p-3 rounded-lg hover:bg-gray-50"
+                    className="block"
                   >
-                    <div className="flex-shrink-0 w-8 h-8 bg-purple-100 rounded-lg flex items-center justify-center text-purple-600">
-                      {link.icon}
-                    </div>
-                    <div className="text-xs font-medium text-black text-left">{link.name}</div>
+                    <span className="text-sm text-gray-700 hover:text-[#4E74FF]">{link.name}</span>
+                    <span className="block text-xs text-gray-400">{link.desc}</span>
                   </Link>
                 ))}
               </div>
             </div>
 
+            {/* Resources */}
             <div>
-              <p className="text-sm font-semibold text-blue-600 mb-2">Resources</p>
-              <div className="grid grid-cols-2 gap-2">
+              <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3">Resources</p>
+              <div className="space-y-2 pl-3">
                 {resourcesLinks.map((link) =>
                   link.path.startsWith('http') ? (
                     <a
@@ -442,44 +351,41 @@ const Navbar = ({ overlay = false }) => {
                       href={link.path}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="flex flex-col items-start space-y-2 p-3 rounded-lg hover:bg-gray-50"
+                      className="block"
                     >
-                      <div className="flex-shrink-0 w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center text-blue-600">
-                        {link.icon}
-                      </div>
-                      <div className="text-xs font-medium text-black text-left">{link.name}</div>
+                      <span className="text-sm text-gray-700 hover:text-[#4E74FF]">{link.name}</span>
+                      <span className="block text-xs text-gray-400">{link.desc}</span>
                     </a>
                   ) : (
                     <Link
                       key={link.name}
                       to={link.path}
                       onClick={() => setIsMobileMenuOpen(false)}
-                      className="flex flex-col items-start space-y-2 p-3 rounded-lg hover:bg-gray-50"
+                      className="block"
                     >
-                      <div className="flex-shrink-0 w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center text-blue-600">
-                        {link.icon}
-                      </div>
-                      <div className="text-xs font-medium text-black text-left">{link.name}</div>
+                      <span className="text-sm text-gray-700 hover:text-[#4E74FF]">{link.name}</span>
+                      <span className="block text-xs text-gray-400">{link.desc}</span>
                     </Link>
                   )
                 )}
               </div>
             </div>
 
-            <div className="pt-3 border-t border-gray-200 space-y-3">
+            {/* Pricing & Auth */}
+            <div className="pt-4 border-t border-gray-200 space-y-3">
               <Link
                 to="/pricing"
                 onClick={() => setIsMobileMenuOpen(false)}
-                className="block text-center text-sm font-semibold text-black py-2"
+                className="block text-sm font-medium text-gray-700 hover:text-[#4E74FF]"
               >
                 Pricing
               </Link>
 
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-2 gap-3 pt-2">
                 <Link
                   to={getDashboardUrl('/signin')}
                   onClick={() => setIsMobileMenuOpen(false)}
-                  className="text-center border border-gray-300 text-black px-4 py-2 rounded-lg text-sm font-semibold hover:bg-gray-50 transition-colors"
+                  className="text-center border border-gray-300 text-gray-700 px-4 py-2.5 rounded-lg text-sm font-medium hover:bg-gray-50 transition-colors"
                 >
                   Log in
                 </Link>

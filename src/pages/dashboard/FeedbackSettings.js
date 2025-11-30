@@ -320,9 +320,9 @@ const FeedbackSettings = () => {
                 value={hours}
                 checked={selectedTimeoutHours === hours}
                 onChange={() => setSelectedTimeoutHours(hours)}
-                className="w-4 h-4 text-blue-600 border-gray-300 focus:ring-blue-500"
+                className="w-4 h-4 text-blue-600 border-gray-300 dark:border-gray-600 focus:ring-blue-500"
               />
-              <span className="ml-3 text-sm text-gray-700">
+              <span className="ml-3 text-sm text-gray-700 dark:text-gray-300">
                 {hours} hour{hours !== 1 ? 's' : ''}{hours === 2 ? ' (default)' : ''}
               </span>
             </label>
@@ -345,10 +345,10 @@ const FeedbackSettings = () => {
           {/* Enable Toggle */}
           <div className="flex items-center justify-between">
             <div>
-              <label className="block text-sm font-medium text-gray-700">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
                 Enable NPS Emails
               </label>
-              <p className="text-xs text-gray-500 mt-1">Automatically send NPS surveys after visits</p>
+              <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">Automatically send NPS surveys after visits</p>
             </div>
             <label className="relative inline-flex items-center cursor-pointer">
               <input
@@ -357,7 +357,7 @@ const FeedbackSettings = () => {
                 onChange={(e) => setNpsEnabled(e.target.checked)}
                 className="sr-only peer"
               />
-              <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#2548CC]"></div>
+              <div className="w-11 h-6 bg-gray-200 dark:bg-gray-700 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 dark:after:border-gray-600 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#2548CC]"></div>
             </label>
           </div>
 
@@ -365,7 +365,7 @@ const FeedbackSettings = () => {
             <>
               {/* Delay Hours */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-3">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
                   Send Delay
                 </label>
                 <div className="flex gap-4">
@@ -377,9 +377,9 @@ const FeedbackSettings = () => {
                         value={hours}
                         checked={npsDelayHours === hours}
                         onChange={() => setNpsDelayHours(hours)}
-                        className="w-4 h-4 text-blue-600 border-gray-300 focus:ring-blue-500"
+                        className="w-4 h-4 text-blue-600 border-gray-300 dark:border-gray-600 focus:ring-blue-500"
                       />
-                      <span className="ml-2 text-sm text-gray-700">
+                      <span className="ml-2 text-sm text-gray-700 dark:text-gray-300">
                         {hours}h {hours === 24 ? '(recommended)' : ''}
                       </span>
                     </label>
@@ -417,10 +417,10 @@ const FeedbackSettings = () => {
           {/* Enable Toggle */}
           <div className="flex items-center justify-between">
             <div>
-              <label className="block text-sm font-medium text-gray-700">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
                 Enable Co-Resolvers
               </label>
-              <p className="text-xs text-gray-500 mt-1">Allow selecting a second staff member when resolving feedback</p>
+              <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">Allow selecting a second staff member when resolving feedback</p>
             </div>
             <label className="relative inline-flex items-center cursor-pointer">
               <input
@@ -429,13 +429,13 @@ const FeedbackSettings = () => {
                 onChange={(e) => setEnableCoResolving(e.target.checked)}
                 className="sr-only peer"
               />
-              <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#2548CC]"></div>
+              <div className="w-11 h-6 bg-gray-200 dark:bg-gray-700 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 dark:after:border-gray-600 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#2548CC]"></div>
             </label>
           </div>
 
           {enableCoResolving && (
-            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-              <p className="text-sm text-blue-800">
+            <div className="bg-blue-50 dark:bg-blue-900/30 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
+              <p className="text-sm text-blue-800 dark:text-blue-300">
                 <strong>Example:</strong> If John notices a guest's food issue and Sarah (the chef) makes new food, John can resolve the feedback and add Sarah as a co-resolver to recognise her contribution.
               </p>
             </div>

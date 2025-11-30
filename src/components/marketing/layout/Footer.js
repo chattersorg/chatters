@@ -9,9 +9,9 @@ const Footer = () => {
           {/* Brand / About */}
           <div>
             <img
-              src="/img/Logo.svg"
+              src="/img/logo/chatters-large-logo-white.svg"
               alt="Chatters"
-              className="h-8 w-auto mb-4 filter invert"
+              className="h-8 w-auto mb-4"
             />
             <p className="text-gray-400 leading-relaxed font-satoshi">
               The leading feedback management platform for hospitality
@@ -119,14 +119,6 @@ const Footer = () => {
           <div>
             <h4 className="text-lg font-semibold mb-4 font-satoshi">Company</h4>
             <ul className="space-y-2 text-gray-400 font-satoshi">
-              <li>
-                <a
-                  href="/about"
-                  className="hover:text-white transition-colors"
-                >
-                  About
-                </a>
-              </li>
               <li>
                 <a
                   href="/blog"

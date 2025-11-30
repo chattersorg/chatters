@@ -186,28 +186,28 @@ const LocationManagement = ({ venueId, onLocationUpdate }) => {
   };
 
   if (loading) {
-    return <div className="text-center py-4">Loading locations...</div>;
+    return <div className="text-center py-4 text-gray-600 dark:text-gray-400">Loading locations...</div>;
   }
 
   return (
-    <div className="bg-white border border-gray-200 rounded-lg p-6">
+    <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-lg p-6">
       <div className="flex items-center justify-between mb-4">
         <button
           onClick={() => setShowAddForm(true)}
-          className="px-3 py-2 text-sm bg-blue-100 text-blue-700 rounded-md hover:bg-blue-200 transition-colors flex items-center"
+          className="px-3 py-2 text-sm bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 rounded-md hover:bg-blue-200 dark:hover:bg-blue-900/50 transition-colors flex items-center"
         >
           <Plus className="w-4 h-4 mr-1" />
           Add Location
         </button>
       </div>
 
-      <p className="text-sm text-gray-600 mb-4">
+      <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
         Customise staff location categories for your venue. Drag to reorder.
       </p>
 
       {/* Add Location Form */}
       {showAddForm && (
-        <div className="bg-gray-50 rounded-lg p-4 mb-4">
+        <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-4 mb-4">
           <div className="flex items-center space-x-3">
             <div className="flex-1">
               <input
@@ -215,7 +215,7 @@ const LocationManagement = ({ venueId, onLocationUpdate }) => {
                 placeholder="Location name (e.g., Front of House)"
                 value={newLocation.name}
                 onChange={(e) => setNewLocation(prev => ({ ...prev, name: e.target.value }))}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
               />
             </div>
             <div className="flex items-center space-x-2">
@@ -223,14 +223,14 @@ const LocationManagement = ({ venueId, onLocationUpdate }) => {
                 type="color"
                 value={newLocation.color}
                 onChange={(e) => setNewLocation(prev => ({ ...prev, color: e.target.value }))}
-                className="w-10 h-10 rounded border border-gray-300 cursor-pointer"
+                className="w-10 h-10 rounded border border-gray-300 dark:border-gray-700 cursor-pointer"
               />
               <div className="flex space-x-1">
                 {defaultColors.map(color => (
                   <button
                     key={color}
                     onClick={() => setNewLocation(prev => ({ ...prev, color }))}
-                    className="w-6 h-6 rounded border border-gray-200"
+                    className="w-6 h-6 rounded border border-gray-200 dark:border-gray-700"
                     style={{ backgroundColor: color }}
                   />
                 ))}
@@ -239,7 +239,7 @@ const LocationManagement = ({ venueId, onLocationUpdate }) => {
             <button
               onClick={handleAddLocation}
               disabled={!newLocation.name.trim()}
-              className="px-3 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed"
+              className="px-3 py-2 bg-blue-600 dark:bg-blue-700 text-white rounded-md hover:bg-blue-700 dark:hover:bg-blue-600 disabled:bg-gray-300 dark:disabled:bg-gray-700 disabled:cursor-not-allowed"
             >
               Add
             </button>
@@ -248,7 +248,7 @@ const LocationManagement = ({ venueId, onLocationUpdate }) => {
                 setShowAddForm(false);
                 setNewLocation({ name: '', color: '#3B82F6' });
               }}
-              className="px-3 py-2 bg-gray-300 text-gray-700 rounded-md hover:bg-gray-400"
+              className="px-3 py-2 bg-gray-300 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-md hover:bg-gray-400 dark:hover:bg-gray-600"
             >
               Cancel
             </button>
@@ -259,7 +259,7 @@ const LocationManagement = ({ venueId, onLocationUpdate }) => {
       {/* Locations List */}
       <div className="space-y-2">
         {locations.length === 0 ? (
-          <div className="text-center py-8 text-gray-500">
+          <div className="text-center py-8 text-gray-500 dark:text-gray-400">
             <p>No locations configured yet.</p>
             <p className="text-sm">Add your first location to get started.</p>
           </div>
@@ -272,28 +272,28 @@ const LocationManagement = ({ venueId, onLocationUpdate }) => {
               onDragOver={(e) => handleDragOver(e, index)}
               onDragLeave={handleDragLeave}
               onDrop={(e) => handleDrop(e, index)}
-              className={`flex items-center space-x-3 p-3 border rounded-lg hover:bg-gray-50 cursor-move transition-all duration-200 ${
+              className={`flex items-center space-x-3 p-3 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 cursor-move transition-all duration-200 ${
                 !location.is_active ? 'opacity-60' : ''
               } ${
-                draggedItem === index ? 'shadow-lg scale-105 bg-blue-50 border-blue-300' : ''
+                draggedItem === index ? 'shadow-lg scale-105 bg-blue-50 dark:bg-blue-900/30 border-blue-300 dark:border-blue-700' : ''
               } ${
-                dragOverItem === index ? 'border-blue-400 bg-blue-25' : ''
+                dragOverItem === index ? 'border-blue-400 dark:border-blue-600 bg-blue-25 dark:bg-blue-900/20' : ''
               }`}
             >
-              <GripVertical className="w-4 h-4 text-gray-400" />
-              
+              <GripVertical className="w-4 h-4 text-gray-400 dark:text-gray-500" />
+
               <div
                 className="w-4 h-4 rounded"
                 style={{ backgroundColor: location.color }}
               />
-              
+
               <div className="flex-1">
                 {editingLocation === location.id ? (
                   <input
                     type="text"
                     value={location.name}
                     onChange={(e) => {
-                      setLocations(prev => prev.map(l => 
+                      setLocations(prev => prev.map(l =>
                         l.id === location.id ? { ...l, name: e.target.value } : l
                       ));
                     }}
@@ -303,11 +303,11 @@ const LocationManagement = ({ venueId, onLocationUpdate }) => {
                         handleUpdateLocation(location.id, { name: location.name });
                       }
                     }}
-                    className="w-full px-2 py-1 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500"
+                    className="w-full px-2 py-1 border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-white rounded focus:ring-2 focus:ring-blue-500"
                     autoFocus
                   />
                 ) : (
-                  <span className="text-sm font-medium text-gray-900">
+                  <span className="text-sm font-medium text-gray-900 dark:text-white">
                     {location.name}
                   </span>
                 )}
@@ -317,26 +317,26 @@ const LocationManagement = ({ venueId, onLocationUpdate }) => {
                 <button
                   onClick={() => handleToggleActive(location.id, location.is_active)}
                   className={`p-1 rounded transition-colors ${
-                    location.is_active 
-                      ? 'text-green-600 hover:bg-green-100' 
-                      : 'text-gray-400 hover:bg-gray-100'
+                    location.is_active
+                      ? 'text-green-600 dark:text-green-400 hover:bg-green-100 dark:hover:bg-green-900/30'
+                      : 'text-gray-400 dark:text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800'
                   }`}
                   title={location.is_active ? 'Hide location' : 'Show location'}
                 >
                   {location.is_active ? <Eye className="w-4 h-4" /> : <EyeOff className="w-4 h-4" />}
                 </button>
-                
+
                 <button
                   onClick={() => setEditingLocation(location.id)}
-                  className="p-1 text-gray-600 hover:text-blue-600 hover:bg-blue-100 rounded transition-colors"
+                  className="p-1 text-gray-600 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-blue-100 dark:hover:bg-blue-900/30 rounded transition-colors"
                   title="Edit location"
                 >
                   <Edit2 className="w-4 h-4" />
                 </button>
-                
+
                 <button
                   onClick={() => handleDeleteLocation(location)}
-                  className="p-1 text-gray-600 hover:text-red-600 hover:bg-red-100 rounded transition-colors"
+                  className="p-1 text-gray-600 dark:text-gray-400 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-100 dark:hover:bg-red-900/30 rounded transition-colors"
                   title="Delete location"
                 >
                   <Trash2 className="w-4 h-4" />
@@ -350,23 +350,23 @@ const LocationManagement = ({ venueId, onLocationUpdate }) => {
       {/* Delete Confirmation Modal */}
       {deleteConfirmation && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-lg w-full max-w-md">
+          <div className="bg-white dark:bg-gray-900 rounded-lg w-full max-w-md">
             <div className="p-6">
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">Delete Location</h3>
-              <p className="text-gray-600 mb-6">
-                Are you sure you want to delete <strong>"{deleteConfirmation.location.name}"</strong>? 
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Delete Location</h3>
+              <p className="text-gray-600 dark:text-gray-400 mb-6">
+                Are you sure you want to delete <strong>"{deleteConfirmation.location.name}"</strong>?
                 Employees assigned to this location will have their location cleared. This action cannot be undone.
               </p>
               <div className="flex justify-end space-x-3">
                 <button
                   onClick={deleteConfirmation.onCancel}
-                  className="px-4 py-2 text-gray-600 border border-gray-300 rounded-md hover:bg-gray-50 transition-colors"
+                  className="px-4 py-2 text-gray-600 dark:text-gray-400 border border-gray-300 dark:border-gray-700 rounded-md hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
                 >
                   Cancel
                 </button>
                 <button
                   onClick={deleteConfirmation.onConfirm}
-                  className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors"
+                  className="px-4 py-2 bg-red-600 dark:bg-red-700 text-white rounded-md hover:bg-red-700 dark:hover:bg-red-600 transition-colors"
                 >
                   Delete Location
                 </button>

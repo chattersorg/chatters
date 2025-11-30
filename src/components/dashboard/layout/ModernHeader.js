@@ -112,7 +112,7 @@ const ModernHeader = ({ sidebarCollapsed, setSidebarCollapsed, trialInfo }) => {
     }
 
     if (currentPath === '/multi-venue/dashboard') {
-      return 'Customizable multi-venue analytics';
+      return 'Customisable multi-venue analytics';
     }
 
     // Reviews

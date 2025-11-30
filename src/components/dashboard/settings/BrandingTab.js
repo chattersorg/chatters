@@ -66,17 +66,17 @@ const HighlightedInput = ({ value, onChange, placeholder, rows, className }) => 
 
 // Reusable SettingsCard component matching FeedbackSettings style
 const SettingsCard = ({ title, description, children, onSave, loading, message }) => (
-  <div className="bg-white border border-gray-200 rounded-xl overflow-hidden">
-    <div className="px-6 py-4 border-b border-gray-100">
-      <h3 className="text-base font-semibold text-gray-900">{title}</h3>
-      <p className="text-sm text-gray-500 mt-1">{description}</p>
+  <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl overflow-hidden">
+    <div className="px-6 py-4 border-b border-gray-100 dark:border-gray-800">
+      <h3 className="text-base font-semibold text-gray-900 dark:text-white">{title}</h3>
+      <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">{description}</p>
     </div>
     <div className="p-6">
       {children}
     </div>
-    <div className="px-6 py-4 border-t border-gray-100">
+    <div className="px-6 py-4 border-t border-gray-100 dark:border-gray-800">
       <div className="flex items-center justify-between">
-        <div className="text-xs text-gray-500">
+        <div className="text-xs text-gray-500 dark:text-gray-400">
           Changes are saved per venue
         </div>
         <Button
@@ -90,8 +90,8 @@ const SettingsCard = ({ title, description, children, onSave, loading, message }
       {message && (
         <div className={`text-xs p-2 rounded-lg mt-3 ${
           message.includes('success')
-            ? 'text-green-700 bg-green-50 border border-green-200'
-            : 'text-red-700 bg-red-50 border border-red-200'
+            ? 'text-green-700 dark:text-green-300 bg-green-50 dark:bg-green-900/30 border border-green-200 dark:border-green-800'
+            : 'text-red-700 dark:text-red-300 bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-800'
         }`}>
           {message}
         </div>
@@ -352,7 +352,7 @@ const BrandingTab = ({
               <img
                 src={logo}
                 alt="Logo"
-                className="w-20 h-20 object-cover rounded-lg border border-gray-200 shadow-sm"
+                className="w-20 h-20 object-cover rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm"
               />
             </div>
           )}
@@ -362,9 +362,9 @@ const BrandingTab = ({
               accept="image/*"
               onChange={handleLogoUpload}
               disabled={logoLoading}
-              className="w-full text-sm text-gray-600 file:mr-3 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-medium file:bg-[#2548CC] file:text-white hover:file:bg-[#1e3ba8] cursor-pointer disabled:opacity-50"
+              className="w-full text-sm text-gray-600 dark:text-gray-400 file:mr-3 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-medium file:bg-[#2548CC] file:text-white hover:file:bg-[#1e3ba8] cursor-pointer disabled:opacity-50"
             />
-            <p className="text-xs text-gray-500 mt-2">
+            <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">
               Square image, minimum 100x100px recommended
             </p>
           </div>
@@ -385,7 +385,7 @@ const BrandingTab = ({
               <img
                 src={backgroundImage}
                 alt="Background"
-                className="w-32 h-20 object-cover rounded-lg border border-gray-200 shadow-sm"
+                className="w-32 h-20 object-cover rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm"
               />
             </div>
           )}
@@ -395,9 +395,9 @@ const BrandingTab = ({
               accept="image/*"
               onChange={handleBackgroundImageUpload}
               disabled={backgroundImageLoading}
-              className="w-full text-sm text-gray-600 file:mr-3 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-medium file:bg-[#2548CC] file:text-white hover:file:bg-[#1e3ba8] cursor-pointer disabled:opacity-50"
+              className="w-full text-sm text-gray-600 dark:text-gray-400 file:mr-3 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-medium file:bg-[#2548CC] file:text-white hover:file:bg-[#1e3ba8] cursor-pointer disabled:opacity-50"
             />
-            <p className="text-xs text-gray-500 mt-2">
+            <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">
               Landscape image, 1920x1080px or larger recommended. Leave empty to use solid background color.
             </p>
           </div>
@@ -497,9 +497,9 @@ const BrandingTab = ({
 
           {/* Preview */}
           <div className="mt-4">
-            <label className="block text-sm font-medium text-gray-700 mb-2">Preview</label>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Preview</label>
             <div
-              className="p-8 rounded-lg border border-gray-200 flex items-center justify-center min-h-[200px]"
+              className="p-8 rounded-lg border border-gray-200 dark:border-gray-700 flex items-center justify-center min-h-[200px]"
               style={
                 backgroundImage
                   ? {
@@ -538,7 +538,7 @@ const BrandingTab = ({
         <div className="space-y-6">
           {/* Emoji Selection */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-3">Emoji</label>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">Emoji</label>
             <div className="grid grid-cols-4 gap-3">
               {emojiOptions.map((option) => (
                 <button
@@ -546,12 +546,12 @@ const BrandingTab = ({
                   onClick={() => setAssistanceIcon(option.value)}
                   className={`flex flex-col items-center justify-center p-3 rounded-lg border-2 transition-all ${
                     assistanceIcon === option.value
-                      ? 'border-blue-500 bg-blue-50'
-                      : 'border-gray-200 hover:border-gray-300 hover:bg-gray-50'
+                      ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/30'
+                      : 'border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-800'
                   }`}
                 >
                   <div className="text-3xl mb-1">{option.value}</div>
-                  <span className="text-xs font-medium text-gray-700">{option.label}</span>
+                  <span className="text-xs font-medium text-gray-700 dark:text-gray-300">{option.label}</span>
                 </button>
               ))}
             </div>
@@ -559,35 +559,35 @@ const BrandingTab = ({
 
           {/* Title Input */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Title</label>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Title</label>
             <HighlightedInput
               value={assistanceTitle}
               onChange={(e) => setAssistanceTitle(e.target.value)}
               placeholder="Help is on the way!"
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 dark:bg-gray-800 dark:text-white dark:placeholder-gray-400 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
             />
           </div>
 
           {/* Message Input */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Message</label>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Message</label>
             <HighlightedInput
               value={assistanceMessage}
               onChange={(e) => setAssistanceMessage(e.target.value)}
               placeholder="We've notified our team that you need assistance. Someone will be with you shortly."
               rows={3}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 resize-none"
+              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 dark:bg-gray-800 dark:text-white dark:placeholder-gray-400 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 resize-none"
             />
-            <p className="text-xs text-gray-500 mt-1">
+            <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
               Use {'{table}'} as a placeholder for the table number
             </p>
           </div>
 
           {/* Preview */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Preview</label>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Preview</label>
             <div
-              className="rounded-lg p-8 border border-gray-200 flex items-center justify-center min-h-[250px]"
+              className="rounded-lg p-8 border border-gray-200 dark:border-gray-700 flex items-center justify-center min-h-[250px]"
               style={
                 backgroundImage
                   ? {
@@ -658,7 +658,7 @@ const BrandingTab = ({
         <div className="space-y-6">
           {/* Emoji Selection */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-3">Emoji</label>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">Emoji</label>
             <div className="grid grid-cols-4 gap-3">
               {thankYouEmojiOptions.map((option) => (
                 <button
@@ -666,12 +666,12 @@ const BrandingTab = ({
                   onClick={() => setThankYouIcon(option.value)}
                   className={`flex flex-col items-center justify-center p-3 rounded-lg border-2 transition-all ${
                     thankYouIcon === option.value
-                      ? 'border-blue-500 bg-blue-50'
-                      : 'border-gray-200 hover:border-gray-300 hover:bg-gray-50'
+                      ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/30'
+                      : 'border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-800'
                   }`}
                 >
                   <div className="text-3xl mb-1">{option.value}</div>
-                  <span className="text-xs font-medium text-gray-700">{option.label}</span>
+                  <span className="text-xs font-medium text-gray-700 dark:text-gray-300">{option.label}</span>
                 </button>
               ))}
             </div>
@@ -703,9 +703,9 @@ const BrandingTab = ({
 
           {/* Preview */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Preview</label>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Preview</label>
             <div
-              className="rounded-lg p-8 border border-gray-200 flex items-center justify-center min-h-[250px]"
+              className="rounded-lg p-8 border border-gray-200 dark:border-gray-700 flex items-center justify-center min-h-[250px]"
               style={
                 backgroundImage
                   ? {

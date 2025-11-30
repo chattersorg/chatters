@@ -211,14 +211,14 @@ const NPSChartTile = ({ config = {}, onRemove, onConfigure }) => {
   };
 
   return (
-    <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 h-full flex flex-col">
+    <div className="bg-white dark:bg-gray-900 rounded-xl shadow-sm border border-gray-200 dark:border-gray-800 p-6 h-full flex flex-col">
       {/* Header */}
       <div className="flex items-start justify-between mb-4">
         <div className="flex-1 flex items-center gap-2">
           <button
             onClick={handleRefresh}
             disabled={loading}
-            className={`p-1.5 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors ${
+            className={`p-1.5 text-gray-400 dark:text-gray-500 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/30 rounded-lg transition-colors ${
               loading ? 'animate-spin cursor-not-allowed' : ''
             }`}
             title="Refresh data"
@@ -226,8 +226,8 @@ const NPSChartTile = ({ config = {}, onRemove, onConfigure }) => {
             <RefreshCw className="w-4 h-4" />
           </button>
           <div>
-            <h3 className="text-lg font-semibold text-gray-900">NPS Score</h3>
-            <p className="text-sm text-gray-500 mt-1">
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-white">NPS Score</h3>
+            <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
               {getVenueLabel()} • {getPresetLabel(dateRangePreset)}
             </p>
           </div>
@@ -235,14 +235,14 @@ const NPSChartTile = ({ config = {}, onRemove, onConfigure }) => {
         <div className="flex items-center gap-2">
           <button
             onClick={onConfigure}
-            className="p-1.5 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
+            className="p-1.5 text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors"
             title="Configure chart"
           >
             <SettingsIcon className="w-4 h-4" />
           </button>
           <button
             onClick={onRemove}
-            className="p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+            className="p-1.5 text-gray-400 dark:text-gray-500 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/30 rounded-lg transition-colors"
             title="Remove tile"
           >
             <X className="w-4 h-4" />
@@ -253,10 +253,10 @@ const NPSChartTile = ({ config = {}, onRemove, onConfigure }) => {
       {/* Chart Content */}
       <div className="flex-1 flex flex-col min-h-0 relative">
         {refreshing && (
-          <div className="absolute inset-0 bg-white/80 backdrop-blur-sm z-10 flex items-center justify-center rounded-lg">
+          <div className="absolute inset-0 bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm z-10 flex items-center justify-center rounded-lg">
             <div className="text-center">
-              <div className="w-6 h-6 border-2 border-gray-300 border-t-blue-600 rounded-full animate-spin mx-auto mb-2" />
-              <p className="text-xs text-gray-600">Updating view...</p>
+              <div className="w-6 h-6 border-2 border-gray-300 dark:border-gray-700 border-t-blue-600 dark:border-t-blue-400 rounded-full animate-spin mx-auto mb-2" />
+              <p className="text-xs text-gray-600 dark:text-gray-400">Updating view...</p>
             </div>
           </div>
         )}

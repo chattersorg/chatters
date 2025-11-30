@@ -55,9 +55,18 @@ Chatters solves critical problems for hospitality venues:
 
 ### CORE DASHBOARD (/dashboard)
 Main overview with:
-- Personalized greeting
-- Real-time stats (feedback count, assistance requests, average ratings)
-- Multi-venue overview tiles (customizable)
+- Personalized greeting with time-of-day detection (Good morning/afternoon/evening)
+- Real-time stats with 7-day trend sparkline graphs showing:
+  - Today's Sessions (with trend indicator)
+  - Satisfaction Score (with trend indicator)
+  - Average Response Time (with trend indicator)
+  - Completion Rate (with trend indicator)
+- Additional overview metrics:
+  - Active Alerts (requiring attention)
+  - Resolved Today (issues closed)
+  - Current Activity (traffic level)
+  - Today's Peak (busiest time)
+- Multi-venue overview tiles (up to 3 customizable metric tiles)
 - Google/TripAdvisor rating trends
 - Recent activity feed (last 24 hours)
 - Real-time notifications for assistance requests
@@ -101,7 +110,7 @@ Main overview with:
 - /settings/integrations - Third-party connections
 
 ### ACCOUNT MANAGEMENT
-- /account/profile - User profile settings
+- /account/profile - User profile settings with dark mode toggle
 - /account/billing - Subscription management (Stripe integration)
 
 ### SPECIAL FEATURES
@@ -120,6 +129,155 @@ Main overview with:
   - Manual navigation (no auto-return)
 
 - /reviews - Google Reviews integration (requires API approval)
+
+## DARK MODE FEATURE
+
+The platform includes a comprehensive dark mode implementation:
+
+### HOW IT WORKS
+- Toggle location: Account Profile page (/account/profile) under "Appearance" section
+- Toggle interface: Custom switch with Moon/Sun icons indicating current mode
+- State persistence: Preference saved to localStorage and persists across sessions
+- System-wide application: Dark mode affects all pages and components throughout the dashboard
+
+### TECHNICAL IMPLEMENTATION
+- Uses React Context API (DarkModeContext) for global state management
+- Tailwind CSS dark mode classes (dark:) applied throughout UI
+- Automatic HTML class manipulation (adds/removes 'dark' class on document root)
+- Initial state detection from localStorage on page load
+
+### COLOR SCHEME
+- Light Mode: White backgrounds, gray text, blue accents
+- Dark Mode: Dark gray backgrounds (gray-900), white text, preserved blue accents
+- Borders: Adapts from gray-200 to gray-800
+- Hover states: Adjusted for visibility in both modes
+- Charts: Maintains readability with appropriate color adjustments
+
+### AFFECTED COMPONENTS
+- Dashboard layouts and cards
+- Navigation sidebar and header
+- Settings pages
+- Report pages and charts
+- Modals and dropdowns
+- Form inputs and buttons
+- Tables and data grids
+
+## SPARKLINE METRIC CARDS (7-DAY TRENDS)
+
+The dashboard overview now features sparkline graphs showing 7-day trends for key metrics:
+
+### AVAILABLE SPARKLINE METRICS
+1. **Today's Sessions**: Shows customer interaction volume trends
+2. **Satisfaction Score**: Displays average rating trends over 7 days
+3. **Average Response Time**: Tracks how quickly staff resolve issues
+4. **Completion Rate**: Shows percentage of resolved feedback over time
+
+### SPARKLINE FEATURES
+- 7-day historical data visualization
+- Compact inline graphs (mini line charts)
+- Daily data points calculated from midnight to midnight
+- Trend indicators showing percentage change from yesterday
+- Color-coded trend direction (green for up, red for down, gray for neutral)
+- Real-time data updates matching main dashboard refresh
+
+### DATA CALCULATION
+- Sessions: Unique feedback sessions per day
+- Satisfaction: Average of all ratings (1-5 stars) per day
+- Response Time: Average time from creation to resolution (in minutes)
+- Completion Rate: Percentage of feedback + assistance requests resolved per day
+
+### VISUAL DESIGN
+- Blue line graphs using Recharts library
+- Responsive container sizing
+- No data point markers for cleaner appearance
+- No animation for instant rendering
+- Integrated within metric card layout
+
+## CUSTOMIZABLE MULTI-VENUE TILES
+
+Users with multiple venues can add up to 3 customizable metric tiles to their dashboard:
+
+### TILE MANAGEMENT
+- Add Tile: Click "+" button to open metric selector modal
+- Change Metric: Click Settings icon on existing tile
+- Remove Tile: Click X icon on tile
+- Position: Tiles stored with position index, auto-reorder on removal
+- Persistence: User preferences saved to user_dashboard_tiles table
+
+### AVAILABLE METRICS (69+ Options)
+
+**NPS & Satisfaction (5 metrics)**
+- NPS Score Chart: Net Promoter Score with breakdown by category
+- NPS Trend Over Time: Track NPS changes across selected period
+- Venue NPS Comparison: Compare NPS scores across venues
+- Average Satisfaction Score: Average rating across all feedback
+- Satisfaction Distribution: Breakdown of ratings (1-5 stars)
+
+**Feedback Volume (6 metrics)**
+- Total Feedback Count: Number of feedback sessions
+- Overall Feedback Chart: Comprehensive metrics with multiple chart views
+- Feedback by Venue: Compare total volume across venues
+- Feedback Trend: Track feedback volume over time
+- Average Response Time: How quickly staff resolve feedback
+- Response Rate: Percentage of feedback receiving response
+
+**Resolution & Actions (6 metrics)**
+- Total Resolved Feedback: Sessions that have been actioned
+- Resolution Rate: Percentage of feedback marked as resolved (with progress bars)
+- Resolution by Venue: Compare resolution rates across venues
+- Unresolved Alerts: Urgent feedback requiring immediate attention
+- Pending Feedback: Feedback awaiting action or response
+
+**Staff Performance (5 metrics)**
+- Top Staff Member: Staff with most resolutions
+- Staff Leaderboard: Top 5 staff by resolution count
+- Staff Performance by Venue: Compare staff activity across venues
+- Staff Recognition Count: Number of positive mentions
+- Average Staff Rating: Overall performance rating
+
+**Venue Performance (4 metrics)**
+- Multi-Venue Overview: Side-by-side performance comparison
+- Top Performing Venue: Highest satisfaction score
+- Venue Trend Comparison: Compare trends over time
+- Venue Activity Heatmap: Visual representation of feedback volume
+
+**Time-Based Analytics (3 metrics)**
+- Peak Feedback Hours: Busiest times for feedback
+- Day-by-Day Comparison: Performance across days of week
+- Hourly Breakdown: Feedback and satisfaction by hour
+
+**Sentiment & Issues (4 metrics)**
+- Sentiment Analysis: Positive, neutral, negative breakdown
+- Top Issues: Most common feedback topics
+- Areas for Improvement: Venues needing attention
+- Positive Highlights: Most praised aspects
+
+**External Reviews (3 metrics)**
+- Google Rating: Current Google review rating with change indicator
+- TripAdvisor Rating: Current TripAdvisor rating with change indicator
+- External Review Comparison: Compare Google & TripAdvisor across venues
+
+### METRIC SELECTOR MODAL
+- Category filtering: Filter metrics by category (NPS, Feedback, Staff, etc.)
+- Search-like interface: Browse all available metrics
+- Visual selection: Icon + description for each metric
+- Duplicate prevention: Cannot add same metric twice
+- Edit mode: Update existing tiles or add new ones
+
+### TILE FEATURES
+- Date range filtering: Apply time period to all tiles
+- Venue breakdown: See per-venue stats within each tile
+- Color-coded performance: Visual indicators (progress bars, badges)
+- Real-time updates: Refresh with dashboard data
+- Responsive design: Adapts to screen size
+- Dark mode support: Full dark mode compatibility
+
+### DATA AGGREGATION
+- Cross-venue calculations: Aggregate data from all user venues
+- Smart ranking: Sort venues by performance (highest first)
+- Performance indicators: Labels like "Excellent", "Good", "Fair", "Poor"
+- Activity levels: "Very High", "High", "Medium", "Low" classifications
+- Percentage calculations: Automatic percentage and ratio computations
 
 ## KEY FEATURES IN DETAIL
 
@@ -171,11 +329,14 @@ Main overview with:
 
 ### MULTI-VENUE SUPPORT
 - Account-level grouping
-- Cross-venue analytics and comparisons
+- Cross-venue analytics and comparisons via customizable metric tiles
 - Centralized management dashboard
 - Venue switching interface with localStorage persistence
 - Context-aware navigation
 - Aggregate statistics across all locations
+- Multi-venue greeting showing total venue count
+- Date range filtering for all multi-venue tiles
+- Per-venue breakdowns within metric cards
 
 ### BRANDING & CUSTOMIZATION
 - Custom logo upload (stored in Supabase Storage)
@@ -267,13 +428,14 @@ Main overview with:
 
 ### FRONTEND
 - React with React Router
-- Tailwind CSS for styling
+- Tailwind CSS for styling with dark mode support
 - Radix UI component library
 - shadcn/ui components
 - Ant Design components
-- Chart.js and Recharts for data visualization
-- Context API for state management (VenueContext, ModalContext)
+- Chart.js and Recharts for data visualization (including sparkline graphs)
+- Context API for state management (VenueContext, ModalContext, DarkModeContext)
 - Real-time updates via Supabase subscriptions
+- LocalStorage for user preferences (dark mode, venue selection)
 
 ### BACKEND
 - Supabase (PostgreSQL database)
@@ -312,6 +474,9 @@ Key tables:
 - venue_settings: Branding and configuration
 - floor_plans: Table layout data
 - tables: Individual table records with zones
+- user_dashboard_tiles: User-specific customizable dashboard metric tiles (metric_type, position)
+- venue_google_ratings: Historical Google rating data for trend analysis
+- venue_tripadvisor_ratings: Historical TripAdvisor rating data for trend analysis
 
 ### EXTERNAL SERVICES
 - Stripe for payment processing
@@ -662,9 +827,11 @@ Currently, Chatters has NO AI/ML features implemented. However, the data collect
 
 ### IN-APP GUIDANCE
 - Tooltips on complex features
-- Onboarding tutorials (if implemented)
+- Dark mode toggle with visual feedback (Moon/Sun icons)
 - Help text in settings
 - Empty state illustrations with instructions
+- Metric selector modal with category filtering and descriptions
+- Coming soon badges for planned features
 
 ### EXTERNAL RESOURCES
 - Marketing site with feature explanations
@@ -688,3 +855,56 @@ Chatters transforms hospitality feedback management by:
 10. SIMPLIFYING OPERATIONS - One platform for feedback, staff, analytics, and review management
 
 The platform sits at the intersection of customer feedback, staff management, and online reputation, creating a comprehensive solution for hospitality operators who want to deliver exceptional experiences and build lasting customer relationships.
+
+## RECENT FEATURE UPDATES
+
+This section documents recently added features that enhance the Chatters platform:
+
+### DARK MODE (Latest)
+- **Location**: Account Profile page (/account/profile)
+- **Feature**: Full dark mode toggle affecting entire application
+- **Benefits**: Reduced eye strain, improved accessibility, professional appearance
+- **Persistence**: User preference saved to localStorage
+- **Implementation**: Tailwind CSS dark mode classes throughout entire UI
+
+### SPARKLINE METRIC CARDS (Latest)
+- **Location**: Dashboard overview page
+- **Feature**: 7-day trend graphs for 4 key metrics
+- **Metrics**: Sessions, Satisfaction Score, Response Time, Completion Rate
+- **Benefits**: Quick visual trend analysis, historical context for today's performance
+- **Data**: Daily calculations with percentage change indicators
+- **Display**: Compact inline line charts using Recharts
+
+### CUSTOMIZABLE MULTI-VENUE TILES (Latest)
+- **Location**: Dashboard overview page
+- **Feature**: Up to 3 user-customizable metric tiles
+- **Options**: 69+ different metrics across 8 categories
+- **Benefits**: Personalized dashboard, cross-venue comparisons, flexible analytics
+- **Categories**: NPS, Feedback Volume, Resolution, Staff Performance, Venue Performance, Time Analytics, Sentiment, External Reviews
+- **Key Metrics Include**:
+  - Total Feedback Count with session tracking
+  - Average Satisfaction with per-venue breakdown
+  - Unresolved Alerts combining feedback and assistance
+  - Best Staff Member with resolution counts
+  - Google/TripAdvisor Rating changes over selected period
+  - Resolution Rate with progress bars and performance labels
+  - Venue Activity Heatmap with color-coded levels
+- **Interface**: Metric selector modal with category filtering and visual icons
+- **Flexibility**: Change metrics anytime, remove tiles, reorder automatically
+
+### USER EXPERIENCE IMPROVEMENTS
+- **Time-of-Day Greetings**: Dynamic "Good morning/afternoon/evening" messages
+- **Multi-Venue Awareness**: Dashboard shows total venue count for multi-location users
+- **Enhanced Profile Page**: Consolidated personal information, appearance settings, and security options
+- **Performance Indicators**: Color-coded badges showing "Excellent", "Good", "Fair", "Poor" performance
+- **Activity Level Classification**: "Very High", "High", "Medium", "Low" traffic indicators
+
+### TECHNICAL ENHANCEMENTS
+- **New Context**: DarkModeContext for global theme management
+- **New Hook**: useOverviewStats with 7-day sparkline calculations
+- **New Hook**: useMultiVenueStats for cross-venue data aggregation
+- **New Tables**: user_dashboard_tiles for tile preferences, venue_google_ratings and venue_tripadvisor_ratings for historical tracking
+- **Chart Library**: Expanded use of Recharts for sparkline visualization
+- **LocalStorage**: Enhanced usage for dark mode and user preferences
+
+These features significantly enhance the user experience by providing better visual feedback, personalized dashboards, and improved multi-venue management capabilities.
