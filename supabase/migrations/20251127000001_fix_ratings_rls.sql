@@ -30,7 +30,7 @@ USING (
 CREATE POLICY "Users can view historical ratings for their venues"
 ON historical_ratings
 FOR SELECT
-USING (
+USING ( 
   venue_id IN (
     SELECT v.id FROM venues v
     JOIN accounts a ON v.account_id = a.id
