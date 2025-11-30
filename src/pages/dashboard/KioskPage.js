@@ -194,6 +194,7 @@ const KioskPage = () => {
   }, [venueId]);
 
   // Calculate the most important/urgent item and its zone
+  // Priority: urgency band first, then oldest unresolved first within same band
   const mostUrgentItem = useMemo(() => {
     // Group feedback by session
     const feedbackSessions = groupBySession(feedbackList.items || []);
@@ -205,11 +206,15 @@ const KioskPage = () => {
       urgency: request.status === 'pending' ? 4 : 2,
     }));
 
-    // Combine and sort by urgency, then by time
+    // Combine and sort by:
+    // 1. Urgency band (higher = more urgent)
+    // 2. Time (oldest first - address older issues before newer ones of same urgency)
     const combined = [...feedbackSessions, ...assistanceWithUrgency];
     const sorted = combined.sort((a, b) => {
+      // First by urgency (higher urgency first)
       if (a.urgency !== b.urgency) return b.urgency - a.urgency;
-      return new Date(b.created_at) - new Date(a.created_at);
+      // Then by time (oldest first - lower timestamp = older = higher priority)
+      return new Date(a.created_at) - new Date(b.created_at);
     });
 
     return sorted[0] || null;
@@ -224,8 +229,9 @@ const KioskPage = () => {
   }, [mostUrgentItem, tables]);
 
   // Auto-navigate to the most urgent zone on initial load
+  // Wait for tables to be loaded before attempting navigation
   useEffect(() => {
-    if (!hasAutoNavigated.current && mostUrgentZone && currentView === 'overview') {
+    if (!hasAutoNavigated.current && mostUrgentZone && currentView === 'overview' && tables.length > 0) {
       hasAutoNavigated.current = true;
       setCurrentView(mostUrgentZone);
 
@@ -242,7 +248,7 @@ const KioskPage = () => {
         }
       }
     }
-  }, [mostUrgentZone, mostUrgentItem, currentView]);
+  }, [mostUrgentZone, mostUrgentItem, currentView, tables.length]);
 
   // Data loading
   const loadVenueSettings = async (venueId) => {
