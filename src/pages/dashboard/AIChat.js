@@ -377,7 +377,9 @@ const AIChat = () => {
   };
 
   return (
-    <div className="h-[calc(100vh-8rem)] flex overflow-hidden rounded-xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900">
+    <div className="-m-4 sm:-m-6 lg:-m-8 h-[calc(100vh-4rem)] overflow-hidden bg-gray-50 dark:bg-black">
+      <div className="h-full p-4 sm:p-6 lg:p-8">
+        <div className="h-full flex overflow-hidden rounded-xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900">
       {/* Sidebar - Conversation List */}
       <div className={`${showSidebar ? 'w-64' : 'w-0'} transition-all duration-300 flex-shrink-0 bg-gray-50 dark:bg-gray-800/50 border-r border-gray-200 dark:border-gray-700 overflow-hidden`}>
         <div className="h-full flex flex-col w-64">
@@ -583,6 +585,7 @@ const AIChat = () => {
             </form>
           </div>
         </div>
+      </div>
       </div>
     </div>
   );

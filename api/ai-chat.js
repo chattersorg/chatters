@@ -117,16 +117,174 @@ USER QUESTION: ${message}`,
 }
 
 /**
+ * Parse a date string in various formats
+ * Supports: "1st January", "January 1", "1/1/2024", "2024-01-01", "1 Jan", etc.
+ */
+function parseDate(dateStr, defaultYear) {
+  const str = dateStr.trim().toLowerCase();
+
+  // Month name mapping
+  const months = {
+    'january': 0, 'jan': 0,
+    'february': 1, 'feb': 1,
+    'march': 2, 'mar': 2,
+    'april': 3, 'apr': 3,
+    'may': 4,
+    'june': 5, 'jun': 5,
+    'july': 6, 'jul': 6,
+    'august': 7, 'aug': 7,
+    'september': 8, 'sep': 8, 'sept': 8,
+    'october': 9, 'oct': 9,
+    'november': 10, 'nov': 10,
+    'december': 11, 'dec': 11
+  };
+
+  // Try "1st January 2024" or "1 January" or "1st Jan"
+  const dayMonthMatch = str.match(/(\d{1,2})(?:st|nd|rd|th)?\s+([a-z]+)(?:\s+(\d{4}))?/);
+  if (dayMonthMatch) {
+    const day = parseInt(dayMonthMatch[1]);
+    const monthName = dayMonthMatch[2];
+    const year = dayMonthMatch[3] ? parseInt(dayMonthMatch[3]) : defaultYear;
+    if (months[monthName] !== undefined) {
+      return new Date(year, months[monthName], day);
+    }
+  }
+
+  // Try "January 1st 2024" or "January 1"
+  const monthDayMatch = str.match(/([a-z]+)\s+(\d{1,2})(?:st|nd|rd|th)?(?:\s+(\d{4}))?/);
+  if (monthDayMatch) {
+    const monthName = monthDayMatch[1];
+    const day = parseInt(monthDayMatch[2]);
+    const year = monthDayMatch[3] ? parseInt(monthDayMatch[3]) : defaultYear;
+    if (months[monthName] !== undefined) {
+      return new Date(year, months[monthName], day);
+    }
+  }
+
+  // Try DD/MM/YYYY or DD-MM-YYYY (UK format)
+  const ukDateMatch = str.match(/(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{4})/);
+  if (ukDateMatch) {
+    const day = parseInt(ukDateMatch[1]);
+    const month = parseInt(ukDateMatch[2]) - 1;
+    const year = parseInt(ukDateMatch[3]);
+    return new Date(year, month, day);
+  }
+
+  // Try DD/MM or DD-MM (assume current year)
+  const shortDateMatch = str.match(/(\d{1,2})[\/\-](\d{1,2})(?![\/\-])/);
+  if (shortDateMatch) {
+    const day = parseInt(shortDateMatch[1]);
+    const month = parseInt(shortDateMatch[2]) - 1;
+    return new Date(defaultYear, month, day);
+  }
+
+  return null;
+}
+
+/**
  * Parse date range from user's message
  */
 function parseDateRange(message) {
   const now = new Date();
   const lowerMessage = message.toLowerCase();
+  const currentYear = now.getFullYear();
 
-  // Default to last 7 days
+  // Default dates
   let fromDate = new Date(now);
   let toDate = new Date(now);
 
+  // Try to parse explicit date ranges first
+  // "from X to Y", "between X and Y", "X to Y", "X - Y"
+  const rangePatterns = [
+    /from\s+(.+?)\s+to\s+(.+?)(?:\s|$|,|\?)/i,
+    /between\s+(.+?)\s+and\s+(.+?)(?:\s|$|,|\?)/i,
+    /(\d{1,2}(?:st|nd|rd|th)?\s+[a-z]+(?:\s+\d{4})?)\s+(?:to|-)\s+(\d{1,2}(?:st|nd|rd|th)?\s+[a-z]+(?:\s+\d{4})?)/i,
+    /([a-z]+\s+\d{1,2}(?:st|nd|rd|th)?(?:\s+\d{4})?)\s+(?:to|-)\s+([a-z]+\s+\d{1,2}(?:st|nd|rd|th)?(?:\s+\d{4})?)/i,
+    /(\d{1,2}[\/\-]\d{1,2}(?:[\/\-]\d{4})?)\s+(?:to|-)\s+(\d{1,2}[\/\-]\d{1,2}(?:[\/\-]\d{4})?)/i
+  ];
+
+  for (const pattern of rangePatterns) {
+    const match = lowerMessage.match(pattern);
+    if (match) {
+      const startDate = parseDate(match[1], currentYear);
+      const endDate = parseDate(match[2], currentYear);
+      if (startDate && endDate) {
+        fromDate = startDate;
+        fromDate.setHours(0, 0, 0, 0);
+        toDate = endDate;
+        toDate.setHours(23, 59, 59, 999);
+        return {
+          from: fromDate.toISOString(),
+          to: toDate.toISOString(),
+          description: getDateRangeDescription(fromDate, toDate)
+        };
+      }
+    }
+  }
+
+  // Try single date patterns: "on 5th November", "for November 5th"
+  const singleDatePatterns = [
+    /on\s+(\d{1,2}(?:st|nd|rd|th)?\s+[a-z]+(?:\s+\d{4})?)/i,
+    /on\s+([a-z]+\s+\d{1,2}(?:st|nd|rd|th)?(?:\s+\d{4})?)/i,
+    /for\s+(\d{1,2}(?:st|nd|rd|th)?\s+[a-z]+(?:\s+\d{4})?)/i
+  ];
+
+  for (const pattern of singleDatePatterns) {
+    const match = lowerMessage.match(pattern);
+    if (match) {
+      const date = parseDate(match[1], currentYear);
+      if (date) {
+        fromDate = new Date(date);
+        fromDate.setHours(0, 0, 0, 0);
+        toDate = new Date(date);
+        toDate.setHours(23, 59, 59, 999);
+        return {
+          from: fromDate.toISOString(),
+          to: toDate.toISOString(),
+          description: getDateRangeDescription(fromDate, toDate)
+        };
+      }
+    }
+  }
+
+  // Named month: "in November", "for October", "during September"
+  const monthNames = ['january', 'february', 'march', 'april', 'may', 'june',
+                      'july', 'august', 'september', 'october', 'november', 'december'];
+  const monthMatch = lowerMessage.match(/(?:in|for|during)\s+(january|february|march|april|may|june|july|august|september|october|november|december)(?:\s+(\d{4}))?/i);
+  if (monthMatch) {
+    const monthIndex = monthNames.indexOf(monthMatch[1].toLowerCase());
+    const year = monthMatch[2] ? parseInt(monthMatch[2]) : currentYear;
+    fromDate = new Date(year, monthIndex, 1);
+    fromDate.setHours(0, 0, 0, 0);
+    toDate = new Date(year, monthIndex + 1, 0); // Last day of month
+    toDate.setHours(23, 59, 59, 999);
+    return {
+      from: fromDate.toISOString(),
+      to: toDate.toISOString(),
+      description: getDateRangeDescription(fromDate, toDate)
+    };
+  }
+
+  // "last X days/weeks/months"
+  const lastNMatch = lowerMessage.match(/last\s+(\d+)\s+(day|days|week|weeks|month|months)/);
+  if (lastNMatch) {
+    const n = parseInt(lastNMatch[1]);
+    const unit = lastNMatch[2];
+    if (unit.startsWith('day')) {
+      fromDate.setDate(now.getDate() - n);
+    } else if (unit.startsWith('week')) {
+      fromDate.setDate(now.getDate() - (n * 7));
+    } else if (unit.startsWith('month')) {
+      fromDate.setMonth(now.getMonth() - n);
+    }
+    return {
+      from: fromDate.toISOString(),
+      to: toDate.toISOString(),
+      description: getDateRangeDescription(fromDate, toDate)
+    };
+  }
+
+  // Standard keyword matching
   if (lowerMessage.includes('today')) {
     fromDate.setHours(0, 0, 0, 0);
     toDate.setHours(23, 59, 59, 999);
@@ -138,27 +296,37 @@ function parseDateRange(message) {
   } else if (lowerMessage.includes('last week') || lowerMessage.includes('past week')) {
     fromDate.setDate(now.getDate() - 7);
   } else if (lowerMessage.includes('last month') || lowerMessage.includes('past month')) {
-    fromDate.setDate(now.getDate() - 30);
+    // Go to the previous calendar month
+    fromDate = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+    fromDate.setHours(0, 0, 0, 0);
+    toDate = new Date(now.getFullYear(), now.getMonth(), 0); // Last day of previous month
+    toDate.setHours(23, 59, 59, 999);
   } else if (lowerMessage.includes('last 3 months') || lowerMessage.includes('past 3 months')) {
     fromDate.setDate(now.getDate() - 90);
-  } else if (lowerMessage.includes('beginning of last week') || lowerMessage.includes('start of last week')) {
-    // Get Monday of last week
-    const dayOfWeek = now.getDay();
-    const daysToLastMonday = dayOfWeek === 0 ? 13 : dayOfWeek + 6;
-    fromDate.setDate(now.getDate() - daysToLastMonday);
-    fromDate.setHours(0, 0, 0, 0);
-    toDate = new Date(fromDate);
-    toDate.setDate(fromDate.getDate() + 1);
-    toDate.setHours(23, 59, 59, 999);
   } else if (lowerMessage.includes('this week')) {
     // Get Monday of current week
     const dayOfWeek = now.getDay();
     const daysToMonday = dayOfWeek === 0 ? 6 : dayOfWeek - 1;
     fromDate.setDate(now.getDate() - daysToMonday);
     fromDate.setHours(0, 0, 0, 0);
+  } else if (lowerMessage.includes('this month')) {
+    // Start of current month
+    fromDate = new Date(now.getFullYear(), now.getMonth(), 1);
+    fromDate.setHours(0, 0, 0, 0);
+  } else if (lowerMessage.includes('this year')) {
+    fromDate = new Date(now.getFullYear(), 0, 1);
+    fromDate.setHours(0, 0, 0, 0);
+  } else if (lowerMessage.includes('last year')) {
+    fromDate = new Date(now.getFullYear() - 1, 0, 1);
+    fromDate.setHours(0, 0, 0, 0);
+    toDate = new Date(now.getFullYear() - 1, 11, 31);
+    toDate.setHours(23, 59, 59, 999);
+  } else if (lowerMessage.includes('all time') || lowerMessage.includes('ever') || lowerMessage.includes('overall')) {
+    // All time - go back 2 years
+    fromDate.setFullYear(now.getFullYear() - 2);
   } else {
-    // Default: last 7 days
-    fromDate.setDate(now.getDate() - 7);
+    // Default: last 30 days
+    fromDate.setDate(now.getDate() - 30);
   }
 
   return {
