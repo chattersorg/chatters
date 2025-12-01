@@ -119,6 +119,7 @@ function parseDateRange(message) {
 
   if (lowerMessage.includes('today')) {
     fromDate.setHours(0, 0, 0, 0);
+    toDate.setHours(23, 59, 59, 999);
   } else if (lowerMessage.includes('yesterday')) {
     fromDate.setDate(now.getDate() - 1);
     fromDate.setHours(0, 0, 0, 0);
