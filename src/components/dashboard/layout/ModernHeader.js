@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useVenue } from '../../../context/VenueContext';
 import {
@@ -11,7 +11,9 @@ import {
   Home,
   Clock,
   Menu,
-  Sparkles
+  Sparkles,
+  Bell,
+  HelpCircle
 } from 'lucide-react';
 import { Button } from '../../ui/button';
 
@@ -35,10 +37,43 @@ const subMenuItems = {
   ]
 };
 
+// Canny App ID
+const CANNY_APP_ID = '6783e273239ec5a91d6a6aa3';
+
 const ModernHeader = ({ sidebarCollapsed, setSidebarCollapsed, trialInfo }) => {
   const navigate = useNavigate();
   const location = useLocation();
   const { userRole } = useVenue();
+  const [cannyLoaded, setCannyLoaded] = useState(false);
+  const changelogButtonRef = useRef(null);
+
+  // Load Canny SDK and initialize changelog widget
+  useEffect(() => {
+    // Load the Canny SDK script
+    if (!window.Canny) {
+      const script = document.createElement('script');
+      script.src = 'https://canny.io/sdk.js';
+      script.async = true;
+      script.onload = () => {
+        setCannyLoaded(true);
+      };
+      document.head.appendChild(script);
+    } else {
+      setCannyLoaded(true);
+    }
+  }, []);
+
+  // Initialize Canny changelog when loaded
+  useEffect(() => {
+    if (cannyLoaded && window.Canny && changelogButtonRef.current) {
+      window.Canny('initChangelog', {
+        appID: CANNY_APP_ID,
+        position: 'bottom',
+        align: 'right',
+        theme: 'light'
+      });
+    }
+  }, [cannyLoaded]);
 
   const getCurrentSection = () => {
     const currentPath = location.pathname;
@@ -279,6 +314,16 @@ const ModernHeader = ({ sidebarCollapsed, setSidebarCollapsed, trialInfo }) => {
             <span>Kiosk</span>
             <ExternalLink className="w-4 h-4" />
           </Button>
+
+          {/* What's New / Changelog Button */}
+          <button
+            ref={changelogButtonRef}
+            data-canny-changelog
+            className="relative p-2 text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors"
+            title="What's New"
+          >
+            <HelpCircle className="w-5 h-5" />
+          </button>
         </div>
       </div>
     </header>
