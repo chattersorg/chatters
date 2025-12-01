@@ -331,9 +331,10 @@ const METRIC_CONFIG = {
     fetchData: async (venueIds, dateRange) => {
       // Get all ratings in date range for each venue
       const { data } = await supabase
-        .from('venue_google_ratings')
+        .from('historical_ratings')
         .select('venue_id, rating, recorded_at')
         .in('venue_id', venueIds)
+        .eq('source', 'google')
         .gte('recorded_at', dateRange.from.toISOString())
         .lte('recorded_at', dateRange.to.toISOString())
         .order('recorded_at', { ascending: true });
@@ -376,9 +377,10 @@ const METRIC_CONFIG = {
     fetchData: async (venueIds, dateRange) => {
       // Get all ratings in date range for each venue
       const { data } = await supabase
-        .from('venue_tripadvisor_ratings')
+        .from('historical_ratings')
         .select('venue_id, rating, recorded_at')
         .in('venue_id', venueIds)
+        .eq('source', 'tripadvisor')
         .gte('recorded_at', dateRange.from.toISOString())
         .lte('recorded_at', dateRange.to.toISOString())
         .order('recorded_at', { ascending: true });

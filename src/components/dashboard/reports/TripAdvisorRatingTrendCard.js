@@ -73,9 +73,10 @@ const TripAdvisorRatingTrendCard = ({ venueId }) => {
       setLoading(true);
 
       const { data: tripadvisorRatings } = await supabase
-        .from('venue_tripadvisor_ratings')
+        .from('historical_ratings')
         .select('rating, ratings_count, recorded_at')
         .eq('venue_id', venueId)
+        .eq('source', 'tripadvisor')
         .gte('recorded_at', dateRange.from.toISOString())
         .lte('recorded_at', dateRange.to.toISOString())
         .order('recorded_at', { ascending: true });

@@ -70,9 +70,10 @@ const GoogleRatingTrendCard = ({ venueId }) => {
       setLoading(true);
 
       const { data: googleRatings } = await supabase
-        .from('venue_google_ratings')
+        .from('historical_ratings')
         .select('rating, ratings_count, recorded_at')
         .eq('venue_id', venueId)
+        .eq('source', 'google')
         .gte('recorded_at', dateRange.from.toISOString())
         .lte('recorded_at', dateRange.to.toISOString())
         .order('recorded_at', { ascending: true });
