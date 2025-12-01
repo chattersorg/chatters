@@ -231,24 +231,24 @@ const FeedbackDetailModal = ({
   // New function to clear positive feedback (no staff assignment needed)
   const clearPositiveFeedback = async () => {
     setIsResolving(true);
-    
+
     try {
       const sessionIds = sessions.map(s => s.session_id);
-      
+
       const updateData = {
         is_actioned: true,
         resolved_by: null, // No staff member needed for positive feedback
         resolved_at: new Date().toISOString(),
         resolution_type: 'positive_feedback_cleared'
       };
-      
+
       const { error } = await supabase
         .from('feedback')
         .update(updateData)
         .in('session_id', sessionIds);
-      
+
       if (error) throw error;
-      
+
       // Pass null for staff ID since no staff assignment needed
       await onMarkResolved(sessionIds, null);
       onClose();

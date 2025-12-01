@@ -39,16 +39,18 @@ const GoogleRatingsTrendTile = ({ venueId }) => {
 
       // Get all Google ratings (ordered by date)
       const { data: googleRatings } = await supabase
-        .from('venue_google_ratings')
+        .from('historical_ratings')
         .select('rating, ratings_count, recorded_at, is_initial')
         .eq('venue_id', venueId)
+        .eq('source', 'google')
         .order('recorded_at', { ascending: true });
 
       // Get all TripAdvisor ratings (ordered by date)
       const { data: tripadvisorRatings } = await supabase
-        .from('venue_tripadvisor_ratings')
+        .from('historical_ratings')
         .select('rating, ratings_count, recorded_at, is_initial')
         .eq('venue_id', venueId)
+        .eq('source', 'tripadvisor')
         .order('recorded_at', { ascending: true });
 
       // Get current (most recent) ratings

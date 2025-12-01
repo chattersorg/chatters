@@ -23,10 +23,11 @@ const supabase = createClient(supabaseUrl, supabaseServiceKey, {
 });
 
 // Venue IDs from the SQL file
+// Set to just The Dunn Inn for now - can add others back later
 const venues = [
-  { id: 'd877bd0b-6522-409f-9192-ca996e1a7f48', name: 'The Lion of Beaconsfield' },
+  // { id: 'd877bd0b-6522-409f-9192-ca996e1a7f48', name: 'The Lion of Beaconsfield' },
   { id: 'd7683570-11ac-4007-ba95-dcdb4ef6c101', name: 'The Dunn Inn' },
-  { id: 'ba9c45d4-3947-4560-9327-7f00c695d177', name: 'The Fox' }
+  // { id: 'ba9c45d4-3947-4560-9327-7f00c695d177', name: 'The Fox' }
 ];
 
 // 14 employees per venue with roles and locations
@@ -144,8 +145,12 @@ async function insertInBatches(tableName, data, batchSize = 500) {
 async function generateFeedbackData(employeesByVenue) {
   console.log('\n🎲 Generating comprehensive feedback data...\n');
 
-  const startDate = new Date('2025-08-09T10:00:00Z');
-  const endDate = new Date('2025-10-10T23:59:59Z');
+  // Use last 60 days ending today
+  const endDate = new Date();
+  endDate.setHours(23, 59, 59, 999);
+  const startDate = new Date(endDate);
+  startDate.setDate(startDate.getDate() - 60);
+  startDate.setHours(10, 0, 0, 0);
 
   const allFeedback = [];
   const allAssistance = [];
@@ -204,13 +209,28 @@ async function generateFeedbackData(employeesByVenue) {
           feedbackText = feedbackText.replace('{staff_name}', randomEmployee.first_name);
         }
 
+        // Determine if feedback should be resolved (older feedback more likely to be resolved)
+        const daysSinceCreated = Math.ceil((endDate - responseTime) / (1000 * 60 * 60 * 24));
+        const resolveChance = Math.min(0.95, daysSinceCreated / 30); // Up to 95% resolved for older feedback
+        const shouldResolve = Math.random() < resolveChance;
+
+        // Select random staff member for resolution
+        const resolvingStaff = employees[Math.floor(Math.random() * employees.length)];
+
+        // Resolution happens 5-60 minutes after feedback
+        const resolutionTime = new Date(responseTime.getTime() + (5 + Math.floor(Math.random() * 55)) * 60 * 1000);
+
         // Create feedback record
         const feedback = {
           venue_id: venue.id,
           rating: rating,
           additional_feedback: feedbackText,
           table_number: tableNumber,
-          created_at: responseTime.toISOString()
+          created_at: responseTime.toISOString(),
+          is_actioned: shouldResolve,
+          resolved_by: shouldResolve ? resolvingStaff.id : null,
+          resolved_at: shouldResolve ? resolutionTime.toISOString() : null,
+          resolution_type: shouldResolve ? (rating > 3 ? 'positive_feedback_cleared' : 'staff_resolved') : null
         };
 
         allFeedback.push(feedback);
@@ -263,8 +283,11 @@ async function generateFeedbackData(employeesByVenue) {
 function generateHistoricalRatings() {
   console.log('\n📈 Generating historical ratings data...\n');
 
-  const startDate = new Date('2025-08-09T10:00:00Z');
-  const endDate = new Date('2025-10-10T10:00:00Z');
+  // Use last 60 days ending today
+  const endDate = new Date();
+  endDate.setHours(10, 0, 0, 0);
+  const startDate = new Date(endDate);
+  startDate.setDate(startDate.getDate() - 60);
 
   const allHistoricalRatings = [];
   const allExternalRatings = [];
@@ -345,8 +368,12 @@ function generateHistoricalRatings() {
 function generateNPSData() {
   console.log('\n📧 Generating NPS submission data...\n');
 
-  const startDate = new Date('2025-08-09T10:00:00Z');
-  const endDate = new Date('2025-10-10T23:59:59Z');
+  // Use last 60 days ending today
+  const endDate = new Date();
+  endDate.setHours(23, 59, 59, 999);
+  const startDate = new Date(endDate);
+  startDate.setDate(startDate.getDate() - 60);
+  startDate.setHours(10, 0, 0, 0);
 
   const allNPSSubmissions = [];
 
@@ -483,12 +510,14 @@ async function main() {
     const employeesByVenue = {};
 
     // Generate employee data for each venue
-    const templates = [employeeTemplates.lion, employeeTemplates.dunn, employeeTemplates.fox];
-    const domains = ['thelion.uk', 'dunninn.uk', 'thefox.uk'];
+    const venueTemplateMap = {
+      'd877bd0b-6522-409f-9192-ca996e1a7f48': { template: employeeTemplates.lion, domain: 'thelion.uk' },
+      'd7683570-11ac-4007-ba95-dcdb4ef6c101': { template: employeeTemplates.dunn, domain: 'dunninn.uk' },
+      'ba9c45d4-3947-4560-9327-7f00c695d177': { template: employeeTemplates.fox, domain: 'thefox.uk' }
+    };
 
-    venues.forEach((venue, venueIndex) => {
-      const template = templates[venueIndex];
-      const domain = domains[venueIndex];
+    venues.forEach((venue) => {
+      const { template, domain } = venueTemplateMap[venue.id];
 
       template.forEach((emp, empIndex) => {
         const employee = {
