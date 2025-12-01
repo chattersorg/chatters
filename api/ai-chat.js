@@ -14,7 +14,7 @@ export default async function handler(req, res) {
   }
 
   try {
-    const { message, venueId, venueName } = req.body;
+    const { message, venueId, venueName, history = [] } = req.body;
 
     // Validate required fields
     if (!message || !venueId) {
@@ -68,8 +68,15 @@ IMPORTANT RULES:
 - If asked about specific feedback, quote it directly
 - Keep responses under 150 words unless showing multiple feedback items
 - Format lists with bullet points for readability
-- If the data doesn't contain what they're asking about, say so clearly`,
+- If the data doesn't contain what they're asking about, say so clearly
+- You may have conversation history - use it to provide contextual responses`,
         messages: [
+          // Include conversation history for context (if any)
+          ...history.map(h => ({
+            role: h.role,
+            content: h.content
+          })),
+          // Current message with fresh data context
           {
             role: 'user',
             content: `${context}
