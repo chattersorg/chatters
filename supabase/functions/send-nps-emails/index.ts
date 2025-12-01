@@ -17,8 +17,15 @@ interface NPSSubmission {
     nps_question: string;
     primary_color: string;
     nps_enabled: boolean;
+    account_id: string;
   };
 }
+
+// Accounts where NPS emails should be logged but NOT actually sent via Resend
+// This is used for demo accounts or accounts with email sending restrictions
+const SKIP_SENDING_ACCOUNT_IDS = [
+  'af1d9502-a1a9-4873-8776-9b7177ed30c3', // LWM Pub Group Ltd (demo account)
+];
 
 serve(async (req) => {
   try {
@@ -42,7 +49,7 @@ serve(async (req) => {
     const now = new Date().toISOString();
     const { data: submissions, error: fetchError } = await supabase
       .from("nps_submissions")
-      .select("*, venues(name, logo, nps_question, primary_color, nps_enabled)")
+      .select("*, venues(name, logo, nps_question, primary_color, nps_enabled, account_id)")
       .lte("scheduled_send_at", now)
       .is("sent_at", null)
       .limit(50); // Process max 50 per run
@@ -83,6 +90,20 @@ serve(async (req) => {
             })
             .eq("id", submission.id);
           results.skipped = (results.skipped || 0) + 1;
+          continue;
+        }
+
+        // For demo/restricted accounts: log as sent but don't actually send via Resend
+        if (SKIP_SENDING_ACCOUNT_IDS.includes(submission.venues?.account_id)) {
+          console.log(`Demo mode: ${submission.customer_email} - logging as sent without sending`);
+          await supabase
+            .from("nps_submissions")
+            .update({
+              sent_at: new Date().toISOString()
+              // No send_error - it's intentionally not sent
+            })
+            .eq("id", submission.id);
+          results.sent++;
           continue;
         }
 
