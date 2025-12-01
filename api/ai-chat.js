@@ -43,10 +43,12 @@ export default async function handler(req, res) {
     // Fetch relevant feedback data
     const feedbackData = await fetchFeedbackData(supabase, venueId, dateRange);
     const npsData = await fetchNPSData(supabase, venueId, dateRange);
+    const employees = await fetchEmployees(supabase, venueId);
+    const staffPerformance = calculateStaffPerformance(feedbackData, employees);
     const stats = calculateStats(feedbackData, npsData);
 
     // Build context for Claude
-    const context = buildContext(feedbackData, npsData, stats, venueName, dateRange);
+    const context = buildContext(feedbackData, npsData, stats, staffPerformance, venueName, dateRange);
 
     // Call Claude Haiku
     const response = await fetch('https://api.anthropic.com/v1/messages', {
@@ -69,7 +71,8 @@ IMPORTANT RULES:
 - Keep responses under 150 words unless showing multiple feedback items
 - Format lists with bullet points for readability
 - If the data doesn't contain what they're asking about, say so clearly
-- You may have conversation history - use it to provide contextual responses`,
+- You may have conversation history - use it to provide contextual responses
+- You have access to staff performance data - use it to answer questions about employee performance`,
         messages: [
           // Include conversation history for context (if any)
           ...history.map(h => ({
@@ -193,6 +196,24 @@ async function fetchFeedbackData(supabase, venueId, dateRange) {
 }
 
 /**
+ * Fetch employees for the venue
+ */
+async function fetchEmployees(supabase, venueId) {
+  const { data, error } = await supabase
+    .from('employees')
+    .select('id, name')
+    .eq('venue_id', venueId)
+    .eq('is_active', true);
+
+  if (error) {
+    console.error('[AI Chat] Error fetching employees:', error);
+    return [];
+  }
+
+  return data || [];
+}
+
+/**
  * Fetch NPS data for the venue
  */
 async function fetchNPSData(supabase, venueId, dateRange) {
@@ -211,6 +232,74 @@ async function fetchNPSData(supabase, venueId, dateRange) {
   }
 
   return data || [];
+}
+
+/**
+ * Calculate staff performance metrics
+ */
+function calculateStaffPerformance(feedbackData, employees) {
+  if (!employees || employees.length === 0) {
+    return null;
+  }
+
+  // Create a map of employee IDs to names
+  const employeeMap = {};
+  employees.forEach(e => {
+    employeeMap[e.id] = e.name;
+  });
+
+  // Calculate resolved feedback per employee
+  const resolvedByEmployee = {};
+  const resolutionTimes = {};
+
+  feedbackData.forEach(f => {
+    if (f.resolved_by && f.is_actioned) {
+      const employeeId = f.resolved_by;
+      if (!resolvedByEmployee[employeeId]) {
+        resolvedByEmployee[employeeId] = {
+          count: 0,
+          positiveCleared: 0,
+          issuesResolved: 0,
+          totalResolutionTime: 0,
+          resolutionCount: 0
+        };
+      }
+      resolvedByEmployee[employeeId].count++;
+
+      // Track resolution type
+      if (f.resolution_type === 'positive_feedback_cleared') {
+        resolvedByEmployee[employeeId].positiveCleared++;
+      } else {
+        resolvedByEmployee[employeeId].issuesResolved++;
+      }
+
+      // Calculate resolution time if we have both timestamps
+      if (f.created_at && f.resolved_at) {
+        const created = new Date(f.created_at);
+        const resolved = new Date(f.resolved_at);
+        const timeDiff = (resolved - created) / (1000 * 60); // minutes
+        if (timeDiff > 0 && timeDiff < 1440) { // Only count if < 24 hours
+          resolvedByEmployee[employeeId].totalResolutionTime += timeDiff;
+          resolvedByEmployee[employeeId].resolutionCount++;
+        }
+      }
+    }
+  });
+
+  // Build performance array with employee names
+  const performance = Object.entries(resolvedByEmployee)
+    .map(([employeeId, data]) => ({
+      name: employeeMap[employeeId] || 'Unknown',
+      resolved: data.count,
+      positiveCleared: data.positiveCleared,
+      issuesResolved: data.issuesResolved,
+      avgResolutionTime: data.resolutionCount > 0
+        ? Math.round(data.totalResolutionTime / data.resolutionCount)
+        : null
+    }))
+    .sort((a, b) => b.resolved - a.resolved);
+
+  return performance;
 }
 
 /**
@@ -257,7 +346,7 @@ function calculateStats(feedbackData, npsData) {
 /**
  * Build context string for Claude
  */
-function buildContext(feedbackData, npsData, stats, venueName, dateRange) {
+function buildContext(feedbackData, npsData, stats, staffPerformance, venueName, dateRange) {
   let context = `## Data Context for ${venueName || 'this venue'}
 Period: ${dateRange.description}
 
@@ -294,6 +383,28 @@ Period: ${dateRange.description}
       const date = new Date(n.created_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' });
       context += `${i + 1}. [Score: ${n.score}] ${date} - "${n.comment}"\n`;
     });
+  }
+
+  // Add staff performance data
+  if (staffPerformance && staffPerformance.length > 0) {
+    context += `\n### Staff Performance (${staffPerformance.length} staff members with activity):\n`;
+    staffPerformance.forEach((staff, i) => {
+      const avgTime = staff.avgResolutionTime
+        ? `${staff.avgResolutionTime} min avg response`
+        : 'no timing data';
+      context += `${i + 1}. ${staff.name}: ${staff.resolved} feedback resolved (${staff.issuesResolved} issues fixed, ${staff.positiveCleared} positive cleared) - ${avgTime}\n`;
+    });
+
+    // Add top performer summary
+    const topPerformer = staffPerformance[0];
+    const fastestResponder = staffPerformance
+      .filter(s => s.avgResolutionTime !== null)
+      .sort((a, b) => a.avgResolutionTime - b.avgResolutionTime)[0];
+
+    context += `\n**Top Performer:** ${topPerformer.name} (${topPerformer.resolved} resolved)\n`;
+    if (fastestResponder) {
+      context += `**Fastest Responder:** ${fastestResponder.name} (${fastestResponder.avgResolutionTime} min avg)\n`;
+    }
   }
 
   return context;

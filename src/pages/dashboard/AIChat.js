@@ -2,7 +2,49 @@ import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { useVenue } from '../../context/VenueContext';
 import { supabase } from '../../utils/supabase';
 import usePageTitle from '../../hooks/usePageTitle';
-import { Send, Sparkles, Loader2, User, Bot, AlertCircle, Plus, MessageSquare, Trash2, ChevronLeft } from 'lucide-react';
+import { Send, Loader2, AlertCircle, Plus, MessageSquare, Trash2, ChevronLeft } from 'lucide-react';
+
+// Chatters logo component with dark mode support
+const ChattersLogo = ({ className = "w-4 h-4" }) => (
+  <>
+    <img
+      src="/img/logo/chatters-logo-black-2025.svg"
+      alt="Chatters"
+      className={`${className} dark:hidden`}
+    />
+    <img
+      src="/img/logo/chatters-logo-white-2025.svg"
+      alt="Chatters"
+      className={`${className} hidden dark:block`}
+    />
+  </>
+);
+
+// Typing animation component
+const TypewriterText = ({ content, onComplete, speed = 15 }) => {
+  const [displayedContent, setDisplayedContent] = useState('');
+  const [isComplete, setIsComplete] = useState(false);
+
+  useEffect(() => {
+    if (isComplete) return;
+
+    let index = 0;
+    const timer = setInterval(() => {
+      if (index < content.length) {
+        setDisplayedContent(content.slice(0, index + 1));
+        index++;
+      } else {
+        clearInterval(timer);
+        setIsComplete(true);
+        onComplete?.();
+      }
+    }, speed);
+
+    return () => clearInterval(timer);
+  }, [content, speed, onComplete, isComplete]);
+
+  return <FormattedMessage content={displayedContent} />;
+};
 
 // Simple markdown renderer for AI responses
 const FormattedMessage = ({ content }) => {
@@ -103,6 +145,7 @@ const AIChat = () => {
   const [loadingConversations, setLoadingConversations] = useState(true);
   const [error, setError] = useState(null);
   const [showSidebar, setShowSidebar] = useState(true);
+  const [typingMessageId, setTypingMessageId] = useState(null);
   const inputRef = useRef(null);
   const messagesContainerRef = useRef(null);
 
@@ -156,6 +199,7 @@ const AIChat = () => {
 
       setCurrentConversationId(conversationId);
       setMessages(data.messages || []);
+      setTypingMessageId(null);
     } catch (err) {
       console.error('Error loading conversation:', err);
       setError('Failed to load conversation');
@@ -171,14 +215,12 @@ const AIChat = () => {
       const title = newMessages.find(m => m.role === 'user')?.content?.slice(0, 50) || 'New conversation';
 
       if (conversationId) {
-        // Update existing
         await supabase
           .from('chat_conversations')
           .update({ messages: newMessages, title })
           .eq('id', conversationId);
         return conversationId;
       } else {
-        // Create new
         const { data, error } = await supabase
           .from('chat_conversations')
           .insert({
@@ -225,6 +267,7 @@ const AIChat = () => {
     setCurrentConversationId(null);
     setMessages([]);
     setError(null);
+    setTypingMessageId(null);
     inputRef.current?.focus();
   };
 
@@ -238,7 +281,7 @@ const AIChat = () => {
     if (messagesContainerRef.current) {
       messagesContainerRef.current.scrollTop = messagesContainerRef.current.scrollHeight;
     }
-  }, [messages, loading]);
+  }, [messages, loading, typingMessageId]);
 
   // Focus input on mount
   useEffect(() => {
@@ -253,12 +296,12 @@ const AIChat = () => {
     setInput('');
     setError(null);
 
-    const newMessages = [...messages, { role: 'user', content: userMessage, timestamp: new Date().toISOString() }];
+    const messageId = Date.now().toString();
+    const newMessages = [...messages, { id: messageId, role: 'user', content: userMessage, timestamp: new Date().toISOString() }];
     setMessages(newMessages);
     setLoading(true);
 
     try {
-      // Get conversation history for context (last 10 exchanges)
       const historyForContext = messages.slice(-20).map(m => ({
         role: m.role,
         content: m.content
@@ -283,8 +326,10 @@ const AIChat = () => {
       }
 
       const data = await response.json();
+      const assistantMessageId = (Date.now() + 1).toString();
 
       const updatedMessages = [...newMessages, {
+        id: assistantMessageId,
         role: 'assistant',
         content: data.response,
         stats: data.stats,
@@ -292,12 +337,13 @@ const AIChat = () => {
       }];
 
       setMessages(updatedMessages);
+      setTypingMessageId(assistantMessageId);
 
       // Save to database
       const savedId = await saveConversation(updatedMessages, currentConversationId);
       if (savedId && !currentConversationId) {
         setCurrentConversationId(savedId);
-        loadConversations(); // Refresh list
+        loadConversations();
       }
     } catch (err) {
       setError(err.message || 'Something went wrong. Please try again.');
@@ -308,10 +354,10 @@ const AIChat = () => {
   };
 
   const suggestedQuestions = [
-    "What's my feedback like this week?",
-    "Show me any negative feedback from yesterday",
-    "What are customers saying about our service?",
-    "What was my NPS score last month?",
+    "How's my feedback looking today?",
+    "Show me negative feedback from this week",
+    "Who's our best performing staff member?",
+    "What's my NPS score this month?",
   ];
 
   const handleSuggestedQuestion = (question) => {
@@ -331,31 +377,34 @@ const AIChat = () => {
   };
 
   return (
-    <div className="h-[calc(100vh-8rem)] flex overflow-hidden">
+    <div className="h-[calc(100vh-8rem)] flex overflow-hidden rounded-xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900">
       {/* Sidebar - Conversation List */}
-      <div className={`${showSidebar ? 'w-72' : 'w-0'} transition-all duration-200 flex-shrink-0 bg-gray-50 dark:bg-gray-800/50 border-r border-gray-200 dark:border-gray-800 overflow-hidden`}>
-        <div className="h-full flex flex-col w-72">
-          {/* New Chat Button */}
-          <div className="p-3 border-b border-gray-200 dark:border-gray-700">
+      <div className={`${showSidebar ? 'w-64' : 'w-0'} transition-all duration-300 flex-shrink-0 bg-gray-50 dark:bg-gray-800/50 border-r border-gray-200 dark:border-gray-700 overflow-hidden`}>
+        <div className="h-full flex flex-col w-64">
+          {/* Sidebar Header */}
+          <div className="p-4 border-b border-gray-200 dark:border-gray-700">
             <button
               onClick={startNewConversation}
-              className="w-full flex items-center gap-2 px-4 py-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium"
+              className="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-gray-900 dark:bg-white text-white dark:text-gray-900 rounded-lg hover:bg-gray-800 dark:hover:bg-gray-100 transition-colors text-sm font-medium"
             >
               <Plus className="w-4 h-4" />
-              New Chat
+              New Conversation
             </button>
           </div>
 
           {/* Conversations List */}
           <div className="flex-1 overflow-y-auto p-2">
             {loadingConversations ? (
-              <div className="flex items-center justify-center py-8">
+              <div className="flex items-center justify-center py-12">
                 <Loader2 className="w-5 h-5 animate-spin text-gray-400" />
               </div>
             ) : conversations.length === 0 ? (
-              <div className="text-center py-8 px-4">
-                <MessageSquare className="w-8 h-8 mx-auto text-gray-300 dark:text-gray-600 mb-2" />
+              <div className="text-center py-12 px-4">
+                <div className="w-10 h-10 mx-auto mb-3 rounded-lg bg-gray-100 dark:bg-gray-700 flex items-center justify-center">
+                  <MessageSquare className="w-5 h-5 text-gray-400" />
+                </div>
                 <p className="text-sm text-gray-500 dark:text-gray-400">No conversations yet</p>
+                <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">Start a new chat to begin</p>
               </div>
             ) : (
               <div className="space-y-1">
@@ -363,22 +412,22 @@ const AIChat = () => {
                   <div
                     key={conv.id}
                     onClick={() => loadConversation(conv.id)}
-                    className={`group flex items-center gap-2 px-3 py-2.5 rounded-lg cursor-pointer transition-colors ${
+                    className={`group flex items-center gap-3 px-3 py-2.5 rounded-lg cursor-pointer transition-colors ${
                       currentConversationId === conv.id
-                        ? 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300'
+                        ? 'bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-white'
                         : 'hover:bg-gray-100 dark:hover:bg-gray-700/50 text-gray-700 dark:text-gray-300'
                     }`}
                   >
-                    <MessageSquare className="w-4 h-4 flex-shrink-0 opacity-60" />
+                    <MessageSquare className="w-4 h-4 flex-shrink-0 text-gray-400" />
                     <div className="flex-1 min-w-0">
                       <p className="text-sm font-medium truncate">{conv.title}</p>
-                      <p className="text-xs opacity-60">{formatDate(conv.updatedAt)}</p>
+                      <p className="text-xs text-gray-400 dark:text-gray-500">{formatDate(conv.updatedAt)}</p>
                     </div>
                     <button
                       onClick={(e) => deleteConversation(conv.id, e)}
-                      className="opacity-0 group-hover:opacity-100 p-1 hover:bg-red-100 dark:hover:bg-red-900/30 rounded transition-all"
+                      className="opacity-0 group-hover:opacity-100 p-1 hover:bg-gray-200 dark:hover:bg-gray-600 rounded transition-all"
                     >
-                      <Trash2 className="w-3.5 h-3.5 text-red-500" />
+                      <Trash2 className="w-3.5 h-3.5 text-gray-400 hover:text-red-500" />
                     </button>
                   </div>
                 ))}
@@ -391,42 +440,42 @@ const AIChat = () => {
       {/* Main Chat Area */}
       <div className="flex-1 flex flex-col overflow-hidden">
         {/* Header */}
-        <div className="flex items-center gap-3 px-4 py-3 border-b border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900">
+        <div className="flex items-center gap-3 px-4 py-3 border-b border-gray-200 dark:border-gray-700">
           <button
             onClick={() => setShowSidebar(!showSidebar)}
-            className="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors"
+            className="p-1.5 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
           >
-            <ChevronLeft className={`w-5 h-5 text-gray-500 transition-transform ${showSidebar ? '' : 'rotate-180'}`} />
+            <ChevronLeft className={`w-5 h-5 text-gray-500 transition-transform duration-300 ${showSidebar ? '' : 'rotate-180'}`} />
           </button>
           <div>
             <h1 className="text-lg font-semibold text-gray-900 dark:text-white">Chatters Intelligence</h1>
             <p className="text-xs text-gray-500 dark:text-gray-400">
-              Ask questions about your feedback data
+              AI-powered insights for {venueName}
             </p>
           </div>
         </div>
 
         {/* Chat Container */}
-        <div className="flex-1 bg-white dark:bg-gray-900 overflow-hidden flex flex-col">
+        <div className="flex-1 overflow-hidden flex flex-col">
           {/* Messages Area */}
-          <div ref={messagesContainerRef} className="flex-1 overflow-y-auto p-4 space-y-4">
+          <div ref={messagesContainerRef} className="flex-1 overflow-y-auto px-4 py-4">
             {messages.length === 0 ? (
               <div className="h-full flex flex-col items-center justify-center text-center px-4">
-                <div className="w-16 h-16 bg-violet-100 dark:bg-violet-900/30 rounded-full flex items-center justify-center mb-4">
-                  <Sparkles className="w-8 h-8 text-violet-600 dark:text-violet-400" />
+                <div className="w-12 h-12 bg-gray-100 dark:bg-gray-800 rounded-lg flex items-center justify-center mb-4">
+                  <ChattersLogo className="w-7 h-7" />
                 </div>
-                <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
-                  Ask about your feedback
+                <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-1">
+                  How can I help you today?
                 </h3>
                 <p className="text-gray-500 dark:text-gray-400 text-sm mb-6 max-w-md">
-                  I can help you understand your customer feedback. Ask me anything about ratings, comments, trends, or specific feedback.
+                  Ask me anything about your feedback, staff performance, ratings, or customer sentiment.
                 </p>
-                <div className="flex flex-wrap gap-2 justify-center max-w-lg">
+                <div className="grid grid-cols-2 gap-2 max-w-lg w-full">
                   {suggestedQuestions.map((question, idx) => (
                     <button
                       key={idx}
                       onClick={() => handleSuggestedQuestion(question)}
-                      className="px-3 py-2 text-sm bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
+                      className="px-3 py-2.5 text-sm bg-gray-50 dark:bg-gray-800 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors border border-gray-200 dark:border-gray-700 text-left"
                     >
                       {question}
                     </button>
@@ -434,41 +483,49 @@ const AIChat = () => {
                 </div>
               </div>
             ) : (
-              <>
+              <div className="space-y-4 max-w-3xl mx-auto">
                 {messages.map((message, idx) => (
                   <div
-                    key={idx}
+                    key={message.id || idx}
                     className={`flex gap-3 ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}
                   >
                     {message.role === 'assistant' && (
-                      <div className="w-8 h-8 rounded-full bg-violet-100 dark:bg-violet-900/30 flex items-center justify-center flex-shrink-0">
-                        <Bot className="w-4 h-4 text-violet-600 dark:text-violet-400" />
+                      <div className="w-8 h-8 rounded-lg bg-gray-100 dark:bg-gray-800 flex items-center justify-center flex-shrink-0">
+                        <ChattersLogo className="w-5 h-5" />
                       </div>
                     )}
                     <div
-                      className={`max-w-[80%] px-4 py-3 rounded-2xl ${
+                      className={`max-w-[75%] px-4 py-3 rounded-lg ${
                         message.role === 'user'
-                          ? 'bg-blue-600 text-white rounded-br-md'
-                          : 'bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-gray-100 rounded-bl-md'
+                          ? 'bg-gray-900 dark:bg-gray-700 text-white'
+                          : 'bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-gray-100'
                       }`}
                     >
                       {message.role === 'assistant' ? (
-                        <div className="text-sm">
-                          <FormattedMessage content={message.content} />
+                        <div className="text-sm leading-relaxed">
+                          {typingMessageId === message.id ? (
+                            <TypewriterText
+                              content={message.content}
+                              speed={8}
+                              onComplete={() => setTypingMessageId(null)}
+                            />
+                          ) : (
+                            <FormattedMessage content={message.content} />
+                          )}
                         </div>
                       ) : (
                         <p className="text-sm whitespace-pre-wrap">{message.content}</p>
                       )}
-                      {message.stats && (
-                        <p className="text-xs mt-3 pt-2 border-t border-gray-200 dark:border-gray-700 opacity-70">
+                      {message.stats && !typingMessageId && (
+                        <p className="text-xs mt-3 pt-2 border-t border-gray-200 dark:border-gray-600 opacity-60">
                           Based on {message.stats.feedbackCount} feedback items
                           {message.stats.npsCount > 0 && ` and ${message.stats.npsCount} NPS responses`}
                         </p>
                       )}
                     </div>
                     {message.role === 'user' && (
-                      <div className="w-8 h-8 rounded-full bg-blue-600 flex items-center justify-center flex-shrink-0">
-                        <User className="w-4 h-4 text-white" />
+                      <div className="w-8 h-8 rounded-lg bg-gray-900 dark:bg-gray-700 flex items-center justify-center flex-shrink-0">
+                        <span className="text-xs font-medium text-white">You</span>
                       </div>
                     )}
                   </div>
@@ -476,47 +533,51 @@ const AIChat = () => {
 
                 {loading && (
                   <div className="flex gap-3 justify-start">
-                    <div className="w-8 h-8 rounded-full bg-violet-100 dark:bg-violet-900/30 flex items-center justify-center flex-shrink-0">
-                      <Bot className="w-4 h-4 text-violet-600 dark:text-violet-400" />
+                    <div className="w-8 h-8 rounded-lg bg-gray-100 dark:bg-gray-800 flex items-center justify-center flex-shrink-0">
+                      <ChattersLogo className="w-5 h-5" />
                     </div>
-                    <div className="bg-gray-100 dark:bg-gray-800 px-4 py-3 rounded-2xl rounded-bl-md">
-                      <Loader2 className="w-5 h-5 text-gray-400 animate-spin" />
+                    <div className="bg-gray-100 dark:bg-gray-800 px-4 py-3 rounded-lg">
+                      <div className="flex items-center gap-1">
+                        <span className="w-1.5 h-1.5 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></span>
+                        <span className="w-1.5 h-1.5 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></span>
+                        <span className="w-1.5 h-1.5 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></span>
+                      </div>
                     </div>
                   </div>
                 )}
-              </>
+              </div>
             )}
           </div>
 
           {/* Error Message */}
           {error && (
-            <div className="mx-4 mb-2 p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg flex items-center gap-2">
+            <div className="mx-4 mb-3 p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg flex items-center gap-2">
               <AlertCircle className="w-4 h-4 text-red-600 dark:text-red-400 flex-shrink-0" />
               <p className="text-sm text-red-700 dark:text-red-300">{error}</p>
             </div>
           )}
 
           {/* Input Area */}
-          <div className="border-t border-gray-200 dark:border-gray-800 p-4">
-            <form onSubmit={sendMessage} className="flex gap-3">
+          <div className="border-t border-gray-200 dark:border-gray-700 p-4">
+            <form onSubmit={sendMessage} className="flex gap-2 max-w-3xl mx-auto">
               <input
                 ref={inputRef}
                 type="text"
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
-                placeholder="Ask about your feedback..."
+                placeholder="Ask me anything about your feedback..."
                 disabled={loading}
-                className="flex-1 px-4 py-3 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl text-sm text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:opacity-50"
+                className="flex-1 px-4 py-2.5 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg text-sm text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-gray-900 dark:focus:ring-gray-400 focus:border-transparent disabled:opacity-50 transition-all"
               />
               <button
                 type="submit"
                 disabled={loading || !input.trim()}
-                className="px-4 py-3 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                className="px-4 py-2.5 bg-gray-900 dark:bg-white text-white dark:text-gray-900 rounded-lg hover:bg-gray-800 dark:hover:bg-gray-100 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
               >
                 {loading ? (
-                  <Loader2 className="w-5 h-5 animate-spin" />
+                  <Loader2 className="w-4 h-4 animate-spin" />
                 ) : (
-                  <Send className="w-5 h-5" />
+                  <Send className="w-4 h-4" />
                 )}
               </button>
             </form>
