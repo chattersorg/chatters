@@ -376,6 +376,26 @@ const AIChat = () => {
     return date.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' });
   };
 
+  // Apply overflow hidden to body when this component mounts to prevent page scroll
+  useEffect(() => {
+    // Store original overflow value
+    const originalOverflow = document.body.style.overflow;
+    const originalHeight = document.body.style.height;
+    const htmlOverflow = document.documentElement.style.overflow;
+
+    // Prevent scrolling on body
+    document.body.style.overflow = 'hidden';
+    document.body.style.height = '100vh';
+    document.documentElement.style.overflow = 'hidden';
+
+    // Cleanup on unmount
+    return () => {
+      document.body.style.overflow = originalOverflow;
+      document.body.style.height = originalHeight;
+      document.documentElement.style.overflow = htmlOverflow;
+    };
+  }, []);
+
   // Use negative margins to break out of parent padding (p-4 sm:p-6 lg:p-8)
   // Then set fixed height to fill viewport minus header
   return (
