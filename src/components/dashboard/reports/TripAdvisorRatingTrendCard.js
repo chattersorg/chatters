@@ -191,8 +191,9 @@ const TripAdvisorRatingTrendCard = ({ venueId }) => {
       y: {
         display: true,
         beginAtZero: false,
-        min: 1,
-        max: 5,
+        // Dynamic range based on data - show a tighter view to emphasize changes
+        min: Math.max(1, Math.floor((Math.min(...historicalData.map(d => d.rating)) - 0.5) * 2) / 2),
+        max: Math.min(5, Math.ceil((Math.max(...historicalData.map(d => d.rating)) + 0.5) * 2) / 2),
         grid: {
           color: '#E5E7EB',
           drawBorder: false,
