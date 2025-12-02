@@ -45,11 +45,13 @@ export default async function handler(req, res) {
     const npsData = await fetchNPSData(supabase, venueId, dateRange);
     const employees = await fetchEmployees(supabase, venueId);
     const questions = await fetchQuestions(supabase, venueId);
+    const zoneData = await fetchZoneData(supabase, venueId);
     const staffPerformance = calculateStaffPerformance(feedbackData, employees);
+    const zonePerformance = calculateZonePerformance(feedbackData, zoneData);
     const stats = calculateStats(feedbackData, npsData);
 
     // Build context for Claude
-    const context = buildContext(feedbackData, npsData, stats, staffPerformance, questions, venueName, dateRange);
+    const context = buildContext(feedbackData, npsData, stats, staffPerformance, zonePerformance, questions, venueName, dateRange);
 
     // Call Claude Haiku
     const response = await fetch('https://api.anthropic.com/v1/messages', {
@@ -75,7 +77,9 @@ IMPORTANT RULES:
 - You may have conversation history - use it to provide contextual responses
 - You have access to staff performance data - use it to answer questions about employee performance
 - You have access to the venue's active feedback questions - use them to understand what customers are being asked
-- When discussing feedback, reference the specific questions being asked (e.g., "For 'How was the food quality?' you're averaging 4.2/5")`,
+- When discussing feedback, reference the specific questions being asked (e.g., "For 'How was the food quality?' you're averaging 4.2/5")
+- You have access to zone/area performance data - you know which tables belong to which zones and can report on zone-level performance
+- When asked about zones or areas, provide specific metrics like average rating, feedback count, and any notable issues per zone`,
         messages: [
           // Include conversation history for context (if any)
           ...history.map(h => ({
@@ -404,6 +408,52 @@ async function fetchQuestions(supabase, venueId) {
 }
 
 /**
+ * Fetch zone data and table assignments for the venue
+ */
+async function fetchZoneData(supabase, venueId) {
+  // Fetch zones
+  const { data: zones, error: zonesError } = await supabase
+    .from('zones')
+    .select('id, name, order')
+    .eq('venue_id', venueId)
+    .order('order', { ascending: true });
+
+  if (zonesError) {
+    console.error('[AI Chat] Error fetching zones:', zonesError);
+    return { zones: [], tableToZone: {} };
+  }
+
+  // Fetch table positions with zone assignments
+  const { data: tables, error: tablesError } = await supabase
+    .from('table_positions')
+    .select('table_number, zone_id')
+    .eq('venue_id', venueId);
+
+  if (tablesError) {
+    console.error('[AI Chat] Error fetching table positions:', tablesError);
+    return { zones: zones || [], tableToZone: {} };
+  }
+
+  // Build a map from table_number to zone info
+  const tableToZone = {};
+  const zoneMap = {};
+  (zones || []).forEach(z => {
+    zoneMap[z.id] = z.name;
+  });
+
+  (tables || []).forEach(t => {
+    if (t.zone_id && zoneMap[t.zone_id]) {
+      tableToZone[t.table_number] = {
+        zoneId: t.zone_id,
+        zoneName: zoneMap[t.zone_id]
+      };
+    }
+  });
+
+  return { zones: zones || [], tableToZone };
+}
+
+/**
  * Fetch NPS data for the venue
  */
 async function fetchNPSData(supabase, venueId, dateRange) {
@@ -422,6 +472,102 @@ async function fetchNPSData(supabase, venueId, dateRange) {
   }
 
   return data || [];
+}
+
+/**
+ * Calculate zone performance metrics from feedback data
+ */
+function calculateZonePerformance(feedbackData, zoneData) {
+  const { zones, tableToZone } = zoneData;
+
+  if (!zones || zones.length === 0) {
+    return null;
+  }
+
+  // Initialize zone stats
+  const zoneStats = {};
+  zones.forEach(z => {
+    zoneStats[z.id] = {
+      name: z.name,
+      feedbackCount: 0,
+      totalRating: 0,
+      ratingCount: 0,
+      lowRatings: 0,
+      highRatings: 0,
+      commentsCount: 0,
+      recentComments: []
+    };
+  });
+
+  // Add an "unassigned" bucket for tables without zones
+  zoneStats['unassigned'] = {
+    name: 'Unassigned Tables',
+    feedbackCount: 0,
+    totalRating: 0,
+    ratingCount: 0,
+    lowRatings: 0,
+    highRatings: 0,
+    commentsCount: 0,
+    recentComments: []
+  };
+
+  // Process feedback and assign to zones
+  feedbackData.forEach(f => {
+    const tableNum = f.table_number;
+    const zoneInfo = tableToZone[tableNum];
+    const zoneId = zoneInfo ? zoneInfo.zoneId : 'unassigned';
+
+    if (!zoneStats[zoneId]) return;
+
+    zoneStats[zoneId].feedbackCount++;
+
+    if (f.rating != null) {
+      zoneStats[zoneId].totalRating += f.rating;
+      zoneStats[zoneId].ratingCount++;
+      if (f.rating <= 2) zoneStats[zoneId].lowRatings++;
+      if (f.rating >= 4) zoneStats[zoneId].highRatings++;
+    }
+
+    if (f.additional_feedback?.trim()) {
+      zoneStats[zoneId].commentsCount++;
+      if (zoneStats[zoneId].recentComments.length < 3) {
+        zoneStats[zoneId].recentComments.push({
+          rating: f.rating,
+          comment: f.additional_feedback,
+          table: tableNum
+        });
+      }
+    }
+  });
+
+  // Calculate averages and build result
+  const performance = Object.entries(zoneStats)
+    .filter(([id, stats]) => stats.feedbackCount > 0)
+    .map(([id, stats]) => ({
+      zoneId: id,
+      name: stats.name,
+      feedbackCount: stats.feedbackCount,
+      avgRating: stats.ratingCount > 0
+        ? (stats.totalRating / stats.ratingCount).toFixed(2)
+        : null,
+      lowRatings: stats.lowRatings,
+      highRatings: stats.highRatings,
+      commentsCount: stats.commentsCount,
+      recentComments: stats.recentComments
+    }))
+    .sort((a, b) => b.feedbackCount - a.feedbackCount);
+
+  // Also include zone-to-table mapping summary for context
+  const zoneTableSummary = {};
+  zones.forEach(z => {
+    const tables = Object.entries(tableToZone)
+      .filter(([_, info]) => info.zoneId === z.id)
+      .map(([tableNum, _]) => parseInt(tableNum))
+      .sort((a, b) => a - b);
+    zoneTableSummary[z.name] = tables;
+  });
+
+  return { performance, zoneTableSummary };
 }
 
 /**
@@ -536,7 +682,7 @@ function calculateStats(feedbackData, npsData) {
 /**
  * Build context string for Claude
  */
-function buildContext(feedbackData, npsData, stats, staffPerformance, questions, venueName, dateRange) {
+function buildContext(feedbackData, npsData, stats, staffPerformance, zonePerformance, questions, venueName, dateRange) {
   let context = `## Data Context for ${venueName || 'this venue'}
 Period: ${dateRange.description}
 
@@ -613,6 +759,56 @@ ${questions.length > 0
     context += `\n**Top Performer:** ${topPerformer.name} (${topPerformer.resolved} resolved)\n`;
     if (fastestResponder) {
       context += `**Fastest Responder:** ${fastestResponder.name} (${fastestResponder.avgResolutionTime} min avg)\n`;
+    }
+  }
+
+  // Add zone performance data
+  if (zonePerformance && zonePerformance.performance && zonePerformance.performance.length > 0) {
+    context += `\n### Zone/Area Performance:\n`;
+
+    // First show the zone-to-table mapping
+    if (zonePerformance.zoneTableSummary) {
+      context += `\n**Zone Layout:**\n`;
+      Object.entries(zonePerformance.zoneTableSummary).forEach(([zoneName, tables]) => {
+        if (tables.length > 0) {
+          // Summarise table ranges for readability
+          const tableStr = tables.length > 5
+            ? `${tables[0]}-${tables[tables.length - 1]} (${tables.length} tables)`
+            : tables.join(', ');
+          context += `- ${zoneName}: Tables ${tableStr}\n`;
+        }
+      });
+    }
+
+    // Then show performance metrics per zone
+    context += `\n**Zone Performance Metrics:**\n`;
+    zonePerformance.performance.forEach((zone, i) => {
+      const rating = zone.avgRating ? `${zone.avgRating}/5 avg` : 'no ratings';
+      const issues = zone.lowRatings > 0 ? `, ${zone.lowRatings} low ratings` : '';
+      context += `${i + 1}. ${zone.name}: ${zone.feedbackCount} feedback, ${rating}${issues}\n`;
+    });
+
+    // Find best and worst performing zones
+    const zonesWithRatings = zonePerformance.performance.filter(z => z.avgRating);
+    if (zonesWithRatings.length > 1) {
+      const sorted = [...zonesWithRatings].sort((a, b) => parseFloat(b.avgRating) - parseFloat(a.avgRating));
+      const best = sorted[0];
+      const worst = sorted[sorted.length - 1];
+      context += `\n**Best Performing Zone:** ${best.name} (${best.avgRating}/5)\n`;
+      if (best.name !== worst.name) {
+        context += `**Needs Attention:** ${worst.name} (${worst.avgRating}/5)\n`;
+      }
+    }
+
+    // Show recent comments by zone if any have notable feedback
+    const zonesWithComments = zonePerformance.performance.filter(z => z.recentComments && z.recentComments.length > 0);
+    if (zonesWithComments.length > 0) {
+      context += `\n**Recent Zone Comments:**\n`;
+      zonesWithComments.forEach(zone => {
+        zone.recentComments.forEach(c => {
+          context += `- [${zone.name}, Table ${c.table}, ${c.rating}★] "${c.comment}"\n`;
+        });
+      });
     }
   }
 
