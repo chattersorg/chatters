@@ -44,11 +44,12 @@ export default async function handler(req, res) {
     const feedbackData = await fetchFeedbackData(supabase, venueId, dateRange);
     const npsData = await fetchNPSData(supabase, venueId, dateRange);
     const employees = await fetchEmployees(supabase, venueId);
+    const questions = await fetchQuestions(supabase, venueId);
     const staffPerformance = calculateStaffPerformance(feedbackData, employees);
     const stats = calculateStats(feedbackData, npsData);
 
     // Build context for Claude
-    const context = buildContext(feedbackData, npsData, stats, staffPerformance, venueName, dateRange);
+    const context = buildContext(feedbackData, npsData, stats, staffPerformance, questions, venueName, dateRange);
 
     // Call Claude Haiku
     const response = await fetch('https://api.anthropic.com/v1/messages', {
@@ -72,7 +73,9 @@ IMPORTANT RULES:
 - Format lists with bullet points for readability
 - If the data doesn't contain what they're asking about, say so clearly
 - You may have conversation history - use it to provide contextual responses
-- You have access to staff performance data - use it to answer questions about employee performance`,
+- You have access to staff performance data - use it to answer questions about employee performance
+- You have access to the venue's active feedback questions - use them to understand what customers are being asked
+- When discussing feedback, reference the specific questions being asked (e.g., "For 'How was the food quality?' you're averaging 4.2/5")`,
         messages: [
           // Include conversation history for context (if any)
           ...history.map(h => ({
@@ -382,6 +385,25 @@ async function fetchEmployees(supabase, venueId) {
 }
 
 /**
+ * Fetch active questions for the venue
+ */
+async function fetchQuestions(supabase, venueId) {
+  const { data, error } = await supabase
+    .from('questions')
+    .select('id, question, order')
+    .eq('venue_id', venueId)
+    .eq('active', true)
+    .order('order', { ascending: true });
+
+  if (error) {
+    console.error('[AI Chat] Error fetching questions:', error);
+    return [];
+  }
+
+  return data || [];
+}
+
+/**
  * Fetch NPS data for the venue
  */
 async function fetchNPSData(supabase, venueId, dateRange) {
@@ -514,9 +536,28 @@ function calculateStats(feedbackData, npsData) {
 /**
  * Build context string for Claude
  */
-function buildContext(feedbackData, npsData, stats, staffPerformance, venueName, dateRange) {
+function buildContext(feedbackData, npsData, stats, staffPerformance, questions, venueName, dateRange) {
   let context = `## Data Context for ${venueName || 'this venue'}
 Period: ${dateRange.description}
+
+### Active Feedback Questions:
+${questions.length > 0
+    ? questions.map((q, i) => `${i + 1}. "${q.question}"`).join('\n')
+    : 'No active questions configured'}
+
+### Per-Question Breakdown:
+${questions.length > 0
+    ? questions.map(q => {
+        const questionFeedback = feedbackData.filter(f => f.question_id === q.id);
+        const ratings = questionFeedback.map(f => f.rating).filter(r => r != null);
+        const avgRating = ratings.length > 0
+          ? (ratings.reduce((a, b) => a + b, 0) / ratings.length).toFixed(1)
+          : 'N/A';
+        const lowCount = ratings.filter(r => r <= 2).length;
+        const highCount = ratings.filter(r => r >= 4).length;
+        return `- "${q.question}": ${ratings.length} responses, ${avgRating}/5 avg (${highCount} positive, ${lowCount} negative)`;
+      }).join('\n')
+    : 'No question data available'}
 
 ### Summary Statistics:
 - Total feedback submissions: ${stats.totalFeedback}

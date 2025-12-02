@@ -86,18 +86,22 @@ const TripAdvisorRatingTrendCard = ({ venueId }) => {
         setCurrentRating(current);
         setHistoricalData(tripadvisorRatings);
 
-        // Calculate trend
+        // Calculate trend - compare first rating in range to last rating in range
         if (tripadvisorRatings.length > 1) {
-          const previous = tripadvisorRatings[tripadvisorRatings.length - 2];
-          const change = current.rating - previous.rating;
-          const percentChange = ((change / previous.rating) * 100);
+          const first = tripadvisorRatings[0];
+          const change = current.rating - first.rating;
+          const percentChange = ((change / first.rating) * 100);
 
           setTrend({
             change: change,
             percentChange: percentChange,
             direction: change >= 0 ? 'up' : 'down'
           });
+        } else {
+          setTrend(null);
         }
+      } else {
+        setTrend(null);
       }
     } catch (error) {
       console.error('Error loading TripAdvisor rating data:', error);

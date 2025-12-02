@@ -515,7 +515,7 @@ const StaffMemberDetails = () => {
     return (
       <PageContainer>
         <div className="flex items-center justify-center py-12">
-          <span className="text-gray-500 text-sm lg:text-base">Loading staff details...</span>
+          <span className="text-gray-500 dark:text-gray-400 text-sm lg:text-base">Loading staff details...</span>
         </div>
       </PageContainer>
     );
@@ -526,10 +526,10 @@ const StaffMemberDetails = () => {
       <PageContainer>
         <div className="flex items-center justify-center py-12">
           <div className="text-center">
-            <h2 className="text-lg font-medium text-gray-900 mb-2">Staff Member Not Found</h2>
+            <h2 className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-2">Staff Member Not Found</h2>
             <button
               onClick={() => navigate('/staff/leaderboard')}
-              className="text-blue-600 hover:text-blue-800"
+              className="text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300"
             >
               ← Back to Staff Leaderboard
             </button>
@@ -546,32 +546,32 @@ const StaffMemberDetails = () => {
         <div className="flex items-center mb-4">
           <button
             onClick={() => navigate('/staff/leaderboard')}
-            className="text-blue-600 hover:text-blue-800 text-sm font-medium mr-4"
+            className="text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 text-sm font-medium mr-4"
           >
             ← Back to Staff Leaderboard
           </button>
         </div>
-        
+
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-4 sm:space-y-0">
           <div className="flex items-center">
-            <div className="w-16 h-16 rounded-full bg-gray-200 flex items-center justify-center text-lg font-medium text-gray-600 mr-4">
+            <div className="w-16 h-16 rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center text-lg font-medium text-gray-600 dark:text-gray-300 mr-4">
               {staffMember.name.split(' ').map(word => word[0]).join('').toUpperCase()}
             </div>
             <div>
-              <h1 className="text-xl lg:text-2xl font-bold text-gray-900">{staffMember.name}</h1>
-              <p className="text-gray-600 text-sm lg:text-base">{staffMember.role}</p>
-              <p className="text-gray-500 text-xs">Member since {dayjs(staffMember.joinedDate).format('MMM YYYY')}</p>
+              <h1 className="text-xl lg:text-2xl font-bold text-gray-900 dark:text-gray-100">{staffMember.name}</h1>
+              <p className="text-gray-600 dark:text-gray-400 text-sm lg:text-base">{staffMember.role}</p>
+              <p className="text-gray-500 dark:text-gray-500 text-xs">Member since {dayjs(staffMember.joinedDate).format('MMM YYYY')}</p>
             </div>
           </div>
-          
+
           <div className="flex items-center space-x-4">
             {/* Time Filter */}
             <div className="flex items-center space-x-2">
-              <label className="text-sm font-medium text-gray-700">Period:</label>
+              <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Period:</label>
               <select
                 value={timeFilter}
                 onChange={(e) => setTimeFilter(e.target.value)}
-                className="px-3 py-2 text-sm border border-gray-300 rounded-md bg-white text-gray-700 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                className="px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
               >
                 <option value="today">Today</option>
                 <option value="thisWeek">This Week</option>
@@ -581,13 +581,13 @@ const StaffMemberDetails = () => {
                 <option value="all">All Time</option>
               </select>
             </div>
-            
+
             {/* Export Buttons */}
             <div className="flex items-center space-x-2">
               {resolvedFeedback.length > 0 && (
                 <button
                   onClick={exportData}
-                  className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 >
                   Export Feedback
                 </button>
@@ -595,7 +595,7 @@ const StaffMemberDetails = () => {
               {totalStats.totalResolved > 0 && (
                 <button
                   onClick={exportAnalytics}
-                  className="px-4 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-md shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+                  className="px-4 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-md shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-gray-900"
                 >
                   Export Analytics
                 </button>
@@ -609,143 +609,143 @@ const StaffMemberDetails = () => {
       
       {/* Key Performance Metrics */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
-        <div className="bg-white border border-gray-200 rounded-lg p-4">
+        <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg p-4">
           <div className="text-center">
-            <div className="text-sm text-gray-500 mb-2">Performance Summary</div>
+            <div className="text-sm text-gray-500 dark:text-gray-400 mb-2">Performance Summary</div>
             <div className="flex items-center justify-center gap-4 text-sm">
               <div className="text-center">
-                <div className="text-lg font-semibold text-gray-900">{totalStats.feedbackResolved}</div>
-                <div className="text-xs text-gray-500">Feedback</div>
+                <div className="text-lg font-semibold text-gray-900 dark:text-gray-100">{totalStats.feedbackResolved}</div>
+                <div className="text-xs text-gray-500 dark:text-gray-400">Feedback</div>
               </div>
-              <div className="text-gray-300">|</div>
+              <div className="text-gray-300 dark:text-gray-600">|</div>
               <div className="text-center">
-                <div className="text-lg font-semibold text-gray-900">{totalStats.feedbackCoResolved}</div>
-                <div className="text-xs text-gray-500">Co-resolved</div>
+                <div className="text-lg font-semibold text-gray-900 dark:text-gray-100">{totalStats.feedbackCoResolved}</div>
+                <div className="text-xs text-gray-500 dark:text-gray-400">Co-resolved</div>
               </div>
-              <div className="text-gray-300">|</div>
+              <div className="text-gray-300 dark:text-gray-600">|</div>
               <div className="text-center">
-                <div className="text-lg font-semibold text-gray-900">{totalStats.assistanceResolved}</div>
-                <div className="text-xs text-gray-500">Assistance</div>
+                <div className="text-lg font-semibold text-gray-900 dark:text-gray-100">{totalStats.assistanceResolved}</div>
+                <div className="text-xs text-gray-500 dark:text-gray-400">Assistance</div>
               </div>
-              <div className="text-gray-300">|</div>
+              <div className="text-gray-300 dark:text-gray-600">|</div>
               <div className="text-center">
-                <div className="text-lg font-semibold text-blue-600">{totalStats.totalResolved}</div>
-                <div className="text-xs text-gray-500">Total</div>
+                <div className="text-lg font-semibold text-blue-600 dark:text-blue-400">{totalStats.totalResolved}</div>
+                <div className="text-xs text-gray-500 dark:text-gray-400">Total</div>
               </div>
             </div>
           </div>
         </div>
-        <div className="bg-white border border-gray-200 rounded-lg p-4">
+        <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg p-4">
           <div className="text-center">
-            <div className="text-2xl font-bold text-green-600">
+            <div className="text-2xl font-bold text-green-600 dark:text-green-400">
               {detailedAnalytics.averageResolutionTime > 0
                 ? `${Math.round(detailedAnalytics.averageResolutionTime)}m`
                 : 'N/A'}
             </div>
-            <div className="text-sm text-gray-600">Avg Resolution Time</div>
+            <div className="text-sm text-gray-600 dark:text-gray-400">Avg Resolution Time</div>
           </div>
         </div>
-        <div className="bg-white border border-gray-200 rounded-lg p-4">
+        <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg p-4">
           <div className="text-center">
-            <div className="text-2xl font-bold text-yellow-600">
+            <div className="text-2xl font-bold text-yellow-600 dark:text-yellow-400">
               {detailedAnalytics.averageRating > 0
                 ? detailedAnalytics.averageRating.toFixed(1)
                 : 'N/A'}
             </div>
-            <div className="text-sm text-gray-600">Avg Customer Rating</div>
+            <div className="text-sm text-gray-600 dark:text-gray-400">Avg Customer Rating</div>
           </div>
         </div>
       </div>
 
       {/* Detailed Performance Analytics */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
-        
+
         {/* Resolution Time Analysis */}
-        <div className="bg-white border border-gray-200 rounded-lg p-6">
-          <h3 className="text-lg font-medium text-gray-900 mb-4">Resolution Time Analysis</h3>
+        <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg p-6">
+          <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-4">Resolution Time Analysis</h3>
           <div className="space-y-4">
             <div className="grid grid-cols-2 gap-4">
-              <div className="text-center p-3 bg-green-50 rounded-lg">
-                <div className="text-lg font-semibold text-green-600">
-                  {detailedAnalytics.quickestResolution 
-                    ? `${Math.round(detailedAnalytics.quickestResolution.resolutionMinutes)}m` 
+              <div className="text-center p-3 bg-green-50 dark:bg-green-900/20 rounded-lg">
+                <div className="text-lg font-semibold text-green-600 dark:text-green-400">
+                  {detailedAnalytics.quickestResolution
+                    ? `${Math.round(detailedAnalytics.quickestResolution.resolutionMinutes)}m`
                     : 'N/A'}
                 </div>
-                <div className="text-xs text-green-700">Fastest Resolution</div>
+                <div className="text-xs text-green-700 dark:text-green-300">Fastest Resolution</div>
               </div>
-              <div className="text-center p-3 bg-red-50 rounded-lg">
-                <div className="text-lg font-semibold text-red-600">
-                  {detailedAnalytics.slowestResolution 
-                    ? `${Math.round(detailedAnalytics.slowestResolution.resolutionMinutes)}m` 
+              <div className="text-center p-3 bg-red-50 dark:bg-red-900/20 rounded-lg">
+                <div className="text-lg font-semibold text-red-600 dark:text-red-400">
+                  {detailedAnalytics.slowestResolution
+                    ? `${Math.round(detailedAnalytics.slowestResolution.resolutionMinutes)}m`
                     : 'N/A'}
                 </div>
-                <div className="text-xs text-red-700">Slowest Resolution</div>
+                <div className="text-xs text-red-700 dark:text-red-300">Slowest Resolution</div>
               </div>
             </div>
-            
+
             <div className="space-y-2">
               <div className="flex justify-between items-center">
-                <span className="text-sm text-gray-600">Under 5 minutes</span>
+                <span className="text-sm text-gray-600 dark:text-gray-400">Under 5 minutes</span>
                 <div className="flex items-center">
-                  <div className="w-32 bg-gray-200 rounded-full h-2 mr-2">
-                    <div 
-                      className="bg-green-600 h-2 rounded-full" 
-                      style={{ 
-                        width: `${totalStats.totalResolved > 0 
-                          ? (detailedAnalytics.responseTimeCategories.under5min / totalStats.totalResolved) * 100 
-                          : 0}%` 
+                  <div className="w-32 bg-gray-200 dark:bg-gray-700 rounded-full h-2 mr-2">
+                    <div
+                      className="bg-green-600 h-2 rounded-full"
+                      style={{
+                        width: `${totalStats.totalResolved > 0
+                          ? (detailedAnalytics.responseTimeCategories.under5min / totalStats.totalResolved) * 100
+                          : 0}%`
                       }}
                     ></div>
                   </div>
-                  <span className="text-sm font-medium">{detailedAnalytics.responseTimeCategories.under5min}</span>
+                  <span className="text-sm font-medium text-gray-900 dark:text-gray-100">{detailedAnalytics.responseTimeCategories.under5min}</span>
                 </div>
               </div>
               <div className="flex justify-between items-center">
-                <span className="text-sm text-gray-600">5-15 minutes</span>
+                <span className="text-sm text-gray-600 dark:text-gray-400">5-15 minutes</span>
                 <div className="flex items-center">
-                  <div className="w-32 bg-gray-200 rounded-full h-2 mr-2">
-                    <div 
-                      className="bg-yellow-500 h-2 rounded-full" 
-                      style={{ 
-                        width: `${totalStats.totalResolved > 0 
-                          ? (detailedAnalytics.responseTimeCategories.under15min / totalStats.totalResolved) * 100 
-                          : 0}%` 
+                  <div className="w-32 bg-gray-200 dark:bg-gray-700 rounded-full h-2 mr-2">
+                    <div
+                      className="bg-yellow-500 h-2 rounded-full"
+                      style={{
+                        width: `${totalStats.totalResolved > 0
+                          ? (detailedAnalytics.responseTimeCategories.under15min / totalStats.totalResolved) * 100
+                          : 0}%`
                       }}
                     ></div>
                   </div>
-                  <span className="text-sm font-medium">{detailedAnalytics.responseTimeCategories.under15min}</span>
+                  <span className="text-sm font-medium text-gray-900 dark:text-gray-100">{detailedAnalytics.responseTimeCategories.under15min}</span>
                 </div>
               </div>
               <div className="flex justify-between items-center">
-                <span className="text-sm text-gray-600">15-60 minutes</span>
+                <span className="text-sm text-gray-600 dark:text-gray-400">15-60 minutes</span>
                 <div className="flex items-center">
-                  <div className="w-32 bg-gray-200 rounded-full h-2 mr-2">
-                    <div 
-                      className="bg-orange-500 h-2 rounded-full" 
-                      style={{ 
-                        width: `${totalStats.totalResolved > 0 
-                          ? (detailedAnalytics.responseTimeCategories.under1hour / totalStats.totalResolved) * 100 
-                          : 0}%` 
+                  <div className="w-32 bg-gray-200 dark:bg-gray-700 rounded-full h-2 mr-2">
+                    <div
+                      className="bg-orange-500 h-2 rounded-full"
+                      style={{
+                        width: `${totalStats.totalResolved > 0
+                          ? (detailedAnalytics.responseTimeCategories.under1hour / totalStats.totalResolved) * 100
+                          : 0}%`
                       }}
                     ></div>
                   </div>
-                  <span className="text-sm font-medium">{detailedAnalytics.responseTimeCategories.under1hour}</span>
+                  <span className="text-sm font-medium text-gray-900 dark:text-gray-100">{detailedAnalytics.responseTimeCategories.under1hour}</span>
                 </div>
               </div>
               <div className="flex justify-between items-center">
-                <span className="text-sm text-gray-600">Over 1 hour</span>
+                <span className="text-sm text-gray-600 dark:text-gray-400">Over 1 hour</span>
                 <div className="flex items-center">
-                  <div className="w-32 bg-gray-200 rounded-full h-2 mr-2">
-                    <div 
-                      className="bg-red-500 h-2 rounded-full" 
-                      style={{ 
-                        width: `${totalStats.totalResolved > 0 
-                          ? (detailedAnalytics.responseTimeCategories.over1hour / totalStats.totalResolved) * 100 
-                          : 0}%` 
+                  <div className="w-32 bg-gray-200 dark:bg-gray-700 rounded-full h-2 mr-2">
+                    <div
+                      className="bg-red-500 h-2 rounded-full"
+                      style={{
+                        width: `${totalStats.totalResolved > 0
+                          ? (detailedAnalytics.responseTimeCategories.over1hour / totalStats.totalResolved) * 100
+                          : 0}%`
                       }}
                     ></div>
                   </div>
-                  <span className="text-sm font-medium">{detailedAnalytics.responseTimeCategories.over1hour}</span>
+                  <span className="text-sm font-medium text-gray-900 dark:text-gray-100">{detailedAnalytics.responseTimeCategories.over1hour}</span>
                 </div>
               </div>
             </div>
@@ -753,21 +753,21 @@ const StaffMemberDetails = () => {
         </div>
 
         {/* Workload & Rating Distribution */}
-        <div className="bg-white border border-gray-200 rounded-lg p-6">
-          <h3 className="text-lg font-medium text-gray-900 mb-4">Performance Distribution</h3>
+        <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg p-6">
+          <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-4">Performance Distribution</h3>
           <div className="space-y-6">
-            
+
             {/* Workload Distribution */}
             <div>
-              <h4 className="text-sm font-medium text-gray-700 mb-3">Issue Type Distribution</h4>
+              <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">Issue Type Distribution</h4>
               <div className="grid grid-cols-2 gap-3">
-                <div className="text-center p-3 bg-red-50 rounded-lg">
-                  <div className="text-lg font-semibold text-red-600">{detailedAnalytics.workloadDistribution.feedback}</div>
-                  <div className="text-xs text-red-700">Negative Feedback</div>
+                <div className="text-center p-3 bg-red-50 dark:bg-red-900/20 rounded-lg">
+                  <div className="text-lg font-semibold text-red-600 dark:text-red-400">{detailedAnalytics.workloadDistribution.feedback}</div>
+                  <div className="text-xs text-red-700 dark:text-red-300">Negative Feedback</div>
                 </div>
-                <div className="text-center p-3 bg-blue-50 rounded-lg">
-                  <div className="text-lg font-semibold text-blue-600">{detailedAnalytics.workloadDistribution.assistance}</div>
-                  <div className="text-xs text-blue-700">Assistance Requests</div>
+                <div className="text-center p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
+                  <div className="text-lg font-semibold text-blue-600 dark:text-blue-400">{detailedAnalytics.workloadDistribution.assistance}</div>
+                  <div className="text-xs text-blue-700 dark:text-blue-300">Assistance Requests</div>
                 </div>
               </div>
             </div>
@@ -775,24 +775,24 @@ const StaffMemberDetails = () => {
             {/* Rating Distribution */}
             {detailedAnalytics.totalRatings > 0 && (
               <div>
-                <h4 className="text-sm font-medium text-gray-700 mb-3">Customer Rating Distribution</h4>
+                <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">Customer Rating Distribution</h4>
                 <div className="space-y-2">
                   {[5, 4, 3, 2, 1].map(rating => (
                     <div key={rating} className="flex items-center">
-                      <span className="text-sm w-8">{rating}★</span>
-                      <div className="flex-1 bg-gray-200 rounded-full h-2 mx-2">
-                        <div 
+                      <span className="text-sm w-8 text-gray-900 dark:text-gray-100">{rating}★</span>
+                      <div className="flex-1 bg-gray-200 dark:bg-gray-700 rounded-full h-2 mx-2">
+                        <div
                           className={`h-2 rounded-full ${
                             rating >= 4 ? 'bg-green-500' : rating >= 3 ? 'bg-yellow-500' : 'bg-red-500'
                           }`}
-                          style={{ 
-                            width: `${detailedAnalytics.totalRatings > 0 
-                              ? (detailedAnalytics.ratingDistribution[rating] / detailedAnalytics.totalRatings) * 100 
-                              : 0}%` 
+                          style={{
+                            width: `${detailedAnalytics.totalRatings > 0
+                              ? (detailedAnalytics.ratingDistribution[rating] / detailedAnalytics.totalRatings) * 100
+                              : 0}%`
                           }}
                         ></div>
                       </div>
-                      <span className="text-sm w-8 text-right">{detailedAnalytics.ratingDistribution[rating]}</span>
+                      <span className="text-sm w-8 text-right text-gray-900 dark:text-gray-100">{detailedAnalytics.ratingDistribution[rating]}</span>
                     </div>
                   ))}
                 </div>
@@ -804,45 +804,45 @@ const StaffMemberDetails = () => {
 
       {/* Monthly Performance Trend */}
       {detailedAnalytics.monthlyPerformance.length > 0 && (
-        <div className="bg-white border border-gray-200 rounded-lg p-6 mb-6">
-          <h3 className="text-lg font-medium text-gray-900 mb-4">6-Month Performance Trend</h3>
+        <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg p-6 mb-6">
+          <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-4">6-Month Performance Trend</h3>
           <div className="overflow-x-auto">
             <table className="min-w-full">
               <thead>
-                <tr className="border-b border-gray-200">
-                  <th className="text-left text-xs font-semibold text-gray-600 uppercase tracking-wider py-2">Month</th>
-                  <th className="text-center text-xs font-semibold text-gray-600 uppercase tracking-wider py-2">Resolved</th>
-                  <th className="text-center text-xs font-semibold text-gray-600 uppercase tracking-wider py-2">Avg Time</th>
-                  <th className="text-center text-xs font-semibold text-gray-600 uppercase tracking-wider py-2">Avg Rating</th>
-                  <th className="text-center text-xs font-semibold text-gray-600 uppercase tracking-wider py-2">Trend</th>
+                <tr className="border-b border-gray-200 dark:border-gray-700">
+                  <th className="text-left text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wider py-2">Month</th>
+                  <th className="text-center text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wider py-2">Resolved</th>
+                  <th className="text-center text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wider py-2">Avg Time</th>
+                  <th className="text-center text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wider py-2">Avg Rating</th>
+                  <th className="text-center text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wider py-2">Trend</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-gray-100">
+              <tbody className="divide-y divide-gray-100 dark:divide-gray-800">
                 {detailedAnalytics.monthlyPerformance.map((month, index) => {
                   const prevMonth = index > 0 ? detailedAnalytics.monthlyPerformance[index - 1] : null;
                   const resolvedTrend = prevMonth ? month.resolved - prevMonth.resolved : 0;
                   const timeTrend = prevMonth ? month.avgTime - prevMonth.avgTime : 0;
-                  
+
                   return (
-                    <tr key={month.month} className="hover:bg-gray-50">
-                      <td className="py-3 text-sm font-medium text-gray-900">{month.month}</td>
-                      <td className="py-3 text-center text-sm text-gray-900">{month.resolved}</td>
-                      <td className="py-3 text-center text-sm text-gray-900">
+                    <tr key={month.month} className="hover:bg-gray-50 dark:hover:bg-gray-800">
+                      <td className="py-3 text-sm font-medium text-gray-900 dark:text-gray-100">{month.month}</td>
+                      <td className="py-3 text-center text-sm text-gray-900 dark:text-gray-100">{month.resolved}</td>
+                      <td className="py-3 text-center text-sm text-gray-900 dark:text-gray-100">
                         {month.avgTime > 0 ? `${Math.round(month.avgTime)}m` : 'N/A'}
                       </td>
-                      <td className="py-3 text-center text-sm text-gray-900">
+                      <td className="py-3 text-center text-sm text-gray-900 dark:text-gray-100">
                         {month.avgRating > 0 ? month.avgRating.toFixed(1) : 'N/A'}
                       </td>
                       <td className="py-3 text-center">
                         <div className="flex items-center justify-center space-x-1">
                           {resolvedTrend > 0 && (
-                            <span className="text-green-600 text-xs">↗ {resolvedTrend}</span>
+                            <span className="text-green-600 dark:text-green-400 text-xs">↗ {resolvedTrend}</span>
                           )}
                           {resolvedTrend < 0 && (
-                            <span className="text-red-600 text-xs">↘ {Math.abs(resolvedTrend)}</span>
+                            <span className="text-red-600 dark:text-red-400 text-xs">↘ {Math.abs(resolvedTrend)}</span>
                           )}
                           {resolvedTrend === 0 && prevMonth && (
-                            <span className="text-gray-400 text-xs">—</span>
+                            <span className="text-gray-400 dark:text-gray-500 text-xs">—</span>
                           )}
                         </div>
                       </td>
@@ -856,52 +856,52 @@ const StaffMemberDetails = () => {
       )}
 
       {/* Resolved Feedback Table */}
-      <div className="bg-white rounded-lg border border-gray-200 shadow-sm overflow-hidden">
-        <div className="px-6 py-4 border-b border-gray-200">
-          <h3 className="text-lg font-medium text-gray-900">Resolved Feedback & Assistance Requests</h3>
-          <p className="text-sm text-gray-600 mt-1">
+      <div className="bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm overflow-hidden">
+        <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+          <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100">Resolved Feedback & Assistance Requests</h3>
+          <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
             {timeFilter === 'all' ? 'All time' : `Filtered by: ${timeFilter.replace(/([A-Z])/g, ' $1').toLowerCase()}`}
           </p>
         </div>
 
         {resolvedFeedback.length > 0 ? (
           <div className="overflow-x-auto">
-            <table className="min-w-full divide-y divide-gray-200">
-              <thead className="bg-gray-50">
+            <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+              <thead className="bg-gray-50 dark:bg-gray-800">
                 <tr>
-                  <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                  <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wider">
                     Date Resolved
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                  <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wider">
                     Type
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                  <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wider">
                     Content
                   </th>
-                  <th className="px-6 py-3 text-center text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                  <th className="px-6 py-3 text-center text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wider">
                     Table
                   </th>
-                  <th className="px-6 py-3 text-center text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                  <th className="px-6 py-3 text-center text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wider">
                     Rating
                   </th>
-                  <th className="px-6 py-3 text-center text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                  <th className="px-6 py-3 text-center text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wider">
                     Resolution Time
                   </th>
                 </tr>
               </thead>
-              <tbody className="bg-white divide-y divide-gray-100">
+              <tbody className="bg-white dark:bg-gray-900 divide-y divide-gray-100 dark:divide-gray-800">
                 {resolvedFeedback.map((item, index) => (
-                  <tr 
+                  <tr
                     key={`${item.type}-${item.id}`}
-                    className={`hover:bg-gray-50 transition-colors duration-150 ${
-                      index % 2 === 0 ? 'bg-white' : 'bg-gray-50'
+                    className={`hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors duration-150 ${
+                      index % 2 === 0 ? 'bg-white dark:bg-gray-900' : 'bg-gray-50 dark:bg-gray-800/50'
                     }`}
                   >
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm text-gray-900">
+                      <div className="text-sm text-gray-900 dark:text-gray-100">
                         {dayjs(item.resolved_at).format('MMM D, YYYY')}
                       </div>
-                      <div className="text-xs text-gray-500">
+                      <div className="text-xs text-gray-500 dark:text-gray-400">
                         {dayjs(item.resolved_at).format('h:mm A')}
                       </div>
                     </td>
@@ -909,44 +909,44 @@ const StaffMemberDetails = () => {
                       <div className="flex flex-col gap-1">
                         <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
                           item.type === 'feedback'
-                            ? 'bg-red-100 text-red-800'
-                            : 'bg-blue-100 text-blue-800'
+                            ? 'bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-300'
+                            : 'bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-300'
                         }`}>
                           {item.type === 'feedback' ? 'Negative Feedback' : 'Assistance'}
                         </span>
                         {item.isCoResolved && (
-                          <span className="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-purple-100 text-purple-800">
+                          <span className="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-purple-100 dark:bg-purple-900/30 text-purple-800 dark:text-purple-300">
                             Co-resolved
                           </span>
                         )}
                       </div>
                     </td>
                     <td className="px-6 py-4">
-                      <div className="text-sm text-gray-900 max-w-md">
+                      <div className="text-sm text-gray-900 dark:text-gray-100 max-w-md">
                         <div className="line-clamp-2">
                           {item.content || 'No content provided'}
                         </div>
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-center">
-                      <div className="text-sm text-gray-900">
+                      <div className="text-sm text-gray-900 dark:text-gray-100">
                         {item.table_number || 'N/A'}
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-center">
                       {item.type === 'feedback' ? (
                         <div className={`text-sm font-medium ${
-                          item.rating <= 2 ? 'text-red-600' : 
-                          item.rating <= 3 ? 'text-yellow-600' : 'text-green-600'
+                          item.rating <= 2 ? 'text-red-600 dark:text-red-400' :
+                          item.rating <= 3 ? 'text-yellow-600 dark:text-yellow-400' : 'text-green-600 dark:text-green-400'
                         }`}>
                           {item.rating ? `${item.rating}/5` : 'N/A'}
                         </div>
                       ) : (
-                        <span className="text-sm text-gray-400">N/A</span>
+                        <span className="text-sm text-gray-400 dark:text-gray-500">N/A</span>
                       )}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-center">
-                      <div className="text-sm text-gray-900">
+                      <div className="text-sm text-gray-900 dark:text-gray-100">
                         {dayjs(item.resolved_at).from(dayjs(item.created_at), true)}
                       </div>
                     </td>
@@ -956,15 +956,15 @@ const StaffMemberDetails = () => {
             </table>
           </div>
         ) : (
-          <div className="px-6 py-12 text-center text-gray-500">
+          <div className="px-6 py-12 text-center text-gray-500 dark:text-gray-400">
             <div className="flex flex-col items-center">
-              <svg className="w-12 h-12 text-gray-300 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg className="w-12 h-12 text-gray-300 dark:text-gray-600 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
               </svg>
-              <p className="text-sm font-medium text-gray-900 mb-1">No resolved feedback found</p>
-              <p className="text-xs text-gray-500">
-                {timeFilter === 'all' 
-                  ? 'This staff member hasn\'t resolved any feedback yet' 
+              <p className="text-sm font-medium text-gray-900 dark:text-gray-100 mb-1">No resolved feedback found</p>
+              <p className="text-xs text-gray-500 dark:text-gray-400">
+                {timeFilter === 'all'
+                  ? 'This staff member hasn\'t resolved any feedback yet'
                   : 'Try selecting a different time period'
                 }
               </p>
