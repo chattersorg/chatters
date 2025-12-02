@@ -199,7 +199,7 @@ export default function RatingsTrendChart({ venueId, timeframe = 'last30' }) {
       <div className="h-64">
         <ResponsiveContainer width="100%" height="100%">
           <AreaChart data={data} margin={{ top: 8, right: 8, bottom: 8, left: 0 }}>
-            <CartesianGrid stroke="#e5e7eb" strokeDasharray="3 3" />
+            <CartesianGrid stroke="#f0f0f0" strokeDasharray="0" vertical={false} />
             <XAxis 
               dataKey="date" 
               stroke="#64748B"
@@ -243,7 +243,7 @@ export default function RatingsTrendChart({ venueId, timeframe = 'last30' }) {
               strokeWidth={2}
               connectNulls={true}
               isAnimationActive={false}
-              dot={{ r: 2, fill: '#2563eb', strokeWidth: 0 }}
+              dot={false}
               activeDot={{ r: 4, fill: '#2563eb', strokeWidth: 2, stroke: 'white' }}
               name="Google"
             />
@@ -255,7 +255,7 @@ export default function RatingsTrendChart({ venueId, timeframe = 'last30' }) {
               strokeWidth={2}
               connectNulls={true}
               isAnimationActive={false}
-              dot={{ r: 2, fill: '#059669', strokeWidth: 0 }}
+              dot={false}
               activeDot={{ r: 4, fill: '#059669', strokeWidth: 2, stroke: 'white' }}
               name="TripAdvisor"
             />

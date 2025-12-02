@@ -174,6 +174,7 @@ const GoogleRatingTrendCard = ({ venueId }) => {
         display: true,
         grid: {
           display: false,
+          drawBorder: false,
         },
         ticks: {
           color: '#9CA3AF',
@@ -192,7 +193,7 @@ const GoogleRatingTrendCard = ({ venueId }) => {
         min: Math.max(1, Math.floor((Math.min(...historicalData.map(d => d.rating)) - 0.5) * 2) / 2),
         max: Math.min(5, Math.ceil((Math.max(...historicalData.map(d => d.rating)) + 0.5) * 2) / 2),
         grid: {
-          color: '#E5E7EB',
+          color: '#f0f0f0',
           drawBorder: false,
         },
         border: {
