@@ -123,7 +123,7 @@ const GoogleRatingTrendCard = ({ venueId }) => {
         borderWidth: 2,
         fill: true,
         tension: 0.4,
-        pointRadius: 3,
+        pointRadius: 0,
         pointHoverRadius: 5,
         pointBackgroundColor: '#4285F4',
         pointBorderColor: '#fff',
