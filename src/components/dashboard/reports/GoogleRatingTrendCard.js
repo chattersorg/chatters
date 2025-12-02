@@ -83,18 +83,22 @@ const GoogleRatingTrendCard = ({ venueId }) => {
         setCurrentRating(current);
         setHistoricalData(googleRatings);
 
-        // Calculate trend
+        // Calculate trend - compare first rating in range to last rating in range
         if (googleRatings.length > 1) {
-          const previous = googleRatings[googleRatings.length - 2];
-          const change = current.rating - previous.rating;
-          const percentChange = ((change / previous.rating) * 100);
+          const first = googleRatings[0];
+          const change = current.rating - first.rating;
+          const percentChange = ((change / first.rating) * 100);
 
           setTrend({
             change: change,
             percentChange: percentChange,
             direction: change >= 0 ? 'up' : 'down'
           });
+        } else {
+          setTrend(null);
         }
+      } else {
+        setTrend(null);
       }
     } catch (error) {
       console.error('Error loading Google rating data:', error);
@@ -119,7 +123,7 @@ const GoogleRatingTrendCard = ({ venueId }) => {
         borderWidth: 2,
         fill: true,
         tension: 0.4,
-        pointRadius: 3,
+        pointRadius: 0,
         pointHoverRadius: 5,
         pointBackgroundColor: '#4285F4',
         pointBorderColor: '#fff',
@@ -170,6 +174,7 @@ const GoogleRatingTrendCard = ({ venueId }) => {
         display: true,
         grid: {
           display: false,
+          drawBorder: false,
         },
         ticks: {
           color: '#9CA3AF',
@@ -184,10 +189,11 @@ const GoogleRatingTrendCard = ({ venueId }) => {
       y: {
         display: true,
         beginAtZero: false,
-        min: 1,
-        max: 5,
+        // Dynamic range based on data - show a tighter view to emphasize changes
+        min: Math.max(1, Math.floor((Math.min(...historicalData.map(d => d.rating)) - 0.5) * 2) / 2),
+        max: Math.min(5, Math.ceil((Math.max(...historicalData.map(d => d.rating)) + 0.5) * 2) / 2),
         grid: {
-          color: '#E5E7EB',
+          color: '#f0f0f0',
           drawBorder: false,
         },
         border: {
