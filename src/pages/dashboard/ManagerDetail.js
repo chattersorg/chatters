@@ -408,7 +408,7 @@ const ManagerDetail = () => {
       <div className="flex flex-col lg:flex-row gap-6">
         {/* Left Column - Sticky Manager Info */}
         <div className="lg:w-80 flex-shrink-0">
-          <div className="lg:sticky lg:top-6">
+          <div className="lg:sticky lg:top-24">
             <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl overflow-hidden">
               {/* Manager Header */}
               <div className="bg-gradient-to-br from-purple-500 to-indigo-600 p-6 text-center">
