@@ -403,14 +403,11 @@ const ManagerDetail = () => {
           <div className="lg:sticky lg:top-24">
             <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl overflow-hidden">
               {/* Manager Header */}
-              <div className="bg-gradient-to-br from-purple-500 to-indigo-600 p-6 text-center">
-                <div className="w-20 h-20 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center text-2xl font-bold text-white mx-auto mb-3 border-2 border-white/30">
-                  {`${manager.first_name?.[0] || ''}${manager.last_name?.[0] || ''}`.toUpperCase()}
-                </div>
-                <h2 className="text-xl font-bold text-white">
+              <div className="p-5 border-b border-gray-200 dark:border-gray-800">
+                <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
                   {manager.first_name} {manager.last_name}
                 </h2>
-                <span className="inline-block mt-2 px-3 py-1 bg-white/20 backdrop-blur-sm text-white text-xs font-medium rounded-full">
+                <span className="text-sm text-gray-500 dark:text-gray-400">
                   Manager
                 </span>
               </div>
@@ -418,17 +415,17 @@ const ManagerDetail = () => {
               {/* Manager Details */}
               <div className="p-4 space-y-3">
                 <div className="flex items-center gap-3 p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
-                  <Mail className="w-4 h-4 text-purple-600 dark:text-purple-400 flex-shrink-0" />
+                  <Mail className="w-4 h-4 text-gray-500 dark:text-gray-400 flex-shrink-0" />
                   <span className="text-sm text-gray-700 dark:text-gray-300 truncate">{manager.email}</span>
                 </div>
                 <div className="flex items-center gap-3 p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
-                  <Building2 className="w-4 h-4 text-purple-600 dark:text-purple-400 flex-shrink-0" />
+                  <Building2 className="w-4 h-4 text-gray-500 dark:text-gray-400 flex-shrink-0" />
                   <span className="text-sm text-gray-700 dark:text-gray-300">
                     {managerVenues.length} venue{managerVenues.length !== 1 ? 's' : ''} assigned
                   </span>
                 </div>
                 <div className="flex items-center gap-3 p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
-                  <Shield className="w-4 h-4 text-purple-600 dark:text-purple-400 flex-shrink-0" />
+                  <Shield className="w-4 h-4 text-gray-500 dark:text-gray-400 flex-shrink-0" />
                   <span className="text-sm text-gray-700 dark:text-gray-300">
                     {selectedTemplate
                       ? roleTemplates.find(t => t.id === selectedTemplate)?.name || 'Template'
@@ -474,7 +471,7 @@ const ManagerDetail = () => {
                         type="checkbox"
                         checked={editedVenueIds.includes(venue.id)}
                         onChange={() => handleVenueToggle(venue.id)}
-                        className="rounded border-gray-300 dark:border-gray-600 text-purple-600 focus:ring-purple-500 h-4 w-4"
+                        className="rounded border-gray-300 dark:border-gray-600 text-blue-600 focus:ring-blue-500 h-4 w-4"
                         disabled={saving}
                       />
                       <Building2 className="w-4 h-4 text-gray-400" />
@@ -510,7 +507,7 @@ const ManagerDetail = () => {
             >
               {permissionsLoading ? (
                 <div className="flex items-center justify-center py-12">
-                  <RefreshCw className="w-8 h-8 text-purple-600 dark:text-purple-400 animate-spin" />
+                  <RefreshCw className="w-8 h-8 text-blue-600 dark:text-blue-400 animate-spin" />
                 </div>
               ) : (
                 <div className="space-y-6">
@@ -536,7 +533,7 @@ const ManagerDetail = () => {
                               onClick={() => selectTemplate(template.id)}
                               className={`px-4 py-3 rounded-lg border-2 text-left transition-colors ${
                                 selectedTemplate === template.id
-                                  ? 'border-purple-500 bg-purple-50 dark:bg-purple-900/20'
+                                  ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20'
                                   : 'border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600'
                               }`}
                             >
@@ -545,7 +542,7 @@ const ManagerDetail = () => {
                                   {template.name}
                                 </span>
                                 {selectedTemplate === template.id && (
-                                  <Check className="w-4 h-4 text-purple-600 dark:text-purple-400" />
+                                  <Check className="w-4 h-4 text-blue-600 dark:text-blue-400" />
                                 )}
                               </div>
                               <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">
@@ -570,7 +567,7 @@ const ManagerDetail = () => {
                               onClick={() => selectTemplate(template.id)}
                               className={`px-4 py-3 rounded-lg border-2 text-left transition-colors ${
                                 selectedTemplate === template.id
-                                  ? 'border-purple-500 bg-purple-50 dark:bg-purple-900/20'
+                                  ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20'
                                   : 'border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600'
                               }`}
                             >
@@ -579,7 +576,7 @@ const ManagerDetail = () => {
                                   {template.name}
                                 </span>
                                 {selectedTemplate === template.id && (
-                                  <Check className="w-4 h-4 text-purple-600 dark:text-purple-400" />
+                                  <Check className="w-4 h-4 text-blue-600 dark:text-blue-400" />
                                 )}
                               </div>
                               <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">
@@ -609,7 +606,7 @@ const ManagerDetail = () => {
                             setSelectedTemplate(null);
                             setCustomPermissions(templatePermissions);
                           }}
-                          className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-purple-600 dark:text-purple-400 bg-purple-50 dark:bg-purple-900/20 hover:bg-purple-100 dark:hover:bg-purple-900/30 rounded-lg transition-colors"
+                          className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/20 hover:bg-blue-100 dark:hover:bg-blue-900/30 rounded-lg transition-colors"
                         >
                           <Edit2 className="w-3.5 h-3.5" />
                           Edit Permissions
@@ -633,13 +630,13 @@ const ManagerDetail = () => {
 
                     {/* Custom mode info banner */}
                     {!selectedTemplate && (
-                      <div className="bg-purple-50 dark:bg-purple-900/20 border border-purple-200 dark:border-purple-800 rounded-lg p-3 flex items-start gap-3 mb-3">
-                        <Edit2 className="w-4 h-4 text-purple-600 dark:text-purple-400 mt-0.5 flex-shrink-0" />
+                      <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-3 flex items-start gap-3 mb-3">
+                        <Edit2 className="w-4 h-4 text-blue-600 dark:text-blue-400 mt-0.5 flex-shrink-0" />
                         <div className="flex-1">
-                          <p className="text-sm font-medium text-purple-900 dark:text-purple-100">
+                          <p className="text-sm font-medium text-blue-900 dark:text-blue-100">
                             Custom Permissions Mode
                           </p>
-                          <p className="text-xs text-purple-700 dark:text-purple-300 mt-0.5">
+                          <p className="text-xs text-blue-700 dark:text-blue-300 mt-0.5">
                             Toggle individual permissions below. Click "Use Template" to switch back to a predefined role.
                           </p>
                         </div>
@@ -702,7 +699,7 @@ const ManagerDetail = () => {
                                         checked={enabled}
                                         onChange={() => !isLocked && togglePermission(perm.code)}
                                         disabled={isLocked}
-                                        className={`w-4 h-4 rounded border-gray-300 dark:border-gray-600 text-purple-600 focus:ring-purple-500 ${
+                                        className={`w-4 h-4 rounded border-gray-300 dark:border-gray-600 text-blue-600 focus:ring-blue-500 ${
                                           isLocked ? 'opacity-50 cursor-not-allowed' : ''
                                         }`}
                                       />
