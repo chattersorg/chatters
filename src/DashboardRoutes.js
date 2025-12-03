@@ -72,18 +72,54 @@ import TestDashboardPage from './pages/admin/TestDashboardPage';
 // Frames & context
 import ModernDashboardFrame from './components/dashboard/layout/ModernDashboardFrame';
 import { VenueProvider } from './context/VenueContext';
+import { PermissionsProvider, PermissionGate } from './context/PermissionsContext';
 import SubscriptionGuard from './components/guards/SubscriptionGuard';
 
 // Trial expired page (outside subscription guard)
 import TrialExpired from './pages/dashboard/TrialExpired';
 
-// Wrap all authenticated dashboard pages once: SubscriptionGuard + VenueProvider + ModernDashboardFrame
+// Access Denied component for permission gates
+const AccessDenied = () => (
+  <div className="flex flex-col items-center justify-center min-h-[60vh] p-12 text-center">
+    <div className="w-20 h-20 bg-red-100 dark:bg-red-900/30 rounded-full flex items-center justify-center mb-6">
+      <svg className="w-10 h-10 text-red-600 dark:text-red-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+      </svg>
+    </div>
+    <h2 className="text-2xl font-semibold text-gray-900 dark:text-white mb-3">Access Denied</h2>
+    <p className="text-gray-600 dark:text-gray-400 max-w-md mb-6">
+      You don't have permission to access this page. Contact your administrator if you believe this is an error.
+    </p>
+    <a
+      href="/dashboard"
+      className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium"
+    >
+      Go to Dashboard
+    </a>
+  </div>
+);
+
+// Helper component for permission-gated routes
+const ProtectedRoute = ({ permission, permissions, mode = 'any', children }) => (
+  <PermissionGate
+    permission={permission}
+    permissions={permissions}
+    mode={mode}
+    fallback={<AccessDenied />}
+  >
+    {children}
+  </PermissionGate>
+);
+
+// Wrap all authenticated dashboard pages once: SubscriptionGuard + VenueProvider + PermissionsProvider + ModernDashboardFrame
 const DashboardShell = () => (
   <SubscriptionGuard>
     <VenueProvider>
-      <ModernDashboardFrame>
-        <Outlet />
-      </ModernDashboardFrame>
+      <PermissionsProvider>
+        <ModernDashboardFrame>
+          <Outlet />
+        </ModernDashboardFrame>
+      </PermissionsProvider>
     </VenueProvider>
   </SubscriptionGuard>
 );
@@ -125,72 +161,203 @@ const DashboardRoutes = () => {
 
       {/* Authenticated app: venue context + dashboard frame */}
       <Route element={<DashboardShell />}>
+        {/* Dashboard - everyone can access */}
         <Route path="/dashboard" element={<DashboardPage />} />
-        <Route path="/ai-insights" element={<AIInsightsPage />} />
-        <Route path="/ai-chat" element={<AIChatPage />} />
+
+        {/* AI Features */}
+        <Route path="/ai-insights" element={
+          <ProtectedRoute permission="ai.insights">
+            <AIInsightsPage />
+          </ProtectedRoute>
+        } />
+        <Route path="/ai-chat" element={
+          <ProtectedRoute permission="ai.chat">
+            <AIChatPage />
+          </ProtectedRoute>
+        } />
 
         {/* Multi-Venue Section */}
-        <Route path="/multi-venue/venues" element={<VenueSettingsPage />} />
-        <Route path="/multi-venue/overview" element={<OverviewDetails />} />
-        <Route path="/multi-venue/dashboard" element={<CustomDashboard />} />
+        <Route path="/multi-venue/venues" element={
+          <ProtectedRoute permission="venue.view">
+            <VenueSettingsPage />
+          </ProtectedRoute>
+        } />
+        <Route path="/multi-venue/overview" element={
+          <ProtectedRoute permission="multivenue.view">
+            <OverviewDetails />
+          </ProtectedRoute>
+        } />
+        <Route path="/multi-venue/dashboard" element={
+          <ProtectedRoute permission="multivenue.view">
+            <CustomDashboard />
+          </ProtectedRoute>
+        } />
 
         {/* Feedback Section */}
-        <Route path="/feedback/qr" element={<FeedbackQRPage />} />
-        <Route path="/feedback/questions" element={<FeedbackQuestionsPage />} />
-        <Route path="/feedback/all" element={<AllFeedback />} />
-        
+        <Route path="/feedback/qr" element={
+          <ProtectedRoute permission="qr.view">
+            <FeedbackQRPage />
+          </ProtectedRoute>
+        } />
+        <Route path="/feedback/questions" element={
+          <ProtectedRoute permission="questions.view">
+            <FeedbackQuestionsPage />
+          </ProtectedRoute>
+        } />
+        <Route path="/feedback/all" element={
+          <ProtectedRoute permission="feedback.view">
+            <AllFeedback />
+          </ProtectedRoute>
+        } />
+
         {/* Legacy feedback routes (redirects or keep for compatibility) */}
         <Route path="/questions" element={<Navigate to="/feedback/questions" replace />} />
-        <Route path="/feedbackfeed" element={<FeedbackFeed />} />
-        
+        <Route path="/feedbackfeed" element={
+          <ProtectedRoute permission="feedback.view">
+            <FeedbackFeed />
+          </ProtectedRoute>
+        } />
+
         {/* Reports Section */}
-        <Route path="/reports/feedback" element={<ReportsFeedbackPage />} />
-        <Route path="/reports/performance" element={<PerformanceDashboardPage />} />
-        <Route path="/reports/impact" element={<ReportsImpactPage />} />
-        <Route path="/reports/insights" element={<CustomerInsightsPage />} />
-        <Route path="/reports/metrics" element={<ReportsMetricsPage />} />
-        <Route path="/reports/nps" element={<ReportsNPSPage />} />
-        <Route path="/nps-report/:venueId" element={<NPSReportDetail />} />
-        <Route path="/reports/builder" element={<ReportBuilderPage />} />
+        <Route path="/reports/feedback" element={
+          <ProtectedRoute permission="reports.view">
+            <ReportsFeedbackPage />
+          </ProtectedRoute>
+        } />
+        <Route path="/reports/performance" element={
+          <ProtectedRoute permission="reports.view">
+            <PerformanceDashboardPage />
+          </ProtectedRoute>
+        } />
+        <Route path="/reports/impact" element={
+          <ProtectedRoute permission="reports.view">
+            <ReportsImpactPage />
+          </ProtectedRoute>
+        } />
+        <Route path="/reports/insights" element={
+          <ProtectedRoute permission="reports.view">
+            <CustomerInsightsPage />
+          </ProtectedRoute>
+        } />
+        <Route path="/reports/metrics" element={
+          <ProtectedRoute permission="reports.view">
+            <ReportsMetricsPage />
+          </ProtectedRoute>
+        } />
+        <Route path="/reports/nps" element={
+          <ProtectedRoute permission="nps.view">
+            <ReportsNPSPage />
+          </ProtectedRoute>
+        } />
+        <Route path="/nps-report/:venueId" element={
+          <ProtectedRoute permission="nps.view">
+            <NPSReportDetail />
+          </ProtectedRoute>
+        } />
+        <Route path="/reports/builder" element={
+          <ProtectedRoute permission="reports.create">
+            <ReportBuilderPage />
+          </ProtectedRoute>
+        } />
 
         {/* Reviews Section */}
-        <Route path="/reviews" element={<GoogleReviewsPage />} />
-        
+        <Route path="/reviews" element={
+          <ProtectedRoute permission="reviews.view">
+            <GoogleReviewsPage />
+          </ProtectedRoute>
+        } />
+
         {/* Legacy reports routes */}
         <Route path="/reports" element={<Navigate to="/reports/feedback" replace />} />
         <Route path="/templates" element={<TemplatesPage />} />
-        
+
         {/* Staff Section */}
-        <Route path="/staff/leaderboard" element={<StaffLeaderboard />} />
-        <Route path="/staff/recognition" element={<RecognitionHistory />} />
-        <Route path="/staff/managers" element={<StaffManagersPage />} />
-        <Route path="/staff/employees" element={<StaffEmployeesPage />} />
-        <Route path="/staff/employees/:employeeId" element={<EmployeeDetail />} />
-        <Route path="/staff/roles" element={<StaffRolesPage />} />
-        <Route path="/staff/locations" element={<StaffLocationsPage />} />
-        <Route path="/staff-member/:staffId" element={<StaffMemberDetails />} />
-        
+        <Route path="/staff/leaderboard" element={
+          <ProtectedRoute permission="staff.leaderboard">
+            <StaffLeaderboard />
+          </ProtectedRoute>
+        } />
+        <Route path="/staff/recognition" element={
+          <ProtectedRoute permission="staff.recognition">
+            <RecognitionHistory />
+          </ProtectedRoute>
+        } />
+        <Route path="/staff/managers" element={
+          <ProtectedRoute permission="managers.view">
+            <StaffManagersPage />
+          </ProtectedRoute>
+        } />
+        <Route path="/staff/employees" element={
+          <ProtectedRoute permission="staff.view">
+            <StaffEmployeesPage />
+          </ProtectedRoute>
+        } />
+        <Route path="/staff/employees/:employeeId" element={
+          <ProtectedRoute permission="staff.view">
+            <EmployeeDetail />
+          </ProtectedRoute>
+        } />
+        <Route path="/staff/roles" element={
+          <ProtectedRoute permission="staff.edit">
+            <StaffRolesPage />
+          </ProtectedRoute>
+        } />
+        <Route path="/staff/locations" element={
+          <ProtectedRoute permission="staff.edit">
+            <StaffLocationsPage />
+          </ProtectedRoute>
+        } />
+        <Route path="/staff-member/:staffId" element={
+          <ProtectedRoute permission="staff.view">
+            <StaffMemberDetails />
+          </ProtectedRoute>
+        } />
+
         {/* Legacy staff routes */}
         <Route path="/staff" element={<Navigate to="/staff/leaderboard" replace />} />
-        
+
         {/* Settings Section */}
-        <Route path="/settings/venue-details" element={<VenueSettingsPage />} />
-        <Route path="/settings/feedback" element={<FeedbackSettings />} />
-        <Route path="/settings/branding" element={<SettingsBrandingPage />} />
+        <Route path="/settings/venue-details" element={
+          <ProtectedRoute permission="venue.view">
+            <VenueSettingsPage />
+          </ProtectedRoute>
+        } />
+        <Route path="/settings/feedback" element={
+          <ProtectedRoute permission="venue.view">
+            <FeedbackSettings />
+          </ProtectedRoute>
+        } />
+        <Route path="/settings/branding" element={
+          <ProtectedRoute permission="venue.branding">
+            <SettingsBrandingPage />
+          </ProtectedRoute>
+        } />
         <Route path="/settings/custom-links" element={<Navigate to="/settings/venue-details" replace />} />
-        <Route path="/settings/integrations" element={<IntegrationsSettingsPage />} />
-        
+        <Route path="/settings/integrations" element={
+          <ProtectedRoute permission="venue.integrations">
+            <IntegrationsSettingsPage />
+          </ProtectedRoute>
+        } />
+
         {/* Legacy settings routes */}
         <Route path="/settings" element={<Navigate to="/settings/venue-details" replace />} />
         <Route path="/settings/venues" element={<Navigate to="/multi-venue/venues" replace />} />
         <Route path="/settings/billing" element={<Navigate to="/account/billing" replace />} />
-        
+
         {/* Account Settings Section */}
         <Route path="/account/profile" element={<AccountProfilePage />} />
-        <Route path="/account/billing" element={<AccountBillingPage />} />
-        
-        {/* Other */}
-        <Route path="/floorplan" element={<Floorplan />} />
+        <Route path="/account/billing" element={
+          <ProtectedRoute permission="billing.view">
+            <AccountBillingPage />
+          </ProtectedRoute>
+        } />
+
+        {/* Floor Plan */}
+        <Route path="/floorplan" element={
+          <ProtectedRoute permission="floorplan.view">
+            <Floorplan />
+          </ProtectedRoute>
+        } />
       </Route>
 
       {/* Legacy multi-venue route redirects */}

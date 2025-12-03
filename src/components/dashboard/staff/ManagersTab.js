@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { supabase } from '../../../utils/supabase';
 import { Button } from '../../ui/button';
+import PermissionsManager from './PermissionsManager';
+import { Shield } from 'lucide-react';
 
 const ManagersTab = ({ 
   managers, 
@@ -21,6 +23,7 @@ const ManagersTab = ({
   const [editingManagerDetails, setEditingManagerDetails] = useState(null);
   const [editDetailsLoading, setEditDetailsLoading] = useState(false);
   const [resendingEmail, setResendingEmail] = useState(null); // Track which user's email is being resent
+  const [managingPermissionsFor, setManagingPermissionsFor] = useState(null); // Track which manager's permissions are being edited
 
   // Add manager form state
   const [newManager, setNewManager] = useState({
@@ -688,6 +691,14 @@ const ManagersTab = ({
                               Edit
                             </button>
 
+                            <button
+                              onClick={() => setManagingPermissionsFor(manager)}
+                              className="text-purple-600 dark:text-purple-400 hover:text-purple-800 dark:hover:text-purple-300 text-sm font-medium flex items-center gap-1"
+                            >
+                              <Shield className="w-3.5 h-3.5" />
+                              Permissions
+                            </button>
+
                             {hasPendingInvitation(manager.users?.email) && (
                               <button
                                 onClick={() => handleResendInvitation(manager.users?.email)}
@@ -1087,6 +1098,19 @@ const ManagersTab = ({
             </div>
           </div>
         </div>
+      )}
+
+      {/* Permissions Manager Modal */}
+      {managingPermissionsFor && (
+        <PermissionsManager
+          userId={managingPermissionsFor.user_id}
+          userName={`${managingPermissionsFor.users?.first_name || ''} ${managingPermissionsFor.users?.last_name || ''}`.trim()}
+          onClose={() => setManagingPermissionsFor(null)}
+          onSave={() => {
+            setManagingPermissionsFor(null);
+            setMessage('Permissions updated successfully!');
+          }}
+        />
       )}
     </div>
   );
