@@ -72,8 +72,6 @@ const ManagerDetail = () => {
   const [userPermissions, setUserPermissions] = useState(null);
   const [selectedTemplate, setSelectedTemplate] = useState(null);
   const [customPermissions, setCustomPermissions] = useState([]);
-  const [permissionScope, setPermissionScope] = useState('account');
-  const [selectedVenueId, setSelectedVenueId] = useState(null);
   const [permissionsLoading, setPermissionsLoading] = useState(true);
   const [expandedCategories, setExpandedCategories] = useState({});
   const [permissionsSaving, setPermissionsSaving] = useState(false);
@@ -150,34 +148,29 @@ const ManagerDetail = () => {
         .order('is_system', { ascending: false })
         .order('name', { ascending: true });
 
-      // Fetch existing user permissions
-      const { data: existingPerms } = await supabase
+      // Fetch existing user permissions (account-wide only)
+      const { data: existingPerm } = await supabase
         .from('user_permissions')
         .select(`
           *,
           role_templates (code, name)
         `)
-        .eq('user_id', managerId);
+        .eq('user_id', managerId)
+        .maybeSingle();
 
       setAllPermissions(perms || []);
       setRoleTemplates(templates || []);
 
       // Set up existing permissions
-      if (existingPerms && existingPerms.length > 0) {
-        const venueSpecific = existingPerms.find(p => p.venue_id);
-        const accountWide = existingPerms.find(p => !p.venue_id);
-        const currentPerm = venueSpecific || accountWide;
+      if (existingPerm) {
+        setUserPermissions(existingPerm);
 
-        setUserPermissions(currentPerm);
-        setPermissionScope(venueSpecific ? 'venue' : 'account');
-        setSelectedVenueId(venueSpecific?.venue_id || null);
-
-        if (currentPerm.role_template_id) {
-          setSelectedTemplate(currentPerm.role_template_id);
+        if (existingPerm.role_template_id) {
+          setSelectedTemplate(existingPerm.role_template_id);
           setCustomPermissions([]);
         } else {
           setSelectedTemplate(null);
-          setCustomPermissions(currentPerm.custom_permissions || []);
+          setCustomPermissions(existingPerm.custom_permissions || []);
         }
       }
     } catch (err) {
@@ -325,7 +318,6 @@ const ManagerDetail = () => {
       const permissionData = {
         user_id: managerId,
         account_id: userData.account_id,
-        venue_id: permissionScope === 'venue' ? selectedVenueId : null,
         role_template_id: selectedTemplate || null,
         custom_permissions: selectedTemplate ? [] : customPermissions,
         created_by: currentUserId
@@ -522,56 +514,6 @@ const ManagerDetail = () => {
                 </div>
               ) : (
                 <div className="space-y-6">
-                  {/* Permission Scope */}
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                      Permission Scope
-                    </label>
-                    <div className="grid grid-cols-2 gap-3">
-                      <button
-                        onClick={() => setPermissionScope('account')}
-                        className={`px-4 py-3 rounded-lg border-2 transition-colors text-left ${
-                          permissionScope === 'account'
-                            ? 'border-purple-500 bg-purple-50 dark:bg-purple-900/20 text-purple-700 dark:text-purple-400'
-                            : 'border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600'
-                        }`}
-                      >
-                        <div className="font-medium text-sm">Account-wide</div>
-                        <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                          Same permissions for all venues
-                        </div>
-                      </button>
-                      <button
-                        onClick={() => setPermissionScope('venue')}
-                        className={`px-4 py-3 rounded-lg border-2 transition-colors text-left ${
-                          permissionScope === 'venue'
-                            ? 'border-purple-500 bg-purple-50 dark:bg-purple-900/20 text-purple-700 dark:text-purple-400'
-                            : 'border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600'
-                        }`}
-                      >
-                        <div className="font-medium text-sm">Venue-specific</div>
-                        <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                          Different permissions per venue
-                        </div>
-                      </button>
-                    </div>
-
-                    {permissionScope === 'venue' && (
-                      <div className="mt-3">
-                        <select
-                          value={selectedVenueId || ''}
-                          onChange={(e) => setSelectedVenueId(e.target.value || null)}
-                          className="w-full px-3 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-lg text-gray-900 dark:text-white text-sm focus:ring-2 focus:ring-purple-500"
-                        >
-                          <option value="">Select a venue...</option>
-                          {allVenues.map(venue => (
-                            <option key={venue.id} value={venue.id}>{venue.name}</option>
-                          ))}
-                        </select>
-                      </div>
-                    )}
-                  </div>
-
                   {/* Role Templates */}
                   <div>
                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
@@ -804,7 +746,7 @@ const ManagerDetail = () => {
                     <Button
                       variant="primary"
                       onClick={handleSavePermissions}
-                      disabled={permissionsSaving || (permissionScope === 'venue' && !selectedVenueId)}
+                      disabled={permissionsSaving}
                       loading={permissionsSaving}
                     >
                       <Save className="w-4 h-4 mr-2" />

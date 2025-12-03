@@ -13,7 +13,7 @@ export const usePermissions = () => {
 };
 
 export const PermissionsProvider = ({ children }) => {
-  const { venueId, userRole } = useVenue();
+  const { userRole } = useVenue();
   const [permissions, setPermissions] = useState([]);
   const [roleTemplate, setRoleTemplate] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -65,13 +65,12 @@ export const PermissionsProvider = ({ children }) => {
         return;
       }
 
-      // For managers, check user_permissions table
-      const { data: userPerms } = await supabase
+      // For managers, check user_permissions table (account-wide only)
+      const { data: userPerm } = await supabase
         .from('user_permissions')
         .select(`
           role_template_id,
           custom_permissions,
-          venue_id,
           role_templates (
             code,
             name,
@@ -81,9 +80,9 @@ export const PermissionsProvider = ({ children }) => {
           )
         `)
         .eq('user_id', userId)
-        .order('venue_id', { ascending: false, nullsFirst: false });
+        .maybeSingle();
 
-      if (!userPerms || userPerms.length === 0) {
+      if (!userPerm) {
         // No permissions assigned - give default viewer permissions
         const { data: viewerPerms } = await supabase
           .from('role_templates')
@@ -105,29 +104,18 @@ export const PermissionsProvider = ({ children }) => {
         return;
       }
 
-      // Find applicable permission set
-      const venueSpecific = userPerms.find(up => up.venue_id === venueId);
-      const accountWide = userPerms.find(up => up.venue_id === null);
-      const applicablePerms = venueSpecific || accountWide;
-
-      if (!applicablePerms) {
-        setPermissions([]);
-        setRoleTemplate(null);
-        return;
-      }
-
       // Extract permissions
       let codes = [];
-      if (applicablePerms.role_template_id && applicablePerms.role_templates) {
-        codes = applicablePerms.role_templates.role_template_permissions?.map(
+      if (userPerm.role_template_id && userPerm.role_templates) {
+        codes = userPerm.role_templates.role_template_permissions?.map(
           rtp => rtp.permissions?.code
         ).filter(Boolean) || [];
         setRoleTemplate({
-          code: applicablePerms.role_templates.code,
-          name: applicablePerms.role_templates.name
+          code: userPerm.role_templates.code,
+          name: userPerm.role_templates.name
         });
-      } else if (applicablePerms.custom_permissions) {
-        codes = applicablePerms.custom_permissions;
+      } else if (userPerm.custom_permissions) {
+        codes = userPerm.custom_permissions;
         setRoleTemplate({ code: 'custom', name: 'Custom' });
       }
 
@@ -140,7 +128,7 @@ export const PermissionsProvider = ({ children }) => {
       setLoading(false);
       setInitialized(true);
     }
-  }, [venueId, userRole]);
+  }, [userRole]);
 
   useEffect(() => {
     if (userRole !== null) {
