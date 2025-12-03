@@ -6,14 +6,13 @@ import usePageTitle from '../../hooks/usePageTitle';
 import { useVenue } from '../../context/VenueContext';
 import { PermissionGate } from '../../context/PermissionsContext';
 import { Button } from '../../components/ui/button';
-import PermissionsManager from '../../components/dashboard/staff/PermissionsManager';
 import AddEmployeeModal from '../../components/dashboard/staff/employeetabcomponents/AddEmployeeModal';
 import EditEmployeeModal from '../../components/dashboard/staff/employeetabcomponents/EditEmployeeModal';
 import DeleteEmployeeModal from '../../components/dashboard/staff/employeetabcomponents/DeleteEmployeeModal';
 import ConfirmationModal from '../../components/ui/ConfirmationModal';
 import { downloadEmployeesCSV, parseEmployeesCSV } from '../../utils/csvUtils';
 import {
-  Search, X, Download, Upload, Eye, Shield,
+  Search, X, Download, Upload, Eye,
   UserCheck, Users, ChevronDown, ChevronRight, Building2
 } from 'lucide-react';
 
@@ -52,9 +51,6 @@ const StaffListPage = () => {
   });
   const [managerToDelete, setManagerToDelete] = useState(null);
   const [deleteManagerLoading, setDeleteManagerLoading] = useState(false);
-  const [editingManagerDetails, setEditingManagerDetails] = useState(null);
-  const [editDetailsLoading, setEditDetailsLoading] = useState(false);
-  const [managingPermissionsFor, setManagingPermissionsFor] = useState(null);
   const [resendingEmail, setResendingEmail] = useState(null);
 
   // Deleted managers
@@ -505,58 +501,6 @@ const StaffListPage = () => {
     }
   };
 
-  const handleEditManagerDetails = (manager) => {
-    const managerVenues = managers.filter(m => m.user_id === manager.user_id).map(m => m.venue_id);
-    setEditingManagerDetails({
-      ...manager,
-      first_name: manager.users?.first_name || '',
-      last_name: manager.users?.last_name || '',
-      email: manager.users?.email || '',
-      venue_ids: managerVenues
-    });
-  };
-
-  const handleEditManagerVenueToggle = (venueIdToToggle) => {
-    setEditingManagerDetails(prev => ({
-      ...prev,
-      venue_ids: prev.venue_ids.includes(venueIdToToggle)
-        ? prev.venue_ids.filter(id => id !== venueIdToToggle)
-        : [...prev.venue_ids, venueIdToToggle]
-    }));
-  };
-
-  const handleSaveManagerDetails = async () => {
-    if (!editingManagerDetails) return;
-    setEditDetailsLoading(true);
-    try {
-      const { error: deleteError } = await supabase
-        .from('staff')
-        .delete()
-        .eq('user_id', editingManagerDetails.user_id);
-
-      if (deleteError) throw new Error('Failed to update venue assignments: ' + deleteError.message);
-
-      if (editingManagerDetails.venue_ids.length > 0) {
-        const newStaffRecords = editingManagerDetails.venue_ids.map(vid => ({
-          user_id: editingManagerDetails.user_id,
-          venue_id: vid,
-          role: 'manager'
-        }));
-
-        const { error: insertError } = await supabase.from('staff').insert(newStaffRecords);
-        if (insertError) throw new Error('Failed to assign venues: ' + insertError.message);
-      }
-
-      setMessage('Manager venue assignments updated successfully!');
-      setEditingManagerDetails(null);
-      await fetchStaffData();
-    } catch (error) {
-      setMessage('Failed to update venue assignments: ' + error.message);
-    } finally {
-      setEditDetailsLoading(false);
-    }
-  };
-
   const handleDeleteManager = async () => {
     if (!managerToDelete) return;
     setDeleteManagerLoading(true);
@@ -867,24 +811,13 @@ const StaffListPage = () => {
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap text-center">
                             <div className="flex items-center justify-center space-x-2">
-                              <PermissionGate permission="managers.invite">
-                                <button
-                                  onClick={() => handleEditManagerDetails(manager)}
-                                  className="text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 text-sm font-medium"
-                                >
-                                  Edit
-                                </button>
-                              </PermissionGate>
-
-                              <PermissionGate permission="managers.permissions">
-                                <button
-                                  onClick={() => setManagingPermissionsFor(manager)}
-                                  className="text-purple-600 dark:text-purple-400 hover:text-purple-800 dark:hover:text-purple-300 text-sm font-medium flex items-center gap-1"
-                                >
-                                  <Shield className="w-3.5 h-3.5" />
-                                  Permissions
-                                </button>
-                              </PermissionGate>
+                              <button
+                                onClick={() => navigate(`/staff/managers/${manager.user_id}`)}
+                                className="text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 text-sm font-medium flex items-center gap-1"
+                              >
+                                <Eye className="w-3.5 h-3.5" />
+                                View
+                              </button>
 
                               {hasPendingInvitation(manager.users?.email) && (
                                 <PermissionGate permission="managers.invite">
@@ -1238,64 +1171,6 @@ const StaffListPage = () => {
         </div>
       )}
 
-      {/* Edit Manager Details Modal */}
-      {editingManagerDetails && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 dark:bg-opacity-70 flex items-center justify-center z-50 p-4">
-          <div className="bg-white dark:bg-gray-900 rounded-lg w-full max-w-md max-h-[90vh] overflow-y-auto">
-            <div className="p-4 lg:p-6">
-              <h3 className="text-lg lg:text-xl font-medium text-gray-900 dark:text-white mb-4 lg:mb-6">
-                Edit {editingManagerDetails.first_name} {editingManagerDetails.last_name}
-              </h3>
-
-              <div className="space-y-4 lg:space-y-6">
-                <div className="text-sm text-gray-600 dark:text-gray-400 mb-4">
-                  <span className="font-medium">Email:</span> {editingManagerDetails.email}
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">Venue Access</label>
-                  <div className="border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 rounded-lg p-3 max-h-64 overflow-y-auto">
-                    <div className="space-y-2">
-                      {allVenues.map(venue => (
-                        <label key={venue.id} className="flex items-center space-x-3 p-2 hover:bg-gray-50 dark:hover:bg-gray-700 rounded cursor-pointer">
-                          <input
-                            type="checkbox"
-                            checked={editingManagerDetails.venue_ids.includes(venue.id)}
-                            onChange={() => handleEditManagerVenueToggle(venue.id)}
-                            className="rounded border-gray-300 dark:border-gray-600 text-blue-600 focus:ring-blue-500 h-4 w-4"
-                            disabled={editDetailsLoading}
-                          />
-                          <span className="text-sm text-gray-700 dark:text-gray-300 flex-1">{venue.name}</span>
-                        </label>
-                      ))}
-                    </div>
-                  </div>
-                  <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">Select venues this manager should have access to</p>
-                </div>
-
-                <div className="flex flex-col sm:flex-row justify-end space-y-3 sm:space-y-0 sm:space-x-3 pt-4 border-t border-gray-200 dark:border-gray-700">
-                  <button
-                    onClick={() => setEditingManagerDetails(null)}
-                    className="w-full sm:w-auto px-6 py-2 text-gray-600 dark:text-gray-300 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 text-sm font-medium"
-                  >
-                    Cancel
-                  </button>
-                  <Button
-                    variant="primary"
-                    onClick={handleSaveManagerDetails}
-                    loading={editDetailsLoading}
-                    disabled={editingManagerDetails.venue_ids.length === 0}
-                    className="w-full sm:w-auto"
-                  >
-                    {editDetailsLoading ? 'Saving...' : 'Save Changes'}
-                  </Button>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
-
       {/* Delete Manager Confirmation Modal */}
       {managerToDelete && (
         <div className="fixed inset-0 bg-black bg-opacity-50 dark:bg-opacity-70 flex items-center justify-center z-50 p-4">
@@ -1339,19 +1214,6 @@ const StaffListPage = () => {
             </div>
           </div>
         </div>
-      )}
-
-      {/* Permissions Manager Modal */}
-      {managingPermissionsFor && (
-        <PermissionsManager
-          userId={managingPermissionsFor.user_id}
-          userName={`${managingPermissionsFor.users?.first_name || ''} ${managingPermissionsFor.users?.last_name || ''}`.trim()}
-          onClose={() => setManagingPermissionsFor(null)}
-          onSave={() => {
-            setManagingPermissionsFor(null);
-            setMessage('Permissions updated successfully!');
-          }}
-        />
       )}
     </div>
   );

@@ -210,6 +210,7 @@ const ModernHeader = ({ sidebarCollapsed, setSidebarCollapsed, trialInfo }) => {
       if (currentPath === '/staff/roles') return 'Role configuration';
       if (currentPath === '/staff/locations') return 'Location management';
       if (currentPath.startsWith('/staff/employees/')) return 'Employee details';
+      if (currentPath.startsWith('/staff/managers/')) return 'Manager details';
       if (currentPath.startsWith('/staff-member/')) return 'Staff member details';
       return 'Team management';
     }
