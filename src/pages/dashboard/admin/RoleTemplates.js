@@ -154,10 +154,18 @@ const RoleTemplates = () => {
     try {
       setSaving(true);
 
+      // Generate a unique code from the name
+      const baseCode = newTemplate.name
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, '_')
+        .replace(/^_|_$/g, '');
+      const uniqueCode = `custom_${baseCode}_${Date.now()}`;
+
       // Create the template
       const { data: createdTemplate, error: templateError } = await supabase
         .from('role_templates')
         .insert({
+          code: uniqueCode,
           name: newTemplate.name,
           description: newTemplate.description,
           account_id: accountId,
