@@ -46,44 +46,60 @@ const ManagerPermissions = () => {
       // Get all venues for this account
       const { data: venues } = await supabase
         .from('venues')
-        .select('id')
+        .select('id, name')
         .eq('account_id', userData.account_id);
 
       const venueIds = venues?.map(v => v.id) || [];
 
-      // Get all managers (staff with role = 'manager') across all venues
-      const { data: staffData } = await supabase
+      // Get all staff with role = 'manager' across all venues
+      const { data: staffData, error: staffError } = await supabase
         .from('staff')
-        .select(`
-          id,
-          user_id,
-          venue_id,
-          first_name,
-          last_name,
-          email,
-          role,
-          venues(id, name)
-        `)
+        .select('id, user_id, venue_id, role')
         .in('venue_id', venueIds)
         .eq('role', 'manager');
 
-      // Group by user_id (if available) or by email to get unique managers with their venues
-      const managerMap = new Map();
-      staffData?.forEach(staff => {
-        // Use user_id if available, otherwise use email as key
-        const key = staff.user_id || staff.email || staff.id;
+      if (staffError || !staffData || staffData.length === 0) {
+        setManagers([]);
+        return;
+      }
 
-        const existing = managerMap.get(key);
+      // Get unique user IDs
+      const userIds = [...new Set(staffData.map(s => s.user_id))].filter(id => id !== null && id !== undefined);
+
+      if (userIds.length === 0) {
+        setManagers([]);
+        return;
+      }
+
+      // Fetch user details
+      const { data: usersData } = await supabase
+        .from('users')
+        .select('id, email, first_name, last_name')
+        .in('id', userIds)
+        .is('deleted_at', null);
+
+      // Create venues lookup map
+      const venuesMap = new Map(venues.map(v => [v.id, v]));
+
+      // Join staff with users and venues, then group by user_id
+      const managerMap = new Map();
+      staffData.forEach(staff => {
+        const foundUser = usersData?.find(u => u.id === staff.user_id);
+        const foundVenue = venuesMap.get(staff.venue_id);
+
+        if (!foundUser) return; // Skip if user not found (deleted)
+
+        const existing = managerMap.get(staff.user_id);
         if (existing) {
-          existing.venues.push(staff.venues);
+          if (foundVenue) existing.venues.push(foundVenue);
         } else {
-          managerMap.set(key, {
+          managerMap.set(staff.user_id, {
             id: staff.id,
             user_id: staff.user_id,
-            email: staff.email,
-            first_name: staff.first_name,
-            last_name: staff.last_name,
-            venues: [staff.venues]
+            email: foundUser.email,
+            first_name: foundUser.first_name,
+            last_name: foundUser.last_name,
+            venues: foundVenue ? [foundVenue] : []
           });
         }
       });
