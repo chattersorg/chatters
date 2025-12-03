@@ -57,7 +57,6 @@ const ManagerDetail = () => {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState('');
-  const [activeTab, setActiveTab] = useState('details');
 
   // Manager edit state
   const [editedVenueIds, setEditedVenueIds] = useState([]);
@@ -84,14 +83,8 @@ const ManagerDetail = () => {
   useEffect(() => {
     if (!managerId) return;
     fetchManager();
+    fetchPermissionsData();
   }, [managerId]);
-
-  useEffect(() => {
-    if (!managerId) return;
-    if (activeTab === 'permissions') {
-      fetchPermissionsData();
-    }
-  }, [managerId, activeTab]);
 
   const fetchManager = async () => {
     setLoading(true);
@@ -365,10 +358,8 @@ const ManagerDetail = () => {
 
   if (loading) {
     return (
-      <div className="space-y-6">
-        <div className="flex items-center justify-center py-12">
-          <span className="text-gray-500 dark:text-gray-400 text-sm lg:text-base">Loading manager details...</span>
-        </div>
+      <div className="flex items-center justify-center py-12">
+        <span className="text-gray-500 dark:text-gray-400 text-sm lg:text-base">Loading manager details...</span>
       </div>
     );
   }
@@ -402,149 +393,144 @@ const ManagerDetail = () => {
         Back to Staff List
       </button>
 
-      <ChartCard
-        title="Manager Details"
-        subtitle={`Manage information for ${manager.first_name} ${manager.last_name}`}
-        actions={
-          <PermissionGate permission="managers.remove">
-            <button
-              onClick={() => setShowDeleteModal(true)}
-              disabled={saving || deleting}
-              className="px-3 py-2 rounded-lg bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400 hover:bg-red-200 dark:hover:bg-red-900/50 transition-colors text-sm font-medium flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              <Trash2 className="w-4 h-4" />
-              Delete
-            </button>
-          </PermissionGate>
-        }
-      >
-        <div className="space-y-6">
-          {/* Manager Preview Card */}
-          <div className="bg-gradient-to-br from-purple-50 to-indigo-50 dark:from-purple-900/20 dark:to-indigo-900/20 rounded-xl p-6 border border-purple-200 dark:border-purple-800">
-            <div className="flex items-center gap-6">
-              <div className="w-24 h-24 rounded-full bg-purple-600 flex items-center justify-center text-3xl font-bold text-white shadow-lg">
-                {`${manager.first_name?.[0] || ''}${manager.last_name?.[0] || ''}`.toUpperCase()}
+      {/* Success/Error Message */}
+      {message && (
+        <div className={`p-4 rounded-lg text-sm ${
+          message.includes('success')
+            ? 'bg-green-50 dark:bg-green-900/30 text-green-700 dark:text-green-400 border border-green-200 dark:border-green-800'
+            : 'bg-red-50 dark:bg-red-900/30 text-red-700 dark:text-red-400 border border-red-200 dark:border-red-800'
+        }`}>
+          {message}
+        </div>
+      )}
+
+      {/* Two Column Layout */}
+      <div className="flex flex-col lg:flex-row gap-6">
+        {/* Left Column - Sticky Manager Info */}
+        <div className="lg:w-80 flex-shrink-0">
+          <div className="lg:sticky lg:top-6">
+            <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl overflow-hidden">
+              {/* Manager Header */}
+              <div className="bg-gradient-to-br from-purple-500 to-indigo-600 p-6 text-center">
+                <div className="w-20 h-20 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center text-2xl font-bold text-white mx-auto mb-3 border-2 border-white/30">
+                  {`${manager.first_name?.[0] || ''}${manager.last_name?.[0] || ''}`.toUpperCase()}
+                </div>
+                <h2 className="text-xl font-bold text-white">
+                  {manager.first_name} {manager.last_name}
+                </h2>
+                <span className="inline-block mt-2 px-3 py-1 bg-white/20 backdrop-blur-sm text-white text-xs font-medium rounded-full">
+                  Manager
+                </span>
               </div>
-              <div className="flex-1">
-                <div className="flex items-center gap-3 mb-2">
-                  <h2 className="text-3xl font-bold text-gray-900 dark:text-white">
-                    {manager.first_name} {manager.last_name}
-                  </h2>
-                  <span className="px-3 py-1 bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-400 text-sm font-medium rounded-full">
-                    Manager
+
+              {/* Manager Details */}
+              <div className="p-4 space-y-3">
+                <div className="flex items-center gap-3 p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
+                  <Mail className="w-4 h-4 text-purple-600 dark:text-purple-400 flex-shrink-0" />
+                  <span className="text-sm text-gray-700 dark:text-gray-300 truncate">{manager.email}</span>
+                </div>
+                <div className="flex items-center gap-3 p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
+                  <Building2 className="w-4 h-4 text-purple-600 dark:text-purple-400 flex-shrink-0" />
+                  <span className="text-sm text-gray-700 dark:text-gray-300">
+                    {managerVenues.length} venue{managerVenues.length !== 1 ? 's' : ''} assigned
                   </span>
                 </div>
-                <div className="flex flex-wrap gap-3 text-sm">
-                  <div className="flex items-center gap-2 bg-white dark:bg-gray-800 px-3 py-1.5 rounded-lg shadow-sm">
-                    <Mail className="w-4 h-4 text-purple-600 dark:text-purple-400" />
-                    <span className="font-medium text-gray-700 dark:text-gray-300">{manager.email}</span>
-                  </div>
-                  <div className="flex items-center gap-2 bg-white dark:bg-gray-800 px-3 py-1.5 rounded-lg shadow-sm">
-                    <Building2 className="w-4 h-4 text-purple-600 dark:text-purple-400" />
-                    <span className="font-medium text-gray-700 dark:text-gray-300">
-                      {managerVenues.length} venue{managerVenues.length !== 1 ? 's' : ''}
-                    </span>
-                  </div>
+                <div className="flex items-center gap-3 p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
+                  <Shield className="w-4 h-4 text-purple-600 dark:text-purple-400 flex-shrink-0" />
+                  <span className="text-sm text-gray-700 dark:text-gray-300">
+                    {selectedTemplate
+                      ? roleTemplates.find(t => t.id === selectedTemplate)?.name || 'Template'
+                      : `${customPermissions.length} custom permissions`
+                    }
+                  </span>
                 </div>
               </div>
-            </div>
-          </div>
 
-          {/* Tabs */}
-          <div className="border-b border-gray-200 dark:border-gray-700">
-            <nav className="-mb-px flex space-x-8">
-              <button
-                onClick={() => setActiveTab('details')}
-                className={`group inline-flex items-center py-4 px-1 border-b-2 font-medium text-sm ${
-                  activeTab === 'details'
-                    ? 'border-purple-500 text-purple-600 dark:text-purple-400'
-                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300'
-                }`}
-              >
-                <User className={`w-4 h-4 mr-2 ${
-                  activeTab === 'details' ? 'text-purple-500 dark:text-purple-400' : 'text-gray-400 group-hover:text-gray-500'
-                }`} />
-                Details
-              </button>
-              <PermissionGate permission="managers.permissions">
-                <button
-                  onClick={() => setActiveTab('permissions')}
-                  className={`group inline-flex items-center py-4 px-1 border-b-2 font-medium text-sm ${
-                    activeTab === 'permissions'
-                      ? 'border-purple-500 text-purple-600 dark:text-purple-400'
-                      : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300'
-                  }`}
-                >
-                  <Shield className={`w-4 h-4 mr-2 ${
-                    activeTab === 'permissions' ? 'text-purple-500 dark:text-purple-400' : 'text-gray-400 group-hover:text-gray-500'
-                  }`} />
-                  Permissions
-                </button>
+              {/* Delete Button */}
+              <PermissionGate permission="managers.remove">
+                <div className="p-4 border-t border-gray-200 dark:border-gray-800">
+                  <button
+                    onClick={() => setShowDeleteModal(true)}
+                    disabled={saving || deleting}
+                    className="w-full px-4 py-2 rounded-lg bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 hover:bg-red-100 dark:hover:bg-red-900/30 transition-colors text-sm font-medium flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                    Delete Manager
+                  </button>
+                </div>
               </PermissionGate>
-            </nav>
-          </div>
-
-          {/* Tab Content */}
-          {activeTab === 'details' && (
-            <div className="space-y-6">
-              {/* Venue Assignments */}
-              <div>
-                <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Venue Access</h3>
-                <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">
-                  Select which venues this manager can access
-                </p>
-                <PermissionGate permission="managers.invite">
-                  <div className="border border-gray-200 dark:border-gray-700 rounded-lg p-4 max-h-64 overflow-y-auto">
-                    <div className="space-y-2">
-                      {allVenues.map(venue => (
-                        <label key={venue.id} className="flex items-center space-x-3 p-2 hover:bg-gray-50 dark:hover:bg-gray-800 rounded cursor-pointer">
-                          <input
-                            type="checkbox"
-                            checked={editedVenueIds.includes(venue.id)}
-                            onChange={() => handleVenueToggle(venue.id)}
-                            className="rounded border-gray-300 dark:border-gray-600 text-purple-600 focus:ring-purple-500 h-4 w-4"
-                            disabled={saving}
-                          />
-                          <span className="text-sm text-gray-700 dark:text-gray-300 flex-1">{venue.name}</span>
-                        </label>
-                      ))}
-                    </div>
-                  </div>
-
-                  {hasChanges && (
-                    <div className="mt-4 flex justify-end">
-                      <Button
-                        variant="primary"
-                        onClick={handleSaveVenues}
-                        loading={saving}
-                      >
-                        <Save className="w-4 h-4 mr-2" />
-                        Save Changes
-                      </Button>
-                    </div>
-                  )}
-                </PermissionGate>
-              </div>
             </div>
-          )}
+          </div>
+        </div>
 
-          {activeTab === 'permissions' && (
-            <div className="space-y-6">
+        {/* Right Column - Configurable Sections */}
+        <div className="flex-1 space-y-6">
+          {/* Venue Access Section */}
+          <ChartCard
+            title="Venue Access"
+            subtitle="Select which venues this manager can access"
+          >
+            <PermissionGate permission="managers.invite">
+              <div className="space-y-4">
+                <div className="border border-gray-200 dark:border-gray-700 rounded-lg divide-y divide-gray-200 dark:divide-gray-700 max-h-64 overflow-y-auto">
+                  {allVenues.map(venue => (
+                    <label
+                      key={venue.id}
+                      className="flex items-center gap-3 p-3 hover:bg-gray-50 dark:hover:bg-gray-800 cursor-pointer transition-colors"
+                    >
+                      <input
+                        type="checkbox"
+                        checked={editedVenueIds.includes(venue.id)}
+                        onChange={() => handleVenueToggle(venue.id)}
+                        className="rounded border-gray-300 dark:border-gray-600 text-purple-600 focus:ring-purple-500 h-4 w-4"
+                        disabled={saving}
+                      />
+                      <Building2 className="w-4 h-4 text-gray-400" />
+                      <span className="text-sm text-gray-700 dark:text-gray-300 flex-1">{venue.name}</span>
+                      {editedVenueIds.includes(venue.id) && (
+                        <Check className="w-4 h-4 text-green-500" />
+                      )}
+                    </label>
+                  ))}
+                </div>
+
+                {hasChanges && (
+                  <div className="flex justify-end">
+                    <Button
+                      variant="primary"
+                      onClick={handleSaveVenues}
+                      loading={saving}
+                    >
+                      <Save className="w-4 h-4 mr-2" />
+                      Save Venue Access
+                    </Button>
+                  </div>
+                )}
+              </div>
+            </PermissionGate>
+          </ChartCard>
+
+          {/* Permissions Section */}
+          <PermissionGate permission="managers.permissions">
+            <ChartCard
+              title="Permissions"
+              subtitle="Configure what this manager can access in the dashboard"
+            >
               {permissionsLoading ? (
                 <div className="flex items-center justify-center py-12">
                   <RefreshCw className="w-8 h-8 text-purple-600 dark:text-purple-400 animate-spin" />
                 </div>
               ) : (
-                <>
+                <div className="space-y-6">
                   {/* Permission Scope */}
                   <div>
                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                       Permission Scope
                     </label>
-                    <div className="flex gap-3">
+                    <div className="grid grid-cols-2 gap-3">
                       <button
                         onClick={() => setPermissionScope('account')}
-                        className={`flex-1 px-4 py-3 rounded-lg border-2 transition-colors ${
+                        className={`px-4 py-3 rounded-lg border-2 transition-colors text-left ${
                           permissionScope === 'account'
                             ? 'border-purple-500 bg-purple-50 dark:bg-purple-900/20 text-purple-700 dark:text-purple-400'
                             : 'border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600'
@@ -557,7 +543,7 @@ const ManagerDetail = () => {
                       </button>
                       <button
                         onClick={() => setPermissionScope('venue')}
-                        className={`flex-1 px-4 py-3 rounded-lg border-2 transition-colors ${
+                        className={`px-4 py-3 rounded-lg border-2 transition-colors text-left ${
                           permissionScope === 'venue'
                             ? 'border-purple-500 bg-purple-50 dark:bg-purple-900/20 text-purple-700 dark:text-purple-400'
                             : 'border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600'
@@ -635,7 +621,7 @@ const ManagerDetail = () => {
                         <div className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-2">
                           Custom Templates
                         </div>
-                        <div className="grid grid-cols-2 gap-2">
+                        <div className="grid grid-cols-2 gap-2 mb-4">
                           {roleTemplates.filter(t => !t.is_system).map(template => (
                             <button
                               key={template.id}
@@ -664,12 +650,12 @@ const ManagerDetail = () => {
                     )}
                   </div>
 
-                  {/* Custom Permissions */}
+                  {/* Individual Permissions */}
                   <div>
                     <div className="flex items-center justify-between mb-3">
                       <div>
                         <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                          Permissions
+                          Individual Permissions
                         </label>
                         <p className="text-xs text-gray-500 dark:text-gray-400">
                           {selectedTemplate ? 'Based on selected role template - click "Edit Permissions" to customise' : 'Custom permissions selected'}
@@ -689,7 +675,6 @@ const ManagerDetail = () => {
                       ) : (
                         <button
                           onClick={() => {
-                            // Reset to first available template
                             const firstTemplate = roleTemplates[0];
                             if (firstTemplate) {
                               setSelectedTemplate(firstTemplate.id);
@@ -705,15 +690,15 @@ const ManagerDetail = () => {
                     </div>
 
                     {/* Custom mode info banner */}
-                    {!selectedTemplate && customPermissions.length >= 0 && (
-                      <div className="bg-purple-50 dark:bg-purple-900/20 border border-purple-200 dark:border-purple-800 rounded-lg p-3 flex items-start gap-3">
+                    {!selectedTemplate && (
+                      <div className="bg-purple-50 dark:bg-purple-900/20 border border-purple-200 dark:border-purple-800 rounded-lg p-3 flex items-start gap-3 mb-3">
                         <Edit2 className="w-4 h-4 text-purple-600 dark:text-purple-400 mt-0.5 flex-shrink-0" />
                         <div className="flex-1">
                           <p className="text-sm font-medium text-purple-900 dark:text-purple-100">
                             Custom Permissions Mode
                           </p>
                           <p className="text-xs text-purple-700 dark:text-purple-300 mt-0.5">
-                            You can now toggle individual permissions below. Click "Use Template" to switch back to a predefined role.
+                            Toggle individual permissions below. Click "Use Template" to switch back to a predefined role.
                           </p>
                         </div>
                       </div>
@@ -826,23 +811,12 @@ const ManagerDetail = () => {
                       Save Permissions
                     </Button>
                   </div>
-                </>
+                </div>
               )}
-            </div>
-          )}
-
-          {/* Success/Error Message */}
-          {message && (
-            <div className={`p-4 rounded-lg text-sm ${
-              message.includes('success')
-                ? 'bg-green-50 dark:bg-green-900/30 text-green-700 dark:text-green-400 border border-green-200 dark:border-green-800'
-                : 'bg-red-50 dark:bg-red-900/30 text-red-700 dark:text-red-400 border border-red-200 dark:border-red-800'
-            }`}>
-              {message}
-            </div>
-          )}
+            </ChartCard>
+          </PermissionGate>
         </div>
-      </ChartCard>
+      </div>
 
       {/* Delete Confirmation Modal */}
       {showDeleteModal && (

@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useVenue } from '../../../context/VenueContext';
+import { usePermissions } from '../../../context/PermissionsContext';
 import { supabase } from '../../../utils/supabase';
 import { isDevSite } from '../../../utils/domainUtils';
 import ImpersonationBanner from '../../../components/ImpersonationBanner';
@@ -183,16 +184,16 @@ const adminNavItems = [
 ];
 
 // Account settings items for bottom section
-const getAccountItems = (userRole, trialInfo) => {
+const getAccountItems = (userRole, trialInfo, hasBillingPermission) => {
   const items = [
     { label: 'Profile', path: '/account/profile', icon: User }
   ];
-  
-  // Show billing for master users OR if trial is expired (special billing access)
-  if (userRole === 'master' || trialInfo?.isExpired) {
+
+  // Show billing for master users, users with billing.view permission, OR if trial is expired
+  if (userRole === 'master' || hasBillingPermission || trialInfo?.isExpired) {
     items.push({ label: 'Billing', path: '/account/billing', icon: CreditCard });
   }
-  
+
   return items;
 };
 
@@ -209,9 +210,13 @@ const Sidebar = ({ collapsed, setCollapsed }) => {
     setCurrentVenue,
     userRole
   } = useVenue();
+  const { hasPermission } = usePermissions();
 
-  // Get account items based on user role and trial status
-  const accountItems = getAccountItems(userRole, trialInfo);
+  // Check if user has billing permission
+  const hasBillingPermission = hasPermission('billing.view');
+
+  // Get account items based on user role, trial status, and permissions
+  const accountItems = getAccountItems(userRole, trialInfo, hasBillingPermission);
 
   // Determine if user has access to multiple venues
   const hasMultipleVenues = allVenues.length > 1;
