@@ -672,21 +672,52 @@ const ManagerDetail = () => {
                           Permissions
                         </label>
                         <p className="text-xs text-gray-500 dark:text-gray-400">
-                          {selectedTemplate ? 'Based on selected role template' : 'Custom permissions selected'}
+                          {selectedTemplate ? 'Based on selected role template - click "Edit Permissions" to customise' : 'Custom permissions selected'}
                         </p>
                       </div>
-                      {selectedTemplate && (
+                      {selectedTemplate ? (
                         <button
                           onClick={() => {
                             setSelectedTemplate(null);
                             setCustomPermissions(templatePermissions);
                           }}
-                          className="text-xs text-purple-600 dark:text-purple-400 hover:underline"
+                          className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-purple-600 dark:text-purple-400 bg-purple-50 dark:bg-purple-900/20 hover:bg-purple-100 dark:hover:bg-purple-900/30 rounded-lg transition-colors"
                         >
-                          Customise
+                          <Edit2 className="w-3.5 h-3.5" />
+                          Edit Permissions
+                        </button>
+                      ) : (
+                        <button
+                          onClick={() => {
+                            // Reset to first available template
+                            const firstTemplate = roleTemplates[0];
+                            if (firstTemplate) {
+                              setSelectedTemplate(firstTemplate.id);
+                              setCustomPermissions([]);
+                            }
+                          }}
+                          className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-gray-600 dark:text-gray-400 bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-lg transition-colors"
+                        >
+                          <RefreshCw className="w-3.5 h-3.5" />
+                          Use Template
                         </button>
                       )}
                     </div>
+
+                    {/* Custom mode info banner */}
+                    {!selectedTemplate && customPermissions.length >= 0 && (
+                      <div className="bg-purple-50 dark:bg-purple-900/20 border border-purple-200 dark:border-purple-800 rounded-lg p-3 flex items-start gap-3">
+                        <Edit2 className="w-4 h-4 text-purple-600 dark:text-purple-400 mt-0.5 flex-shrink-0" />
+                        <div className="flex-1">
+                          <p className="text-sm font-medium text-purple-900 dark:text-purple-100">
+                            Custom Permissions Mode
+                          </p>
+                          <p className="text-xs text-purple-700 dark:text-purple-300 mt-0.5">
+                            You can now toggle individual permissions below. Click "Use Template" to switch back to a predefined role.
+                          </p>
+                        </div>
+                      </div>
+                    )}
 
                     <div className="space-y-2">
                       {Object.entries(permissionsByCategory).map(([category, perms]) => {
@@ -729,24 +760,31 @@ const ManagerDetail = () => {
                               <div className="px-4 py-2 space-y-1 bg-white dark:bg-gray-900">
                                 {perms.map(perm => {
                                   const enabled = isPermissionEnabled(perm.code);
+                                  const isLocked = !!selectedTemplate;
                                   return (
                                     <label
                                       key={perm.code}
-                                      className={`flex items-center gap-3 p-2 rounded-lg cursor-pointer transition-colors ${
-                                        enabled
-                                          ? 'bg-green-50 dark:bg-green-900/10'
-                                          : 'hover:bg-gray-50 dark:hover:bg-gray-800/50'
-                                      } ${selectedTemplate ? 'opacity-75 cursor-default' : ''}`}
+                                      className={`flex items-center gap-3 p-2 rounded-lg transition-colors ${
+                                        isLocked
+                                          ? 'cursor-default'
+                                          : 'cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800/50'
+                                      } ${enabled ? 'bg-green-50 dark:bg-green-900/10' : ''}`}
                                     >
                                       <input
                                         type="checkbox"
                                         checked={enabled}
-                                        onChange={() => !selectedTemplate && togglePermission(perm.code)}
-                                        disabled={!!selectedTemplate}
-                                        className="w-4 h-4 rounded border-gray-300 dark:border-gray-600 text-purple-600 focus:ring-purple-500 disabled:opacity-50"
+                                        onChange={() => !isLocked && togglePermission(perm.code)}
+                                        disabled={isLocked}
+                                        className={`w-4 h-4 rounded border-gray-300 dark:border-gray-600 text-purple-600 focus:ring-purple-500 ${
+                                          isLocked ? 'opacity-50 cursor-not-allowed' : ''
+                                        }`}
                                       />
                                       <div className="flex-1">
-                                        <div className="text-sm font-medium text-gray-900 dark:text-white">
+                                        <div className={`text-sm font-medium ${
+                                          isLocked
+                                            ? 'text-gray-500 dark:text-gray-400'
+                                            : 'text-gray-900 dark:text-white'
+                                        }`}>
                                           {perm.name}
                                         </div>
                                         {perm.description && (
@@ -755,6 +793,9 @@ const ManagerDetail = () => {
                                           </div>
                                         )}
                                       </div>
+                                      {isLocked && (
+                                        <Shield className="w-3.5 h-3.5 text-gray-400 dark:text-gray-500" />
+                                      )}
                                     </label>
                                   );
                                 })}
