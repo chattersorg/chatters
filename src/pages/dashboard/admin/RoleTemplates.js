@@ -3,10 +3,10 @@ import { useNavigate } from 'react-router-dom';
 import { supabase } from '../../../utils/supabase';
 import { useVenue } from '../../../context/VenueContext';
 import usePageTitle from '../../../hooks/usePageTitle';
+import { ChartCard } from '../../../components/dashboard/layout/ModernCard';
+import { Button } from '../../../components/ui/button';
 import {
   Key,
-  Shield,
-  ChevronRight,
   ChevronDown,
   Check,
   Plus,
@@ -249,46 +249,19 @@ const RoleTemplates = () => {
     return null;
   }
 
-  if (loading) {
-    return (
-      <div className="p-4 lg:p-6 max-w-4xl mx-auto">
-        <div className="flex items-center justify-center py-12">
-          <RefreshCw className="w-8 h-8 text-rose-600 animate-spin" />
-        </div>
-      </div>
-    );
-  }
-
   return (
-    <div className="p-4 lg:p-6 max-w-4xl mx-auto">
-      {/* Header */}
-      <div className="mb-6">
-        <div className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400 mb-2">
-          <Shield className="w-4 h-4" />
-          <span>Administration</span>
-          <ChevronRight className="w-4 h-4" />
-          <span>Permissions</span>
-        </div>
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Role Templates</h1>
-            <p className="text-gray-600 dark:text-gray-400 mt-1">
-              Create and manage permission templates for quick manager setup
-            </p>
-          </div>
-          <button
-            onClick={() => setShowCreateModal(true)}
-            className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors text-sm font-medium"
-          >
-            <Plus className="w-4 h-4" />
-            Create Template
-          </button>
-        </div>
+    <div className="space-y-6">
+      {/* Page Header */}
+      <div className="mb-2">
+        <h1 className="text-2xl font-semibold text-gray-900 dark:text-white">Role Templates</h1>
+        <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+          Create and manage permission templates for quick manager setup
+        </p>
       </div>
 
       {/* Message */}
       {message && (
-        <div className={`mb-4 p-4 rounded-lg text-sm ${
+        <div className={`p-4 rounded-lg text-sm ${
           message.includes('success')
             ? 'bg-green-50 dark:bg-green-900/30 text-green-700 dark:text-green-400 border border-green-200 dark:border-green-800'
             : 'bg-red-50 dark:bg-red-900/30 text-red-700 dark:text-red-400 border border-red-200 dark:border-red-800'
@@ -297,139 +270,157 @@ const RoleTemplates = () => {
         </div>
       )}
 
-      {/* Templates List */}
-      <div className="space-y-4">
-        {templates.length === 0 ? (
-          <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-lg p-8 text-center">
+      {/* Main Content Card */}
+      <ChartCard
+        title="Permission Templates"
+        subtitle="Define reusable permission sets for your managers"
+        actions={
+          <Button
+            variant="primary"
+            onClick={() => setShowCreateModal(true)}
+          >
+            <Plus className="w-4 h-4 mr-2" />
+            Create Template
+          </Button>
+        }
+      >
+        {loading ? (
+          <div className="flex items-center justify-center py-12">
+            <RefreshCw className="w-8 h-8 text-blue-600 animate-spin" />
+          </div>
+        ) : templates.length === 0 ? (
+          <div className="text-center py-12">
             <Key className="w-12 h-12 text-gray-300 dark:text-gray-600 mx-auto mb-3" />
-            <p className="text-gray-500 dark:text-gray-400">No templates found</p>
+            <p className="text-gray-500 dark:text-gray-400 mb-4">No templates found</p>
             <button
               onClick={() => setShowCreateModal(true)}
-              className="mt-4 text-blue-600 dark:text-blue-400 hover:underline text-sm"
+              className="text-blue-600 dark:text-blue-400 hover:underline text-sm font-medium"
             >
               Create your first template
             </button>
           </div>
         ) : (
-          templates.map((template) => (
-            <div
-              key={template.id}
-              className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-lg overflow-hidden"
-            >
-              {/* Template Header */}
+          <div className="space-y-3">
+            {templates.map((template) => (
               <div
-                className="flex items-center justify-between p-4 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors"
-                onClick={() => toggleTemplateExpanded(template.id)}
+                key={template.id}
+                className="border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden"
               >
-                <div className="flex items-center gap-3">
-                  <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${
-                    template.is_system
-                      ? 'bg-gray-100 dark:bg-gray-800'
-                      : 'bg-rose-100 dark:bg-rose-900/30'
-                  }`}>
-                    <Key className={`w-5 h-5 ${
+                {/* Template Header */}
+                <div
+                  className="flex items-center justify-between p-4 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors"
+                  onClick={() => toggleTemplateExpanded(template.id)}
+                >
+                  <div className="flex items-center gap-3">
+                    <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${
                       template.is_system
-                        ? 'text-gray-600 dark:text-gray-400'
-                        : 'text-rose-600 dark:text-rose-400'
+                        ? 'bg-gray-100 dark:bg-gray-800'
+                        : 'bg-blue-100 dark:bg-blue-900/30'
+                    }`}>
+                      <Key className={`w-5 h-5 ${
+                        template.is_system
+                          ? 'text-gray-600 dark:text-gray-400'
+                          : 'text-blue-600 dark:text-blue-400'
+                      }`} />
+                    </div>
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <h3 className="font-medium text-gray-900 dark:text-white">{template.name}</h3>
+                        {template.is_system && (
+                          <span className="px-2 py-0.5 text-xs font-medium bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 rounded">
+                            System
+                          </span>
+                        )}
+                      </div>
+                      <p className="text-sm text-gray-500 dark:text-gray-400">{template.description}</p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <span className="text-sm text-gray-500 dark:text-gray-400">
+                      {template.permissions.length} permissions
+                    </span>
+                    <ChevronDown className={`w-5 h-5 text-gray-400 transition-transform ${
+                      expandedTemplate === template.id ? 'rotate-180' : ''
                     }`} />
                   </div>
-                  <div>
-                    <div className="flex items-center gap-2">
-                      <h3 className="font-medium text-gray-900 dark:text-white">{template.name}</h3>
-                      {template.is_system && (
-                        <span className="px-2 py-0.5 text-xs font-medium bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 rounded">
-                          System
-                        </span>
-                      )}
-                    </div>
-                    <p className="text-sm text-gray-500 dark:text-gray-400">{template.description}</p>
-                  </div>
                 </div>
-                <div className="flex items-center gap-2">
-                  <span className="text-sm text-gray-500 dark:text-gray-400">
-                    {template.permissions.length} permissions
-                  </span>
-                  <ChevronDown className={`w-5 h-5 text-gray-400 transition-transform ${
-                    expandedTemplate === template.id ? 'rotate-180' : ''
-                  }`} />
-                </div>
-              </div>
 
-              {/* Expanded Permissions */}
-              {expandedTemplate === template.id && (
-                <div className="border-t border-gray-200 dark:border-gray-800 p-4">
-                  <div className="space-y-4">
-                    {Object.entries(permissionsByCategory).map(([categoryKey, perms]) => (
-                      <div key={categoryKey}>
-                        <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                          {categoryLabels[categoryKey] || categoryKey}
-                        </h4>
-                        <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
-                          {perms.map((permission) => {
-                            const hasPermission = template.permissions.includes(permission.code);
-                            return (
-                              <label
-                                key={permission.code}
-                                className={`flex items-center gap-2 p-2 rounded-lg border transition-colors ${
-                                  template.is_system
-                                    ? 'cursor-not-allowed opacity-75'
-                                    : 'cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800'
-                                } ${
-                                  hasPermission
-                                    ? 'border-green-200 dark:border-green-800 bg-green-50 dark:bg-green-900/20'
-                                    : 'border-gray-200 dark:border-gray-700'
-                                }`}
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  if (!template.is_system) {
-                                    handlePermissionToggle(template.id, permission.code);
-                                  }
-                                }}
-                              >
-                                <div className={`w-4 h-4 rounded flex items-center justify-center ${
-                                  hasPermission
-                                    ? 'bg-green-500'
-                                    : 'border border-gray-300 dark:border-gray-600'
-                                }`}>
-                                  {hasPermission && <Check className="w-3 h-3 text-white" />}
-                                </div>
-                                <span className="text-sm text-gray-700 dark:text-gray-300">
-                                  {permission.name}
-                                </span>
-                              </label>
-                            );
-                          })}
+                {/* Expanded Permissions */}
+                {expandedTemplate === template.id && (
+                  <div className="border-t border-gray-200 dark:border-gray-700 p-4 bg-gray-50 dark:bg-gray-800/30">
+                    <div className="space-y-4">
+                      {Object.entries(permissionsByCategory).map(([categoryKey, perms]) => (
+                        <div key={categoryKey}>
+                          <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                            {categoryLabels[categoryKey] || categoryKey}
+                          </h4>
+                          <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
+                            {perms.map((permission) => {
+                              const hasPermission = template.permissions.includes(permission.code);
+                              return (
+                                <label
+                                  key={permission.code}
+                                  className={`flex items-center gap-2 p-2 rounded-lg border transition-colors ${
+                                    template.is_system
+                                      ? 'cursor-not-allowed opacity-75'
+                                      : 'cursor-pointer hover:bg-white dark:hover:bg-gray-800'
+                                  } ${
+                                    hasPermission
+                                      ? 'border-green-200 dark:border-green-800 bg-green-50 dark:bg-green-900/20'
+                                      : 'border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900'
+                                  }`}
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    if (!template.is_system) {
+                                      handlePermissionToggle(template.id, permission.code);
+                                    }
+                                  }}
+                                >
+                                  <div className={`w-4 h-4 rounded flex items-center justify-center ${
+                                    hasPermission
+                                      ? 'bg-green-500'
+                                      : 'border border-gray-300 dark:border-gray-600'
+                                  }`}>
+                                    {hasPermission && <Check className="w-3 h-3 text-white" />}
+                                  </div>
+                                  <span className="text-sm text-gray-700 dark:text-gray-300">
+                                    {permission.name}
+                                  </span>
+                                </label>
+                              );
+                            })}
+                          </div>
                         </div>
-                      </div>
-                    ))}
-                  </div>
-
-                  {/* Delete button for custom templates */}
-                  {!template.is_system && (
-                    <div className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700 flex justify-end">
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleDeleteTemplate(template.id);
-                        }}
-                        className="inline-flex items-center gap-2 px-3 py-1.5 text-sm font-medium text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/30 rounded-lg transition-colors"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                        Delete Template
-                      </button>
+                      ))}
                     </div>
-                  )}
-                </div>
-              )}
-            </div>
-          ))
+
+                    {/* Delete button for custom templates */}
+                    {!template.is_system && (
+                      <div className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700 flex justify-end">
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleDeleteTemplate(template.id);
+                          }}
+                          className="inline-flex items-center gap-2 px-3 py-1.5 text-sm font-medium text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/30 rounded-lg transition-colors"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                          Delete Template
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
         )}
-      </div>
+      </ChartCard>
 
       {/* Create Template Modal */}
       {showCreateModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 dark:bg-opacity-70 flex items-center justify-center z-50 p-4">
-          <div className="bg-white dark:bg-gray-900 rounded-lg w-full max-w-lg max-h-[90vh] overflow-y-auto">
+          <div className="bg-white dark:bg-gray-900 rounded-xl w-full max-w-lg max-h-[90vh] overflow-y-auto shadow-xl">
             <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-800 sticky top-0 bg-white dark:bg-gray-900">
               <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
                 Create Role Template
@@ -504,29 +495,21 @@ const RoleTemplates = () => {
               </div>
             </div>
             <div className="flex justify-end gap-3 p-4 border-t border-gray-200 dark:border-gray-800 sticky bottom-0 bg-white dark:bg-gray-900">
-              <button
+              <Button
+                variant="secondary"
                 onClick={() => setShowCreateModal(false)}
-                className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors"
               >
                 Cancel
-              </button>
-              <button
+              </Button>
+              <Button
+                variant="primary"
                 onClick={handleCreateTemplate}
                 disabled={!newTemplate.name || saving}
-                className="px-4 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                loading={saving}
               >
-                {saving ? (
-                  <>
-                    <RefreshCw className="w-4 h-4 animate-spin" />
-                    Creating...
-                  </>
-                ) : (
-                  <>
-                    <Save className="w-4 h-4" />
-                    Create Template
-                  </>
-                )}
-              </button>
+                <Save className="w-4 h-4 mr-2" />
+                {saving ? 'Creating...' : 'Create Template'}
+              </Button>
             </div>
           </div>
         </div>
