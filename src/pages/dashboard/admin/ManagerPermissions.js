@@ -51,33 +51,38 @@ const ManagerPermissions = () => {
 
       const venueIds = venues?.map(v => v.id) || [];
 
-      // Get all managers (staff with is_manager = true) across all venues
+      // Get all managers (staff with role = 'manager') across all venues
       const { data: staffData } = await supabase
         .from('staff')
         .select(`
+          id,
           user_id,
           venue_id,
-          is_manager,
-          venues(id, name),
-          users(id, email, first_name, last_name)
+          first_name,
+          last_name,
+          email,
+          role,
+          venues(id, name)
         `)
         .in('venue_id', venueIds)
-        .eq('is_manager', true);
+        .eq('role', 'manager');
 
-      // Group by user_id to get unique managers with their venues
+      // Group by user_id (if available) or by email to get unique managers with their venues
       const managerMap = new Map();
       staffData?.forEach(staff => {
-        if (!staff.users) return;
+        // Use user_id if available, otherwise use email as key
+        const key = staff.user_id || staff.email || staff.id;
 
-        const existing = managerMap.get(staff.user_id);
+        const existing = managerMap.get(key);
         if (existing) {
           existing.venues.push(staff.venues);
         } else {
-          managerMap.set(staff.user_id, {
+          managerMap.set(key, {
+            id: staff.id,
             user_id: staff.user_id,
-            email: staff.users.email,
-            first_name: staff.users.first_name,
-            last_name: staff.users.last_name,
+            email: staff.email,
+            first_name: staff.first_name,
+            last_name: staff.last_name,
             venues: [staff.venues]
           });
         }
@@ -165,7 +170,7 @@ const ManagerPermissions = () => {
             <tbody className="bg-white dark:bg-gray-900 divide-y divide-gray-100 dark:divide-gray-800">
               {filteredManagers.map((manager) => (
                 <tr
-                  key={manager.user_id}
+                  key={manager.user_id || manager.id}
                   className="hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
                 >
                   <td className="px-6 py-4 whitespace-nowrap">
@@ -205,7 +210,7 @@ const ManagerPermissions = () => {
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-right">
                     <button
-                      onClick={() => navigate(`/staff/managers/${manager.user_id}`)}
+                      onClick={() => navigate(`/staff/managers/${manager.user_id || manager.id}`)}
                       className="inline-flex items-center gap-2 px-3 py-1.5 text-sm font-medium text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 hover:bg-blue-50 dark:hover:bg-blue-900/30 rounded-lg transition-colors"
                     >
                       <Eye className="w-4 h-4" />
