@@ -220,6 +220,13 @@ const ModernHeader = ({ sidebarCollapsed, setSidebarCollapsed, trialInfo }) => {
       return 'Venue layout and table management';
     }
 
+    // Administration subtitles (master only)
+    if (currentPath.startsWith('/admin/permissions')) {
+      if (currentPath === '/admin/permissions/managers') return 'Manage permissions for all managers';
+      if (currentPath === '/admin/permissions/templates') return 'Create and manage role templates';
+      return 'Permission management';
+    }
+
     // Overview
     if (currentSection.id === 'overview') {
       return 'Your performance at a glance';

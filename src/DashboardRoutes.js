@@ -60,6 +60,10 @@ import GoogleReviewsPage from './pages/dashboard/GoogleReviewsSimple';
 import AIInsightsPage from './pages/dashboard/AIInsights';
 import AIChatPage from './pages/dashboard/AIChat';
 
+// Admin pages (master only)
+import ManagerPermissions from './pages/dashboard/admin/ManagerPermissions';
+import RoleTemplates from './pages/dashboard/admin/RoleTemplates';
+
 // Kiosk (venue‑aware, no dashboard frame)
 import KioskPage from './pages/dashboard/KioskPage';
 
@@ -354,6 +358,19 @@ const DashboardRoutes = () => {
         <Route path="/account/billing" element={
           <ProtectedRoute permission="billing.view">
             <AccountBillingPage />
+          </ProtectedRoute>
+        } />
+
+        {/* Administration Section (Master only) */}
+        <Route path="/admin/permissions" element={<Navigate to="/admin/permissions/managers" replace />} />
+        <Route path="/admin/permissions/managers" element={
+          <ProtectedRoute permission="managers.permissions">
+            <ManagerPermissions />
+          </ProtectedRoute>
+        } />
+        <Route path="/admin/permissions/templates" element={
+          <ProtectedRoute permission="managers.permissions">
+            <RoleTemplates />
           </ProtectedRoute>
         } />
 

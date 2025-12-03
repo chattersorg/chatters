@@ -38,7 +38,9 @@ import {
   MessageCircle,
   List,
   LayoutDashboard,
-  Sparkles
+  Sparkles,
+  Shield,
+  Key
 } from 'lucide-react';
 
 // Venue Management Section - Single venue context
@@ -165,6 +167,21 @@ const multiVenueNavItems = [
   }
 ];
 
+// Administration Section - Master-only for account-wide management
+const adminNavItems = [
+  {
+    id: 'permissions',
+    label: 'Permissions',
+    icon: Shield,
+    path: '/admin/permissions',
+    color: 'text-rose-600',
+    subItems: [
+      { label: 'Manager Access', path: '/admin/permissions/managers', icon: Users },
+      { label: 'Role Templates', path: '/admin/permissions/templates', icon: Key }
+    ]
+  }
+];
+
 // Account settings items for bottom section
 const getAccountItems = (userRole, trialInfo) => {
   const items = [
@@ -270,14 +287,18 @@ const Sidebar = ({ collapsed, setCollapsed }) => {
 
   // Auto-open submenu based on current route
   React.useEffect(() => {
-    const allNavItems = [...venueNavItems, ...(hasMultipleVenues ? multiVenueNavItems : [])];
+    const allNavItems = [
+      ...venueNavItems,
+      ...(hasMultipleVenues ? multiVenueNavItems : []),
+      ...(userRole === 'master' ? adminNavItems : [])
+    ];
     const currentItem = allNavItems.find(item =>
       item.subItems && item.subItems.some(subItem => isActive(subItem.path))
     );
     if (currentItem && !collapsed) {
       setActiveSubmenu(currentItem.id);
     }
-  }, [location.pathname, collapsed, hasMultipleVenues]);
+  }, [location.pathname, collapsed, hasMultipleVenues, userRole]);
 
   const toggleSubmenu = (itemId) => {
     if (collapsed) {
@@ -501,6 +522,98 @@ const Sidebar = ({ collapsed, setCollapsed }) => {
 
           {/* Render Multi-Venue Section */}
           {hasMultipleVenues && multiVenueNavItems.map((item) => {
+            const Icon = item.icon;
+            const itemActive = isActive(item.path) || hasActiveSubitem(item.subItems);
+            const showSubmenu = !collapsed && activeSubmenu === item.id && item.subItems;
+
+            return (
+              <div key={item.id} className="mb-1">
+                {/* Main Nav Item */}
+                {item.subItems ? (
+                  <button
+                    onClick={() => toggleSubmenu(item.id)}
+                    className={`w-full flex items-center justify-between px-3 py-2 rounded-lg transition-all duration-200 group ${
+                      itemActive
+                        ? 'bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-gray-100 shadow-sm'
+                        : 'text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-gray-100'
+                    }`}
+                  >
+                    <div className="flex items-center">
+                      <Icon className={`w-5 h-5 ${itemActive ? item.color : 'text-gray-400 dark:text-gray-500 group-hover:text-gray-600 dark:group-hover:text-gray-300'}`} />
+                      {!collapsed && (
+                        <span className="ml-3 font-medium text-sm">{item.label}</span>
+                      )}
+                    </div>
+                    {!collapsed && item.subItems && (
+                      <ChevronRight
+                        className={`w-4 h-4 transition-transform duration-200 ${
+                          showSubmenu ? 'rotate-90' : ''
+                        }`}
+                      />
+                    )}
+                  </button>
+                ) : (
+                  <Link
+                    to={item.path}
+                    onClick={handleMobileLinkClick}
+                    className={`flex items-center justify-between px-3 py-2 rounded-lg transition-all duration-200 group ${
+                      itemActive
+                        ? 'bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-gray-100 shadow-sm'
+                        : 'text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-gray-100'
+                    }`}
+                    title={collapsed ? item.label : ''}
+                  >
+                    <div className="flex items-center">
+                      <Icon className={`w-5 h-5 ${itemActive ? item.color : 'text-gray-400 dark:text-gray-500 group-hover:text-gray-600 dark:group-hover:text-gray-300'}`} />
+                      {!collapsed && (
+                        <span className="ml-3 font-medium text-sm">{item.label}</span>
+                      )}
+                    </div>
+                  </Link>
+                )}
+
+                {/* Submenu Items */}
+                {showSubmenu && (
+                  <div className="ml-2 mt-1 space-y-1 border-l-2 border-gray-100 dark:border-gray-800 pl-4">
+                    {item.subItems.map((subItem) => {
+                      const SubIcon = subItem.icon;
+                      return (
+                        <Link
+                          key={subItem.path}
+                          to={subItem.path}
+                          onClick={handleMobileLinkClick}
+                          className={`flex items-center justify-between px-3 py-2 text-sm rounded-md transition-colors group ${
+                            isActive(subItem.path)
+                              ? 'bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-400 font-medium'
+                              : 'text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800 hover:text-gray-700 dark:hover:text-gray-300'
+                          }`}
+                        >
+                          <div className="flex items-center">
+                            <SubIcon className="w-4 h-4 mr-2" />
+                            {subItem.label}
+                          </div>
+                        </Link>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+            );
+          })}
+
+          {/* Administration Section - Master only */}
+          {userRole === 'master' && !collapsed && (
+            <div className="my-4 px-3">
+              <div className="border-t border-gray-200 dark:border-gray-800 pt-4">
+                <p className="text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wider mb-2">
+                  Administration
+                </p>
+              </div>
+            </div>
+          )}
+
+          {/* Render Administration Section */}
+          {userRole === 'master' && adminNavItems.map((item) => {
             const Icon = item.icon;
             const itemActive = isActive(item.path) || hasActiveSubitem(item.subItems);
             const showSubmenu = !collapsed && activeSubmenu === item.id && item.subItems;
