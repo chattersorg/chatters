@@ -130,13 +130,21 @@ const ManagerDetail = () => {
     try {
       setPermissionsLoading(true);
 
+      // Get current user's account
+      const { data: { user } } = await supabase.auth.getUser();
+      const { data: userData } = await supabase
+        .from('users')
+        .select('account_id')
+        .eq('id', user.id)
+        .single();
+
       // Fetch all permissions
       const { data: perms } = await supabase
         .from('permissions')
         .select('*')
         .order('category', { ascending: true });
 
-      // Fetch role templates with their permissions
+      // Fetch role templates with their permissions (system + account-specific)
       const { data: templates } = await supabase
         .from('role_templates')
         .select(`
@@ -145,7 +153,8 @@ const ManagerDetail = () => {
             permissions (code)
           )
         `)
-        .or('is_system.eq.true,account_id.is.null')
+        .or(`is_system.eq.true,account_id.eq.${userData?.account_id}`)
+        .order('is_system', { ascending: false })
         .order('name', { ascending: true });
 
       // Fetch existing user permissions
@@ -585,31 +594,74 @@ const ManagerDetail = () => {
                     <p className="text-xs text-gray-500 dark:text-gray-400 mb-3">
                       Select a predefined role or customise individual permissions below
                     </p>
-                    <div className="grid grid-cols-2 gap-2">
-                      {roleTemplates.filter(t => t.is_system).map(template => (
-                        <button
-                          key={template.id}
-                          onClick={() => selectTemplate(template.id)}
-                          className={`px-4 py-3 rounded-lg border-2 text-left transition-colors ${
-                            selectedTemplate === template.id
-                              ? 'border-purple-500 bg-purple-50 dark:bg-purple-900/20'
-                              : 'border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600'
-                          }`}
-                        >
-                          <div className="flex items-center justify-between">
-                            <span className="font-medium text-sm text-gray-900 dark:text-white">
-                              {template.name}
-                            </span>
-                            {selectedTemplate === template.id && (
-                              <Check className="w-4 h-4 text-purple-600 dark:text-purple-400" />
-                            )}
-                          </div>
-                          <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                            {template.description}
-                          </div>
-                        </button>
-                      ))}
-                    </div>
+
+                    {/* System Templates */}
+                    {roleTemplates.filter(t => t.is_system).length > 0 && (
+                      <>
+                        <div className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-2">
+                          System Templates
+                        </div>
+                        <div className="grid grid-cols-2 gap-2 mb-4">
+                          {roleTemplates.filter(t => t.is_system).map(template => (
+                            <button
+                              key={template.id}
+                              onClick={() => selectTemplate(template.id)}
+                              className={`px-4 py-3 rounded-lg border-2 text-left transition-colors ${
+                                selectedTemplate === template.id
+                                  ? 'border-purple-500 bg-purple-50 dark:bg-purple-900/20'
+                                  : 'border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600'
+                              }`}
+                            >
+                              <div className="flex items-center justify-between">
+                                <span className="font-medium text-sm text-gray-900 dark:text-white">
+                                  {template.name}
+                                </span>
+                                {selectedTemplate === template.id && (
+                                  <Check className="w-4 h-4 text-purple-600 dark:text-purple-400" />
+                                )}
+                              </div>
+                              <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                                {template.description}
+                              </div>
+                            </button>
+                          ))}
+                        </div>
+                      </>
+                    )}
+
+                    {/* Custom Templates */}
+                    {roleTemplates.filter(t => !t.is_system).length > 0 && (
+                      <>
+                        <div className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-2">
+                          Custom Templates
+                        </div>
+                        <div className="grid grid-cols-2 gap-2">
+                          {roleTemplates.filter(t => !t.is_system).map(template => (
+                            <button
+                              key={template.id}
+                              onClick={() => selectTemplate(template.id)}
+                              className={`px-4 py-3 rounded-lg border-2 text-left transition-colors ${
+                                selectedTemplate === template.id
+                                  ? 'border-purple-500 bg-purple-50 dark:bg-purple-900/20'
+                                  : 'border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600'
+                              }`}
+                            >
+                              <div className="flex items-center justify-between">
+                                <span className="font-medium text-sm text-gray-900 dark:text-white">
+                                  {template.name}
+                                </span>
+                                {selectedTemplate === template.id && (
+                                  <Check className="w-4 h-4 text-purple-600 dark:text-purple-400" />
+                                )}
+                              </div>
+                              <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                                {template.description}
+                              </div>
+                            </button>
+                          ))}
+                        </div>
+                      </>
+                    )}
                   </div>
 
                   {/* Custom Permissions */}

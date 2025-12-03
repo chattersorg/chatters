@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { supabase } from '../../../utils/supabase';
 import { useVenue } from '../../../context/VenueContext';
 import usePageTitle from '../../../hooks/usePageTitle';
 import {
@@ -10,152 +11,252 @@ import {
   Check,
   Plus,
   Trash2,
-  X
+  X,
+  Save,
+  RefreshCw
 } from 'lucide-react';
-
-// Default permission categories and actions
-const PERMISSION_CATEGORIES = {
-  dashboard: {
-    label: 'Dashboard',
-    permissions: [
-      { code: 'dashboard.view', label: 'View Dashboard' }
-    ]
-  },
-  feedback: {
-    label: 'Feedback',
-    permissions: [
-      { code: 'feedback.view', label: 'View Feedback' },
-      { code: 'feedback.edit', label: 'Edit Questions' },
-      { code: 'feedback.export', label: 'Export Data' }
-    ]
-  },
-  reports: {
-    label: 'Reports',
-    permissions: [
-      { code: 'reports.view', label: 'View Reports' },
-      { code: 'reports.export', label: 'Export Reports' }
-    ]
-  },
-  staff: {
-    label: 'Staff',
-    permissions: [
-      { code: 'staff.view', label: 'View Staff' },
-      { code: 'staff.edit', label: 'Edit Employees' }
-    ]
-  },
-  managers: {
-    label: 'Managers',
-    permissions: [
-      { code: 'managers.view', label: 'View Managers' },
-      { code: 'managers.invite', label: 'Invite Managers' },
-      { code: 'managers.delete', label: 'Delete Managers' },
-      { code: 'managers.permissions', label: 'Manage Permissions' }
-    ]
-  },
-  settings: {
-    label: 'Settings',
-    permissions: [
-      { code: 'settings.view', label: 'View Settings' },
-      { code: 'settings.edit', label: 'Edit Settings' },
-      { code: 'settings.branding', label: 'Edit Branding' }
-    ]
-  }
-};
-
-// Default templates
-const DEFAULT_TEMPLATES = [
-  {
-    id: 'full-access',
-    name: 'Full Access',
-    description: 'Complete access to all features',
-    isDefault: true,
-    permissions: Object.values(PERMISSION_CATEGORIES).flatMap(cat => cat.permissions.map(p => p.code))
-  },
-  {
-    id: 'standard',
-    name: 'Standard Manager',
-    description: 'View and edit most features, no manager management',
-    isDefault: true,
-    permissions: [
-      'dashboard.view',
-      'feedback.view', 'feedback.edit', 'feedback.export',
-      'reports.view', 'reports.export',
-      'staff.view', 'staff.edit',
-      'managers.view',
-      'settings.view'
-    ]
-  },
-  {
-    id: 'view-only',
-    name: 'View Only',
-    description: 'Read-only access to view data',
-    isDefault: true,
-    permissions: [
-      'dashboard.view',
-      'feedback.view',
-      'reports.view',
-      'staff.view',
-      'managers.view',
-      'settings.view'
-    ]
-  }
-];
 
 const RoleTemplates = () => {
   usePageTitle('Role Templates');
   const navigate = useNavigate();
   const { userRole } = useVenue();
 
-  const [templates, setTemplates] = useState(DEFAULT_TEMPLATES);
+  const [templates, setTemplates] = useState([]);
+  const [allPermissions, setAllPermissions] = useState([]);
+  const [permissionsByCategory, setPermissionsByCategory] = useState({});
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
   const [expandedTemplate, setExpandedTemplate] = useState(null);
-  const [editingTemplate, setEditingTemplate] = useState(null);
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [newTemplate, setNewTemplate] = useState({ name: '', description: '', permissions: [] });
+  const [message, setMessage] = useState('');
+  const [accountId, setAccountId] = useState(null);
 
   useEffect(() => {
     if (userRole !== 'master') {
       navigate('/dashboard');
       return;
     }
-    // In a real implementation, fetch custom templates from database
+    fetchData();
   }, [userRole, navigate]);
+
+  const fetchData = async () => {
+    try {
+      setLoading(true);
+
+      // Get current user's account
+      const { data: { user } } = await supabase.auth.getUser();
+      const { data: userData } = await supabase
+        .from('users')
+        .select('account_id')
+        .eq('id', user.id)
+        .single();
+
+      if (!userData?.account_id) return;
+      setAccountId(userData.account_id);
+
+      // Fetch all permissions
+      const { data: perms } = await supabase
+        .from('permissions')
+        .select('*')
+        .order('category', { ascending: true });
+
+      setAllPermissions(perms || []);
+
+      // Group permissions by category
+      const grouped = {};
+      (perms || []).forEach(perm => {
+        if (!grouped[perm.category]) grouped[perm.category] = [];
+        grouped[perm.category].push(perm);
+      });
+      setPermissionsByCategory(grouped);
+
+      // Fetch role templates (system + account-specific)
+      const { data: templatesData } = await supabase
+        .from('role_templates')
+        .select(`
+          *,
+          role_template_permissions (
+            permission_id,
+            permissions (code)
+          )
+        `)
+        .or(`is_system.eq.true,account_id.eq.${userData.account_id}`)
+        .order('is_system', { ascending: false })
+        .order('name', { ascending: true });
+
+      // Transform templates to include permissions array
+      const transformedTemplates = (templatesData || []).map(t => ({
+        ...t,
+        permissions: t.role_template_permissions?.map(rtp => rtp.permissions?.code).filter(Boolean) || []
+      }));
+
+      setTemplates(transformedTemplates);
+    } catch (error) {
+      console.error('Error fetching data:', error);
+      setMessage('Failed to load templates');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const toggleTemplateExpanded = (templateId) => {
     setExpandedTemplate(expandedTemplate === templateId ? null : templateId);
   };
 
-  const handlePermissionToggle = (templateId, permissionCode) => {
-    if (templates.find(t => t.id === templateId)?.isDefault) return;
-
-    setTemplates(prev => prev.map(template => {
-      if (template.id !== templateId) return template;
-
-      const hasPermission = template.permissions.includes(permissionCode);
-      return {
-        ...template,
-        permissions: hasPermission
-          ? template.permissions.filter(p => p !== permissionCode)
-          : [...template.permissions, permissionCode]
-      };
-    }));
-  };
-
-  const handleCreateTemplate = () => {
-    const id = `custom-${Date.now()}`;
-    setTemplates(prev => [...prev, { ...newTemplate, id, isDefault: false }]);
-    setNewTemplate({ name: '', description: '', permissions: [] });
-    setShowCreateModal(false);
-  };
-
-  const handleDeleteTemplate = (templateId) => {
+  const handlePermissionToggle = async (templateId, permissionCode) => {
     const template = templates.find(t => t.id === templateId);
-    if (template?.isDefault) return;
+    if (template?.is_system) return;
 
-    setTemplates(prev => prev.filter(t => t.id !== templateId));
+    const hasPermission = template.permissions.includes(permissionCode);
+    const newPermissions = hasPermission
+      ? template.permissions.filter(p => p !== permissionCode)
+      : [...template.permissions, permissionCode];
+
+    // Update locally first for responsiveness
+    setTemplates(prev => prev.map(t =>
+      t.id === templateId ? { ...t, permissions: newPermissions } : t
+    ));
+
+    // Save to database
+    try {
+      const permission = allPermissions.find(p => p.code === permissionCode);
+      if (!permission) return;
+
+      if (hasPermission) {
+        // Remove permission
+        await supabase
+          .from('role_template_permissions')
+          .delete()
+          .eq('role_template_id', templateId)
+          .eq('permission_id', permission.id);
+      } else {
+        // Add permission
+        await supabase
+          .from('role_template_permissions')
+          .insert({
+            role_template_id: templateId,
+            permission_id: permission.id
+          });
+      }
+    } catch (error) {
+      console.error('Error updating permission:', error);
+      // Revert on error
+      setTemplates(prev => prev.map(t =>
+        t.id === templateId ? { ...t, permissions: template.permissions } : t
+      ));
+    }
+  };
+
+  const handleCreateTemplate = async () => {
+    if (!newTemplate.name || !accountId) return;
+
+    try {
+      setSaving(true);
+
+      // Create the template
+      const { data: createdTemplate, error: templateError } = await supabase
+        .from('role_templates')
+        .insert({
+          name: newTemplate.name,
+          description: newTemplate.description,
+          account_id: accountId,
+          is_system: false
+        })
+        .select()
+        .single();
+
+      if (templateError) throw templateError;
+
+      // Add permissions to the template
+      if (newTemplate.permissions.length > 0) {
+        const permissionInserts = newTemplate.permissions.map(code => {
+          const perm = allPermissions.find(p => p.code === code);
+          return perm ? {
+            role_template_id: createdTemplate.id,
+            permission_id: perm.id
+          } : null;
+        }).filter(Boolean);
+
+        if (permissionInserts.length > 0) {
+          const { error: permsError } = await supabase
+            .from('role_template_permissions')
+            .insert(permissionInserts);
+
+          if (permsError) throw permsError;
+        }
+      }
+
+      setMessage('Template created successfully!');
+      setNewTemplate({ name: '', description: '', permissions: [] });
+      setShowCreateModal(false);
+      await fetchData(); // Refresh the list
+    } catch (error) {
+      console.error('Error creating template:', error);
+      setMessage('Failed to create template: ' + error.message);
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleDeleteTemplate = async (templateId) => {
+    const template = templates.find(t => t.id === templateId);
+    if (template?.is_system) return;
+
+    if (!window.confirm('Are you sure you want to delete this template?')) return;
+
+    try {
+      // Delete permissions first (foreign key)
+      await supabase
+        .from('role_template_permissions')
+        .delete()
+        .eq('role_template_id', templateId);
+
+      // Delete the template
+      const { error } = await supabase
+        .from('role_templates')
+        .delete()
+        .eq('id', templateId);
+
+      if (error) throw error;
+
+      setMessage('Template deleted successfully!');
+      setTemplates(prev => prev.filter(t => t.id !== templateId));
+    } catch (error) {
+      console.error('Error deleting template:', error);
+      setMessage('Failed to delete template: ' + error.message);
+    }
+  };
+
+  // Get category labels
+  const categoryLabels = {
+    feedback: 'Feedback',
+    questions: 'Questions',
+    reports: 'Reports',
+    nps: 'NPS',
+    staff: 'Staff',
+    managers: 'Managers',
+    venue: 'Venue Settings',
+    floorplan: 'Floor Plan',
+    qr: 'QR Codes',
+    ai: 'AI Features',
+    reviews: 'Reviews',
+    billing: 'Billing',
+    multivenue: 'Multi-Venue'
   };
 
   if (userRole !== 'master') {
     return null;
+  }
+
+  if (loading) {
+    return (
+      <div className="p-4 lg:p-6 max-w-4xl mx-auto">
+        <div className="flex items-center justify-center py-12">
+          <RefreshCw className="w-8 h-8 text-rose-600 animate-spin" />
+        </div>
+      </div>
+    );
   }
 
   return (
@@ -185,125 +286,151 @@ const RoleTemplates = () => {
         </div>
       </div>
 
+      {/* Message */}
+      {message && (
+        <div className={`mb-4 p-4 rounded-lg text-sm ${
+          message.includes('success')
+            ? 'bg-green-50 dark:bg-green-900/30 text-green-700 dark:text-green-400 border border-green-200 dark:border-green-800'
+            : 'bg-red-50 dark:bg-red-900/30 text-red-700 dark:text-red-400 border border-red-200 dark:border-red-800'
+        }`}>
+          {message}
+        </div>
+      )}
+
       {/* Templates List */}
       <div className="space-y-4">
-        {templates.map((template) => (
-          <div
-            key={template.id}
-            className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-lg overflow-hidden"
-          >
-            {/* Template Header */}
-            <div
-              className="flex items-center justify-between p-4 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors"
-              onClick={() => toggleTemplateExpanded(template.id)}
+        {templates.length === 0 ? (
+          <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-lg p-8 text-center">
+            <Key className="w-12 h-12 text-gray-300 dark:text-gray-600 mx-auto mb-3" />
+            <p className="text-gray-500 dark:text-gray-400">No templates found</p>
+            <button
+              onClick={() => setShowCreateModal(true)}
+              className="mt-4 text-blue-600 dark:text-blue-400 hover:underline text-sm"
             >
-              <div className="flex items-center gap-3">
-                <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${
-                  template.isDefault
-                    ? 'bg-gray-100 dark:bg-gray-800'
-                    : 'bg-rose-100 dark:bg-rose-900/30'
-                }`}>
-                  <Key className={`w-5 h-5 ${
-                    template.isDefault
-                      ? 'text-gray-600 dark:text-gray-400'
-                      : 'text-rose-600 dark:text-rose-400'
+              Create your first template
+            </button>
+          </div>
+        ) : (
+          templates.map((template) => (
+            <div
+              key={template.id}
+              className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-lg overflow-hidden"
+            >
+              {/* Template Header */}
+              <div
+                className="flex items-center justify-between p-4 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors"
+                onClick={() => toggleTemplateExpanded(template.id)}
+              >
+                <div className="flex items-center gap-3">
+                  <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${
+                    template.is_system
+                      ? 'bg-gray-100 dark:bg-gray-800'
+                      : 'bg-rose-100 dark:bg-rose-900/30'
+                  }`}>
+                    <Key className={`w-5 h-5 ${
+                      template.is_system
+                        ? 'text-gray-600 dark:text-gray-400'
+                        : 'text-rose-600 dark:text-rose-400'
+                    }`} />
+                  </div>
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <h3 className="font-medium text-gray-900 dark:text-white">{template.name}</h3>
+                      {template.is_system && (
+                        <span className="px-2 py-0.5 text-xs font-medium bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 rounded">
+                          System
+                        </span>
+                      )}
+                    </div>
+                    <p className="text-sm text-gray-500 dark:text-gray-400">{template.description}</p>
+                  </div>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="text-sm text-gray-500 dark:text-gray-400">
+                    {template.permissions.length} permissions
+                  </span>
+                  <ChevronDown className={`w-5 h-5 text-gray-400 transition-transform ${
+                    expandedTemplate === template.id ? 'rotate-180' : ''
                   }`} />
                 </div>
-                <div>
-                  <div className="flex items-center gap-2">
-                    <h3 className="font-medium text-gray-900 dark:text-white">{template.name}</h3>
-                    {template.isDefault && (
-                      <span className="px-2 py-0.5 text-xs font-medium bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 rounded">
-                        System
-                      </span>
-                    )}
-                  </div>
-                  <p className="text-sm text-gray-500 dark:text-gray-400">{template.description}</p>
-                </div>
               </div>
-              <div className="flex items-center gap-2">
-                <span className="text-sm text-gray-500 dark:text-gray-400">
-                  {template.permissions.length} permissions
-                </span>
-                <ChevronDown className={`w-5 h-5 text-gray-400 transition-transform ${
-                  expandedTemplate === template.id ? 'rotate-180' : ''
-                }`} />
-              </div>
-            </div>
 
-            {/* Expanded Permissions */}
-            {expandedTemplate === template.id && (
-              <div className="border-t border-gray-200 dark:border-gray-800 p-4">
-                <div className="space-y-4">
-                  {Object.entries(PERMISSION_CATEGORIES).map(([categoryKey, category]) => (
-                    <div key={categoryKey}>
-                      <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                        {category.label}
-                      </h4>
-                      <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
-                        {category.permissions.map((permission) => {
-                          const hasPermission = template.permissions.includes(permission.code);
-                          return (
-                            <label
-                              key={permission.code}
-                              className={`flex items-center gap-2 p-2 rounded-lg border transition-colors ${
-                                template.isDefault
-                                  ? 'cursor-not-allowed opacity-75'
-                                  : 'cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800'
-                              } ${
-                                hasPermission
-                                  ? 'border-green-200 dark:border-green-800 bg-green-50 dark:bg-green-900/20'
-                                  : 'border-gray-200 dark:border-gray-700'
-                              }`}
-                            >
-                              <input
-                                type="checkbox"
-                                checked={hasPermission}
-                                onChange={() => handlePermissionToggle(template.id, permission.code)}
-                                disabled={template.isDefault}
-                                className="sr-only"
-                              />
-                              <div className={`w-4 h-4 rounded flex items-center justify-center ${
-                                hasPermission
-                                  ? 'bg-green-500'
-                                  : 'border border-gray-300 dark:border-gray-600'
-                              }`}>
-                                {hasPermission && <Check className="w-3 h-3 text-white" />}
-                              </div>
-                              <span className="text-sm text-gray-700 dark:text-gray-300">
-                                {permission.label}
-                              </span>
-                            </label>
-                          );
-                        })}
+              {/* Expanded Permissions */}
+              {expandedTemplate === template.id && (
+                <div className="border-t border-gray-200 dark:border-gray-800 p-4">
+                  <div className="space-y-4">
+                    {Object.entries(permissionsByCategory).map(([categoryKey, perms]) => (
+                      <div key={categoryKey}>
+                        <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                          {categoryLabels[categoryKey] || categoryKey}
+                        </h4>
+                        <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
+                          {perms.map((permission) => {
+                            const hasPermission = template.permissions.includes(permission.code);
+                            return (
+                              <label
+                                key={permission.code}
+                                className={`flex items-center gap-2 p-2 rounded-lg border transition-colors ${
+                                  template.is_system
+                                    ? 'cursor-not-allowed opacity-75'
+                                    : 'cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800'
+                                } ${
+                                  hasPermission
+                                    ? 'border-green-200 dark:border-green-800 bg-green-50 dark:bg-green-900/20'
+                                    : 'border-gray-200 dark:border-gray-700'
+                                }`}
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  if (!template.is_system) {
+                                    handlePermissionToggle(template.id, permission.code);
+                                  }
+                                }}
+                              >
+                                <div className={`w-4 h-4 rounded flex items-center justify-center ${
+                                  hasPermission
+                                    ? 'bg-green-500'
+                                    : 'border border-gray-300 dark:border-gray-600'
+                                }`}>
+                                  {hasPermission && <Check className="w-3 h-3 text-white" />}
+                                </div>
+                                <span className="text-sm text-gray-700 dark:text-gray-300">
+                                  {permission.name}
+                                </span>
+                              </label>
+                            );
+                          })}
+                        </div>
                       </div>
-                    </div>
-                  ))}
-                </div>
-
-                {/* Delete button for custom templates */}
-                {!template.isDefault && (
-                  <div className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700 flex justify-end">
-                    <button
-                      onClick={() => handleDeleteTemplate(template.id)}
-                      className="inline-flex items-center gap-2 px-3 py-1.5 text-sm font-medium text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/30 rounded-lg transition-colors"
-                    >
-                      <Trash2 className="w-4 h-4" />
-                      Delete Template
-                    </button>
+                    ))}
                   </div>
-                )}
-              </div>
-            )}
-          </div>
-        ))}
+
+                  {/* Delete button for custom templates */}
+                  {!template.is_system && (
+                    <div className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700 flex justify-end">
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleDeleteTemplate(template.id);
+                        }}
+                        className="inline-flex items-center gap-2 px-3 py-1.5 text-sm font-medium text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/30 rounded-lg transition-colors"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                        Delete Template
+                      </button>
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+          ))
+        )}
       </div>
 
       {/* Create Template Modal */}
       {showCreateModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 dark:bg-opacity-70 flex items-center justify-center z-50 p-4">
-          <div className="bg-white dark:bg-gray-900 rounded-lg w-full max-w-lg">
-            <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-800">
+          <div className="bg-white dark:bg-gray-900 rounded-lg w-full max-w-lg max-h-[90vh] overflow-y-auto">
+            <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-800 sticky top-0 bg-white dark:bg-gray-900">
               <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
                 Create Role Template
               </h3>
@@ -323,7 +450,7 @@ const RoleTemplates = () => {
                   type="text"
                   value={newTemplate.name}
                   onChange={(e) => setNewTemplate(prev => ({ ...prev, name: e.target.value }))}
-                  placeholder="e.g., Shift Supervisor"
+                  placeholder="e.g., Area Manager"
                   className="w-full px-3 py-2 border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 />
               </div>
@@ -344,32 +471,39 @@ const RoleTemplates = () => {
                   Start with permissions from:
                 </label>
                 <div className="space-y-2">
-                  {DEFAULT_TEMPLATES.map((t) => (
+                  {templates.filter(t => t.is_system).map((t) => (
                     <label
                       key={t.id}
                       className={`flex items-center gap-3 p-3 rounded-lg border cursor-pointer transition-colors ${
-                        JSON.stringify(newTemplate.permissions) === JSON.stringify(t.permissions)
+                        JSON.stringify(newTemplate.permissions.sort()) === JSON.stringify([...t.permissions].sort())
                           ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20'
                           : 'border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800'
                       }`}
+                      onClick={() => setNewTemplate(prev => ({ ...prev, permissions: [...t.permissions] }))}
                     >
-                      <input
-                        type="radio"
-                        name="baseTemplate"
-                        checked={JSON.stringify(newTemplate.permissions) === JSON.stringify(t.permissions)}
-                        onChange={() => setNewTemplate(prev => ({ ...prev, permissions: [...t.permissions] }))}
-                        className="sr-only"
-                      />
                       <div>
                         <div className="font-medium text-gray-900 dark:text-white">{t.name}</div>
                         <div className="text-sm text-gray-500 dark:text-gray-400">{t.description}</div>
                       </div>
                     </label>
                   ))}
+                  <label
+                    className={`flex items-center gap-3 p-3 rounded-lg border cursor-pointer transition-colors ${
+                      newTemplate.permissions.length === 0
+                        ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20'
+                        : 'border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800'
+                    }`}
+                    onClick={() => setNewTemplate(prev => ({ ...prev, permissions: [] }))}
+                  >
+                    <div>
+                      <div className="font-medium text-gray-900 dark:text-white">Start Empty</div>
+                      <div className="text-sm text-gray-500 dark:text-gray-400">No permissions selected</div>
+                    </div>
+                  </label>
                 </div>
               </div>
             </div>
-            <div className="flex justify-end gap-3 p-4 border-t border-gray-200 dark:border-gray-800">
+            <div className="flex justify-end gap-3 p-4 border-t border-gray-200 dark:border-gray-800 sticky bottom-0 bg-white dark:bg-gray-900">
               <button
                 onClick={() => setShowCreateModal(false)}
                 className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors"
@@ -378,10 +512,20 @@ const RoleTemplates = () => {
               </button>
               <button
                 onClick={handleCreateTemplate}
-                disabled={!newTemplate.name}
-                className="px-4 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                disabled={!newTemplate.name || saving}
+                className="px-4 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
               >
-                Create Template
+                {saving ? (
+                  <>
+                    <RefreshCw className="w-4 h-4 animate-spin" />
+                    Creating...
+                  </>
+                ) : (
+                  <>
+                    <Save className="w-4 h-4" />
+                    Create Template
+                  </>
+                )}
               </button>
             </div>
           </div>
