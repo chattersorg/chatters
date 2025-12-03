@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { PermissionGate } from '../../../context/PermissionsContext';
 
 const EditControls = ({ 
   editMode, 
@@ -82,24 +83,28 @@ const EditControls = ({
                 <option value="long">Rectangle</option>
               </select>
 
-              <button
-                onClick={handleAddTable}
-                disabled={!newTableNumber.trim()}
-                className="px-3 py-1.5 bg-blue-600 text-white rounded text-sm font-medium hover:bg-blue-700 disabled:bg-gray-300 dark:disabled:bg-gray-700 disabled:cursor-not-allowed transition-colors"
-              >
-                + Add
-              </button>
+              <PermissionGate permission="floorplan.edit">
+                <button
+                  onClick={handleAddTable}
+                  disabled={!newTableNumber.trim()}
+                  className="px-3 py-1.5 bg-blue-600 text-white rounded text-sm font-medium hover:bg-blue-700 disabled:bg-gray-300 dark:disabled:bg-gray-700 disabled:cursor-not-allowed transition-colors"
+                >
+                  + Add
+                </button>
+              </PermissionGate>
 
               <div className="h-6 w-px bg-blue-200 dark:bg-blue-700" />
 
               {/* Save Button */}
-              <button
-                onClick={onSaveLayout}
-                disabled={saving || !hasUnsavedChanges}
-                className="px-3 py-1.5 bg-green-600 text-white rounded text-sm font-medium hover:bg-green-700 disabled:bg-gray-300 dark:disabled:bg-gray-700 disabled:cursor-not-allowed transition-colors"
-              >
-                {saving ? 'Saving...' : 'Save'}
-              </button>
+              <PermissionGate permission="floorplan.edit">
+                <button
+                  onClick={onSaveLayout}
+                  disabled={saving || !hasUnsavedChanges}
+                  className="px-3 py-1.5 bg-green-600 text-white rounded text-sm font-medium hover:bg-green-700 disabled:bg-gray-300 dark:disabled:bg-gray-700 disabled:cursor-not-allowed transition-colors"
+                >
+                  {saving ? 'Saving...' : 'Save'}
+                </button>
+              </PermissionGate>
 
               {hasUnsavedChanges && (
                 <span className="text-xs text-amber-600 dark:text-amber-400 font-medium">
@@ -111,12 +116,14 @@ const EditControls = ({
               <div className="flex-1" />
 
               {tables.length > 0 && (
-                <button
-                  onClick={handleClearAll}
-                  className="px-3 py-1.5 border border-red-300 dark:border-red-800 text-red-600 dark:text-red-400 rounded text-sm hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
-                >
-                  Clear All
-                </button>
+                <PermissionGate permission="floorplan.edit">
+                  <button
+                    onClick={handleClearAll}
+                    className="px-3 py-1.5 border border-red-300 dark:border-red-800 text-red-600 dark:text-red-400 rounded text-sm hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
+                  >
+                    Clear All
+                  </button>
+                </PermissionGate>
               )}
 
               <button

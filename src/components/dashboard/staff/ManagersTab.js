@@ -3,6 +3,7 @@ import { supabase } from '../../../utils/supabase';
 import { Button } from '../../ui/button';
 import PermissionsManager from './PermissionsManager';
 import { Shield } from 'lucide-react';
+import { PermissionGate } from '../../../context/PermissionsContext';
 
 const ManagersTab = ({ 
   managers, 
@@ -526,13 +527,15 @@ const ManagersTab = ({
         <div className="flex flex-col space-y-4 sm:flex-row sm:items-start sm:justify-between sm:space-y-0">
           <div className="flex-1">
           </div>
-          <Button
-            variant="primary"
-            onClick={() => setShowAddForm(true)}
-            className="w-full sm:w-auto"
-          >
-            Add Manager
-          </Button>
+          <PermissionGate permission="managers.invite">
+            <Button
+              variant="primary"
+              onClick={() => setShowAddForm(true)}
+              className="w-full sm:w-auto"
+            >
+              Add Manager
+            </Button>
+          </PermissionGate>
         </div>
       </div>
 
@@ -684,37 +687,45 @@ const ManagersTab = ({
                         {/* Actions */}
                         <td className="px-6 py-4 whitespace-nowrap text-center">
                           <div className="flex items-center justify-center space-x-2">
-                            <button
-                              onClick={() => handleEditManagerDetails(manager)}
-                              className="text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 text-sm font-medium"
-                            >
-                              Edit
-                            </button>
+                            <PermissionGate permission="managers.invite">
+                              <button
+                                onClick={() => handleEditManagerDetails(manager)}
+                                className="text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 text-sm font-medium"
+                              >
+                                Edit
+                              </button>
+                            </PermissionGate>
 
-                            <button
-                              onClick={() => setManagingPermissionsFor(manager)}
-                              className="text-purple-600 dark:text-purple-400 hover:text-purple-800 dark:hover:text-purple-300 text-sm font-medium flex items-center gap-1"
-                            >
-                              <Shield className="w-3.5 h-3.5" />
-                              Permissions
-                            </button>
+                            <PermissionGate permission="managers.permissions">
+                              <button
+                                onClick={() => setManagingPermissionsFor(manager)}
+                                className="text-purple-600 dark:text-purple-400 hover:text-purple-800 dark:hover:text-purple-300 text-sm font-medium flex items-center gap-1"
+                              >
+                                <Shield className="w-3.5 h-3.5" />
+                                Permissions
+                              </button>
+                            </PermissionGate>
 
                             {hasPendingInvitation(manager.users?.email) && (
-                              <button
-                                onClick={() => handleResendInvitation(manager.users?.email)}
-                                disabled={resendingEmail === manager.users?.email}
-                                className="text-green-600 dark:text-green-400 hover:text-green-800 dark:hover:text-green-300 text-sm font-medium disabled:opacity-50"
-                              >
-                                {resendingEmail === manager.users?.email ? 'Sending...' : 'Resend'}
-                              </button>
+                              <PermissionGate permission="managers.invite">
+                                <button
+                                  onClick={() => handleResendInvitation(manager.users?.email)}
+                                  disabled={resendingEmail === manager.users?.email}
+                                  className="text-green-600 dark:text-green-400 hover:text-green-800 dark:hover:text-green-300 text-sm font-medium disabled:opacity-50"
+                                >
+                                  {resendingEmail === manager.users?.email ? 'Sending...' : 'Resend'}
+                                </button>
+                              </PermissionGate>
                             )}
 
-                            <button
-                              onClick={() => setManagerToDelete(manager)}
-                              className="text-red-600 dark:text-red-400 hover:text-red-800 dark:hover:text-red-300 text-sm font-medium"
-                            >
-                              Delete
-                            </button>
+                            <PermissionGate permission="managers.remove">
+                              <button
+                                onClick={() => setManagerToDelete(manager)}
+                                className="text-red-600 dark:text-red-400 hover:text-red-800 dark:hover:text-red-300 text-sm font-medium"
+                              >
+                                Delete
+                              </button>
+                            </PermissionGate>
                           </div>
                         </td>
                       </tr>

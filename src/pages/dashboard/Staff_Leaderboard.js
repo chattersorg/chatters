@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { supabase } from '../../utils/supabase';
 import usePageTitle from '../../hooks/usePageTitle';
 import { useVenue } from '../../context/VenueContext';
+import { PermissionGate } from '../../context/PermissionsContext';
 import { Mail, Trophy, Download } from 'lucide-react';
 import { Button } from '../../components/ui/button';
 import dayjs from 'dayjs';
@@ -318,15 +319,17 @@ const StaffLeaderboard = () => {
                 <option value="last30">Last 30 Days</option>
                 <option value="all">All Time</option>
               </select>
-              <Button
-                variant="secondary"
-                onClick={exportLeaderboard}
-                disabled={staffStats.length === 0}
-                className="dark:bg-gray-800 dark:text-gray-200 dark:border-gray-700 dark:hover:bg-gray-700"
-              >
-                <Download className="w-4 h-4 mr-2" />
-                Export
-              </Button>
+              <PermissionGate permission="reports.export">
+                <Button
+                  variant="secondary"
+                  onClick={exportLeaderboard}
+                  disabled={staffStats.length === 0}
+                  className="dark:bg-gray-800 dark:text-gray-200 dark:border-gray-700 dark:hover:bg-gray-700"
+                >
+                  <Download className="w-4 h-4 mr-2" />
+                  Export
+                </Button>
+              </PermissionGate>
             </div>
           </div>
         </div>
@@ -412,13 +415,15 @@ const StaffLeaderboard = () => {
                       <span className="text-sm font-bold text-blue-600 dark:text-blue-400">{staff.totalResolved}</span>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-center">
-                      <Button
-                        variant="primary"
-                        size="sm"
-                        onClick={() => setRecognitionModal(staff)}
-                      >
-                        Recognise
-                      </Button>
+                      <PermissionGate permission="staff.recognition">
+                        <Button
+                          variant="primary"
+                          size="sm"
+                          onClick={() => setRecognitionModal(staff)}
+                        >
+                          Recognise
+                        </Button>
+                      </PermissionGate>
                     </td>
                   </tr>
                 ))}

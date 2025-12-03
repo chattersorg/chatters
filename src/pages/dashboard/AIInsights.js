@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useVenue } from '../../context/VenueContext';
+import { PermissionGate } from '../../context/PermissionsContext';
 import { supabase } from '../../utils/supabase';
 import usePageTitle from '../../hooks/usePageTitle';
 import {
@@ -278,13 +279,15 @@ const AIInsights = () => {
 
         {/* Regenerate Button */}
         {currentInsight && !loading && (
-          <button
-            onClick={() => generateInsightForWeek(displayedWeek, true)}
-            className="inline-flex items-center px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
-          >
-            <RefreshCw className="w-4 h-4 mr-2" />
-            Regenerate Insights
-          </button>
+          <PermissionGate permission="ai.regenerate">
+            <button
+              onClick={() => generateInsightForWeek(displayedWeek, true)}
+              className="inline-flex items-center px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+            >
+              <RefreshCw className="w-4 h-4 mr-2" />
+              Regenerate Insights
+            </button>
+          </PermissionGate>
         )}
       </div>
 

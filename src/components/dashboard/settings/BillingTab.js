@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { supabase } from '../../../utils/supabase';
 import { useVenue } from '../../../context/VenueContext';
+import { PermissionGate } from '../../../context/PermissionsContext';
 import { Calendar, AlertCircle } from 'lucide-react';
 import StripeCheckoutModal from './StripeCheckoutModal';
 import SubscriptionManagement from './SubscriptionManagement';
@@ -343,16 +344,18 @@ const BillingTab = ({ allowExpiredAccess = false }) => {
               <div className="text-xs text-gray-500">
                 {!accountData?.isExpired ? 'No charge today' : 'Billed immediately'}
               </div>
-              <Button
-                variant="primary"
-                onClick={handleCheckout}
-                loading={loading}
-              >
-                {loading ? 'Processing...' : !accountData?.isExpired
-                  ? 'Add Payment Details'
-                  : `Subscribe - £${subscriptionType === 'monthly' ? monthlyTotal.toLocaleString() : yearlyTotal.toLocaleString()}${subscriptionType === 'monthly' ? '/mo' : '/yr'}`
-                }
-              </Button>
+              <PermissionGate permission="billing.manage">
+                <Button
+                  variant="primary"
+                  onClick={handleCheckout}
+                  loading={loading}
+                >
+                  {loading ? 'Processing...' : !accountData?.isExpired
+                    ? 'Add Payment Details'
+                    : `Subscribe - £${subscriptionType === 'monthly' ? monthlyTotal.toLocaleString() : yearlyTotal.toLocaleString()}${subscriptionType === 'monthly' ? '/mo' : '/yr'}`
+                  }
+                </Button>
+              </PermissionGate>
             </div>
           </div>
         </div>

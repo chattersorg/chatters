@@ -4,6 +4,7 @@ import { supabase } from '../../utils/supabase';
 import { ChartCard } from '../../components/dashboard/layout/ModernCard';
 import usePageTitle from '../../hooks/usePageTitle';
 import { useVenue } from '../../context/VenueContext';
+import { PermissionGate } from '../../context/PermissionsContext';
 import VenueTab from '../../components/dashboard/settings/VenueTab';
 import { Building2, ChevronRight, MapPin, Phone, Globe, Edit2, TrendingUp, TrendingDown, MessageSquare, CheckCircle, Trash2, AlertTriangle } from 'lucide-react';
 
@@ -522,13 +523,15 @@ const VenueSettingsPage = () => {
                                 </button>
                               )}
                               {!isActive && allVenues.length > 1 && (
-                                <button
-                                  onClick={() => setDeleteConfirm({ venueId: venue.id, venueName: venue.name })}
-                                  className="p-2 rounded-lg text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/30 transition-colors"
-                                  title="Delete venue"
-                                >
-                                  <Trash2 className="w-4 h-4" />
-                                </button>
+                                <PermissionGate permission="venue.edit">
+                                  <button
+                                    onClick={() => setDeleteConfirm({ venueId: venue.id, venueName: venue.name })}
+                                    className="p-2 rounded-lg text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/30 transition-colors"
+                                    title="Delete venue"
+                                  >
+                                    <Trash2 className="w-4 h-4" />
+                                  </button>
+                                </PermissionGate>
                               )}
                             </div>
                           </td>
@@ -615,14 +618,16 @@ const VenueSettingsPage = () => {
                           </button>
                         )}
                         {!isActive && allVenues.length > 1 && (
-                          <button
-                            onClick={() => setDeleteConfirm({ venueId: venue.id, venueName: venue.name })}
-                            className="px-3 py-2 text-sm font-medium text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/30 rounded-lg transition-colors flex items-center justify-center gap-1.5"
-                            title="Delete venue"
-                          >
-                            <Trash2 className="w-4 h-4" />
-                            Delete
-                          </button>
+                          <PermissionGate permission="venue.edit">
+                            <button
+                              onClick={() => setDeleteConfirm({ venueId: venue.id, venueName: venue.name })}
+                              className="px-3 py-2 text-sm font-medium text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/30 rounded-lg transition-colors flex items-center justify-center gap-1.5"
+                              title="Delete venue"
+                            >
+                              <Trash2 className="w-4 h-4" />
+                              Delete
+                            </button>
+                          </PermissionGate>
                         )}
                       </div>
                     </div>

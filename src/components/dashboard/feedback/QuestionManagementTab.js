@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import { Plus, Search, Edit3, Trash2, GripVertical, Archive, RotateCcw } from 'lucide-react';
 import { Draggable, Droppable } from 'react-beautiful-dnd';
 import ReplaceModal from '../../common/ReplaceModal';
+import { PermissionGate } from '../../../context/PermissionsContext';
 
 // Suggested Questions Component - moved outside to prevent re-creation
 const SuggestedQuestionsSection = ({ filteredSuggestedQuestions, setNewQuestion }) => (
@@ -85,18 +86,20 @@ const CreateQuestionSection = ({
                 <p className="text-xs text-red-600 dark:text-red-400">{duplicateError}</p>
               )}
             </div>
-            <button
-              onClick={handleAddQuestion}
-              disabled={!newQuestion.trim()}
-              className={`px-6 py-2 rounded-lg font-medium transition-all duration-200 flex items-center gap-2 ${
-                !newQuestion.trim()
-                  ? 'bg-gray-100 dark:bg-gray-800 text-gray-400 dark:text-gray-500 cursor-not-allowed'
-                  : 'bg-blue-600 text-white hover:bg-blue-700 shadow-sm hover:shadow-md'
-              }`}
-            >
-              <Plus className="w-4 h-4" />
-              {questions.length >= 5 ? 'Replace Question' : 'Add Question'}
-            </button>
+            <PermissionGate permission="questions.edit">
+              <button
+                onClick={handleAddQuestion}
+                disabled={!newQuestion.trim()}
+                className={`px-6 py-2 rounded-lg font-medium transition-all duration-200 flex items-center gap-2 ${
+                  !newQuestion.trim()
+                    ? 'bg-gray-100 dark:bg-gray-800 text-gray-400 dark:text-gray-500 cursor-not-allowed'
+                    : 'bg-blue-600 text-white hover:bg-blue-700 shadow-sm hover:shadow-md'
+                }`}
+              >
+                <Plus className="w-4 h-4" />
+                {questions.length >= 5 ? 'Replace Question' : 'Add Question'}
+              </button>
+            </PermissionGate>
           </div>
         </div>
       </div>
@@ -214,20 +217,24 @@ const ActiveQuestionsSection = ({
                             </div>
 
                             <div className="flex items-center space-x-2">
-                              <button
-                                onClick={() => startEditingQuestion(q.id, q.question)}
-                                className="p-2 text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/30 rounded-md transition-all duration-200"
-                                title="Edit question"
-                              >
-                                <Edit3 className="w-4 h-4" />
-                              </button>
-                              <button
-                                onClick={() => handleDeleteQuestion(q.id)}
-                                className="p-2 text-gray-400 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/30 rounded-md transition-all duration-200"
-                                title="Archive question"
-                              >
-                                <Archive className="w-4 h-4" />
-                              </button>
+                              <PermissionGate permission="questions.edit">
+                                <button
+                                  onClick={() => startEditingQuestion(q.id, q.question)}
+                                  className="p-2 text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/30 rounded-md transition-all duration-200"
+                                  title="Edit question"
+                                >
+                                  <Edit3 className="w-4 h-4" />
+                                </button>
+                              </PermissionGate>
+                              <PermissionGate permission="questions.edit">
+                                <button
+                                  onClick={() => handleDeleteQuestion(q.id)}
+                                  className="p-2 text-gray-400 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/30 rounded-md transition-all duration-200"
+                                  title="Archive question"
+                                >
+                                  <Archive className="w-4 h-4" />
+                                </button>
+                              </PermissionGate>
                             </div>
                           </div>
                         )}
@@ -490,16 +497,18 @@ const QuestionManagementTab = ({
                           <span className="inline-flex items-center px-2.5 py-1 bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 text-xs font-medium rounded-full">
                             Archived
                           </span>
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleAddInactive(q);
-                            }}
-                            className="p-2 text-gray-400 hover:text-green-600 dark:hover:text-green-400 hover:bg-green-50 dark:hover:bg-green-900/30 rounded-md transition-all duration-200"
-                            title="Reactivate question"
-                          >
-                            <RotateCcw className="w-4 h-4" />
-                          </button>
+                          <PermissionGate permission="questions.edit">
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleAddInactive(q);
+                              }}
+                              className="p-2 text-gray-400 hover:text-green-600 dark:hover:text-green-400 hover:bg-green-50 dark:hover:bg-green-900/30 rounded-md transition-all duration-200"
+                              title="Reactivate question"
+                            >
+                              <RotateCcw className="w-4 h-4" />
+                            </button>
+                          </PermissionGate>
                         </div>
                       </div>
                     </div>

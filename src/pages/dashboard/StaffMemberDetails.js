@@ -4,6 +4,7 @@ import { supabase } from '../../utils/supabase';
 import PageContainer from '../../components/dashboard/layout/PageContainer';
 import usePageTitle from '../../hooks/usePageTitle';
 import { useVenue } from '../../context/VenueContext';
+import { PermissionGate } from '../../context/PermissionsContext';
 import dayjs from 'dayjs';
 import relativeTime from 'dayjs/plugin/relativeTime';
 dayjs.extend(relativeTime);
@@ -585,20 +586,24 @@ const StaffMemberDetails = () => {
             {/* Export Buttons */}
             <div className="flex items-center space-x-2">
               {resolvedFeedback.length > 0 && (
-                <button
-                  onClick={exportData}
-                  className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                >
-                  Export Feedback
-                </button>
+                <PermissionGate permission="feedback.export">
+                  <button
+                    onClick={exportData}
+                    className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  >
+                    Export Feedback
+                  </button>
+                </PermissionGate>
               )}
               {totalStats.totalResolved > 0 && (
-                <button
-                  onClick={exportAnalytics}
-                  className="px-4 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-md shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-gray-900"
-                >
-                  Export Analytics
-                </button>
+                <PermissionGate permission="reports.export">
+                  <button
+                    onClick={exportAnalytics}
+                    className="px-4 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-md shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-gray-900"
+                  >
+                    Export Analytics
+                  </button>
+                </PermissionGate>
               )}
             </div>
           </div>

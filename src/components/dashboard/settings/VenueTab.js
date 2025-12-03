@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { Button } from '../../ui/button';
 import { supabase } from '../../../utils/supabase';
+import { PermissionGate } from '../../../context/PermissionsContext';
 import { GripVertical, Plus, Trash2, ExternalLink, Eye, EyeOff } from 'lucide-react';
 import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
 
@@ -224,13 +225,15 @@ const VenueTab = ({
               <div className="text-xs text-gray-500 dark:text-gray-400">
                 Changes are saved per venue
               </div>
-              <Button
-                variant="primary"
-                onClick={saveSettings}
-                loading={loading}
-              >
-                {loading ? 'Saving...' : 'Save'}
-              </Button>
+              <PermissionGate permission="venue.edit">
+                <Button
+                  variant="primary"
+                  onClick={saveSettings}
+                  loading={loading}
+                >
+                  {loading ? 'Saving...' : 'Save'}
+                </Button>
+              </PermissionGate>
             </div>
             {message && (
               <div className={`text-xs p-2 rounded-lg mt-3 ${
@@ -375,13 +378,15 @@ const VenueTab = ({
               <div className="text-xs text-gray-500 dark:text-gray-400">
                 Changes are saved per venue
               </div>
-              <Button
-                variant="primary"
-                onClick={saveLinks}
-                loading={savingLinks}
-              >
-                {savingLinks ? 'Saving...' : 'Save'}
-              </Button>
+              <PermissionGate permission="venue.edit">
+                <Button
+                  variant="primary"
+                  onClick={saveLinks}
+                  loading={savingLinks}
+                >
+                  {savingLinks ? 'Saving...' : 'Save'}
+                </Button>
+              </PermissionGate>
             </div>
             {linksMessage.text && (
               <div

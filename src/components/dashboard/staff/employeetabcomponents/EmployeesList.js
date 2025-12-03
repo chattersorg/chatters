@@ -4,6 +4,7 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Download, Upload, Plus, Eye } from 'lucide-react';
 import EmptyEmployeeState from './EmptyEmployeeState';
+import { PermissionGate } from '../../../../context/PermissionsContext';
 
 const EmployeesList = ({
   userRole,
@@ -91,13 +92,15 @@ const EmployeesList = ({
         
         {/* Employee actions */}
         <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-2">
-          <button
-            onClick={() => onAddEmployee && onAddEmployee()}
-            className="text-sm sm:text-xs bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 px-4 py-2 sm:px-3 sm:py-1 rounded-md hover:bg-blue-200 dark:hover:bg-blue-900/50 transition-colors duration-200 flex items-center justify-center font-medium"
-          >
-            <Plus className="w-4 h-4 sm:w-3 sm:h-3 mr-2 sm:mr-1" />
-            Add Employee
-          </button>
+          <PermissionGate permission="staff.edit">
+            <button
+              onClick={() => onAddEmployee && onAddEmployee()}
+              className="text-sm sm:text-xs bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 px-4 py-2 sm:px-3 sm:py-1 rounded-md hover:bg-blue-200 dark:hover:bg-blue-900/50 transition-colors duration-200 flex items-center justify-center font-medium"
+            >
+              <Plus className="w-4 h-4 sm:w-3 sm:h-3 mr-2 sm:mr-1" />
+              Add Employee
+            </button>
+          </PermissionGate>
 
           <button
             onClick={() => onDownloadCSV && onDownloadCSV()}
@@ -107,17 +110,19 @@ const EmployeesList = ({
             Download
           </button>
 
-          <label className="text-sm sm:text-xs bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-400 px-4 py-2 sm:px-3 sm:py-1 rounded-md hover:bg-orange-200 dark:hover:bg-orange-900/50 transition-colors duration-200 flex items-center justify-center cursor-pointer font-medium">
-            <Upload className="w-4 h-4 sm:w-3 sm:h-3 mr-2 sm:mr-1" />
-            {uploading ? 'Uploading...' : 'Replace'}
-            <input
-              type="file"
-              accept=".csv"
-              onChange={(e) => onUploadCSV && onUploadCSV(e)}
-              className="hidden"
-              disabled={uploading}
-            />
-          </label>
+          <PermissionGate permission="staff.edit">
+            <label className="text-sm sm:text-xs bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-400 px-4 py-2 sm:px-3 sm:py-1 rounded-md hover:bg-orange-200 dark:hover:bg-orange-900/50 transition-colors duration-200 flex items-center justify-center cursor-pointer font-medium">
+              <Upload className="w-4 h-4 sm:w-3 sm:h-3 mr-2 sm:mr-1" />
+              {uploading ? 'Uploading...' : 'Replace'}
+              <input
+                type="file"
+                accept=".csv"
+                onChange={(e) => onUploadCSV && onUploadCSV(e)}
+                className="hidden"
+                disabled={uploading}
+              />
+            </label>
+          </PermissionGate>
         </div>
       </div>
 
