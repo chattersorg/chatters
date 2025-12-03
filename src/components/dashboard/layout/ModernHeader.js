@@ -206,8 +206,7 @@ const ModernHeader = ({ sidebarCollapsed, setSidebarCollapsed, trialInfo }) => {
     if (currentSection.id === 'staff') {
       if (currentPath === '/staff/leaderboard') return 'Team performance rankings';
       if (currentPath === '/staff/recognition') return 'Staff recognition history';
-      if (currentPath === '/staff/employees') return 'Employee management';
-      if (currentPath === '/staff/managers') return 'Manager management';
+      if (currentPath === '/staff/list') return 'Employees and managers';
       if (currentPath === '/staff/roles') return 'Role configuration';
       if (currentPath === '/staff/locations') return 'Location management';
       if (currentPath.startsWith('/staff/employees/')) return 'Employee details';

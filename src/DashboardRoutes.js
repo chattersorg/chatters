@@ -41,6 +41,7 @@ import ReportsMetricsPage from './pages/dashboard/ReportsMetrics';
 import ReportsNPSPage from './pages/dashboard/ReportsNPS';
 import StaffManagersPage from './pages/dashboard/StaffManagers';
 import StaffEmployeesPage from './pages/dashboard/StaffEmployees';
+import StaffListPage from './pages/dashboard/StaffList';
 import EmployeeDetail from './pages/dashboard/EmployeeDetail';
 import SettingsBrandingPage from './pages/dashboard/SettingsBranding';
 import AccountProfilePage from './pages/dashboard/AccountProfile';
@@ -282,16 +283,14 @@ const DashboardRoutes = () => {
             <RecognitionHistory />
           </ProtectedRoute>
         } />
-        <Route path="/staff/managers" element={
-          <ProtectedRoute permission="managers.view">
-            <StaffManagersPage />
-          </ProtectedRoute>
-        } />
-        <Route path="/staff/employees" element={
+        <Route path="/staff/list" element={
           <ProtectedRoute permission="staff.view">
-            <StaffEmployeesPage />
+            <StaffListPage />
           </ProtectedRoute>
         } />
+        {/* Legacy routes - redirect to combined staff list */}
+        <Route path="/staff/managers" element={<Navigate to="/staff/list" replace />} />
+        <Route path="/staff/employees" element={<Navigate to="/staff/list" replace />} />
         <Route path="/staff/employees/:employeeId" element={
           <ProtectedRoute permission="staff.view">
             <EmployeeDetail />

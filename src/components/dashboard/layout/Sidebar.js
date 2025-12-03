@@ -107,8 +107,7 @@ const venueNavItems = [
     subItems: [
       { label: 'Leaderboard', path: '/staff/leaderboard', icon: Trophy },
       { label: 'Recognition', path: '/staff/recognition', icon: Award },
-      { label: 'Employees', path: '/staff/employees', icon: Users },
-      { label: 'Managers', path: '/staff/managers', icon: UserCheck },
+      { label: 'Staff List', path: '/staff/list', icon: Users },
       { label: 'Roles', path: '/staff/roles', icon: UserPlus, badge: 'BETA' },
       { label: 'Locations', path: '/staff/locations', icon: Building2, badge: 'BETA' }
     ]
