@@ -6,10 +6,10 @@ import PageHeader from "../../components/marketing/common/sections/PageHeader";
 
 const DemoPage = () => {
   useEffect(() => {
-    // Load Calendly script once
-    if (!document.querySelector('script[src="https://assets.calendly.com/assets/external/widget.js"]')) {
+    // Load HubSpot Meetings script once
+    if (!document.querySelector('script[src="https://static.hsappstatic.net/MeetingsEmbed/ex/MeetingsEmbedCode.js"]')) {
       const script = document.createElement("script");
-      script.src = "https://assets.calendly.com/assets/external/widget.js";
+      script.src = "https://static.hsappstatic.net/MeetingsEmbed/ex/MeetingsEmbedCode.js";
       script.async = true;
       document.body.appendChild(script);
     }
@@ -43,10 +43,10 @@ const DemoPage = () => {
             <div className="w-full max-w-3xl">
               <div className="relative">
                 <div className="rounded-2xl border border-gray-200 bg-white shadow-[0_0_24px_rgba(17,24,39,0.06)] p-3 sm:p-4">
-                  {/* Calendly inline embed */}
+                  {/* HubSpot Meetings inline embed */}
                   <div
-                    className="calendly-inline-widget rounded-xl overflow-hidden"
-                    data-url="https://calendly.com/luke-getchatters/30min?hide_event_type_details=1&hide_gdpr_banner=1"
+                    className="meetings-iframe-container rounded-xl overflow-hidden"
+                    data-src="https://meetings.hubspot.com/will902?embed=true"
                     style={{ minWidth: "320px", height: "700px" }}
                   ></div>
                 </div>

@@ -158,10 +158,10 @@ const Hero = () => {
           {/* CTAs */}
           <div className="flex flex-col sm:flex-row gap-4 justify-center mb-3">
             <Link
-              to="/try"
+              to="/pricing"
               className="inline-flex items-center justify-center px-8 py-4 text-lg font-semibold text-white bg-[#4E74FF] rounded-lg hover:bg-[#2F5CFF] transition-all duration-200 shadow-lg hover:shadow-xl group"
             >
-              Start Free Trial
+              Pricing
               <ArrowRight className="ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform" />
             </Link>
             <Link
