@@ -19,7 +19,9 @@ import {
   Loader2,
   Mail,
   UserCircle2,
-  Sparkles
+  Sparkles,
+  MessageSquare,
+  Star
 } from 'lucide-react';
 
 const AdminAccountDetail = () => {
@@ -37,6 +39,12 @@ const AdminAccountDetail = () => {
   const [selectedDateRange, setSelectedDateRange] = useState({ startDate: '', endDate: '' });
   const [dateRangeForAccount, setDateRangeForAccount] = useState(null);
   const [seedingDemoData, setSeedingDemoData] = useState(false);
+  const [showFeedbackDemoPicker, setShowFeedbackDemoPicker] = useState(false);
+  const [feedbackDemoDateRange, setFeedbackDemoDateRange] = useState({ startDate: '', endDate: '' });
+  const [seedingFeedbackDemo, setSeedingFeedbackDemo] = useState(false);
+  const [showRatingsDemoPicker, setShowRatingsDemoPicker] = useState(false);
+  const [ratingsDemoDateRange, setRatingsDemoDateRange] = useState({ startDate: '', endDate: '' });
+  const [seedingRatingsDemo, setSeedingRatingsDemo] = useState(false);
 
   useEffect(() => {
     loadAccountData();
@@ -563,6 +571,252 @@ const AdminAccountDetail = () => {
     }
   };
 
+  const openFeedbackDemoPicker = () => {
+    // Set default date range (last 30 days)
+    const endDate = new Date();
+    const startDate = new Date();
+    startDate.setDate(startDate.getDate() - 29);
+
+    setFeedbackDemoDateRange({
+      startDate: startDate.toISOString().split('T')[0],
+      endDate: endDate.toISOString().split('T')[0]
+    });
+    setShowFeedbackDemoPicker(true);
+  };
+
+  const closeFeedbackDemoPicker = () => {
+    setShowFeedbackDemoPicker(false);
+    setFeedbackDemoDateRange({ startDate: '', endDate: '' });
+  };
+
+  const populateFeedbackDemoData = async () => {
+    if (!feedbackDemoDateRange.startDate || !feedbackDemoDateRange.endDate) {
+      toast.error('Please select a valid date range');
+      return;
+    }
+
+    const dayCount = Math.ceil((new Date(feedbackDemoDateRange.endDate) - new Date(feedbackDemoDateRange.startDate)) / (1000 * 60 * 60 * 24)) + 1;
+
+    if (dayCount > 30) {
+      toast.error(`Date range too large (${dayCount} days). Maximum 30 days.`);
+      return;
+    }
+
+    if (!window.confirm(
+      `Populate high-quality feedback demo data for "${account.name}"?\n\n` +
+      `Date Range: ${feedbackDemoDateRange.startDate} to ${feedbackDemoDateRange.endDate} (${dayCount} days)\n\n` +
+      `Per venue, per day:\n` +
+      `• 45-50 feedback sessions (~180-200 feedback items)\n` +
+      `• 5-10 assistance requests\n` +
+      `• ~95% completion rate\n` +
+      `• 7-10 min avg resolution time\n` +
+      `• 4.0-4.5 avg satisfaction score\n\n` +
+      `⚠️ Existing data in this date range will be REPLACED.\n` +
+      `Processing: ~2-3 seconds per day`
+    )) {
+      return;
+    }
+
+    setSeedingFeedbackDemo(true);
+    setShowFeedbackDemoPicker(false);
+
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+
+      const apiUrl = window.location.hostname === 'localhost'
+        ? 'https://my.getchatters.com/api/admin/seed-demo-feedback'
+        : '/api/admin/seed-demo-feedback';
+
+      // Generate array of dates to process
+      const dates = [];
+      const startDate = new Date(feedbackDemoDateRange.startDate);
+      const endDate = new Date(feedbackDemoDateRange.endDate);
+
+      for (let d = new Date(startDate); d <= endDate; d.setDate(d.getDate() + 1)) {
+        dates.push(new Date(d).toISOString().split('T')[0]);
+      }
+
+      const totalStats = {
+        feedbackCreated: 0,
+        assistanceCreated: 0,
+        daysProcessed: 0
+      };
+
+      let failedDays = [];
+
+      // Process each day individually
+      for (let i = 0; i < dates.length; i++) {
+        const currentDate = dates[i];
+
+        const progressToast = toast.loading(
+          `Processing day ${i + 1} of ${dates.length}: ${currentDate}...`,
+          { duration: Infinity }
+        );
+
+        try {
+          const response = await fetch(apiUrl, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${session?.access_token}`
+            },
+            body: JSON.stringify({
+              accountId: account.id,
+              date: currentDate
+            })
+          });
+
+          const result = await response.json();
+
+          if (!response.ok) {
+            throw new Error(result.error || 'API request failed');
+          }
+
+          totalStats.feedbackCreated += result.stats.feedbackCreated || 0;
+          totalStats.assistanceCreated += result.stats.assistanceCreated || 0;
+          totalStats.daysProcessed++;
+
+          toast.dismiss(progressToast);
+          toast.success(`Day ${i + 1}/${dates.length} done: ${currentDate}`, { duration: 1500 });
+
+        } catch (dayError) {
+          console.error(`Day ${i + 1} failed (${currentDate}):`, dayError);
+          failedDays.push({ date: currentDate, error: dayError.message });
+          toast.dismiss(progressToast);
+          toast.error(`Day ${i + 1} failed: ${currentDate}`, { duration: 2000 });
+        }
+
+        // Delay between requests to avoid rate limiting
+        if (i < dates.length - 1) {
+          await new Promise(resolve => setTimeout(resolve, 800));
+        }
+      }
+
+      // Final summary
+      if (failedDays.length > 0) {
+        toast.error(
+          `Completed with ${failedDays.length} failed days.\n${totalStats.feedbackCreated} feedback, ${totalStats.assistanceCreated} assistance requests`,
+          { duration: 8000 }
+        );
+      } else {
+        toast.success(
+          `Demo data created!\n${totalStats.feedbackCreated} feedback items, ${totalStats.assistanceCreated} assistance requests`,
+          { duration: 6000 }
+        );
+      }
+
+      closeFeedbackDemoPicker();
+
+    } catch (error) {
+      console.error('Error populating feedback demo data:', error);
+      toast.error('Failed to populate demo data: ' + error.message);
+    } finally {
+      setSeedingFeedbackDemo(false);
+    }
+  };
+
+  const openRatingsDemoPicker = () => {
+    // Set default date range (last 30 days)
+    const endDate = new Date();
+    const startDate = new Date();
+    startDate.setDate(startDate.getDate() - 29);
+
+    setRatingsDemoDateRange({
+      startDate: startDate.toISOString().split('T')[0],
+      endDate: endDate.toISOString().split('T')[0]
+    });
+    setShowRatingsDemoPicker(true);
+  };
+
+  const closeRatingsDemoPicker = () => {
+    setShowRatingsDemoPicker(false);
+    setRatingsDemoDateRange({ startDate: '', endDate: '' });
+  };
+
+  const populateRatingsDemoData = async () => {
+    if (!ratingsDemoDateRange.startDate || !ratingsDemoDateRange.endDate) {
+      toast.error('Please select a valid date range');
+      return;
+    }
+
+    const dayCount = Math.ceil((new Date(ratingsDemoDateRange.endDate) - new Date(ratingsDemoDateRange.startDate)) / (1000 * 60 * 60 * 24)) + 1;
+
+    if (dayCount > 60) {
+      toast.error(`Date range too large (${dayCount} days). Maximum 60 days.`);
+      return;
+    }
+
+    if (!window.confirm(
+      `Populate Google & TripAdvisor ratings demo for "${account.name}"?\n\n` +
+      `Date Range: ${ratingsDemoDateRange.startDate} to ${ratingsDemoDateRange.endDate} (${dayCount} days)\n\n` +
+      `This will create:\n` +
+      `• Daily Google ratings with upward trend (~3.7 → ~4.5)\n` +
+      `• Daily TripAdvisor ratings with upward trend (~3.6 → ~4.4)\n` +
+      `• Historical rating snapshots for each day\n` +
+      `• Updated current external_ratings values\n\n` +
+      `⚠️ Existing ratings data in this date range will be REPLACED.`
+    )) {
+      return;
+    }
+
+    setSeedingRatingsDemo(true);
+    setShowRatingsDemoPicker(false);
+
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+
+      const apiUrl = window.location.hostname === 'localhost'
+        ? 'https://my.getchatters.com/api/admin/seed-demo-ratings'
+        : '/api/admin/seed-demo-ratings';
+
+      const progressToast = toast.loading(
+        `Processing ${dayCount} days of ratings data...`,
+        { duration: Infinity }
+      );
+
+      const response = await fetch(apiUrl, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session?.access_token}`
+        },
+        body: JSON.stringify({
+          accountId: account.id,
+          startDate: ratingsDemoDateRange.startDate,
+          endDate: ratingsDemoDateRange.endDate
+        })
+      });
+
+      const result = await response.json();
+
+      toast.dismiss(progressToast);
+
+      if (!response.ok) {
+        throw new Error(result.error || 'API request failed');
+      }
+
+      // Show results per venue
+      const venueDetails = result.stats.venueResults
+        .map(v => `${v.name}: Google ${v.googleStart}→${v.googleEnd}, TripAdvisor ${v.tripStart}→${v.tripEnd}`)
+        .join('\n');
+
+      toast.success(
+        `Ratings data created!\n${result.stats.historicalRecordsCreated} historical records\n${result.stats.venuesProcessed} venues, ${result.stats.daysProcessed} days`,
+        { duration: 6000 }
+      );
+
+      console.log('Ratings demo results:', result.stats);
+
+      closeRatingsDemoPicker();
+
+    } catch (error) {
+      console.error('Error populating ratings demo data:', error);
+      toast.error('Failed to populate ratings data: ' + error.message);
+    } finally {
+      setSeedingRatingsDemo(false);
+    }
+  };
+
   const handleImpersonate = async () => {
     if (!isAdmin || !account) {
       toast.error('Only Chatters admins can impersonate accounts');
@@ -899,14 +1153,52 @@ const AdminAccountDetail = () => {
 
               {/* Demo Data Population Section */}
               <div className="px-6 py-4 border-b border-gray-200">
-                <div className="flex items-center justify-between">
+                <div className="flex items-center justify-between mb-3">
                   <div>
                     <h4 className="text-sm font-semibold text-gray-700 mb-1">Demo Data Population</h4>
-                    <p className="text-xs text-gray-500">Populate 60 days of realistic demo data (overwrites existing data)</p>
+                    <p className="text-xs text-gray-500">Populate realistic demo data for demos and testing</p>
                   </div>
+                </div>
+                <div className="flex gap-2">
+                  <button
+                    onClick={openFeedbackDemoPicker}
+                    disabled={seedingFeedbackDemo || seedingDemoData || seedingRatingsDemo}
+                    className="inline-flex items-center justify-center gap-2 px-4 py-2 bg-blue-600 text-white hover:bg-blue-700 rounded-lg transition-colors disabled:opacity-50 text-sm font-medium shadow-sm"
+                    title="High-quality feedback & assistance data (45-50 sessions/day, 95% resolution)"
+                  >
+                    {seedingFeedbackDemo ? (
+                      <>
+                        <Loader2 className="w-4 h-4 animate-spin" />
+                        Processing...
+                      </>
+                    ) : (
+                      <>
+                        <MessageSquare className="w-4 h-4" />
+                        Feedback Demo
+                      </>
+                    )}
+                  </button>
+                  <button
+                    onClick={openRatingsDemoPicker}
+                    disabled={seedingRatingsDemo || seedingDemoData || seedingFeedbackDemo}
+                    className="inline-flex items-center justify-center gap-2 px-4 py-2 bg-orange-600 text-white hover:bg-orange-700 rounded-lg transition-colors disabled:opacity-50 text-sm font-medium shadow-sm"
+                    title="Google & TripAdvisor ratings with upward trend"
+                  >
+                    {seedingRatingsDemo ? (
+                      <>
+                        <Loader2 className="w-4 h-4 animate-spin" />
+                        Processing...
+                      </>
+                    ) : (
+                      <>
+                        <Star className="w-4 h-4" />
+                        Ratings Demo
+                      </>
+                    )}
+                  </button>
                   <button
                     onClick={populate60DaysDemo}
-                    disabled={seedingDemoData}
+                    disabled={seedingDemoData || seedingFeedbackDemo || seedingRatingsDemo}
                     className="inline-flex items-center justify-center gap-2 px-4 py-2 bg-purple-600 text-white hover:bg-purple-700 rounded-lg transition-colors disabled:opacity-50 text-sm font-medium shadow-sm"
                     title="Populate 60 days of all demo data (feedback, NPS, and reviews)"
                   >
@@ -918,7 +1210,7 @@ const AdminAccountDetail = () => {
                     ) : (
                       <>
                         <Sparkles className="w-4 h-4" />
-                        Populate 60 Days
+                        Full 60 Days
                       </>
                     )}
                   </button>
@@ -1090,6 +1382,163 @@ const AdminAccountDetail = () => {
                 }`}
               >
                 {seedingDemoData ? 'Populating...' : 'Populate Data'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Feedback Demo Data Date Picker Modal */}
+      {showFeedbackDemoPicker && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg shadow-xl p-6 max-w-md w-full mx-4">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-semibold text-gray-900">
+                Feedback Demo Data
+              </h3>
+              <button
+                onClick={closeFeedbackDemoPicker}
+                className="text-gray-400 hover:text-gray-600"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <p className="text-sm text-gray-600 mb-4">
+              Select date range for {account?.name} (max 30 days)
+            </p>
+
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Start Date
+                </label>
+                <input
+                  type="date"
+                  value={feedbackDemoDateRange.startDate}
+                  onChange={(e) => setFeedbackDemoDateRange(prev => ({ ...prev, startDate: e.target.value }))}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  End Date
+                </label>
+                <input
+                  type="date"
+                  value={feedbackDemoDateRange.endDate}
+                  onChange={(e) => setFeedbackDemoDateRange(prev => ({ ...prev, endDate: e.target.value }))}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                />
+              </div>
+
+              <div className="p-3 rounded-lg bg-blue-50">
+                <p className="text-sm text-gray-700 font-medium mb-2">Per venue, per day:</p>
+                <ul className="text-sm text-gray-600 space-y-1">
+                  <li>• 45-50 feedback sessions (~180 items)</li>
+                  <li>• 5-10 assistance requests</li>
+                  <li>• ~95% completion rate</li>
+                  <li>• 7-10 min avg resolution time</li>
+                  <li>• 4.0-4.5 avg satisfaction score</li>
+                </ul>
+                <p className="text-xs text-gray-500 mt-2">
+                  <strong>Note:</strong> Existing data in selected range will be replaced.
+                </p>
+              </div>
+            </div>
+
+            <div className="flex gap-3 mt-6">
+              <button
+                onClick={closeFeedbackDemoPicker}
+                className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={populateFeedbackDemoData}
+                disabled={!feedbackDemoDateRange.startDate || !feedbackDemoDateRange.endDate || seedingFeedbackDemo}
+                className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {seedingFeedbackDemo ? 'Populating...' : 'Populate Data'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Ratings Demo Data Date Picker Modal */}
+      {showRatingsDemoPicker && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg shadow-xl p-6 max-w-md w-full mx-4">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-semibold text-gray-900">
+                Ratings Demo Data
+              </h3>
+              <button
+                onClick={closeRatingsDemoPicker}
+                className="text-gray-400 hover:text-gray-600"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <p className="text-sm text-gray-600 mb-4">
+              Select date range for {account?.name} (max 60 days)
+            </p>
+
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Start Date
+                </label>
+                <input
+                  type="date"
+                  value={ratingsDemoDateRange.startDate}
+                  onChange={(e) => setRatingsDemoDateRange(prev => ({ ...prev, startDate: e.target.value }))}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  End Date
+                </label>
+                <input
+                  type="date"
+                  value={ratingsDemoDateRange.endDate}
+                  onChange={(e) => setRatingsDemoDateRange(prev => ({ ...prev, endDate: e.target.value }))}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                />
+              </div>
+
+              <div className="p-3 rounded-lg bg-orange-50">
+                <p className="text-sm text-gray-700 font-medium mb-2">Per venue:</p>
+                <ul className="text-sm text-gray-600 space-y-1">
+                  <li>• Google rating: ~3.7 → ~4.5 (upward trend)</li>
+                  <li>• TripAdvisor rating: ~3.6 → ~4.4 (upward trend)</li>
+                  <li>• Daily rating snapshots with small variations</li>
+                  <li>• Review count growth over time</li>
+                </ul>
+                <p className="text-xs text-gray-500 mt-2">
+                  <strong>Note:</strong> Existing ratings in selected range will be replaced.
+                </p>
+              </div>
+            </div>
+
+            <div className="flex gap-3 mt-6">
+              <button
+                onClick={closeRatingsDemoPicker}
+                className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={populateRatingsDemoData}
+                disabled={!ratingsDemoDateRange.startDate || !ratingsDemoDateRange.endDate || seedingRatingsDemo}
+                className="flex-1 px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {seedingRatingsDemo ? 'Populating...' : 'Populate Data'}
               </button>
             </div>
           </div>
