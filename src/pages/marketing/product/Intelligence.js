@@ -580,7 +580,6 @@ const IntelligencePage = () => {
       <WhyOperators />
       <Features />
       <InAction />
-      <Testimonial />
       <FinalCTA />
 
       <Footer />

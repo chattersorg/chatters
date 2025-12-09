@@ -521,7 +521,6 @@ const CustomerTrendsPage = () => {
       <WhyItMatters />
       <Features />
       <RealExample />
-      <Testimonial />
       <FinalCTA />
 
       <Footer />

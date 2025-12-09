@@ -514,7 +514,6 @@ const StaffRecognitionPage = () => {
       <WhyItMatters />
       <Features />
       <RealExample />
-      <Testimonial />
       <FinalCTA />
 
       <Footer />

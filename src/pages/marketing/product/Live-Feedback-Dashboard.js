@@ -518,7 +518,6 @@ const LiveFeedbackDashboardPage = () => {
       <WhyOperators />
       <Features />
       <RealExample />
-      <Testimonial />
       <FinalCTA />
 
       <Footer />

@@ -570,7 +570,6 @@ const QuestionManagementPage = () => {
       <WhyItMatters />
       <Features />
       <InAction />
-      <Testimonial />
       <FinalCTA />
 
       <Footer />

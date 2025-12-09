@@ -521,7 +521,6 @@ const ReviewBoostingPage = () => {
       <WhyOperators />
       <Features />
       <InAction />
-      <Testimonial />
       <FinalCTA />
 
       <Footer />
