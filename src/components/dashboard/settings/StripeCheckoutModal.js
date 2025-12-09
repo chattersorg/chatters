@@ -9,7 +9,11 @@ import {
 import { X, CreditCard, Lock } from 'lucide-react';
 import { Button } from '../../ui/button';
 
-const stripePromise = loadStripe(process.env.REACT_APP_STRIPE_PUBLISHABLE_KEY);
+// Wrap loadStripe with error handling to gracefully handle blocked scripts
+const stripePromise = loadStripe(process.env.REACT_APP_STRIPE_PUBLISHABLE_KEY).catch((error) => {
+  console.warn('Failed to load Stripe.js:', error.message);
+  return null;
+});
 
 const CheckoutForm = ({ onSuccess, onCancel, total, billingPeriod, venueCount, isSetupMode }) => {
   const stripe = useStripe();

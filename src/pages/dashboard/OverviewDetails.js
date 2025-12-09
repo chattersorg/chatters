@@ -13,7 +13,7 @@ import dayjs from 'dayjs';
 const OverviewDetails = () => {
   usePageTitle('Portfolio Overview');
   const navigate = useNavigate();
-  const { allVenues, setVenueId } = useVenue();
+  const { allVenues, setCurrentVenue } = useVenue();
   const [venueStats, setVenueStats] = useState({});
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -232,7 +232,7 @@ const OverviewDetails = () => {
   };
 
   const handleVenueClick = (venueId) => {
-    setVenueId(venueId);
+    setCurrentVenue(venueId);
     navigate('/dashboard');
   };
 

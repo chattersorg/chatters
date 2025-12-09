@@ -4,7 +4,11 @@ import { supabase } from '../../utils/supabase';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useVenue } from '../../context/VenueContext';
 
-const stripePromise = loadStripe(process.env.REACT_APP_STRIPE_PUBLISHABLE_KEY);
+// Wrap loadStripe with error handling to gracefully handle blocked scripts
+const stripePromise = loadStripe(process.env.REACT_APP_STRIPE_PUBLISHABLE_KEY).catch((error) => {
+  console.warn('Failed to load Stripe.js:', error.message);
+  return null;
+});
 
 const BillingPage = () => {
   const { userRole } = useVenue();
