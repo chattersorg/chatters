@@ -563,7 +563,6 @@ const StaffLeaderboardPage = () => {
       <WhyOperators />
       <Features />
       <InAction />
-      <Testimonial />
       <FinalCTA />
 
       <Footer />

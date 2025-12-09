@@ -556,7 +556,6 @@ const BusinessIntelligencePage = () => {
       <WhyOperators />
       <Features />
       <InAction />
-      <Testimonial />
       <FinalCTA />
 
       <Footer />

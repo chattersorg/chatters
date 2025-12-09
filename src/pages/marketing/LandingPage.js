@@ -6,7 +6,6 @@ import Hero from '../../components/home/Hero';
 import Problem from '../../components/home/Problem';
 import HowItWorks from '../../components/home/HowItWorks';
 import Features from '../../components/home/Features';
-import Testimonials from '../../components/home/Testimonials';
 import Industries from '../../components/home/Industries';
 import Differentiator from '../../components/home/Differentiator';
 import Pricing from '../../components/home/Pricing';
@@ -159,7 +158,6 @@ const LandingPage = () => {
       <Problem />
       <HowItWorks />
       <Features />
-      <Testimonials />
       <Industries />
       <Differentiator />
       <Pricing />

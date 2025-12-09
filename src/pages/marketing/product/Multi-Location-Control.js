@@ -596,7 +596,6 @@ const MultiLocationControlPage = () => {
       <WhyOperators />
       <Features />
       <InAction />
-      <Testimonial />
       <FinalCTA />
 
       <Footer />

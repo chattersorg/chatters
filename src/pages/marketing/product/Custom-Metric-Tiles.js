@@ -518,7 +518,6 @@ const CustomMetricTilesPage = () => {
       <WhyOperators />
       <Features />
       <InAction />
-      <Testimonial />
       <FinalCTA />
 
       <Footer />

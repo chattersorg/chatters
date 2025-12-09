@@ -649,7 +649,6 @@ const RealTimeAlertsPage = () => {
       <WhyOperators />
       <Features />
       <RealExample />
-      <Testimonial />
       <FinalCTA />
 
       <Footer />

@@ -609,7 +609,6 @@ const KioskModePage = () => {
       <WhyOperators />
       <Features />
       <RealExample />
-      <Testimonial />
       <FinalCTA />
 
       <Footer />

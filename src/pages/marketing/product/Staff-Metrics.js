@@ -551,7 +551,6 @@ const StaffMetricsPage = () => {
       <WhyItMatters />
       <Features />
       <RealExample />
-      <Testimonial />
       <FinalCTA />
 
       <Footer />

@@ -568,7 +568,6 @@ const NPSScoringPage = () => {
       <WhyOperators />
       <Features />
       <InAction />
-      <Testimonial />
       <FinalCTA />
       <Footer />
     </div>

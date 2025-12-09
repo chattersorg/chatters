@@ -473,7 +473,6 @@ const PubsBarsSolutionPage = () => {
       <WhyPubsChoose />
       <Features />
       <RealExample />
-      <Testimonial />
       <FinalCTA />
 
       <Footer />
