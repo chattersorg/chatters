@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { supabase } from '../../../utils/supabase';
 import { Button } from '../../ui/button';
+import { PermissionGate } from '../../../context/PermissionsContext';
 
 // Helper component to render text with {table} highlighted
 const HighlightedInput = ({ value, onChange, placeholder, rows, className }) => {
@@ -79,13 +80,15 @@ const SettingsCard = ({ title, description, children, onSave, loading, message }
         <div className="text-xs text-gray-500 dark:text-gray-400">
           Changes are saved per venue
         </div>
-        <Button
-          variant="primary"
-          onClick={onSave}
-          loading={loading}
-        >
-          {loading ? 'Saving...' : 'Save'}
-        </Button>
+        <PermissionGate permission="venue.branding">
+          <Button
+            variant="primary"
+            onClick={onSave}
+            loading={loading}
+          >
+            {loading ? 'Saving...' : 'Save'}
+          </Button>
+        </PermissionGate>
       </div>
       {message && (
         <div className={`text-xs p-2 rounded-lg mt-3 ${
@@ -357,13 +360,15 @@ const BrandingTab = ({
             </div>
           )}
           <div className="flex-1">
-            <input
-              type="file"
-              accept="image/*"
-              onChange={handleLogoUpload}
-              disabled={logoLoading}
-              className="w-full text-sm text-gray-600 dark:text-gray-400 file:mr-3 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-medium file:bg-[#2548CC] file:text-white hover:file:bg-[#1e3ba8] cursor-pointer disabled:opacity-50"
-            />
+            <PermissionGate permission="venue.branding">
+              <input
+                type="file"
+                accept="image/*"
+                onChange={handleLogoUpload}
+                disabled={logoLoading}
+                className="w-full text-sm text-gray-600 dark:text-gray-400 file:mr-3 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-medium file:bg-[#2548CC] file:text-white hover:file:bg-[#1e3ba8] cursor-pointer disabled:opacity-50"
+              />
+            </PermissionGate>
             <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">
               Square image, minimum 100x100px recommended
             </p>
@@ -390,13 +395,15 @@ const BrandingTab = ({
             </div>
           )}
           <div className="flex-1">
-            <input
-              type="file"
-              accept="image/*"
-              onChange={handleBackgroundImageUpload}
-              disabled={backgroundImageLoading}
-              className="w-full text-sm text-gray-600 dark:text-gray-400 file:mr-3 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-medium file:bg-[#2548CC] file:text-white hover:file:bg-[#1e3ba8] cursor-pointer disabled:opacity-50"
-            />
+            <PermissionGate permission="venue.branding">
+              <input
+                type="file"
+                accept="image/*"
+                onChange={handleBackgroundImageUpload}
+                disabled={backgroundImageLoading}
+                className="w-full text-sm text-gray-600 dark:text-gray-400 file:mr-3 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-medium file:bg-[#2548CC] file:text-white hover:file:bg-[#1e3ba8] cursor-pointer disabled:opacity-50"
+              />
+            </PermissionGate>
             <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">
               Landscape image, 1920x1080px or larger recommended. Leave empty to use solid background color.
             </p>

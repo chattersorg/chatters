@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { supabase } from '../../utils/supabase';
 import { useVenue } from '../../context/VenueContext';
+import { PermissionGate } from '../../context/PermissionsContext';
 import { ChartCard } from '../../components/dashboard/layout/ModernCard';
 import usePageTitle from '../../hooks/usePageTitle';
 import dayjs from 'dayjs';
@@ -355,12 +356,14 @@ const AllFeedback = () => {
             <span className="text-sm font-medium text-blue-900">
               {selectedSessions.size} session(s) selected
             </span>
-            <button
-              onClick={() => setShowResolveModal(true)}
-              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium"
-            >
-              Mark as Resolved
-            </button>
+            <PermissionGate permission="feedback.respond">
+              <button
+                onClick={() => setShowResolveModal(true)}
+                className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium"
+              >
+                Mark as Resolved
+              </button>
+            </PermissionGate>
           </div>
         )}
 
@@ -616,16 +619,18 @@ const AllFeedback = () => {
                   Close
                 </button>
                 {!selectedSession.is_resolved && (
-                  <button
-                    onClick={async () => {
-                      setSelectedSessions(new Set([selectedSession.session_id]));
-                      setShowDetailsModal(false);
-                      setShowResolveModal(true);
-                    }}
-                    className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-                  >
-                    Mark as Resolved
-                  </button>
+                  <PermissionGate permission="feedback.respond">
+                    <button
+                      onClick={async () => {
+                        setSelectedSessions(new Set([selectedSession.session_id]));
+                        setShowDetailsModal(false);
+                        setShowResolveModal(true);
+                      }}
+                      className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                    >
+                      Mark as Resolved
+                    </button>
+                  </PermissionGate>
                 )}
               </div>
             </div>

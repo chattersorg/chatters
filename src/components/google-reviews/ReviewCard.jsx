@@ -2,6 +2,7 @@
 import React, { useState } from 'react';
 import { supabase } from '../../utils/supabase';
 import { useVenue } from '../../context/VenueContext';
+import { PermissionGate } from '../../context/PermissionsContext';
 
 const ReviewCard = ({ review, venueId, onReplySuccess }) => {
   const [showReplyBox, setShowReplyBox] = useState(false);
@@ -161,17 +162,19 @@ const ReviewCard = ({ review, venueId, onReplySuccess }) => {
       ) : (
         <div className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
           {!showReplyBox ? (
-            <button
-              onClick={() => setShowReplyBox(true)}
-              disabled={!canReply}
-              className="inline-flex items-center px-4 py-2 bg-custom-black text-white rounded-lg hover:bg-gray-800 dark:hover:bg-gray-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-              title={!canReply ? 'You do not have permission to reply to reviews' : ''}
-            >
-              <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6" />
-              </svg>
-              Reply to Review
-            </button>
+            <PermissionGate permission="reviews.respond">
+              <button
+                onClick={() => setShowReplyBox(true)}
+                disabled={!canReply}
+                className="inline-flex items-center px-4 py-2 bg-custom-black text-white rounded-lg hover:bg-gray-800 dark:hover:bg-gray-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                title={!canReply ? 'You do not have permission to reply to reviews' : ''}
+              >
+                <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6" />
+                </svg>
+                Reply to Review
+              </button>
+            </PermissionGate>
           ) : (
             <div className="space-y-3">
               <textarea

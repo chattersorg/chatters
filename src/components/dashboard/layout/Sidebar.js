@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useVenue } from '../../../context/VenueContext';
+import { usePermissions } from '../../../context/PermissionsContext';
 import { supabase } from '../../../utils/supabase';
 import { isDevSite } from '../../../utils/domainUtils';
 import ImpersonationBanner from '../../../components/ImpersonationBanner';
@@ -38,10 +39,14 @@ import {
   MessageCircle,
   List,
   LayoutDashboard,
-  Sparkles
+  Sparkles,
+  Shield,
+  Key
 } from 'lucide-react';
 
 // Venue Management Section - Single venue context
+// Each item can have a 'permission' field for visibility control
+// SubItems can also have individual permissions
 const venueNavItems = [
   {
     id: 'overview',
@@ -49,6 +54,7 @@ const venueNavItems = [
     icon: Home,
     path: '/dashboard',
     color: 'text-blue-600'
+    // No permission - always visible
   },
   {
     id: 'ai-insights',
@@ -56,9 +62,10 @@ const venueNavItems = [
     icon: Sparkles,
     path: '/ai-insights',
     color: 'text-violet-600',
+    permission: 'ai.insights',
     subItems: [
-      { label: 'Weekly Insights', path: '/ai-insights', icon: Sparkles },
-      { label: 'Chatters Intelligence', path: '/ai-chat', icon: MessageSquare }
+      { label: 'Weekly Insights', path: '/ai-insights', icon: Sparkles, permission: 'ai.insights' },
+      { label: 'Chatters Intelligence', path: '/ai-chat', icon: MessageSquare, permission: 'ai.chat' }
     ]
   },
   {
@@ -66,7 +73,8 @@ const venueNavItems = [
     label: 'Questions',
     icon: HelpCircle,
     path: '/feedback/questions',
-    color: 'text-green-600'
+    color: 'text-green-600',
+    permission: 'questions.view'
   },
   {
     id: 'reviews',
@@ -74,7 +82,8 @@ const venueNavItems = [
     icon: MessageCircle,
     path: '/reviews',
     color: 'text-yellow-600',
-    badge: 'BETA'
+    badge: 'BETA',
+    permission: 'reviews.view'
   },
   {
     id: 'reports',
@@ -82,13 +91,14 @@ const venueNavItems = [
     icon: BarChart3,
     path: '/reports/feedback',
     color: 'text-purple-600',
+    permission: 'reports.view',
     subItems: [
-      { label: 'Feedback', path: '/reports/feedback', icon: MessageSquare },
-      { label: 'Performance', path: '/reports/performance', icon: TrendingUp },
-      { label: 'Impact', path: '/reports/impact', icon: Target },
-      { label: 'Insights', path: '/reports/insights', icon: Zap },
-      { label: 'Metrics', path: '/reports/metrics', icon: PieChart },
-      { label: 'Custom', path: '/reports/builder', icon: FileText }
+      { label: 'Feedback', path: '/reports/feedback', icon: MessageSquare, permission: 'reports.view' },
+      { label: 'Performance', path: '/reports/performance', icon: TrendingUp, permission: 'reports.view' },
+      { label: 'Impact', path: '/reports/impact', icon: Target, permission: 'reports.view' },
+      { label: 'Insights', path: '/reports/insights', icon: Zap, permission: 'reports.view' },
+      { label: 'Metrics', path: '/reports/metrics', icon: PieChart, permission: 'reports.view' },
+      { label: 'Custom', path: '/reports/builder', icon: FileText, permission: 'reports.create' }
     ]
   },
   {
@@ -96,7 +106,8 @@ const venueNavItems = [
     label: 'NPS',
     icon: Star,
     path: '/reports/nps',
-    color: 'text-amber-600'
+    color: 'text-amber-600',
+    permission: 'nps.view'
   },
   {
     id: 'staff',
@@ -104,13 +115,13 @@ const venueNavItems = [
     icon: Users,
     path: '/staff/leaderboard',
     color: 'text-orange-600',
+    permission: 'staff.leaderboard', // Show if user has any staff permission
     subItems: [
-      { label: 'Leaderboard', path: '/staff/leaderboard', icon: Trophy },
-      { label: 'Recognition', path: '/staff/recognition', icon: Award },
-      { label: 'Employees', path: '/staff/employees', icon: Users },
-      { label: 'Managers', path: '/staff/managers', icon: UserCheck },
-      { label: 'Roles', path: '/staff/roles', icon: UserPlus, badge: 'BETA' },
-      { label: 'Locations', path: '/staff/locations', icon: Building2, badge: 'BETA' }
+      { label: 'Leaderboard', path: '/staff/leaderboard', icon: Trophy, permission: 'staff.leaderboard' },
+      { label: 'Recognition', path: '/staff/recognition', icon: Award, permission: 'staff.recognition' },
+      { label: 'Staff List', path: '/staff/list', icon: Users, permission: 'staff.view' },
+      { label: 'Roles', path: '/staff/roles', icon: UserPlus, badge: 'BETA', permission: 'staff.edit' },
+      { label: 'Locations', path: '/staff/locations', icon: Building2, badge: 'BETA', permission: 'staff.edit' }
     ]
   },
   {
@@ -118,7 +129,8 @@ const venueNavItems = [
     label: 'Floor Plan',
     icon: Map,
     path: '/floorplan',
-    color: 'text-indigo-600'
+    color: 'text-indigo-600',
+    permission: 'floorplan.view'
   },
   {
     id: 'venue-settings',
@@ -126,12 +138,13 @@ const venueNavItems = [
     icon: Settings,
     path: '/settings/feedback',
     color: 'text-gray-600',
+    permission: 'venue.view',
     subItems: [
-      { label: 'Venue Details', path: '/settings/venue-details', icon: Building2 },
-      { label: 'Feedback', path: '/settings/feedback', icon: MessageSquare },
-      { label: 'Branding', path: '/settings/branding', icon: Palette },
-      { label: 'QR Code', path: '/feedback/qr', icon: QrCode },
-      { label: 'Integrations', path: '/settings/integrations', icon: Activity }
+      { label: 'Venue Details', path: '/settings/venue-details', icon: Building2, permission: 'venue.view' },
+      { label: 'Feedback', path: '/settings/feedback', icon: MessageSquare, permission: 'venue.view' },
+      { label: 'Branding', path: '/settings/branding', icon: Palette, permission: 'venue.branding' },
+      { label: 'QR Code', path: '/feedback/qr', icon: QrCode, permission: 'qr.view' },
+      { label: 'Integrations', path: '/settings/integrations', icon: Activity, permission: 'venue.integrations' }
     ]
   }
 ];
@@ -143,14 +156,16 @@ const multiVenueNavItems = [
     label: 'Venues',
     icon: Building2,
     path: '/multi-venue/venues',
-    color: 'text-indigo-600'
+    color: 'text-indigo-600',
+    permission: 'venue.view'
   },
   {
     id: 'multi-dashboard',
     label: 'Dashboard',
     icon: LayoutDashboard,
     path: '/multi-venue/dashboard',
-    color: 'text-blue-600'
+    color: 'text-blue-600',
+    permission: 'multivenue.view'
   },
   {
     id: 'multi-reporting',
@@ -158,25 +173,41 @@ const multiVenueNavItems = [
     icon: BarChart3,
     path: '/multi-venue/overview',
     color: 'text-purple-600',
+    permission: 'multivenue.view',
     subItems: [
-      { label: 'Portfolio Overview', path: '/multi-venue/overview', icon: TrendingUp },
-      { label: 'Venue Comparison', path: '/reports/nps', icon: Building2 },
-      { label: 'Custom Reports', path: '/reports/builder', icon: FileText }
+      { label: 'Portfolio Overview', path: '/multi-venue/overview', icon: TrendingUp, permission: 'multivenue.view' },
+      { label: 'Venue Comparison', path: '/reports/nps', icon: Building2, permission: 'nps.view' },
+      { label: 'Custom Reports', path: '/reports/builder', icon: FileText, permission: 'reports.create' }
+    ]
+  }
+];
+
+// Administration Section - Master-only for account-wide management
+const adminNavItems = [
+  {
+    id: 'permissions',
+    label: 'Permissions',
+    icon: Shield,
+    path: '/admin/permissions',
+    color: 'text-rose-600',
+    subItems: [
+      { label: 'Manager Access', path: '/admin/permissions/managers', icon: Users },
+      { label: 'Role Templates', path: '/admin/permissions/templates', icon: Key }
     ]
   }
 ];
 
 // Account settings items for bottom section
-const getAccountItems = (userRole, trialInfo) => {
+const getAccountItems = (userRole, trialInfo, hasBillingPermission) => {
   const items = [
     { label: 'Profile', path: '/account/profile', icon: User }
   ];
-  
-  // Show billing for master users OR if trial is expired (special billing access)
-  if (userRole === 'master' || trialInfo?.isExpired) {
+
+  // Show billing for master users, users with billing.view permission, OR if trial is expired
+  if (userRole === 'master' || hasBillingPermission || trialInfo?.isExpired) {
     items.push({ label: 'Billing', path: '/account/billing', icon: CreditCard });
   }
-  
+
   return items;
 };
 
@@ -193,9 +224,41 @@ const Sidebar = ({ collapsed, setCollapsed }) => {
     setCurrentVenue,
     userRole
   } = useVenue();
+  const { hasPermission } = usePermissions();
 
-  // Get account items based on user role and trial status
-  const accountItems = getAccountItems(userRole, trialInfo);
+  // Check if user has billing permission
+  const hasBillingPermission = hasPermission('billing.view');
+
+  // Helper to check if item should be visible based on permission
+  // Master users see everything, otherwise check permission
+  const canSeeItem = (item) => {
+    if (userRole === 'master') return true;
+    if (!item.permission) return true;
+    return hasPermission(item.permission);
+  };
+
+  // Filter nav items based on permissions
+  const filterNavItems = (items) => {
+    return items
+      .filter(item => canSeeItem(item))
+      .map(item => {
+        if (item.subItems) {
+          const filteredSubItems = item.subItems.filter(subItem => canSeeItem(subItem));
+          // If no sub-items are visible, hide the parent too
+          if (filteredSubItems.length === 0) return null;
+          return { ...item, subItems: filteredSubItems };
+        }
+        return item;
+      })
+      .filter(Boolean);
+  };
+
+  // Get filtered nav items
+  const filteredVenueNavItems = filterNavItems(venueNavItems);
+  const filteredMultiVenueNavItems = filterNavItems(multiVenueNavItems);
+
+  // Get account items based on user role, trial status, and permissions
+  const accountItems = getAccountItems(userRole, trialInfo, hasBillingPermission);
 
   // Determine if user has access to multiple venues
   const hasMultipleVenues = allVenues.length > 1;
@@ -271,14 +334,18 @@ const Sidebar = ({ collapsed, setCollapsed }) => {
 
   // Auto-open submenu based on current route
   React.useEffect(() => {
-    const allNavItems = [...venueNavItems, ...(hasMultipleVenues ? multiVenueNavItems : [])];
+    const allNavItems = [
+      ...filteredVenueNavItems,
+      ...(hasMultipleVenues ? filteredMultiVenueNavItems : []),
+      ...(userRole === 'master' ? adminNavItems : [])
+    ];
     const currentItem = allNavItems.find(item =>
       item.subItems && item.subItems.some(subItem => isActive(subItem.path))
     );
     if (currentItem && !collapsed) {
       setActiveSubmenu(currentItem.id);
     }
-  }, [location.pathname, collapsed, hasMultipleVenues]);
+  }, [location.pathname, collapsed, hasMultipleVenues, userRole, filteredVenueNavItems, filteredMultiVenueNavItems]);
 
   const toggleSubmenu = (itemId) => {
     if (collapsed) {
@@ -399,7 +466,7 @@ const Sidebar = ({ collapsed, setCollapsed }) => {
         {/* Navigation Items */}
         <nav className="mt-2 px-2 flex-1 overflow-y-auto custom-scrollbar">
           {/* Render Venue Management Section */}
-          {venueNavItems.map((item) => {
+          {filteredVenueNavItems.map((item) => {
             const Icon = item.icon;
             const itemActive = isActive(item.path) || hasActiveSubitem(item.subItems);
             const showSubmenu = !collapsed && activeSubmenu === item.id && item.subItems;
@@ -490,7 +557,7 @@ const Sidebar = ({ collapsed, setCollapsed }) => {
           })}
 
           {/* Multi-Venue Section Divider */}
-          {hasMultipleVenues && !collapsed && (
+          {hasMultipleVenues && filteredMultiVenueNavItems.length > 0 && !collapsed && (
             <div className="my-4 px-3">
               <div className="border-t border-gray-200 dark:border-gray-800 pt-4">
                 <p className="text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wider mb-2">
@@ -501,7 +568,99 @@ const Sidebar = ({ collapsed, setCollapsed }) => {
           )}
 
           {/* Render Multi-Venue Section */}
-          {hasMultipleVenues && multiVenueNavItems.map((item) => {
+          {hasMultipleVenues && filteredMultiVenueNavItems.map((item) => {
+            const Icon = item.icon;
+            const itemActive = isActive(item.path) || hasActiveSubitem(item.subItems);
+            const showSubmenu = !collapsed && activeSubmenu === item.id && item.subItems;
+
+            return (
+              <div key={item.id} className="mb-1">
+                {/* Main Nav Item */}
+                {item.subItems ? (
+                  <button
+                    onClick={() => toggleSubmenu(item.id)}
+                    className={`w-full flex items-center justify-between px-3 py-2 rounded-lg transition-all duration-200 group ${
+                      itemActive
+                        ? 'bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-gray-100 shadow-sm'
+                        : 'text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-gray-100'
+                    }`}
+                  >
+                    <div className="flex items-center">
+                      <Icon className={`w-5 h-5 ${itemActive ? item.color : 'text-gray-400 dark:text-gray-500 group-hover:text-gray-600 dark:group-hover:text-gray-300'}`} />
+                      {!collapsed && (
+                        <span className="ml-3 font-medium text-sm">{item.label}</span>
+                      )}
+                    </div>
+                    {!collapsed && item.subItems && (
+                      <ChevronRight
+                        className={`w-4 h-4 transition-transform duration-200 ${
+                          showSubmenu ? 'rotate-90' : ''
+                        }`}
+                      />
+                    )}
+                  </button>
+                ) : (
+                  <Link
+                    to={item.path}
+                    onClick={handleMobileLinkClick}
+                    className={`flex items-center justify-between px-3 py-2 rounded-lg transition-all duration-200 group ${
+                      itemActive
+                        ? 'bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-gray-100 shadow-sm'
+                        : 'text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-gray-100'
+                    }`}
+                    title={collapsed ? item.label : ''}
+                  >
+                    <div className="flex items-center">
+                      <Icon className={`w-5 h-5 ${itemActive ? item.color : 'text-gray-400 dark:text-gray-500 group-hover:text-gray-600 dark:group-hover:text-gray-300'}`} />
+                      {!collapsed && (
+                        <span className="ml-3 font-medium text-sm">{item.label}</span>
+                      )}
+                    </div>
+                  </Link>
+                )}
+
+                {/* Submenu Items */}
+                {showSubmenu && (
+                  <div className="ml-2 mt-1 space-y-1 border-l-2 border-gray-100 dark:border-gray-800 pl-4">
+                    {item.subItems.map((subItem) => {
+                      const SubIcon = subItem.icon;
+                      return (
+                        <Link
+                          key={subItem.path}
+                          to={subItem.path}
+                          onClick={handleMobileLinkClick}
+                          className={`flex items-center justify-between px-3 py-2 text-sm rounded-md transition-colors group ${
+                            isActive(subItem.path)
+                              ? 'bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-400 font-medium'
+                              : 'text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800 hover:text-gray-700 dark:hover:text-gray-300'
+                          }`}
+                        >
+                          <div className="flex items-center">
+                            <SubIcon className="w-4 h-4 mr-2" />
+                            {subItem.label}
+                          </div>
+                        </Link>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+            );
+          })}
+
+          {/* Administration Section - Master only */}
+          {userRole === 'master' && !collapsed && (
+            <div className="my-4 px-3">
+              <div className="border-t border-gray-200 dark:border-gray-800 pt-4">
+                <p className="text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wider mb-2">
+                  Administration
+                </p>
+              </div>
+            </div>
+          )}
+
+          {/* Render Administration Section */}
+          {userRole === 'master' && adminNavItems.map((item) => {
             const Icon = item.icon;
             const itemActive = isActive(item.path) || hasActiveSubitem(item.subItems);
             const showSubmenu = !collapsed && activeSubmenu === item.id && item.subItems;

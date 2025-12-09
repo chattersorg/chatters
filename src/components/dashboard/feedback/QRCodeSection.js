@@ -1,6 +1,7 @@
 import React, { useRef } from 'react';
 import { QRCodeSVG } from 'qrcode.react';
 import { Download, Share2 } from 'lucide-react';
+import { PermissionGate } from '../../../context/PermissionsContext';
 
 const QRCodeSection = ({ feedbackUrl }) => {
   const qrCodeRef = useRef(null);
@@ -50,13 +51,15 @@ const QRCodeSection = ({ feedbackUrl }) => {
               Share this QR code or link with customers to collect feedback.
             </p>
           </div>
-          <button
-            onClick={downloadQRCode}
-            className="w-full sm:w-auto bg-black dark:bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-gray-800 dark:hover:bg-blue-700 transition-colors duration-200 text-sm font-medium flex items-center justify-center gap-2"
-          >
-            <Download className="w-4 h-4" />
-            Download QR Code
-          </button>
+          <PermissionGate permission="qr.generate">
+            <button
+              onClick={downloadQRCode}
+              className="w-full sm:w-auto bg-black dark:bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-gray-800 dark:hover:bg-blue-700 transition-colors duration-200 text-sm font-medium flex items-center justify-center gap-2"
+            >
+              <Download className="w-4 h-4" />
+              Download QR Code
+            </button>
+          </PermissionGate>
         </div>
       </div>
 

@@ -179,20 +179,20 @@ const ResponseTimeAnalyticsTile = ({ venueId, timeframe = 'all' }) => {
   };
 
   const performanceColor = (minutes) => {
-    if (minutes <= 15) return 'text-green-600';
-    if (minutes <= 60) return 'text-yellow-600';
-    if (minutes <= 120) return 'text-orange-600';
-    return 'text-red-600';
+    if (minutes <= 15) return 'text-green-600 dark:text-green-400';
+    if (minutes <= 60) return 'text-yellow-600 dark:text-yellow-400';
+    if (minutes <= 120) return 'text-orange-600 dark:text-orange-400';
+    return 'text-red-600 dark:text-red-400';
   };
 
   return (
-    <div className="relative bg-white border border-gray-200 rounded-lg p-6">
+    <div className="relative bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-lg p-6">
       {/* Header */}
       <div className="mb-4">
-        <h3 className="text-base font-semibold text-gray-900">
+        <h3 className="text-base font-semibold text-gray-900 dark:text-white">
           Response Time Analytics
         </h3>
-        <p className="text-xs text-gray-600 mt-1">
+        <p className="text-xs text-gray-600 dark:text-gray-400 mt-1">
           How quickly your team responds to customer feedback and assistance requests
         </p>
       </div>
@@ -201,15 +201,15 @@ const ResponseTimeAnalyticsTile = ({ venueId, timeframe = 'all' }) => {
         <div className="space-y-3">
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
             {[...Array(4)].map((_, i) => (
-              <div key={i} className="h-16 bg-gray-100 rounded-md animate-pulse" />
+              <div key={i} className="h-16 bg-gray-100 dark:bg-gray-800 rounded-md animate-pulse" />
             ))}
           </div>
-          <div className="h-28 bg-gray-100 rounded-md animate-pulse" />
+          <div className="h-28 bg-gray-100 dark:bg-gray-800 rounded-md animate-pulse" />
         </div>
       ) : !responseData.totalResponses ? (
         <div className="text-center py-8">
-          <h4 className="text-sm font-medium text-gray-900 mb-1">No Response Data</h4>
-          <p className="text-xs text-gray-600">
+          <h4 className="text-sm font-medium text-gray-900 dark:text-white mb-1">No Response Data</h4>
+          <p className="text-xs text-gray-600 dark:text-gray-400">
             Analytics will appear once feedback is resolved.
           </p>
         </div>
@@ -217,31 +217,31 @@ const ResponseTimeAnalyticsTile = ({ venueId, timeframe = 'all' }) => {
         <div className="space-y-6">
           {/* Key Metrics */}
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-            <div className="rounded-md p-3 border border-gray-100">
-              <div className="text-xs font-medium text-gray-700 mb-1">Average</div>
+            <div className="rounded-md p-3 border border-gray-100 dark:border-gray-700">
+              <div className="text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Average</div>
               <div className={`text-2xl font-bold ${performanceColor(averageTime)}`}>
                 {formatTime(averageTime)}
               </div>
             </div>
 
-            <div className="rounded-md p-3 border border-gray-100">
-              <div className="text-xs font-medium text-gray-700 mb-1">Median</div>
+            <div className="rounded-md p-3 border border-gray-100 dark:border-gray-700">
+              <div className="text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Median</div>
               <div className={`text-2xl font-bold ${performanceColor(medianTime)}`}>
                 {formatTime(medianTime)}
               </div>
             </div>
 
-            <div className="rounded-md p-3 border border-gray-100">
-              <div className="text-xs font-medium text-gray-700 mb-1">SLA Compliance</div>
-              <div className={`text-2xl font-bold ${slaCompliance >= 80 ? 'text-green-600' : slaCompliance >= 60 ? 'text-yellow-600' : 'text-red-600'}`}>
+            <div className="rounded-md p-3 border border-gray-100 dark:border-gray-700">
+              <div className="text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">SLA Compliance</div>
+              <div className={`text-2xl font-bold ${slaCompliance >= 80 ? 'text-green-600 dark:text-green-400' : slaCompliance >= 60 ? 'text-yellow-600 dark:text-yellow-400' : 'text-red-600 dark:text-red-400'}`}>
                 {slaCompliance.toFixed(0)}%
               </div>
-              <div className="text-[10px] text-gray-500">{'< 2 hrs'}</div>
+              <div className="text-[10px] text-gray-500 dark:text-gray-400">{'< 2 hrs'}</div>
             </div>
 
-            <div className="rounded-md p-3 border border-gray-100">
-              <div className="text-xs font-medium text-gray-700 mb-1">Responses Tracked</div>
-              <div className="text-2xl font-bold text-gray-900">
+            <div className="rounded-md p-3 border border-gray-100 dark:border-gray-700">
+              <div className="text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Responses Tracked</div>
+              <div className="text-2xl font-bold text-gray-900 dark:text-white">
                 {responseData.totalResponses}
               </div>
             </div>
@@ -249,15 +249,15 @@ const ResponseTimeAnalyticsTile = ({ venueId, timeframe = 'all' }) => {
 
           {/* Distribution */}
           <div>
-            <h4 className="text-sm font-medium text-gray-900 mb-2">
+            <h4 className="text-sm font-medium text-gray-900 dark:text-white mb-2">
               Response Time Distribution
             </h4>
             <div className="space-y-2">
               {timeDistribution.map((bucket, index) => (
                 <div key={index} className="flex items-center">
-                  <div className="w-24 text-xs font-medium text-gray-700">{bucket.label}</div>
+                  <div className="w-24 text-xs font-medium text-gray-700 dark:text-gray-300">{bucket.label}</div>
                   <div className="flex-1 mx-3">
-                    <div className="bg-gray-200 rounded-full h-4 overflow-hidden">
+                    <div className="bg-gray-200 dark:bg-gray-700 rounded-full h-4 overflow-hidden">
                       <div
                         className={`h-full ${bucket.bar}`}
                         style={{ width: `${Math.max(bucket.percentage, 2)}%` }}
@@ -265,10 +265,10 @@ const ResponseTimeAnalyticsTile = ({ venueId, timeframe = 'all' }) => {
                       />
                     </div>
                   </div>
-                  <div className="w-14 text-right text-xs text-gray-600">
+                  <div className="w-14 text-right text-xs text-gray-600 dark:text-gray-400">
                     {bucket.percentage.toFixed(0)}%
                   </div>
-                  <div className="w-10 text-right text-xs font-medium text-gray-900">
+                  <div className="w-10 text-right text-xs font-medium text-gray-900 dark:text-white">
                     {bucket.count}
                   </div>
                 </div>

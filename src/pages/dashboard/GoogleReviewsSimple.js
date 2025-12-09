@@ -145,7 +145,7 @@ const DemoReviewCard = ({ review, onReplySuccess }) => {
       {[1, 2, 3, 4, 5].map((star) => (
         <svg
           key={star}
-          className={`w-5 h-5 ${star <= rating ? 'text-yellow-400 fill-current' : 'text-gray-300 fill-current'}`}
+          className={`w-5 h-5 ${star <= rating ? 'text-yellow-400 dark:text-yellow-500 fill-current' : 'text-gray-300 dark:text-gray-600 fill-current'}`}
           viewBox="0 0 20 20"
         >
           <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
@@ -155,23 +155,23 @@ const DemoReviewCard = ({ review, onReplySuccess }) => {
   );
 
   return (
-    <div className="bg-white rounded-lg border border-gray-200 p-6 hover:shadow-md transition-shadow">
+    <div className="bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-800 p-6 hover:shadow-md dark:hover:shadow-gray-900/50 transition-shadow">
       <div className="flex items-start justify-between mb-4">
         <div className="flex items-start gap-4">
-          <div className="w-12 h-12 rounded-full bg-gray-200 flex items-center justify-center">
-            <svg className="w-6 h-6 text-gray-400" fill="currentColor" viewBox="0 0 20 20">
+          <div className="w-12 h-12 rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center">
+            <svg className="w-6 h-6 text-gray-400 dark:text-gray-500" fill="currentColor" viewBox="0 0 20 20">
               <path fillRule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clipRule="evenodd" />
             </svg>
           </div>
           <div>
-            <h4 className="font-semibold text-gray-900">{localReview.reviewer_name}</h4>
+            <h4 className="font-semibold text-gray-900 dark:text-white">{localReview.reviewer_name}</h4>
             <div className="flex items-center gap-3 mt-1">
               {renderStars(localReview.star_rating)}
-              <span className="text-sm text-gray-500">{formatDate(localReview.review_date)}</span>
+              <span className="text-sm text-gray-500 dark:text-gray-400">{formatDate(localReview.review_date)}</span>
             </div>
           </div>
         </div>
-        <div className="flex items-center gap-2 bg-gray-100 px-3 py-1.5 rounded-lg text-sm text-gray-700">
+        <div className="flex items-center gap-2 bg-gray-100 dark:bg-gray-800 px-3 py-1.5 rounded-lg text-sm text-gray-700 dark:text-gray-300">
           <svg className="w-4 h-4" viewBox="0 0 24 24">
             <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
             <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
@@ -183,23 +183,23 @@ const DemoReviewCard = ({ review, onReplySuccess }) => {
       </div>
 
       {localReview.review_text && (
-        <p className="text-gray-700 leading-relaxed mb-4">{localReview.review_text}</p>
+        <p className="text-gray-700 dark:text-gray-300 leading-relaxed mb-4">{localReview.review_text}</p>
       )}
 
       {localReview.is_replied ? (
-        <div className="bg-blue-50 border-l-4 border-blue-500 p-4 rounded-r-lg">
+        <div className="bg-blue-50 dark:bg-blue-900/30 border-l-4 border-blue-500 dark:border-blue-400 p-4 rounded-r-lg">
           <div className="flex items-center justify-between mb-2">
-            <span className="text-sm font-semibold text-blue-900">Your Reply</span>
-            <span className="text-xs text-blue-700">{formatDate(localReview.reply_date)}</span>
+            <span className="text-sm font-semibold text-blue-900 dark:text-blue-100">Your Reply</span>
+            <span className="text-xs text-blue-700 dark:text-blue-300">{formatDate(localReview.reply_date)}</span>
           </div>
-          <p className="text-blue-900 text-sm leading-relaxed">{localReview.review_reply}</p>
+          <p className="text-blue-900 dark:text-blue-100 text-sm leading-relaxed">{localReview.review_reply}</p>
         </div>
       ) : (
-        <div className="mt-4 pt-4 border-t border-gray-200">
+        <div className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
           {!showReplyBox ? (
             <button
               onClick={() => setShowReplyBox(true)}
-              className="inline-flex items-center px-4 py-2 bg-custom-black text-white rounded-lg hover:bg-gray-800 transition-colors"
+              className="inline-flex items-center px-4 py-2 bg-gray-900 dark:bg-gray-700 text-white rounded-lg hover:bg-gray-800 dark:hover:bg-gray-600 transition-colors"
             >
               <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6" />
@@ -214,22 +214,22 @@ const DemoReviewCard = ({ review, onReplySuccess }) => {
                 placeholder="Write a thoughtful reply to this review..."
                 maxLength={4096}
                 rows={4}
-                className="w-full px-4 py-3 bg-white text-gray-900 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 resize-none"
+                className="w-full px-4 py-3 bg-white dark:bg-gray-800 text-gray-900 dark:text-white border border-gray-300 dark:border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-blue-500 dark:focus:border-blue-400 resize-none placeholder:text-gray-500 dark:placeholder:text-gray-400"
               />
               <div className="flex items-center justify-between">
-                <span className="text-sm text-gray-500">{replyText.length} / 4096 characters</span>
+                <span className="text-sm text-gray-500 dark:text-gray-400">{replyText.length} / 4096 characters</span>
                 <div className="flex gap-2">
                   <button
                     onClick={() => { setShowReplyBox(false); setReplyText(''); }}
                     disabled={submitting}
-                    className="px-4 py-2 text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors disabled:opacity-50"
+                    className="px-4 py-2 text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors disabled:opacity-50"
                   >
                     Cancel
                   </button>
                   <button
                     onClick={handleSubmitReply}
                     disabled={submitting || !replyText.trim()}
-                    className="px-4 py-2 bg-custom-black text-white rounded-lg hover:bg-gray-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="px-4 py-2 bg-gray-900 dark:bg-gray-700 text-white rounded-lg hover:bg-gray-800 dark:hover:bg-gray-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     {submitting ? 'Sending...' : 'Send Reply'}
                   </button>
@@ -246,21 +246,21 @@ const DemoReviewCard = ({ review, onReplySuccess }) => {
 // Review Stats Component
 const ReviewStats = ({ stats }) => (
   <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-    <div className="bg-white rounded-lg border border-gray-200 p-4">
-      <div className="text-2xl font-bold text-gray-900">{stats.totalReviews}</div>
-      <div className="text-sm text-gray-600">Total Reviews</div>
+    <div className="bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-800 p-4">
+      <div className="text-2xl font-bold text-gray-900 dark:text-white">{stats.totalReviews}</div>
+      <div className="text-sm text-gray-600 dark:text-gray-400">Total Reviews</div>
     </div>
-    <div className="bg-white rounded-lg border border-gray-200 p-4">
-      <div className="text-2xl font-bold text-gray-900">{stats.averageRating}</div>
-      <div className="text-sm text-gray-600">Average Rating</div>
+    <div className="bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-800 p-4">
+      <div className="text-2xl font-bold text-gray-900 dark:text-white">{stats.averageRating}</div>
+      <div className="text-sm text-gray-600 dark:text-gray-400">Average Rating</div>
     </div>
-    <div className="bg-white rounded-lg border border-gray-200 p-4">
-      <div className="text-2xl font-bold text-gray-900">{stats.unrespondedCount}</div>
-      <div className="text-sm text-gray-600">Need Response</div>
+    <div className="bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-800 p-4">
+      <div className="text-2xl font-bold text-gray-900 dark:text-white">{stats.unrespondedCount}</div>
+      <div className="text-sm text-gray-600 dark:text-gray-400">Need Response</div>
     </div>
-    <div className="bg-white rounded-lg border border-gray-200 p-4">
-      <div className="text-2xl font-bold text-gray-900">{stats.respondedPercentage}%</div>
-      <div className="text-sm text-gray-600">Response Rate</div>
+    <div className="bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-800 p-4">
+      <div className="text-2xl font-bold text-gray-900 dark:text-white">{stats.respondedPercentage}%</div>
+      <div className="text-sm text-gray-600 dark:text-gray-400">Response Rate</div>
     </div>
   </div>
 );
@@ -282,8 +282,8 @@ const ReviewFilters = ({ value, onChange }) => {
           onClick={() => onChange(filter.id)}
           className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
             value === filter.id
-              ? 'bg-custom-black text-white'
-              : 'bg-white border border-gray-300 text-gray-700 hover:bg-gray-50'
+              ? 'bg-gray-900 dark:bg-gray-700 text-white'
+              : 'bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700'
           }`}
         >
           {filter.label}
@@ -376,7 +376,7 @@ const GoogleReviewsSimplePage = () => {
   if (loading) {
     return (
       <div className="flex items-center justify-center py-12">
-        <div className="text-gray-500">Loading...</div>
+        <div className="text-gray-500 dark:text-gray-400">Loading...</div>
       </div>
     );
   }
@@ -385,19 +385,19 @@ const GoogleReviewsSimplePage = () => {
   if (!isConnected) {
     return (
       <div className="max-w-4xl mx-auto">
-        <div className="bg-white rounded-lg border border-gray-200 p-8 text-center">
-          <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
-            <svg className="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <div className="bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-800 p-8 text-center">
+          <div className="w-16 h-16 bg-gray-100 dark:bg-gray-800 rounded-full flex items-center justify-center mx-auto mb-4">
+            <svg className="w-8 h-8 text-gray-400 dark:text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
             </svg>
           </div>
-          <h2 className="text-2xl font-semibold text-gray-900 mb-2">Google Account Not Connected</h2>
-          <p className="text-gray-600 mb-6">
+          <h2 className="text-2xl font-semibold text-gray-900 dark:text-white mb-2">Google Account Not Connected</h2>
+          <p className="text-gray-600 dark:text-gray-400 mb-6">
             Connect your Google account to manage review links and access Google Business features.
           </p>
           <Link
             to="/settings?tab=Integrations"
-            className="inline-flex items-center px-6 py-3 bg-custom-black text-white rounded-lg hover:bg-gray-800 transition-colors"
+            className="inline-flex items-center px-6 py-3 bg-gray-900 dark:bg-gray-700 text-white rounded-lg hover:bg-gray-800 dark:hover:bg-gray-600 transition-colors"
           >
             Connect Google Account
           </Link>
@@ -413,12 +413,12 @@ const GoogleReviewsSimplePage = () => {
         {/* Header */}
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-2xl font-semibold text-gray-900">Google Reviews</h1>
-            <p className="text-gray-500 text-sm mt-1">Manage and respond to your Google Business reviews</p>
+            <h1 className="text-2xl font-semibold text-gray-900 dark:text-white">Google Reviews</h1>
+            <p className="text-gray-500 dark:text-gray-400 text-sm mt-1">Manage and respond to your Google Business reviews</p>
           </div>
-          <div className="flex items-center gap-2 px-3 py-1.5 bg-green-50 border border-green-200 rounded-lg">
-            <CheckCircle2 className="w-4 h-4 text-green-600" />
-            <span className="text-sm font-medium text-green-700">Connected</span>
+          <div className="flex items-center gap-2 px-3 py-1.5 bg-green-50 dark:bg-green-900/30 border border-green-200 dark:border-green-800 rounded-lg">
+            <CheckCircle2 className="w-4 h-4 text-green-600 dark:text-green-400" />
+            <span className="text-sm font-medium text-green-700 dark:text-green-400">Connected</span>
           </div>
         </div>
 
@@ -431,12 +431,12 @@ const GoogleReviewsSimplePage = () => {
         {/* Reviews List */}
         <div className="space-y-4">
           {demoReviews.length === 0 ? (
-            <div className="bg-white rounded-lg border border-gray-200 p-12 text-center">
-              <div className="w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                <CheckCircle2 className="w-6 h-6 text-gray-400" />
+            <div className="bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-800 p-12 text-center">
+              <div className="w-12 h-12 bg-gray-100 dark:bg-gray-800 rounded-full flex items-center justify-center mx-auto mb-4">
+                <CheckCircle2 className="w-6 h-6 text-gray-400 dark:text-gray-500" />
               </div>
-              <p className="text-gray-600 font-medium">All caught up!</p>
-              <p className="text-gray-500 text-sm mt-1">No reviews match this filter.</p>
+              <p className="text-gray-600 dark:text-gray-400 font-medium">All caught up!</p>
+              <p className="text-gray-500 dark:text-gray-500 text-sm mt-1">No reviews match this filter.</p>
             </div>
           ) : (
             demoReviews.map((review) => (
@@ -456,17 +456,17 @@ const GoogleReviewsSimplePage = () => {
     <div className="space-y-6 max-w-4xl">
       {/* Header */}
       <div>
-        <h1 className="text-3xl font-bold text-gray-900">Google Reviews</h1>
-        <p className="text-gray-600 mt-1">{venueName}</p>
+        <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Google Reviews</h1>
+        <p className="text-gray-600 dark:text-gray-400 mt-1">{venueName}</p>
       </div>
 
       {/* Connection Status */}
-      <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+      <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg p-4">
         <div className="flex items-start gap-3">
-          <CheckCircle2 className="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5" />
+          <CheckCircle2 className="w-5 h-5 text-green-600 dark:text-green-400 flex-shrink-0 mt-0.5" />
           <div className="flex-1">
-            <h3 className="font-semibold text-green-900">Google Account Connected</h3>
-            <p className="text-sm text-green-700 mt-1">
+            <h3 className="font-semibold text-green-900 dark:text-green-100">Google Account Connected</h3>
+            <p className="text-sm text-green-700 dark:text-green-300 mt-1">
               Connected as: {connectionInfo?.email}
             </p>
           </div>
@@ -474,29 +474,29 @@ const GoogleReviewsSimplePage = () => {
       </div>
 
       {/* API Access Notice */}
-      <div className="bg-blue-50 border border-blue-200 rounded-lg p-6">
+      <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-6">
         <div className="flex items-start gap-3">
-          <svg className="w-6 h-6 text-blue-600 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <svg className="w-6 h-6 text-blue-600 dark:text-blue-400 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
           </svg>
           <div className="flex-1">
-            <h3 className="font-semibold text-blue-900 mb-2">Google Business Profile API Access Required</h3>
-            <p className="text-sm text-blue-800 mb-3">
+            <h3 className="font-semibold text-blue-900 dark:text-blue-100 mb-2">Google Business Profile API Access Required</h3>
+            <p className="text-sm text-blue-800 dark:text-blue-200 mb-3">
               To view and reply to reviews directly in Chatters, you need to apply for Google Business Profile API access.
             </p>
-            <div className="space-y-2 text-sm text-blue-800">
+            <div className="space-y-2 text-sm text-blue-800 dark:text-blue-200">
               <p><strong>How to apply:</strong></p>
               <ol className="list-decimal ml-5 space-y-1">
-                <li>Visit the <a href="https://support.google.com/business/contact/api_default" target="_blank" rel="noopener noreferrer" className="underline hover:text-blue-900">Google Business API Contact Form</a></li>
+                <li>Visit the <a href="https://support.google.com/business/contact/api_default" target="_blank" rel="noopener noreferrer" className="underline hover:text-blue-900 dark:hover:text-blue-100">Google Business API Contact Form</a></li>
                 <li>Select "Application for Basic API Access"</li>
                 <li>Explain your use case (review management platform)</li>
                 <li>Wait 5-14 days for approval</li>
               </ol>
             </div>
-            <div className="mt-4 pt-4 border-t border-blue-200">
-              <p className="text-sm text-blue-800">
+            <div className="mt-4 pt-4 border-t border-blue-200 dark:border-blue-700">
+              <p className="text-sm text-blue-800 dark:text-blue-200">
                 <strong>Meanwhile:</strong> Manage your Google review request links in{' '}
-                <Link to="/settings/feedback" className="underline hover:text-blue-900 font-semibold">
+                <Link to="/settings/feedback" className="underline hover:text-blue-900 dark:hover:text-blue-100 font-semibold">
                   Settings → Feedback
                 </Link>
               </p>
@@ -506,57 +506,57 @@ const GoogleReviewsSimplePage = () => {
       </div>
 
       {/* Review Links Quick Access */}
-      <div className="bg-white rounded-lg border border-gray-200 p-6">
+      <div className="bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-800 p-6">
         <div className="flex items-start justify-between mb-4">
           <div>
-            <h2 className="text-xl font-semibold text-gray-900">Review Request Links</h2>
-            <p className="text-sm text-gray-600 mt-1">
+            <h2 className="text-xl font-semibold text-gray-900 dark:text-white">Review Request Links</h2>
+            <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
               Generate and manage review request links for Google and TripAdvisor
             </p>
           </div>
           <Link
             to="/settings/feedback"
-            className="flex items-center gap-2 px-4 py-2 bg-custom-black text-white rounded-lg hover:bg-gray-800 transition-colors text-sm"
+            className="flex items-center gap-2 px-4 py-2 bg-gray-900 dark:bg-gray-700 text-white rounded-lg hover:bg-gray-800 dark:hover:bg-gray-600 transition-colors text-sm"
           >
             <ExternalLink className="w-4 h-4" />
             Manage Links
           </Link>
         </div>
 
-        <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
+        <div className="bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-4">
           <div className="space-y-3">
             <div className="flex items-start gap-3">
-              <div className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5">
+              <div className="w-5 h-5 text-blue-600 dark:text-blue-400 flex-shrink-0 mt-0.5">
                 <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
               </div>
               <div className="flex-1">
-                <p className="text-sm text-gray-700">
+                <p className="text-sm text-gray-700 dark:text-gray-300">
                   Auto-generate review links from your connected Google and TripAdvisor integrations
                 </p>
               </div>
             </div>
             <div className="flex items-start gap-3">
-              <div className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5">
+              <div className="w-5 h-5 text-blue-600 dark:text-blue-400 flex-shrink-0 mt-0.5">
                 <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
               </div>
               <div className="flex-1">
-                <p className="text-sm text-gray-700">
+                <p className="text-sm text-gray-700 dark:text-gray-300">
                   Customise and save links to share with satisfied customers
                 </p>
               </div>
             </div>
             <div className="flex items-start gap-3">
-              <div className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5">
+              <div className="w-5 h-5 text-blue-600 dark:text-blue-400 flex-shrink-0 mt-0.5">
                 <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
               </div>
               <div className="flex-1">
-                <p className="text-sm text-gray-700">
+                <p className="text-sm text-gray-700 dark:text-gray-300">
                   Add links to emails, receipts, or thank-you messages to boost positive reviews
                 </p>
               </div>
@@ -566,54 +566,54 @@ const GoogleReviewsSimplePage = () => {
       </div>
 
       {/* What's Coming */}
-      <div className="bg-white rounded-lg border border-gray-200 p-6">
-        <h2 className="text-xl font-semibold text-gray-900 mb-4">Coming Soon (After API Approval)</h2>
+      <div className="bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-800 p-6">
+        <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">Coming Soon (After API Approval)</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="flex items-start gap-3">
-            <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center flex-shrink-0">
-              <svg className="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <div className="w-10 h-10 bg-blue-100 dark:bg-blue-900/30 rounded-lg flex items-center justify-center flex-shrink-0">
+              <svg className="w-5 h-5 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />
               </svg>
             </div>
             <div>
-              <h3 className="font-semibold text-gray-900">View All Reviews</h3>
-              <p className="text-sm text-gray-600">See all your Google reviews in one dashboard</p>
+              <h3 className="font-semibold text-gray-900 dark:text-white">View All Reviews</h3>
+              <p className="text-sm text-gray-600 dark:text-gray-400">See all your Google reviews in one dashboard</p>
             </div>
           </div>
 
           <div className="flex items-start gap-3">
-            <div className="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center flex-shrink-0">
-              <svg className="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <div className="w-10 h-10 bg-green-100 dark:bg-green-900/30 rounded-lg flex items-center justify-center flex-shrink-0">
+              <svg className="w-5 h-5 text-green-600 dark:text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6" />
               </svg>
             </div>
             <div>
-              <h3 className="font-semibold text-gray-900">Reply to Reviews</h3>
-              <p className="text-sm text-gray-600">Respond to reviews directly from Chatters</p>
+              <h3 className="font-semibold text-gray-900 dark:text-white">Reply to Reviews</h3>
+              <p className="text-sm text-gray-600 dark:text-gray-400">Respond to reviews directly from Chatters</p>
             </div>
           </div>
 
           <div className="flex items-start gap-3">
-            <div className="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center flex-shrink-0">
-              <svg className="w-5 h-5 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <div className="w-10 h-10 bg-purple-100 dark:bg-purple-900/30 rounded-lg flex items-center justify-center flex-shrink-0">
+              <svg className="w-5 h-5 text-purple-600 dark:text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
               </svg>
             </div>
             <div>
-              <h3 className="font-semibold text-gray-900">Auto-Sync Reviews</h3>
-              <p className="text-sm text-gray-600">Reviews sync automatically every day</p>
+              <h3 className="font-semibold text-gray-900 dark:text-white">Auto-Sync Reviews</h3>
+              <p className="text-sm text-gray-600 dark:text-gray-400">Reviews sync automatically every day</p>
             </div>
           </div>
 
           <div className="flex items-start gap-3">
-            <div className="w-10 h-10 bg-orange-100 rounded-lg flex items-center justify-center flex-shrink-0">
-              <svg className="w-5 h-5 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <div className="w-10 h-10 bg-orange-100 dark:bg-orange-900/30 rounded-lg flex items-center justify-center flex-shrink-0">
+              <svg className="w-5 h-5 text-orange-600 dark:text-orange-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
               </svg>
             </div>
             <div>
-              <h3 className="font-semibold text-gray-900">Review Analytics</h3>
-              <p className="text-sm text-gray-600">Track rating trends and response rates</p>
+              <h3 className="font-semibold text-gray-900 dark:text-white">Review Analytics</h3>
+              <p className="text-sm text-gray-600 dark:text-gray-400">Track rating trends and response rates</p>
             </div>
           </div>
         </div>

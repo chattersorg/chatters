@@ -4,6 +4,7 @@ import { supabase } from '../../utils/supabase';
 import { ChartCard } from '../../components/dashboard/layout/ModernCard';
 import usePageTitle from '../../hooks/usePageTitle';
 import { useVenue } from '../../context/VenueContext';
+import { PermissionGate } from '../../context/PermissionsContext';
 import { ArrowLeft, Mail, Phone, MapPin, Briefcase, Save, X, ChevronDown, ChevronUp, History, User, Clock, Pause, Play, Trash2 } from 'lucide-react';
 
 const EmployeeDetail = () => {
@@ -329,47 +330,53 @@ const EmployeeDetail = () => {
         subtitle={`Manage information for ${employee.first_name} ${employee.last_name}`}
         actions={
           <div className="flex items-center gap-2">
-            <button
-              onClick={handleTogglePause}
-              disabled={saving}
-              className={`px-3 py-2 rounded-lg transition-colors text-sm font-medium flex items-center gap-2 ${
-                employee.is_active
-                  ? 'bg-orange-100 text-orange-700 hover:bg-orange-200'
-                  : 'bg-green-100 text-green-700 hover:bg-green-200'
-              } disabled:opacity-50 disabled:cursor-not-allowed`}
-            >
-              {employee.is_active ? (
-                <>
-                  <Pause className="w-4 h-4" />
-                  Pause
-                </>
-              ) : (
-                <>
-                  <Play className="w-4 h-4" />
-                  Activate
-                </>
-              )}
-            </button>
-            <button
-              onClick={() => setShowDeleteModal(true)}
-              disabled={saving || deleting}
-              className="px-3 py-2 rounded-lg bg-red-100 text-red-700 hover:bg-red-200 transition-colors text-sm font-medium flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              <Trash2 className="w-4 h-4" />
-              Delete
-            </button>
-            <button
-              onClick={handleSave}
-              disabled={!hasChanges || saving}
-              className={`px-4 py-2 rounded-lg transition-colors text-sm font-medium flex items-center gap-2 ${
-                hasChanges && !saving
-                  ? 'bg-green-600 text-white hover:bg-green-700'
-                  : 'bg-gray-300 text-gray-500 cursor-not-allowed'
-              }`}
-            >
-              <Save className="w-4 h-4" />
-              {saving ? 'Saving...' : 'Save Changes'}
-            </button>
+            <PermissionGate permission="staff.edit">
+              <button
+                onClick={handleTogglePause}
+                disabled={saving}
+                className={`px-3 py-2 rounded-lg transition-colors text-sm font-medium flex items-center gap-2 ${
+                  employee.is_active
+                    ? 'bg-orange-100 text-orange-700 hover:bg-orange-200'
+                    : 'bg-green-100 text-green-700 hover:bg-green-200'
+                } disabled:opacity-50 disabled:cursor-not-allowed`}
+              >
+                {employee.is_active ? (
+                  <>
+                    <Pause className="w-4 h-4" />
+                    Pause
+                  </>
+                ) : (
+                  <>
+                    <Play className="w-4 h-4" />
+                    Activate
+                  </>
+                )}
+              </button>
+            </PermissionGate>
+            <PermissionGate permission="staff.edit">
+              <button
+                onClick={() => setShowDeleteModal(true)}
+                disabled={saving || deleting}
+                className="px-3 py-2 rounded-lg bg-red-100 text-red-700 hover:bg-red-200 transition-colors text-sm font-medium flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                <Trash2 className="w-4 h-4" />
+                Delete
+              </button>
+            </PermissionGate>
+            <PermissionGate permission="staff.edit">
+              <button
+                onClick={handleSave}
+                disabled={!hasChanges || saving}
+                className={`px-4 py-2 rounded-lg transition-colors text-sm font-medium flex items-center gap-2 ${
+                  hasChanges && !saving
+                    ? 'bg-green-600 text-white hover:bg-green-700'
+                    : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                }`}
+              >
+                <Save className="w-4 h-4" />
+                {saving ? 'Saving...' : 'Save Changes'}
+              </button>
+            </PermissionGate>
           </div>
         }
       >

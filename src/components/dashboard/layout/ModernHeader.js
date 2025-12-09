@@ -206,11 +206,11 @@ const ModernHeader = ({ sidebarCollapsed, setSidebarCollapsed, trialInfo }) => {
     if (currentSection.id === 'staff') {
       if (currentPath === '/staff/leaderboard') return 'Team performance rankings';
       if (currentPath === '/staff/recognition') return 'Staff recognition history';
-      if (currentPath === '/staff/employees') return 'Employee management';
-      if (currentPath === '/staff/managers') return 'Manager management';
+      if (currentPath === '/staff/list') return 'Employees and managers';
       if (currentPath === '/staff/roles') return 'Role configuration';
       if (currentPath === '/staff/locations') return 'Location management';
       if (currentPath.startsWith('/staff/employees/')) return 'Employee details';
+      if (currentPath.startsWith('/staff/managers/')) return 'Manager details';
       if (currentPath.startsWith('/staff-member/')) return 'Staff member details';
       return 'Team management';
     }
@@ -218,6 +218,13 @@ const ModernHeader = ({ sidebarCollapsed, setSidebarCollapsed, trialInfo }) => {
     // Floor Plan subtitles
     if (currentSection.id === 'floorplan') {
       return 'Venue layout and table management';
+    }
+
+    // Administration subtitles (master only)
+    if (currentPath.startsWith('/admin/permissions')) {
+      if (currentPath === '/admin/permissions/managers') return 'Manage permissions for all managers';
+      if (currentPath === '/admin/permissions/templates') return 'Create and manage role templates';
+      return 'Permission management';
     }
 
     // Overview

@@ -214,17 +214,17 @@ export default function SatisfactionTrendTile({ venueId, timeframe = 'last7' }) 
   const { hourly: isHourly, monthly: isMonthly } = getRange(preset);
 
   return (
-    <div className="bg-white border border-gray-200 rounded-lg p-6">
+    <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-lg p-6">
       {/* Header */}
       <div className="mb-4">
-        <h3 className="text-base font-semibold text-gray-900">Satisfaction Trend</h3>
-        <p className="text-xs text-gray-600 mt-1">{isHourly ? 'Hourly' : isMonthly ? 'Monthly' : 'Daily'} average satisfaction trends</p>
+        <h3 className="text-base font-semibold text-gray-900 dark:text-white">Satisfaction Trend</h3>
+        <p className="text-xs text-gray-600 dark:text-gray-400 mt-1">{isHourly ? 'Hourly' : isMonthly ? 'Monthly' : 'Daily'} average satisfaction trends</p>
       </div>
 
       {/* Chart */}
       <div className="mt-4 h-64">
         {loading ? (
-          <div className="h-full bg-gray-50 border border-dashed border-gray-200 rounded-md animate-pulse" />
+          <div className="h-full bg-gray-50 dark:bg-gray-800 border border-dashed border-gray-200 dark:border-gray-700 rounded-md animate-pulse" />
         ) : series.length && series.some(d => d.average != null) ? (
 
           <ResponsiveContainer width="100%" height="100%">
@@ -232,7 +232,7 @@ export default function SatisfactionTrendTile({ venueId, timeframe = 'last7' }) 
               data={series}
               margin={{ top: 8, right: 8, bottom: 8, left: 0 }}
             >
-              <CartesianGrid stroke="#e5e7eb" strokeDasharray="3 3" />
+              <CartesianGrid stroke="#f0f0f0" strokeDasharray="0" vertical={false} className="dark:opacity-20" />
 
               <XAxis
                 dataKey="labelTs"
@@ -267,12 +267,13 @@ export default function SatisfactionTrendTile({ venueId, timeframe = 'last7' }) 
 
               <Tooltip
                 contentStyle={{
-                  backgroundColor: 'white',
-                  border: '1px solid #e5e7eb',
+                  backgroundColor: '#1F2937',
+                  border: '1px solid #374151',
                   borderRadius: 8,
                   fontSize: 12,
                   fontWeight: 'bold',
                   boxShadow: '0 4px 6px -1px rgba(0,0,0,0.1)',
+                  color: '#F9FAFB',
                 }}
                 formatter={(v) => [v, isHourly ? 'Hourly Avg' : isMonthly ? 'Monthly Avg' : 'Daily Avg']}
                 labelFormatter={(ts) => {
@@ -298,20 +299,20 @@ export default function SatisfactionTrendTile({ venueId, timeframe = 'last7' }) 
               <Area
                 type="linear"
                 dataKey="average"
-                stroke="#0f172a"        // black line
-                fill="url(#colorBlack)" // black gradient fill
+                stroke="#3b82f6"        // blue line
+                fill="url(#colorBlue)" // blue gradient fill
                 strokeWidth={2}
                 connectNulls={true}     // 👈 draw continuous line, no gaps
                 isAnimationActive={false}
-                dot={{ r: 2, fill: '#0f172a', strokeWidth: 0 }}
-                activeDot={{ r: 4, fill: '#0f172a', strokeWidth: 2, stroke: 'white' }}
+                dot={false}
+                activeDot={{ r: 4, fill: '#3b82f6', strokeWidth: 2, stroke: 'white' }}
                 name={isHourly ? 'Hourly Avg' : isMonthly ? 'Monthly Avg' : 'Daily Avg'}
               />
 
               <defs>
-                <linearGradient id="colorBlack" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor="#0f172a" stopOpacity={0.3} />
-                  <stop offset="100%" stopColor="#0f172a" stopOpacity={0} />
+                <linearGradient id="colorBlue" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stopColor="#3b82f6" stopOpacity={0.3} />
+                  <stop offset="100%" stopColor="#3b82f6" stopOpacity={0} />
                 </linearGradient>
               </defs>
             </AreaChart>
@@ -319,10 +320,10 @@ export default function SatisfactionTrendTile({ venueId, timeframe = 'last7' }) 
 
 
         ) : (
-          <div className="h-full flex items-center justify-center text-slate-500 border border-dashed border-gray-200 rounded-md">
+          <div className="h-full flex items-center justify-center text-slate-500 dark:text-gray-400 border border-dashed border-gray-200 dark:border-gray-700 rounded-md">
             <div className="text-center">
-              <p className="text-sm mb-1 text-slate-600">No trend data available</p>
-              <p className="text-xs text-slate-500">Trends will appear as feedback is collected</p>
+              <p className="text-sm mb-1 text-slate-600 dark:text-gray-400">No trend data available</p>
+              <p className="text-xs text-slate-500 dark:text-gray-500">Trends will appear as feedback is collected</p>
             </div>
           </div>
         )}
