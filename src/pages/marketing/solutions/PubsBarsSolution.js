@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Helmet } from 'react-helmet';
 import {
@@ -12,10 +12,123 @@ import {
   Bell,
   TrendingUp,
   Shield,
-  Zap
+  Zap,
+  AlertTriangle
 } from 'lucide-react';
 import Navbar from '../../../components/marketing/layout/Navbar';
 import Footer from '../../../components/marketing/layout/Footer';
+
+// ─────────────────────────────────────────────────────────────
+// PUB DASHBOARD MOCKUP
+// ─────────────────────────────────────────────────────────────
+const PubDashboardMockup = () => {
+  const [pulsingCard, setPulsingCard] = useState(null);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setPulsingCard(0);
+      setTimeout(() => setPulsingCard(null), 1000);
+    }, 4000);
+    return () => clearInterval(interval);
+  }, []);
+
+  const feedbackItems = [
+    { table: 'Table 14', area: 'Bar', rating: 2, time: 'Just now', comment: 'Waited 40 mins for food', urgent: true },
+    { table: 'Table 6', area: 'Floor', rating: 4, time: '4 min ago', comment: 'Great atmosphere tonight', urgent: false },
+    { table: 'Bar Area', area: 'Bar', rating: 5, time: '10 min ago', comment: 'Excellent craft beer selection!', urgent: false },
+  ];
+
+  const getRatingColor = (rating) => {
+    if (rating <= 2) return 'bg-red-500';
+    if (rating <= 3) return 'bg-amber-500';
+    return 'bg-emerald-500';
+  };
+
+  const getRatingBg = (rating) => {
+    if (rating <= 2) return 'bg-red-50 border-red-200';
+    if (rating <= 3) return 'bg-amber-50 border-amber-200';
+    return 'bg-emerald-50 border-emerald-200';
+  };
+
+  const getAreaColor = (area) => {
+    switch (area) {
+      case 'Bar': return 'bg-amber-100 text-amber-700';
+      case 'Floor': return 'bg-blue-100 text-blue-700';
+      default: return 'bg-slate-100 text-slate-700';
+    }
+  };
+
+  return (
+    <div className="bg-slate-900 rounded-xl p-4 shadow-2xl">
+      {/* Header */}
+      <div className="flex items-center justify-between mb-4">
+        <div className="flex items-center gap-2">
+          <div className="w-2 h-2 bg-emerald-400 rounded-full animate-pulse"></div>
+          <span className="text-sm font-medium text-white">Pub Dashboard</span>
+        </div>
+        <div className="flex items-center gap-2">
+          <span className="text-xs text-slate-400">Tonight</span>
+          <div className="flex items-center gap-1 bg-red-500/20 text-red-400 px-2 py-0.5 rounded text-xs">
+            <Bell className="w-3 h-3" />
+            <span>1 urgent</span>
+          </div>
+        </div>
+      </div>
+
+      {/* Stats Row */}
+      <div className="grid grid-cols-3 gap-2 mb-4">
+        <div className="bg-slate-800 rounded-lg p-2 text-center">
+          <p className="text-lg font-bold text-white">4.5</p>
+          <p className="text-[10px] text-slate-400">Avg Rating</p>
+        </div>
+        <div className="bg-slate-800 rounded-lg p-2 text-center">
+          <p className="text-lg font-bold text-emerald-400">31</p>
+          <p className="text-[10px] text-slate-400">Feedback Tonight</p>
+        </div>
+        <div className="bg-slate-800 rounded-lg p-2 text-center">
+          <p className="text-lg font-bold text-amber-400">4m</p>
+          <p className="text-[10px] text-slate-400">Avg Response</p>
+        </div>
+      </div>
+
+      {/* Feedback Cards */}
+      <div className="space-y-2">
+        {feedbackItems.map((item, index) => (
+          <div
+            key={index}
+            className={`rounded-lg p-3 border transition-all duration-300 ${getRatingBg(item.rating)} ${
+              pulsingCard === index ? 'ring-2 ring-blue-400 scale-[1.02]' : ''
+            }`}
+          >
+            <div className="flex items-start justify-between gap-2">
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-2 mb-1">
+                  <span className="font-semibold text-xs text-slate-800">{item.table}</span>
+                  <span className={`text-[10px] font-medium px-1.5 py-0.5 rounded ${getAreaColor(item.area)}`}>
+                    {item.area}
+                  </span>
+                  {item.urgent && (
+                    <span className="flex items-center gap-0.5 text-[10px] font-medium text-red-600 bg-red-100 px-1.5 py-0.5 rounded-full">
+                      <AlertTriangle className="w-2.5 h-2.5" />
+                      Urgent
+                    </span>
+                  )}
+                </div>
+                <p className="text-[11px] text-slate-600">{item.comment}</p>
+              </div>
+              <div className="flex flex-col items-end gap-1">
+                <div className={`${getRatingColor(item.rating)} text-white text-xs font-bold px-2 py-0.5 rounded`}>
+                  {item.rating}/5
+                </div>
+                <span className="text-[10px] text-slate-500">{item.time}</span>
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+};
 
 // SECTION 1 — HERO
 const Hero = () => {
@@ -63,11 +176,7 @@ const Hero = () => {
                     <div className="w-3 h-3 rounded-full bg-blue-500"></div>
                   </div>
                 </div>
-                <img
-                  src="https://placehold.co/550x400/e2e8f0/475569?text=Pub+Dashboard"
-                  alt="Chatters dashboard for pubs and bars"
-                  className="w-full rounded-lg"
-                />
+                <PubDashboardMockup />
               </div>
             </div>
           </div>
@@ -388,32 +497,7 @@ const RealExample = () => {
   );
 };
 
-// SECTION 8 — TESTIMONIAL
-const Testimonial = () => {
-  return (
-    <section className="bg-gray-50 py-20 lg:py-24">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="max-w-3xl mx-auto text-center">
-          <blockquote className="text-2xl sm:text-3xl text-gray-700 italic mb-8 leading-relaxed">
-            "We've stopped dreading the weekend rush. Chatters lets us catch problems while we can still fix them."
-          </blockquote>
-
-          <div className="flex items-center justify-center gap-4">
-            <div className="w-14 h-14 bg-gray-300 rounded-full flex items-center justify-center">
-              <span className="text-gray-600 font-semibold text-xl">T</span>
-            </div>
-            <div className="text-left">
-              <p className="font-bold text-gray-900">Tom Williams</p>
-              <p className="text-gray-600">Owner, The King's Arms</p>
-            </div>
-          </div>
-        </div>
-      </div>
-    </section>
-  );
-};
-
-// SECTION 9 — FINAL CTA
+// SECTION 8 — FINAL CTA
 const FinalCTA = () => {
   return (
     <section className="bg-slate-900 py-20 lg:py-24">
