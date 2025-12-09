@@ -24,7 +24,28 @@ Sentry.init({
   ],
   // Session Replay
   replaysSessionSampleRate: 0.1, // This sets the sample rate at 10%. You may want to change it to 100% while in development and then sample at a lower rate in production.
-  replaysOnErrorSampleRate: 1.0 // If you're not already sampling the entire session, change the sample rate to 100% when sampling sessions where errors occur.
+  replaysOnErrorSampleRate: 1.0, // If you're not already sampling the entire session, change the sample rate to 100% when sampling sessions where errors occur.
+  // Ignore errors from browser extensions and ad blockers
+  ignoreErrors: [
+    // Browser extension errors (password managers, etc.)
+    /Object Not Found Matching Id/,
+    /MethodName:update/,
+    // Ad blocker blocking Stripe
+    /Failed to load Stripe\.js/,
+    // Common browser extension patterns
+    /chrome-extension/,
+    /moz-extension/,
+    // ResizeObserver errors (usually benign)
+    /ResizeObserver loop/,
+  ],
+  denyUrls: [
+    // Chrome extensions
+    /extensions\//i,
+    /^chrome:\/\//i,
+    /^chrome-extension:\/\//i,
+    // Firefox extensions
+    /^moz-extension:\/\//i,
+  ],
 });
 
 function App() {

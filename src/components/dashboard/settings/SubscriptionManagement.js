@@ -13,7 +13,11 @@ import { loadStripe } from '@stripe/stripe-js';
 import { Elements, PaymentElement, useStripe, useElements } from '@stripe/react-stripe-js';
 import { Button } from '../../ui/button';
 
-const stripePromise = loadStripe(process.env.REACT_APP_STRIPE_PUBLISHABLE_KEY);
+// Wrap loadStripe with error handling to gracefully handle blocked scripts
+const stripePromise = loadStripe(process.env.REACT_APP_STRIPE_PUBLISHABLE_KEY).catch((error) => {
+  console.warn('Failed to load Stripe.js:', error.message);
+  return null;
+});
 
 // Card brand logo components
 const CardBrandLogo = ({ brand }) => {
