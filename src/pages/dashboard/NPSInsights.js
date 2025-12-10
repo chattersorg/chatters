@@ -71,11 +71,17 @@ const NPSInsights = () => {
       const linkedSubmissions = npsData.filter(s => s.session_id && s.feedback_sessions);
       const allResponses = npsData.filter(s => s.responded_at);
 
-      // NPS by original feedback rating correlation
+      // Only show insights if we have some responses
+      if (allResponses.length === 0) {
+        setInsights(null);
+        return;
+      }
+
+      // NPS by original feedback rating correlation (only for linked submissions)
       const ratingCorrelation = calculateRatingCorrelation(linkedSubmissions);
 
-      // NPS by table/location
-      const tableAnalysis = calculateTableAnalysis(linkedSubmissions);
+      // NPS by table/location (use table_number from NPS submission or linked session)
+      const tableAnalysis = calculateTableAnalysis(allResponses);
 
       // Response time analysis
       const responseTimeAnalysis = calculateResponseTime(allResponses);
@@ -86,8 +92,8 @@ const NPSInsights = () => {
       // Feedback text analysis (NPS feedback comments)
       const feedbackAnalysis = analyzeFeedbackText(allResponses);
 
-      // Response rate by feedback sentiment
-      const sentimentResponseRate = calculateSentimentResponseRate(npsData);
+      // Response rate by feedback sentiment (only for linked submissions)
+      const sentimentResponseRate = calculateSentimentResponseRate(npsData.filter(s => s.session_id && s.feedback_sessions));
 
       setInsights({
         totalLinked: linkedSubmissions.length,
@@ -142,17 +148,21 @@ const NPSInsights = () => {
     const byTable = {};
 
     submissions.forEach(s => {
+      // Try to get table from linked session first, then from NPS submission itself
       const table = s.feedback_sessions?.table_number || s.table_number;
       if (table) {
         if (!byTable[table]) {
           byTable[table] = { scores: [], count: 0 };
         }
-        byTable[table].scores.push(s.score);
-        byTable[table].count++;
+        if (s.score !== null) {
+          byTable[table].scores.push(s.score);
+          byTable[table].count++;
+        }
       }
     });
 
     return Object.entries(byTable)
+      .filter(([_, data]) => data.scores.length > 0)
       .map(([table, data]) => {
         const promoters = data.scores.filter(s => s >= 9).length;
         const detractors = data.scores.filter(s => s <= 6).length;
@@ -304,8 +314,11 @@ const NPSInsights = () => {
 
   if (!insights) {
     return (
-      <div className="p-6 text-gray-500 dark:text-gray-400">
-        No NPS insights available. Make sure NPS submissions are linked to feedback sessions.
+      <div className="p-6 text-center">
+        <div className="text-gray-500 dark:text-gray-400 mb-2">No NPS responses yet</div>
+        <p className="text-sm text-gray-400 dark:text-gray-500">
+          Insights will appear once customers respond to NPS surveys.
+        </p>
       </div>
     );
   }
