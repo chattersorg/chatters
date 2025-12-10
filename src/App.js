@@ -64,6 +64,12 @@ function App() {
       // Handle "Remember Me" - check if we need to sign out on browser reopen
       // This only applies when user has an active session but browser was closed
       const checkRememberMe = async () => {
+        // Skip this check on public routes (feedback forms, NPS, etc.)
+        // These routes don't require auth and shouldn't trigger sign-out
+        const publicRoutes = ['/feedback', '/nps', '/menu'];
+        const isPublicRoute = publicRoutes.some(route => window.location.pathname.startsWith(route));
+        if (isPublicRoute) return;
+
         const { data: { session } } = await supabase.auth.getSession();
 
         // Only proceed if there's an active session

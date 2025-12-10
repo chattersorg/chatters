@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { supabase } from '../../utils/supabase';
-import { MessageSquare, ExternalLink as ExternalLinkIcon } from 'lucide-react';
+import { MessageSquare, ExternalLink as ExternalLinkIcon, Utensils } from 'lucide-react';
 
 const FeedbackSplashPage = () => {
   const { venueId } = useParams();
@@ -16,7 +16,7 @@ const FeedbackSplashPage = () => {
   const loadVenueData = async () => {
     const { data, error } = await supabase
       .from('venues')
-      .select('name, logo, primary_color, background_color, text_color, button_text_color, custom_links, background_image')
+      .select('name, logo, primary_color, background_color, text_color, button_text_color, custom_links, background_image, menu_type, menu_url, menu_pdf_url')
       .eq('id', venueId)
       .single();
 
@@ -28,23 +28,41 @@ const FeedbackSplashPage = () => {
     }
 
     const enabledLinks = (data.custom_links || []).filter(link => link.enabled && link.url);
+    const hasMenu = data.menu_type && data.menu_type !== 'none';
 
     console.log('Venue data:', data);
     console.log('Enabled links:', enabledLinks);
+    console.log('Has menu:', hasMenu);
 
-    // If no custom links are enabled, go straight to feedback
-    if (enabledLinks.length === 0) {
-      console.log('No enabled links, redirecting to form');
+    // If no custom links are enabled AND no menu configured, go straight to feedback
+    if (enabledLinks.length === 0 && !hasMenu) {
+      console.log('No enabled links or menu, redirecting to form');
       navigate(`/feedback/${venueId}/form`, { replace: true });
       return;
     }
 
-    setVenue({ ...data, enabledLinks });
+    setVenue({ ...data, enabledLinks, hasMenu });
     setLoading(false);
   };
 
   const handleLeaveFeedback = () => {
     navigate(`/feedback/${venueId}/form`);
+  };
+
+  const handleViewMenu = () => {
+    if (venue.menu_type === 'link' && venue.menu_url) {
+      // External link - open in new tab
+      const url = venue.menu_url.startsWith('http')
+        ? venue.menu_url
+        : `https://${venue.menu_url}`;
+      window.open(url, '_blank', 'noopener,noreferrer');
+    } else if (venue.menu_type === 'pdf' && venue.menu_pdf_url) {
+      // PDF - open in new tab
+      window.open(venue.menu_pdf_url, '_blank', 'noopener,noreferrer');
+    } else if (venue.menu_type === 'builder') {
+      // Built-in menu - navigate to menu page
+      navigate(`/menu/${venueId}`);
+    }
   };
 
   const handleLinkClick = (url) => {
@@ -107,7 +125,25 @@ const FeedbackSplashPage = () => {
 
           {/* Action Buttons */}
           <div className="space-y-3">
-            {/* Leave Feedback Button - Always First */}
+            {/* View Menu Button - Show first if menu is enabled */}
+            {venue.hasMenu && (
+              <button
+                onClick={handleViewMenu}
+                className="w-full py-4 px-6 rounded-xl font-medium text-lg transition-all duration-200 hover:scale-105 shadow-md hover:shadow-lg flex items-center justify-center gap-3"
+                style={{
+                  backgroundColor: primaryColor,
+                  color: buttonTextColor
+                }}
+              >
+                <Utensils className="w-6 h-6" />
+                View Menu
+                {(venue.menu_type === 'link' || venue.menu_type === 'pdf') && (
+                  <ExternalLinkIcon className="w-5 h-5 opacity-70" />
+                )}
+              </button>
+            )}
+
+            {/* Leave Feedback Button */}
             <button
               onClick={handleLeaveFeedback}
               className="w-full py-4 px-6 rounded-xl font-medium text-lg transition-all duration-200 hover:scale-105 shadow-md hover:shadow-lg flex items-center justify-center gap-3"
