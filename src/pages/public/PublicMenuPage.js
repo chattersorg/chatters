@@ -40,7 +40,7 @@ const PublicMenuPage = () => {
 
     const { data: venueData, error: venueError } = await supabase
       .from('venues')
-      .select('name, logo, primary_color, background_color, text_color, menu_type, menu_url, menu_pdf_url')
+      .select('name, logo, primary_color, background_color, text_color, menu_type, menu_url, menu_pdf_url, menu_show_images')
       .eq('id', venueId)
       .single();
 
@@ -279,10 +279,20 @@ const PublicMenuPage = () => {
                 key={item.id}
                 className="bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-shadow"
               >
-                {/* Item Image Placeholder - can be added later */}
-                <div className="aspect-square bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center">
-                  <span className="text-4xl">🍽️</span>
-                </div>
+                {/* Item Image - only show if venue has images enabled */}
+                {venue.menu_show_images && (
+                  <div className="aspect-square bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center overflow-hidden">
+                    {item.image_url ? (
+                      <img
+                        src={item.image_url}
+                        alt={item.name}
+                        className="w-full h-full object-cover"
+                      />
+                    ) : (
+                      <span className="text-4xl">🍽️</span>
+                    )}
+                  </div>
+                )}
 
                 {/* Item Details */}
                 <div className="p-4">

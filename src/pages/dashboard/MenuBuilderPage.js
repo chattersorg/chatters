@@ -12,7 +12,9 @@ import {
   Eye,
   EyeOff,
   Loader2,
-  ExternalLink
+  ExternalLink,
+  ImagePlus,
+  X
 } from 'lucide-react';
 import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
 
@@ -179,6 +181,63 @@ const MenuBuilderPage = () => {
     if (error) {
       console.error('Error updating item:', error);
       loadMenu();
+    }
+  };
+
+  const uploadItemImage = async (categoryId, itemId, file) => {
+    if (!file) return;
+
+    // Validate file type
+    if (!file.type.startsWith('image/')) {
+      setMessage({ type: 'error', text: 'Please upload an image file' });
+      return;
+    }
+
+    // Validate file size (max 5MB)
+    if (file.size > 5 * 1024 * 1024) {
+      setMessage({ type: 'error', text: 'Image must be less than 5MB' });
+      return;
+    }
+
+    try {
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${venueId}/menu-items/${itemId}-${Date.now()}.${fileExt}`;
+
+      const { error: uploadError } = await supabase.storage
+        .from('venue-assets')
+        .upload(fileName, file, {
+          cacheControl: '3600',
+          upsert: true
+        });
+
+      if (uploadError) throw uploadError;
+
+      const { data: { publicUrl } } = supabase.storage
+        .from('venue-assets')
+        .getPublicUrl(fileName);
+
+      await updateItem(categoryId, itemId, 'image_url', publicUrl);
+      setMessage({ type: 'success', text: 'Image uploaded!' });
+      setTimeout(() => setMessage({ type: '', text: '' }), 2000);
+    } catch (error) {
+      console.error('Error uploading image:', error);
+      setMessage({ type: 'error', text: 'Failed to upload image' });
+    }
+  };
+
+  const removeItemImage = async (categoryId, itemId, imageUrl) => {
+    try {
+      // Remove from storage
+      const urlParts = imageUrl.split('/venue-assets/');
+      if (urlParts[1]) {
+        await supabase.storage
+          .from('venue-assets')
+          .remove([urlParts[1]]);
+      }
+      // Update database
+      await updateItem(categoryId, itemId, 'image_url', null);
+    } catch (error) {
+      console.error('Error removing image:', error);
     }
   };
 
@@ -506,6 +565,38 @@ const MenuBuilderPage = () => {
                                                       </button>
                                                     );
                                                   })}
+                                                </div>
+
+                                                {/* Image Upload */}
+                                                <div className="flex items-center gap-3 pt-2 border-t border-gray-200 dark:border-gray-700">
+                                                  {item.image_url ? (
+                                                    <div className="relative group">
+                                                      <img
+                                                        src={item.image_url}
+                                                        alt={item.name}
+                                                        className="w-16 h-16 object-cover rounded-lg"
+                                                      />
+                                                      <button
+                                                        onClick={() => removeItemImage(category.id, item.id, item.image_url)}
+                                                        className="absolute -top-2 -right-2 p-1 bg-red-500 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+                                                        title="Remove image"
+                                                      >
+                                                        <X className="w-3 h-3" />
+                                                      </button>
+                                                    </div>
+                                                  ) : (
+                                                    <label className="flex items-center gap-2 px-3 py-2 text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-lg cursor-pointer transition-colors">
+                                                      <ImagePlus className="w-4 h-4" />
+                                                      <span>Add photo</span>
+                                                      <input
+                                                        type="file"
+                                                        accept="image/*"
+                                                        onChange={(e) => uploadItemImage(category.id, item.id, e.target.files?.[0])}
+                                                        className="hidden"
+                                                      />
+                                                    </label>
+                                                  )}
+                                                  <span className="text-xs text-gray-400">Optional - displayed if "Show item photos" is enabled</span>
                                                 </div>
                                               </div>
                                             </div>

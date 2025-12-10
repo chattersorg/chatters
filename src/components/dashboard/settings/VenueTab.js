@@ -26,6 +26,7 @@ const VenueTab = ({
   const [menuType, setMenuType] = useState('none');
   const [menuUrl, setMenuUrl] = useState('');
   const [menuPdfUrl, setMenuPdfUrl] = useState('');
+  const [menuShowImages, setMenuShowImages] = useState(false);
   const [uploadingPdf, setUploadingPdf] = useState(false);
   const navigate = useNavigate();
 
@@ -38,7 +39,7 @@ const VenueTab = ({
   const loadVenueData = useCallback(async () => {
     const { data, error } = await supabase
       .from('venues')
-      .select('custom_links, menu_type, menu_url, menu_pdf_url')
+      .select('custom_links, menu_type, menu_url, menu_pdf_url, menu_show_images')
       .eq('id', venueId)
       .single();
 
@@ -55,6 +56,7 @@ const VenueTab = ({
     setMenuType(data?.menu_type || 'none');
     setMenuUrl(data?.menu_url || '');
     setMenuPdfUrl(data?.menu_pdf_url || '');
+    setMenuShowImages(data?.menu_show_images || false);
   }, [venueId]);
 
   useEffect(() => {
@@ -175,7 +177,8 @@ const VenueTab = ({
         custom_links: links,
         menu_type: menuType,
         menu_url: menuType === 'link' ? menuUrl : null,
-        menu_pdf_url: menuType === 'pdf' ? menuPdfUrl : null
+        menu_pdf_url: menuType === 'pdf' ? menuPdfUrl : null,
+        menu_show_images: menuType === 'builder' ? menuShowImages : false
       })
       .eq('id', venueId);
 
@@ -518,15 +521,27 @@ const VenueTab = ({
                         </div>
                         <p className="text-sm text-gray-500 dark:text-gray-400 mb-2">Create categories, items, prices & dietary tags</p>
                         {menuType === 'builder' && (
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              navigate('/settings/menu-builder');
-                            }}
-                            className="px-4 py-2 bg-gray-900 dark:bg-gray-100 text-white dark:text-gray-900 text-sm font-medium rounded-lg hover:bg-gray-800 dark:hover:bg-gray-200 transition-colors"
-                          >
-                            Open Menu Builder →
-                          </button>
+                          <div className="space-y-3" onClick={(e) => e.stopPropagation()}>
+                            {/* Show Images Toggle */}
+                            <label className="flex items-center gap-3 p-3 bg-gray-50 dark:bg-gray-800 rounded-lg cursor-pointer">
+                              <input
+                                type="checkbox"
+                                checked={menuShowImages}
+                                onChange={(e) => setMenuShowImages(e.target.checked)}
+                                className="w-4 h-4 rounded border-gray-300 text-gray-900 focus:ring-gray-900"
+                              />
+                              <div>
+                                <p className="text-sm font-medium text-gray-900 dark:text-gray-100">Show item photos</p>
+                                <p className="text-xs text-gray-500 dark:text-gray-400">Display images for menu items (you can upload photos in the Menu Builder)</p>
+                              </div>
+                            </label>
+                            <button
+                              onClick={() => navigate('/settings/menu-builder')}
+                              className="px-4 py-2 bg-gray-900 dark:bg-gray-100 text-white dark:text-gray-900 text-sm font-medium rounded-lg hover:bg-gray-800 dark:hover:bg-gray-200 transition-colors"
+                            >
+                              Open Menu Builder →
+                            </button>
+                          </div>
                         )}
                       </div>
                     </label>
