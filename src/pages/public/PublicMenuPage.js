@@ -11,6 +11,85 @@ const DIETARY_TAGS = {
   N: { label: 'Contains Nuts', color: 'bg-red-100 text-red-700', dot: 'bg-red-500' }
 };
 
+// Item Detail Modal Component
+const ItemDetailModal = ({ item, onClose }) => {
+  if (!item) return null;
+
+  return (
+    <div
+      className="fixed inset-0 z-50 flex items-end sm:items-center justify-center"
+      onClick={onClose}
+    >
+      {/* Backdrop */}
+      <div className="absolute inset-0 bg-black/50" />
+
+      {/* Modal Content */}
+      <div
+        className="relative bg-white w-full max-w-lg max-h-[90vh] overflow-y-auto rounded-t-3xl sm:rounded-2xl shadow-xl"
+        onClick={(e) => e.stopPropagation()}
+      >
+        {/* Close Button */}
+        <button
+          onClick={onClose}
+          className="absolute top-4 right-4 z-10 p-2 bg-white/90 backdrop-blur rounded-full shadow-md hover:bg-gray-100 transition-colors"
+        >
+          <X className="w-5 h-5 text-gray-700" />
+        </button>
+
+        {/* Image */}
+        {item.image_url && (
+          <div className="w-full aspect-[4/3] bg-gray-100">
+            <img
+              src={item.image_url}
+              alt={item.name}
+              className="w-full h-full object-cover"
+            />
+          </div>
+        )}
+
+        {/* Content */}
+        <div className="p-6">
+          {/* Title & Price */}
+          <div className="flex items-start justify-between gap-4 mb-4">
+            <h2 className="text-xl font-bold text-gray-900">{item.name}</h2>
+            {item.price !== null && (
+              <span className="text-xl font-bold text-gray-900 whitespace-nowrap">
+                £{item.price.toFixed(2)}
+              </span>
+            )}
+          </div>
+
+          {/* Dietary Tags */}
+          {item.dietary_tags && item.dietary_tags.length > 0 && (
+            <div className="flex flex-wrap gap-2 mb-4">
+              {item.dietary_tags.map(tag => (
+                <span
+                  key={tag}
+                  className={`px-2 py-1 rounded-full text-xs font-medium ${DIETARY_TAGS[tag]?.color || 'bg-gray-100 text-gray-600'}`}
+                >
+                  {DIETARY_TAGS[tag]?.label || tag}
+                </span>
+              ))}
+            </div>
+          )}
+
+          {/* Short Description */}
+          {item.description && (
+            <p className="text-gray-600 mb-4">{item.description}</p>
+          )}
+
+          {/* Long Description / Additional Info */}
+          {item.long_description && (
+            <div className="pt-4 border-t border-gray-100">
+              <p className="text-gray-600 whitespace-pre-wrap">{item.long_description}</p>
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+};
+
 const PublicMenuPage = () => {
   const { venueId } = useParams();
   const navigate = useNavigate();
@@ -20,7 +99,7 @@ const PublicMenuPage = () => {
   const [error, setError] = useState(null);
   const [activeCategory, setActiveCategory] = useState('all');
   const [searchQuery, setSearchQuery] = useState('');
-  const [showSearch, setShowSearch] = useState(false);
+  const [selectedItem, setSelectedItem] = useState(null);
   const categoryTabsRef = useRef(null);
   const searchInputRef = useRef(null);
 
@@ -28,11 +107,17 @@ const PublicMenuPage = () => {
     loadMenu();
   }, [venueId]);
 
+  // Prevent body scroll when modal is open
   useEffect(() => {
-    if (showSearch && searchInputRef.current) {
-      searchInputRef.current.focus();
+    if (selectedItem) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = 'unset';
     }
-  }, [showSearch]);
+    return () => {
+      document.body.style.overflow = 'unset';
+    };
+  }, [selectedItem]);
 
   const loadMenu = async () => {
     setLoading(true);
@@ -275,9 +360,10 @@ const PublicMenuPage = () => {
         ) : (
           <div className="grid grid-cols-2 gap-4">
             {filteredItems.map(item => (
-              <div
+              <button
                 key={item.id}
-                className="bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-shadow"
+                onClick={() => setSelectedItem(item)}
+                className="bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-shadow text-left"
               >
                 {/* Item Image - only show if item has an image */}
                 {item.image_url && (
@@ -323,7 +409,7 @@ const PublicMenuPage = () => {
                     </p>
                   )}
                 </div>
-              </div>
+              </button>
             ))}
           </div>
         )}
@@ -335,6 +421,14 @@ const PublicMenuPage = () => {
           </p>
         </div>
       </div>
+
+      {/* Item Detail Modal */}
+      {selectedItem && (
+        <ItemDetailModal
+          item={selectedItem}
+          onClose={() => setSelectedItem(null)}
+        />
+      )}
     </div>
   );
 };

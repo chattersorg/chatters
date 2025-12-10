@@ -559,8 +559,16 @@ const MenuBuilderPage = () => {
                                     value={item.description || ''}
                                     onChange={(e) => updateItem(activeCategory, item.id, 'description', e.target.value)}
                                     className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-sm focus:ring-2 focus:ring-blue-500 resize-none bg-white dark:bg-gray-900 text-gray-900 dark:text-white"
-                                    placeholder="Description (optional)"
+                                    placeholder="Short description (shown on menu cards)"
                                     rows={2}
+                                  />
+
+                                  <textarea
+                                    value={item.long_description || ''}
+                                    onChange={(e) => updateItem(activeCategory, item.id, 'long_description', e.target.value)}
+                                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-sm focus:ring-2 focus:ring-blue-500 resize-none bg-white dark:bg-gray-900 text-gray-900 dark:text-white"
+                                    placeholder="Detailed description (shown when item is clicked)"
+                                    rows={3}
                                   />
 
                                   {/* Dietary Tags */}
