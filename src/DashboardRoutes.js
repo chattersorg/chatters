@@ -71,6 +71,7 @@ import KioskPage from './pages/dashboard/KioskPage';
 import CustomerFeedbackPage from './pages/dashboard/CustomerFeedback';
 import FeedbackSplashPage from './pages/dashboard/FeedbackSplash';
 import NPSResponsePage from './pages/dashboard/NPSResponse';
+import PublicMenuPage from './pages/public/PublicMenuPage';
 
 // Testing (outside venue context unless you need it)
 import TestDashboardPage from './pages/admin/TestDashboardPage';
@@ -158,6 +159,7 @@ const DashboardRoutes = () => {
       <Route path="/feedback" element={<CustomerFeedbackPage />} />
       <Route path="/feedback/:venueId" element={<FeedbackSplashPage />} />
       <Route path="/feedback/:venueId/form" element={<CustomerFeedbackPage />} />
+      <Route path="/menu/:venueId" element={<PublicMenuPage />} />
       <Route path="/nps" element={<NPSResponsePage />} />
 
       {/* Kiosk: venue context, no dashboard frame */}
