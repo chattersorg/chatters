@@ -112,7 +112,7 @@ const MenuBuilder = ({ venueId, onClose }) => {
   };
 
   const deleteCategory = async (categoryId) => {
-    if (!confirm('Delete this category and all its items?')) return;
+    if (!window.confirm('Delete this category and all its items?')) return;
 
     const { error } = await supabase
       .from('menu_categories')
