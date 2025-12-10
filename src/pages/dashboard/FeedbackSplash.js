@@ -126,7 +126,20 @@ const FeedbackSplashPage = () => {
 
           {/* Action Buttons */}
           <div className="space-y-3">
-            {/* View Menu Button - Show first if menu is enabled */}
+            {/* Leave Feedback Button - Always first */}
+            <button
+              onClick={handleLeaveFeedback}
+              className="w-full py-4 px-6 rounded-xl font-medium text-lg transition-all duration-200 hover:scale-105 shadow-md hover:shadow-lg flex items-center justify-center gap-3"
+              style={{
+                backgroundColor: primaryColor,
+                color: buttonTextColor
+              }}
+            >
+              <MessageSquare className="w-6 h-6" />
+              Leave Feedback
+            </button>
+
+            {/* View Menu Button */}
             {venue.hasMenu && (
               <button
                 onClick={handleViewMenu}
@@ -143,19 +156,6 @@ const FeedbackSplashPage = () => {
                 )}
               </button>
             )}
-
-            {/* Leave Feedback Button */}
-            <button
-              onClick={handleLeaveFeedback}
-              className="w-full py-4 px-6 rounded-xl font-medium text-lg transition-all duration-200 hover:scale-105 shadow-md hover:shadow-lg flex items-center justify-center gap-3"
-              style={{
-                backgroundColor: primaryColor,
-                color: buttonTextColor
-              }}
-            >
-              <MessageSquare className="w-6 h-6" />
-              Leave Feedback
-            </button>
 
             {/* Custom Links */}
             {venue.enabledLinks

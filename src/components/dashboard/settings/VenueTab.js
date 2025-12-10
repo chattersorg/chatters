@@ -354,19 +354,14 @@ const VenueTab = ({
                 onClick={() => setMenuExpanded(!menuExpanded)}
                 className="w-full px-4 py-4 flex items-center justify-between hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
               >
-                <div className="flex items-center gap-4">
-                  <div className={`p-2 rounded-lg ${isMenuEnabled ? 'bg-green-100 dark:bg-green-900/50' : 'bg-gray-200 dark:bg-gray-600'}`}>
-                    <Utensils className={`w-5 h-5 ${isMenuEnabled ? 'text-green-600 dark:text-green-400' : 'text-gray-400 dark:text-gray-500'}`} />
-                  </div>
-                  <div className="text-left">
-                    <h4 className="font-semibold text-gray-900 dark:text-gray-100">View Menu</h4>
-                    <p className="text-sm text-gray-500 dark:text-gray-400">
-                      {menuType === 'none' && 'Not configured'}
-                      {menuType === 'link' && 'External link'}
-                      {menuType === 'pdf' && 'PDF upload'}
-                      {menuType === 'builder' && 'Built in Chatters'}
-                    </p>
-                  </div>
+                <div className="text-left">
+                  <h4 className="font-semibold text-gray-900 dark:text-gray-100">View Menu</h4>
+                  <p className="text-sm text-gray-500 dark:text-gray-400">
+                    {menuType === 'none' && 'Not configured'}
+                    {menuType === 'link' && 'External link'}
+                    {menuType === 'pdf' && 'PDF upload'}
+                    {menuType === 'builder' && 'Built in Chatters'}
+                  </p>
                 </div>
                 <div className="flex items-center gap-3">
                   <span className={`px-2.5 py-1 rounded-full text-xs font-medium ${
@@ -420,10 +415,7 @@ const VenueTab = ({
                         className="mt-1"
                       />
                       <div className="flex-1">
-                        <div className="flex items-center gap-2">
-                          <Link className="w-4 h-4 text-gray-600 dark:text-gray-400" />
-                          <p className="font-medium text-gray-900 dark:text-gray-100">Link to external menu</p>
-                        </div>
+                        <p className="font-medium text-gray-900 dark:text-gray-100">Link to external menu</p>
                         <p className="text-sm text-gray-500 dark:text-gray-400 mb-2">Point to your existing online menu</p>
                         {menuType === 'link' && (
                           <input
@@ -451,10 +443,7 @@ const VenueTab = ({
                         className="mt-1"
                       />
                       <div className="flex-1">
-                        <div className="flex items-center gap-2">
-                          <FileText className="w-4 h-4 text-gray-600 dark:text-gray-400" />
-                          <p className="font-medium text-gray-900 dark:text-gray-100">Upload a PDF</p>
-                        </div>
+                        <p className="font-medium text-gray-900 dark:text-gray-100">Upload a PDF</p>
                         <p className="text-sm text-gray-500 dark:text-gray-400 mb-2">We'll host and optimise it for mobile</p>
                         {menuType === 'pdf' && (
                           <div onClick={(e) => e.stopPropagation()}>
@@ -512,10 +501,7 @@ const VenueTab = ({
                         className="mt-1"
                       />
                       <div className="flex-1">
-                        <div className="flex items-center gap-2">
-                          <Utensils className="w-4 h-4 text-gray-600 dark:text-gray-400" />
-                          <p className="font-medium text-gray-900 dark:text-gray-100">Build menu in Chatters</p>
-                        </div>
+                        <p className="font-medium text-gray-900 dark:text-gray-100">Build menu in Chatters</p>
                         <p className="text-sm text-gray-500 dark:text-gray-400 mb-2">Create categories, items, prices & dietary tags</p>
                         {menuType === 'builder' && (
                           <button

@@ -39,8 +39,6 @@ import ReportsFeedbackPage from './pages/dashboard/ReportsFeedback';
 import ReportsImpactPage from './pages/dashboard/ReportsImpact';
 import ReportsMetricsPage from './pages/dashboard/ReportsMetrics';
 import ReportsNPSPage from './pages/dashboard/ReportsNPS';
-import StaffManagersPage from './pages/dashboard/StaffManagers';
-import StaffEmployeesPage from './pages/dashboard/StaffEmployees';
 import StaffListPage from './pages/dashboard/StaffList';
 import EmployeeDetail from './pages/dashboard/EmployeeDetail';
 import ManagerDetail from './pages/dashboard/ManagerDetail';

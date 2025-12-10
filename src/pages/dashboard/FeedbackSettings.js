@@ -6,6 +6,42 @@ import FeedbackTimeSelection from '../../components/dashboard/settings/venuetabc
 import { Button } from '../../components/ui/button';
 import { RefreshCw } from 'lucide-react';
 
+// Reusable card component - defined outside to prevent re-creation on every render
+const SettingsCard = ({ title, description, children, onSave, loading, message, saveLabel = 'Save' }) => (
+  <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl overflow-hidden">
+    <div className="px-6 py-4 border-b border-gray-100 dark:border-gray-800">
+      <h3 className="text-base font-semibold text-gray-900 dark:text-white">{title}</h3>
+      <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">{description}</p>
+    </div>
+    <div className="p-6">
+      {children}
+    </div>
+    <div className="px-6 py-4 border-t border-gray-100 dark:border-gray-800">
+      <div className="flex items-center justify-between">
+        <div className="text-xs text-gray-500 dark:text-gray-400">
+          Changes are saved per venue
+        </div>
+        <Button
+          variant="primary"
+          onClick={onSave}
+          loading={loading}
+        >
+          {loading ? 'Saving...' : saveLabel}
+        </Button>
+      </div>
+      {message && (
+        <div className={`text-xs p-2 rounded-lg mt-3 ${
+          message.includes('success') || message.includes('regenerated')
+            ? 'text-green-700 dark:text-green-300 bg-green-50 dark:bg-green-900/30 border border-green-200 dark:border-green-800'
+            : 'text-red-700 dark:text-red-300 bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-800'
+        }`}>
+          {message}
+        </div>
+      )}
+    </div>
+  </div>
+);
+
 const FeedbackSettings = () => {
   usePageTitle('Feedback Settings');
   const { venueId } = useVenue();
@@ -187,42 +223,6 @@ const FeedbackSettings = () => {
   };
 
   if (!venueId) return null;
-
-  // Reusable card component
-  const SettingsCard = ({ title, description, children, onSave, loading, message, saveLabel = 'Save' }) => (
-    <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl overflow-hidden">
-      <div className="px-6 py-4 border-b border-gray-100 dark:border-gray-800">
-        <h3 className="text-base font-semibold text-gray-900 dark:text-white">{title}</h3>
-        <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">{description}</p>
-      </div>
-      <div className="p-6">
-        {children}
-      </div>
-      <div className="px-6 py-4 border-t border-gray-100 dark:border-gray-800">
-        <div className="flex items-center justify-between">
-          <div className="text-xs text-gray-500 dark:text-gray-400">
-            Changes are saved per venue
-          </div>
-          <Button
-            variant="primary"
-            onClick={onSave}
-            loading={loading}
-          >
-            {loading ? 'Saving...' : saveLabel}
-          </Button>
-        </div>
-        {message && (
-          <div className={`text-xs p-2 rounded-lg mt-3 ${
-            message.includes('success') || message.includes('regenerated')
-              ? 'text-green-700 dark:text-green-300 bg-green-50 dark:bg-green-900/30 border border-green-200 dark:border-green-800'
-              : 'text-red-700 dark:text-red-300 bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-800'
-          }`}>
-            {message}
-          </div>
-        )}
-      </div>
-    </div>
-  );
 
   return (
     <div className="space-y-6">
