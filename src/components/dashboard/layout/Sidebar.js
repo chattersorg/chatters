@@ -107,7 +107,11 @@ const venueNavItems = [
     icon: Star,
     path: '/reports/nps',
     color: 'text-amber-600',
-    permission: 'nps.view'
+    permission: 'nps.view',
+    subItems: [
+      { label: 'Score', path: '/reports/nps', icon: Star, permission: 'nps.view' },
+      { label: 'Insights', path: '/reports/nps/insights', icon: TrendingUp, permission: 'nps.view' }
+    ]
   },
   {
     id: 'staff',

@@ -39,6 +39,7 @@ import ReportsFeedbackPage from './pages/dashboard/ReportsFeedback';
 import ReportsImpactPage from './pages/dashboard/ReportsImpact';
 import ReportsMetricsPage from './pages/dashboard/ReportsMetrics';
 import ReportsNPSPage from './pages/dashboard/ReportsNPS';
+import NPSInsightsPage from './pages/dashboard/NPSInsights';
 import StaffListPage from './pages/dashboard/StaffList';
 import EmployeeDetail from './pages/dashboard/EmployeeDetail';
 import ManagerDetail from './pages/dashboard/ManagerDetail';
@@ -254,6 +255,11 @@ const DashboardRoutes = () => {
         <Route path="/reports/nps" element={
           <ProtectedRoute permission="nps.view">
             <ReportsNPSPage />
+          </ProtectedRoute>
+        } />
+        <Route path="/reports/nps/insights" element={
+          <ProtectedRoute permission="nps.view">
+            <NPSInsightsPage />
           </ProtectedRoute>
         } />
         <Route path="/nps-report/:venueId" element={
