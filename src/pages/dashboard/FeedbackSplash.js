@@ -27,7 +27,8 @@ const FeedbackSplashPage = () => {
       return;
     }
 
-    const enabledLinks = (data.custom_links || []).filter(link => link.enabled && link.url);
+    // Filter out the old 'menu' link (now handled separately) and only include enabled links with URLs
+    const enabledLinks = (data.custom_links || []).filter(link => link.id !== 'menu' && link.enabled && link.url);
     const hasMenu = data.menu_type && data.menu_type !== 'none';
 
     console.log('Venue data:', data);
