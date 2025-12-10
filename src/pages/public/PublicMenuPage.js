@@ -1,14 +1,14 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { supabase } from '../../utils/supabase';
-import { ArrowLeft, Loader2, ExternalLink } from 'lucide-react';
+import { ArrowLeft, Loader2, Search, X } from 'lucide-react';
 
 const DIETARY_TAGS = {
-  V: { label: 'Vegetarian', color: 'bg-green-100 text-green-700' },
-  VG: { label: 'Vegan', color: 'bg-emerald-100 text-emerald-700' },
-  GF: { label: 'Gluten Free', color: 'bg-amber-100 text-amber-700' },
-  DF: { label: 'Dairy Free', color: 'bg-blue-100 text-blue-700' },
-  N: { label: 'Contains Nuts', color: 'bg-red-100 text-red-700' }
+  V: { label: 'Vegetarian', color: 'bg-green-100 text-green-700', dot: 'bg-green-500' },
+  VG: { label: 'Vegan', color: 'bg-emerald-100 text-emerald-700', dot: 'bg-emerald-500' },
+  GF: { label: 'Gluten Free', color: 'bg-amber-100 text-amber-700', dot: 'bg-amber-500' },
+  DF: { label: 'Dairy Free', color: 'bg-blue-100 text-blue-700', dot: 'bg-blue-500' },
+  N: { label: 'Contains Nuts', color: 'bg-red-100 text-red-700', dot: 'bg-red-500' }
 };
 
 const PublicMenuPage = () => {
@@ -18,16 +18,26 @@ const PublicMenuPage = () => {
   const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [activeCategory, setActiveCategory] = useState('all');
+  const [searchQuery, setSearchQuery] = useState('');
+  const [showSearch, setShowSearch] = useState(false);
+  const categoryTabsRef = useRef(null);
+  const searchInputRef = useRef(null);
 
   useEffect(() => {
     loadMenu();
   }, [venueId]);
 
+  useEffect(() => {
+    if (showSearch && searchInputRef.current) {
+      searchInputRef.current.focus();
+    }
+  }, [showSearch]);
+
   const loadMenu = async () => {
     setLoading(true);
     setError(null);
 
-    // Load venue info
     const { data: venueData, error: venueError } = await supabase
       .from('venues')
       .select('name, logo, primary_color, background_color, text_color, menu_type, menu_url, menu_pdf_url')
@@ -42,9 +52,7 @@ const PublicMenuPage = () => {
 
     setVenue(venueData);
 
-    // Handle different menu types
     if (venueData.menu_type === 'link' && venueData.menu_url) {
-      // Redirect to external menu
       window.location.href = venueData.menu_url.startsWith('http')
         ? venueData.menu_url
         : `https://${venueData.menu_url}`;
@@ -52,13 +60,11 @@ const PublicMenuPage = () => {
     }
 
     if (venueData.menu_type === 'pdf' && venueData.menu_pdf_url) {
-      // Redirect to PDF
       window.location.href = venueData.menu_pdf_url;
       return;
     }
 
     if (venueData.menu_type === 'builder') {
-      // Load menu categories and items
       const { data: categoriesData, error: categoriesError } = await supabase
         .from('menu_categories')
         .select(`
@@ -76,7 +82,6 @@ const PublicMenuPage = () => {
         return;
       }
 
-      // Filter to only available items and sort them
       const processedCategories = (categoriesData || [])
         .map(cat => ({
           ...cat,
@@ -84,7 +89,7 @@ const PublicMenuPage = () => {
             .filter(item => item.is_available)
             .sort((a, b) => a.display_order - b.display_order)
         }))
-        .filter(cat => cat.menu_items.length > 0); // Only show categories with items
+        .filter(cat => cat.menu_items.length > 0);
 
       setCategories(processedCategories);
     }
@@ -96,9 +101,36 @@ const PublicMenuPage = () => {
     navigate(`/feedback/${venueId}`);
   };
 
+  const getAllItems = () => {
+    return categories.flatMap(cat =>
+      cat.menu_items.map(item => ({ ...item, categoryName: cat.name }))
+    );
+  };
+
+  const getFilteredItems = () => {
+    let items = activeCategory === 'all'
+      ? getAllItems()
+      : categories.find(c => c.id === activeCategory)?.menu_items || [];
+
+    if (searchQuery.trim()) {
+      const query = searchQuery.toLowerCase();
+      items = items.filter(item =>
+        item.name.toLowerCase().includes(query) ||
+        (item.description && item.description.toLowerCase().includes(query))
+      );
+    }
+
+    return items;
+  };
+
+  const scrollToCategory = (categoryId) => {
+    setActiveCategory(categoryId);
+    setSearchQuery('');
+  };
+
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+      <div className="min-h-screen flex items-center justify-center bg-gray-100">
         <Loader2 className="w-8 h-8 animate-spin text-gray-400" />
       </div>
     );
@@ -106,12 +138,12 @@ const PublicMenuPage = () => {
 
   if (error) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+      <div className="min-h-screen flex items-center justify-center bg-gray-100">
         <div className="text-center">
           <p className="text-gray-600 mb-4">{error}</p>
           <button
             onClick={goBack}
-            className="text-blue-600 hover:text-blue-800 font-medium"
+            className="text-gray-900 hover:text-gray-700 font-medium"
           >
             Go back
           </button>
@@ -122,12 +154,12 @@ const PublicMenuPage = () => {
 
   if (!venue || venue.menu_type === 'none') {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+      <div className="min-h-screen flex items-center justify-center bg-gray-100">
         <div className="text-center">
           <p className="text-gray-600 mb-4">No menu available</p>
           <button
             onClick={goBack}
-            className="text-blue-600 hover:text-blue-800 font-medium"
+            className="text-gray-900 hover:text-gray-700 font-medium"
           >
             Go back
           </button>
@@ -136,115 +168,147 @@ const PublicMenuPage = () => {
     );
   }
 
-  const primaryColor = venue.primary_color || '#1890ff';
-  const backgroundColor = venue.background_color || '#ffffff';
-  const textColor = venue.text_color || '#111827';
+  const filteredItems = getFilteredItems();
 
   return (
-    <div className="min-h-screen" style={{ backgroundColor }}>
+    <div className="min-h-screen bg-gray-100">
       {/* Header */}
-      <div className="sticky top-0 z-10 bg-white/95 backdrop-blur-sm border-b shadow-sm">
-        <div className="max-w-2xl mx-auto px-4 py-4 flex items-center gap-4">
-          <button
-            onClick={goBack}
-            className="p-2 -ml-2 rounded-lg hover:bg-gray-100 transition-colors"
-            style={{ color: textColor }}
+      <div className="bg-white sticky top-0 z-20 shadow-sm">
+        <div className="max-w-2xl mx-auto px-4">
+          {/* Top Bar */}
+          <div className="flex items-center justify-between py-4">
+            <div className="flex items-center gap-3">
+              <button
+                onClick={goBack}
+                className="p-2 -ml-2 rounded-full hover:bg-gray-100 transition-colors"
+              >
+                <ArrowLeft className="w-5 h-5 text-gray-700" />
+              </button>
+              <div>
+                <h1 className="text-2xl font-bold text-gray-900">Menu</h1>
+              </div>
+            </div>
+            {venue.logo && (
+              <img
+                src={venue.logo}
+                alt={venue.name}
+                className="h-10 w-auto object-contain"
+              />
+            )}
+          </div>
+
+          {/* Search Bar */}
+          <div className="pb-4">
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+              <input
+                ref={searchInputRef}
+                type="text"
+                placeholder="Search"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="w-full pl-10 pr-10 py-3 bg-gray-100 rounded-xl text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-gray-900 transition-all"
+              />
+              {searchQuery && (
+                <button
+                  onClick={() => setSearchQuery('')}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 p-1 hover:bg-gray-200 rounded-full"
+                >
+                  <X className="w-4 h-4 text-gray-500" />
+                </button>
+              )}
+            </div>
+          </div>
+
+          {/* Category Tabs */}
+          <div
+            ref={categoryTabsRef}
+            className="flex gap-2 overflow-x-auto pb-4 scrollbar-hide -mx-4 px-4"
+            style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
           >
-            <ArrowLeft className="w-5 h-5" />
-          </button>
-          {venue.logo && (
-            <img
-              src={venue.logo}
-              alt={venue.name}
-              className="h-10 w-auto object-contain"
-            />
-          )}
-          <div className="flex-1">
-            <h1 className="font-semibold" style={{ color: textColor }}>
-              {venue.name}
-            </h1>
-            <p className="text-sm text-gray-500">Menu</p>
+            <button
+              onClick={() => scrollToCategory('all')}
+              className={`px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all ${
+                activeCategory === 'all'
+                  ? 'bg-gray-900 text-white'
+                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+              }`}
+            >
+              All
+            </button>
+            {categories.map(category => (
+              <button
+                key={category.id}
+                onClick={() => scrollToCategory(category.id)}
+                className={`px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all ${
+                  activeCategory === category.id
+                    ? 'bg-gray-900 text-white'
+                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                }`}
+              >
+                {category.name}
+              </button>
+            ))}
           </div>
         </div>
       </div>
 
       {/* Menu Content */}
       <div className="max-w-2xl mx-auto px-4 py-6">
-        {/* Dietary Legend */}
-        <div className="mb-6 p-4 bg-white rounded-xl border">
-          <p className="text-xs font-medium text-gray-500 mb-2">Dietary Information</p>
-          <div className="flex flex-wrap gap-2">
-            {Object.entries(DIETARY_TAGS).map(([code, tag]) => (
-              <span
-                key={code}
-                className={`px-2 py-1 rounded text-xs font-medium ${tag.color}`}
-              >
-                {code} = {tag.label}
-              </span>
-            ))}
-          </div>
+        {/* Dietary Legend - Compact */}
+        <div className="flex flex-wrap gap-3 mb-6">
+          {Object.entries(DIETARY_TAGS).map(([code, tag]) => (
+            <div key={code} className="flex items-center gap-1.5">
+              <span className={`w-2 h-2 rounded-full ${tag.dot}`}></span>
+              <span className="text-xs text-gray-500">{code}</span>
+            </div>
+          ))}
         </div>
 
-        {/* Categories */}
-        {categories.length === 0 ? (
+        {/* Items Grid */}
+        {filteredItems.length === 0 ? (
           <div className="text-center py-12">
-            <p className="text-gray-500">No menu items available</p>
+            <p className="text-gray-500">
+              {searchQuery ? 'No items match your search' : 'No menu items available'}
+            </p>
           </div>
         ) : (
-          <div className="space-y-8">
-            {categories.map(category => (
-              <div key={category.id}>
-                <h2
-                  className="text-xl font-bold mb-4 pb-2 border-b-2"
-                  style={{ color: textColor, borderColor: primaryColor }}
-                >
-                  {category.name}
-                </h2>
-                {category.description && (
-                  <p className="text-sm text-gray-600 mb-4">{category.description}</p>
-                )}
-                <div className="space-y-4">
-                  {category.menu_items.map(item => (
-                    <div
-                      key={item.id}
-                      className="bg-white rounded-xl p-4 border shadow-sm"
-                    >
-                      <div className="flex justify-between items-start gap-4">
-                        <div className="flex-1">
-                          <div className="flex items-center gap-2 flex-wrap">
-                            <h3
-                              className="font-semibold"
-                              style={{ color: textColor }}
-                            >
-                              {item.name}
-                            </h3>
-                            {(item.dietary_tags || []).map(tag => (
-                              <span
-                                key={tag}
-                                className={`px-1.5 py-0.5 rounded text-xs font-medium ${DIETARY_TAGS[tag]?.color || 'bg-gray-100 text-gray-600'}`}
-                                title={DIETARY_TAGS[tag]?.label}
-                              >
-                                {tag}
-                              </span>
-                            ))}
-                          </div>
-                          {item.description && (
-                            <p className="text-sm text-gray-600 mt-1">
-                              {item.description}
-                            </p>
-                          )}
-                        </div>
-                        {item.price !== null && (
-                          <div
-                            className="text-lg font-bold whitespace-nowrap"
-                            style={{ color: primaryColor }}
-                          >
-                            £{item.price.toFixed(2)}
-                          </div>
-                        )}
-                      </div>
+          <div className="grid grid-cols-2 gap-4">
+            {filteredItems.map(item => (
+              <div
+                key={item.id}
+                className="bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-shadow"
+              >
+                {/* Item Image Placeholder - can be added later */}
+                <div className="aspect-square bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center">
+                  <span className="text-4xl">🍽️</span>
+                </div>
+
+                {/* Item Details */}
+                <div className="p-4">
+                  <h3 className="font-semibold text-gray-900 text-sm leading-tight mb-1">
+                    {item.name}
+                  </h3>
+
+                  {/* Dietary Tags */}
+                  {item.dietary_tags && item.dietary_tags.length > 0 && (
+                    <div className="flex gap-1 mb-2">
+                      {item.dietary_tags.map(tag => (
+                        <span
+                          key={tag}
+                          className={`w-2 h-2 rounded-full ${DIETARY_TAGS[tag]?.dot || 'bg-gray-400'}`}
+                          title={DIETARY_TAGS[tag]?.label}
+                        />
+                      ))}
                     </div>
-                  ))}
+                  )}
+
+                  {/* Price */}
+                  {item.price !== null && (
+                    <p className="text-lg font-bold text-gray-900">
+                      £{item.price.toFixed(2)}
+                    </p>
+                  )}
                 </div>
               </div>
             ))}
