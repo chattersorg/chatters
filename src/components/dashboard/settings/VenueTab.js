@@ -1,10 +1,10 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Button } from '../../ui/button';
 import { supabase } from '../../../utils/supabase';
 import { PermissionGate } from '../../../context/PermissionsContext';
 import { GripVertical, Plus, Trash2, ExternalLink, Eye, EyeOff, Link, FileText, Utensils, ChevronDown, ChevronUp, Upload, X } from 'lucide-react';
 import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
-import MenuBuilder from '../menu/MenuBuilder';
 
 const VenueTab = ({
   name, setName,
@@ -27,7 +27,7 @@ const VenueTab = ({
   const [menuUrl, setMenuUrl] = useState('');
   const [menuPdfUrl, setMenuPdfUrl] = useState('');
   const [uploadingPdf, setUploadingPdf] = useState(false);
-  const [showMenuBuilder, setShowMenuBuilder] = useState(false);
+  const navigate = useNavigate();
 
   const getDefaultLinks = () => [
     { id: 'order', label: 'Order Food', url: '', enabled: false, order: 1 },
@@ -521,7 +521,7 @@ const VenueTab = ({
                           <button
                             onClick={(e) => {
                               e.stopPropagation();
-                              setShowMenuBuilder(true);
+                              navigate('/settings/menu-builder');
                             }}
                             className="px-4 py-2 bg-gray-900 dark:bg-gray-100 text-white dark:text-gray-900 text-sm font-medium rounded-lg hover:bg-gray-800 dark:hover:bg-gray-200 transition-colors"
                           >
@@ -668,14 +668,6 @@ const VenueTab = ({
           </div>
         </div>
       </div>
-
-      {/* Menu Builder Modal */}
-      {showMenuBuilder && (
-        <MenuBuilder
-          venueId={venueId}
-          onClose={() => setShowMenuBuilder(false)}
-        />
-      )}
     </div>
   );
 };

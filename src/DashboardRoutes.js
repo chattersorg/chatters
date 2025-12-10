@@ -59,6 +59,7 @@ import NPSReportDetail from './pages/dashboard/NPSReportDetail';
 import GoogleReviewsPage from './pages/dashboard/GoogleReviewsSimple';
 import AIInsightsPage from './pages/dashboard/AIInsights';
 import AIChatPage from './pages/dashboard/AIChat';
+import MenuBuilderPage from './pages/dashboard/MenuBuilderPage';
 
 // Admin pages (master only)
 import ManagerPermissions from './pages/dashboard/admin/ManagerPermissions';
@@ -341,6 +342,11 @@ const DashboardRoutes = () => {
         <Route path="/settings/branding" element={
           <ProtectedRoute permission="venue.branding">
             <SettingsBrandingPage />
+          </ProtectedRoute>
+        } />
+        <Route path="/settings/menu-builder" element={
+          <ProtectedRoute permission="venue.edit">
+            <MenuBuilderPage />
           </ProtectedRoute>
         } />
         <Route path="/settings/custom-links" element={<Navigate to="/settings/venue-details" replace />} />
