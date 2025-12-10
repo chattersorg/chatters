@@ -296,6 +296,13 @@ const PublicMenuPage = () => {
                     {item.name}
                   </h3>
 
+                  {/* Description */}
+                  {item.description && (
+                    <p className="text-xs text-gray-500 mb-2 line-clamp-2">
+                      {item.description}
+                    </p>
+                  )}
+
                   {/* Dietary Tags */}
                   {item.dietary_tags && item.dietary_tags.length > 0 && (
                     <div className="flex gap-1 mb-2">
