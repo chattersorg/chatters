@@ -7,14 +7,13 @@ import {
   Plus,
   GripVertical,
   Trash2,
-  ChevronDown,
-  ChevronUp,
   Eye,
   EyeOff,
   Loader2,
   ExternalLink,
   ImagePlus,
-  X
+  X,
+  Pencil
 } from 'lucide-react';
 import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
 
@@ -31,8 +30,10 @@ const MenuBuilderPage = () => {
   const { venueId } = useVenue();
   const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [expandedCategories, setExpandedCategories] = useState({});
+  const [activeCategory, setActiveCategory] = useState(null);
   const [message, setMessage] = useState({ type: '', text: '' });
+  const [editingCategoryId, setEditingCategoryId] = useState(null);
+  const [editingCategoryName, setEditingCategoryName] = useState('');
 
   useEffect(() => {
     if (venueId) {
@@ -65,11 +66,10 @@ const MenuBuilderPage = () => {
 
     setCategories(sortedCategories);
 
-    const expanded = {};
-    sortedCategories.forEach(cat => {
-      expanded[cat.id] = true;
-    });
-    setExpandedCategories(expanded);
+    // Set first category as active if none selected
+    if (sortedCategories.length > 0 && !activeCategory) {
+      setActiveCategory(sortedCategories[0].id);
+    }
 
     setLoading(false);
   };
@@ -93,8 +93,12 @@ const MenuBuilderPage = () => {
       return;
     }
 
-    setCategories([...categories, { ...data, menu_items: [] }]);
-    setExpandedCategories({ ...expandedCategories, [data.id]: true });
+    const newCategories = [...categories, { ...data, menu_items: [] }];
+    setCategories(newCategories);
+    setActiveCategory(data.id);
+    // Start editing the new category name
+    setEditingCategoryId(data.id);
+    setEditingCategoryName('New Category');
   };
 
   const updateCategory = async (categoryId, field, value) => {
@@ -113,6 +117,19 @@ const MenuBuilderPage = () => {
     }
   };
 
+  const startEditingCategory = (category) => {
+    setEditingCategoryId(category.id);
+    setEditingCategoryName(category.name);
+  };
+
+  const saveEditingCategory = async () => {
+    if (editingCategoryId && editingCategoryName.trim()) {
+      await updateCategory(editingCategoryId, 'name', editingCategoryName.trim());
+    }
+    setEditingCategoryId(null);
+    setEditingCategoryName('');
+  };
+
   const deleteCategory = async (categoryId) => {
     if (!window.confirm('Delete this category and all its items?')) return;
 
@@ -127,7 +144,15 @@ const MenuBuilderPage = () => {
       return;
     }
 
-    setCategories(categories.filter(cat => cat.id !== categoryId));
+    const newCategories = categories.filter(cat => cat.id !== categoryId);
+    setCategories(newCategories);
+
+    // If we deleted the active category, switch to first available
+    if (activeCategory === categoryId && newCategories.length > 0) {
+      setActiveCategory(newCategories[0].id);
+    } else if (newCategories.length === 0) {
+      setActiveCategory(null);
+    }
   };
 
   const addItem = async (categoryId) => {
@@ -187,13 +212,11 @@ const MenuBuilderPage = () => {
   const uploadItemImage = async (categoryId, itemId, file) => {
     if (!file) return;
 
-    // Validate file type
     if (!file.type.startsWith('image/')) {
       setMessage({ type: 'error', text: 'Please upload an image file' });
       return;
     }
 
-    // Validate file size (max 5MB)
     if (file.size > 5 * 1024 * 1024) {
       setMessage({ type: 'error', text: 'Image must be less than 5MB' });
       return;
@@ -227,14 +250,12 @@ const MenuBuilderPage = () => {
 
   const removeItemImage = async (categoryId, itemId, imageUrl) => {
     try {
-      // Remove from storage
       const urlParts = imageUrl.split('/venue-assets/');
       if (urlParts[1]) {
         await supabase.storage
           .from('venue-assets')
           .remove([urlParts[1]]);
       }
-      // Update database
       await updateItem(categoryId, itemId, 'image_url', null);
     } catch (error) {
       console.error('Error removing image:', error);
@@ -273,33 +294,11 @@ const MenuBuilderPage = () => {
     updateItem(categoryId, itemId, 'dietary_tags', newTags);
   };
 
-  const handleCategoryDragEnd = async (result) => {
-    if (!result.destination) return;
-
-    const items = Array.from(categories);
-    const [reorderedItem] = items.splice(result.source.index, 1);
-    items.splice(result.destination.index, 0, reorderedItem);
-
-    const reordered = items.map((item, index) => ({
-      ...item,
-      display_order: index
-    }));
-
-    setCategories(reordered);
-
-    for (const cat of reordered) {
-      await supabase
-        .from('menu_categories')
-        .update({ display_order: cat.display_order })
-        .eq('id', cat.id);
-    }
-  };
-
-  const handleItemDragEnd = async (categoryId, result) => {
-    if (!result.destination) return;
+  const handleItemDragEnd = async (result) => {
+    if (!result.destination || !activeCategory) return;
 
     setCategories(categories.map(cat => {
-      if (cat.id !== categoryId) return cat;
+      if (cat.id !== activeCategory) return cat;
 
       const items = Array.from(cat.menu_items);
       const [reorderedItem] = items.splice(result.source.index, 1);
@@ -321,13 +320,6 @@ const MenuBuilderPage = () => {
     }));
   };
 
-  const toggleCategoryExpanded = (categoryId) => {
-    setExpandedCategories({
-      ...expandedCategories,
-      [categoryId]: !expandedCategories[categoryId]
-    });
-  };
-
   const previewMenu = () => {
     window.open(`/menu/${venueId}`, '_blank');
   };
@@ -335,6 +327,8 @@ const MenuBuilderPage = () => {
   const goBack = () => {
     navigate('/settings/venue-details');
   };
+
+  const activeCategoryData = categories.find(cat => cat.id === activeCategory);
 
   if (loading) {
     return (
@@ -382,268 +376,274 @@ const MenuBuilderPage = () => {
         </div>
       )}
 
-      {/* Info Banner */}
-      <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
-        <p className="text-sm text-blue-800 dark:text-blue-400">
-          <strong>Tip:</strong> Changes are saved automatically. Drag categories and items to reorder them.
-          Toggle the eye icon to show/hide items from customers.
-        </p>
-      </div>
+      {/* Category Tabs */}
+      <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl overflow-hidden">
+        {/* Tab Bar */}
+        <div className="flex items-center gap-2 p-4 border-b border-gray-200 dark:border-gray-800 overflow-x-auto">
+          {categories.map(category => (
+            <div key={category.id} className="flex items-center">
+              {editingCategoryId === category.id ? (
+                <input
+                  type="text"
+                  value={editingCategoryName}
+                  onChange={(e) => setEditingCategoryName(e.target.value)}
+                  onBlur={saveEditingCategory}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') saveEditingCategory();
+                    if (e.key === 'Escape') {
+                      setEditingCategoryId(null);
+                      setEditingCategoryName('');
+                    }
+                  }}
+                  autoFocus
+                  className="px-3 py-2 text-sm font-medium rounded-lg border border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
+                />
+              ) : (
+                <button
+                  onClick={() => setActiveCategory(category.id)}
+                  className={`group flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium whitespace-nowrap transition-all ${
+                    activeCategory === category.id
+                      ? 'bg-gray-900 dark:bg-white text-white dark:text-gray-900'
+                      : 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700'
+                  }`}
+                >
+                  {category.name}
+                  {!category.is_visible && (
+                    <EyeOff className="w-3 h-3 opacity-50" />
+                  )}
+                  <span className="text-xs opacity-60">
+                    ({category.menu_items?.length || 0})
+                  </span>
+                </button>
+              )}
+            </div>
+          ))}
 
-      {/* Categories */}
-      {categories.length === 0 ? (
-        <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl p-12 text-center">
-          <p className="text-gray-500 dark:text-gray-400 mb-4">No menu categories yet. Add your first category to get started.</p>
+          {/* Add Category Button */}
           <button
             onClick={addCategory}
-            className="inline-flex items-center gap-2 px-4 py-2 bg-gray-900 dark:bg-white text-white dark:text-gray-900 rounded-lg hover:bg-gray-800 dark:hover:bg-gray-100"
+            className="flex items-center gap-1 px-3 py-2 text-sm font-medium text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg whitespace-nowrap transition-colors"
           >
             <Plus className="w-4 h-4" />
             Add Category
           </button>
         </div>
-      ) : (
-        <DragDropContext onDragEnd={handleCategoryDragEnd}>
-          <Droppable droppableId="categories">
-            {(provided) => (
-              <div
-                {...provided.droppableProps}
-                ref={provided.innerRef}
-                className="space-y-4"
+
+        {/* Category Controls (when a category is selected) */}
+        {activeCategoryData && (
+          <div className="flex items-center justify-between px-4 py-3 bg-gray-50 dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
+            <div className="flex items-center gap-3">
+              <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                {activeCategoryData.name}
+              </span>
+              <button
+                onClick={() => startEditingCategory(activeCategoryData)}
+                className="p-1.5 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 rounded"
+                title="Edit name"
               >
-                {categories.map((category, index) => (
-                  <Draggable key={category.id} draggableId={category.id} index={index}>
-                    {(provided, snapshot) => (
-                      <div
-                        ref={provided.innerRef}
-                        {...provided.draggableProps}
-                        className={`bg-white dark:bg-gray-900 border rounded-xl overflow-hidden ${
-                          snapshot.isDragging ? 'shadow-lg' : 'border-gray-200 dark:border-gray-800'
-                        }`}
-                      >
-                        {/* Category Header */}
-                        <div className="flex items-center gap-3 px-4 py-3 bg-gray-50 dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
-                          <div
-                            {...provided.dragHandleProps}
-                            className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 cursor-grab"
-                          >
-                            <GripVertical className="w-5 h-5" />
-                          </div>
-                          <input
-                            type="text"
-                            value={category.name}
-                            onChange={(e) => updateCategory(category.id, 'name', e.target.value)}
-                            className="flex-1 font-medium text-gray-900 dark:text-white bg-transparent border-none focus:ring-0 p-0"
-                            placeholder="Category name"
-                          />
-                          <button
-                            onClick={() => updateCategory(category.id, 'is_visible', !category.is_visible)}
-                            className={`p-1.5 rounded ${
-                              category.is_visible
-                                ? 'text-green-600 dark:text-green-400 hover:bg-green-50 dark:hover:bg-green-900/30'
-                                : 'text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700'
-                            }`}
-                            title={category.is_visible ? 'Visible' : 'Hidden'}
-                          >
-                            {category.is_visible ? <Eye className="w-4 h-4" /> : <EyeOff className="w-4 h-4" />}
-                          </button>
-                          <button
-                            onClick={() => deleteCategory(category.id)}
-                            className="p-1.5 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/30 rounded"
-                            title="Delete category"
-                          >
-                            <Trash2 className="w-4 h-4" />
-                          </button>
-                          <button
-                            onClick={() => toggleCategoryExpanded(category.id)}
-                            className="p-1.5 text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 rounded"
-                          >
-                            {expandedCategories[category.id] ? (
-                              <ChevronUp className="w-4 h-4" />
-                            ) : (
-                              <ChevronDown className="w-4 h-4" />
-                            )}
-                          </button>
-                        </div>
+                <Pencil className="w-4 h-4" />
+              </button>
+            </div>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => updateCategory(activeCategoryData.id, 'is_visible', !activeCategoryData.is_visible)}
+                className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm ${
+                  activeCategoryData.is_visible
+                    ? 'text-green-600 dark:text-green-400 bg-green-50 dark:bg-green-900/30'
+                    : 'text-gray-500 dark:text-gray-400 bg-gray-100 dark:bg-gray-700'
+                }`}
+              >
+                {activeCategoryData.is_visible ? <Eye className="w-4 h-4" /> : <EyeOff className="w-4 h-4" />}
+                {activeCategoryData.is_visible ? 'Visible' : 'Hidden'}
+              </button>
+              <button
+                onClick={() => deleteCategory(activeCategoryData.id)}
+                className="p-1.5 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/30 rounded"
+                title="Delete category"
+              >
+                <Trash2 className="w-4 h-4" />
+              </button>
+            </div>
+          </div>
+        )}
 
-                        {/* Category Items */}
-                        {expandedCategories[category.id] && (
-                          <div className="p-4">
-                            <DragDropContext onDragEnd={(result) => handleItemDragEnd(category.id, result)}>
-                              <Droppable droppableId={`items-${category.id}`}>
-                                {(provided) => (
-                                  <div
-                                    {...provided.droppableProps}
-                                    ref={provided.innerRef}
-                                    className="space-y-3"
-                                  >
-                                    {(category.menu_items || []).map((item, itemIndex) => (
-                                      <Draggable key={item.id} draggableId={item.id} index={itemIndex}>
-                                        {(provided, snapshot) => (
-                                          <div
-                                            ref={provided.innerRef}
-                                            {...provided.draggableProps}
-                                            className={`border rounded-lg p-4 ${
-                                              snapshot.isDragging
-                                                ? 'shadow-md bg-white dark:bg-gray-800'
-                                                : 'bg-gray-50 dark:bg-gray-800 border-gray-200 dark:border-gray-700'
-                                            }`}
-                                          >
-                                            <div className="flex items-start gap-3">
-                                              <div
-                                                {...provided.dragHandleProps}
-                                                className="mt-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 cursor-grab"
-                                              >
-                                                <GripVertical className="w-4 h-4" />
-                                              </div>
-
-                                              <div className="flex-1 space-y-3">
-                                                <div className="flex items-start gap-3">
-                                                  <input
-                                                    type="text"
-                                                    value={item.name}
-                                                    onChange={(e) => updateItem(category.id, item.id, 'name', e.target.value)}
-                                                    className="flex-1 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-sm focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-900 text-gray-900 dark:text-white"
-                                                    placeholder="Item name"
-                                                  />
-                                                  <div className="flex items-center gap-1">
-                                                    <span className="text-gray-500 dark:text-gray-400 text-sm">£</span>
-                                                    <input
-                                                      type="number"
-                                                      step="0.01"
-                                                      min="0"
-                                                      value={item.price || ''}
-                                                      onChange={(e) => updateItem(category.id, item.id, 'price', e.target.value ? parseFloat(e.target.value) : null)}
-                                                      className="w-20 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-sm focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-900 text-gray-900 dark:text-white"
-                                                      placeholder="0.00"
-                                                    />
-                                                  </div>
-                                                  <button
-                                                    onClick={() => updateItem(category.id, item.id, 'is_available', !item.is_available)}
-                                                    className={`p-2 rounded ${
-                                                      item.is_available
-                                                        ? 'text-green-600 dark:text-green-400 hover:bg-green-50 dark:hover:bg-green-900/30'
-                                                        : 'text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700'
-                                                    }`}
-                                                    title={item.is_available ? 'Available' : 'Unavailable'}
-                                                  >
-                                                    {item.is_available ? <Eye className="w-4 h-4" /> : <EyeOff className="w-4 h-4" />}
-                                                  </button>
-                                                  <button
-                                                    onClick={() => deleteItem(category.id, item.id)}
-                                                    className="p-2 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/30 rounded"
-                                                    title="Delete item"
-                                                  >
-                                                    <Trash2 className="w-4 h-4" />
-                                                  </button>
-                                                </div>
-
-                                                <textarea
-                                                  value={item.description || ''}
-                                                  onChange={(e) => updateItem(category.id, item.id, 'description', e.target.value)}
-                                                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-sm focus:ring-2 focus:ring-blue-500 resize-none bg-white dark:bg-gray-900 text-gray-900 dark:text-white"
-                                                  placeholder="Description (optional)"
-                                                  rows={2}
-                                                />
-
-                                                {/* Dietary Tags */}
-                                                <div className="flex flex-wrap gap-2">
-                                                  {DIETARY_TAGS.map(tag => {
-                                                    const isSelected = (item.dietary_tags || []).includes(tag.code);
-                                                    return (
-                                                      <button
-                                                        key={tag.code}
-                                                        onClick={() => toggleDietaryTag(category.id, item.id, tag.code)}
-                                                        className={`px-2 py-1 rounded text-xs font-medium transition-all ${
-                                                          isSelected
-                                                            ? tag.color
-                                                            : 'bg-gray-100 dark:bg-gray-700 text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-600'
-                                                        }`}
-                                                        title={tag.label}
-                                                      >
-                                                        {tag.code}
-                                                      </button>
-                                                    );
-                                                  })}
-                                                </div>
-
-                                                {/* Image Upload */}
-                                                <div className="flex items-center gap-3 pt-2 border-t border-gray-200 dark:border-gray-700">
-                                                  {item.image_url ? (
-                                                    <div className="relative group">
-                                                      <img
-                                                        src={item.image_url}
-                                                        alt={item.name}
-                                                        className="w-16 h-16 object-cover rounded-lg"
-                                                      />
-                                                      <button
-                                                        onClick={() => removeItemImage(category.id, item.id, item.image_url)}
-                                                        className="absolute -top-2 -right-2 p-1 bg-red-500 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
-                                                        title="Remove image"
-                                                      >
-                                                        <X className="w-3 h-3" />
-                                                      </button>
-                                                    </div>
-                                                  ) : (
-                                                    <label className="flex items-center gap-2 px-3 py-2 text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-lg cursor-pointer transition-colors">
-                                                      <ImagePlus className="w-4 h-4" />
-                                                      <span>Add photo</span>
-                                                      <input
-                                                        type="file"
-                                                        accept="image/*"
-                                                        onChange={(e) => uploadItemImage(category.id, item.id, e.target.files?.[0])}
-                                                        className="hidden"
-                                                      />
-                                                    </label>
-                                                  )}
-                                                  <span className="text-xs text-gray-400">Optional - displayed if "Show item photos" is enabled</span>
-                                                </div>
-                                              </div>
-                                            </div>
-                                          </div>
-                                        )}
-                                      </Draggable>
-                                    ))}
-                                    {provided.placeholder}
-                                  </div>
-                                )}
-                              </Droppable>
-                            </DragDropContext>
-
-                            <button
-                              onClick={() => addItem(category.id)}
-                              className="mt-3 flex items-center gap-2 px-3 py-2 text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg w-full justify-center border-2 border-dashed border-gray-200 dark:border-gray-700"
+        {/* Items List */}
+        <div className="p-4">
+          {categories.length === 0 ? (
+            <div className="text-center py-12">
+              <p className="text-gray-500 dark:text-gray-400 mb-4">No menu categories yet. Add your first category to get started.</p>
+              <button
+                onClick={addCategory}
+                className="inline-flex items-center gap-2 px-4 py-2 bg-gray-900 dark:bg-white text-white dark:text-gray-900 rounded-lg hover:bg-gray-800 dark:hover:bg-gray-100"
+              >
+                <Plus className="w-4 h-4" />
+                Add Category
+              </button>
+            </div>
+          ) : !activeCategoryData ? (
+            <div className="text-center py-12">
+              <p className="text-gray-500 dark:text-gray-400">Select a category to view items</p>
+            </div>
+          ) : (
+            <>
+              <DragDropContext onDragEnd={handleItemDragEnd}>
+                <Droppable droppableId={`items-${activeCategory}`}>
+                  {(provided) => (
+                    <div
+                      {...provided.droppableProps}
+                      ref={provided.innerRef}
+                      className="space-y-3"
+                    >
+                      {(activeCategoryData.menu_items || []).map((item, itemIndex) => (
+                        <Draggable key={item.id} draggableId={item.id} index={itemIndex}>
+                          {(provided, snapshot) => (
+                            <div
+                              ref={provided.innerRef}
+                              {...provided.draggableProps}
+                              className={`border rounded-lg p-4 ${
+                                snapshot.isDragging
+                                  ? 'shadow-md bg-white dark:bg-gray-800'
+                                  : 'bg-gray-50 dark:bg-gray-800 border-gray-200 dark:border-gray-700'
+                              }`}
                             >
-                              <Plus className="w-4 h-4" />
-                              Add Item
-                            </button>
-                          </div>
-                        )}
-                      </div>
-                    )}
-                  </Draggable>
-                ))}
-                {provided.placeholder}
-              </div>
-            )}
-          </Droppable>
-        </DragDropContext>
-      )}
+                              <div className="flex items-start gap-3">
+                                <div
+                                  {...provided.dragHandleProps}
+                                  className="mt-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 cursor-grab"
+                                >
+                                  <GripVertical className="w-4 h-4" />
+                                </div>
 
-      {categories.length > 0 && (
-        <button
-          onClick={addCategory}
-          className="flex items-center gap-2 px-4 py-3 text-sm font-medium text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-50 dark:hover:bg-gray-800 rounded-xl w-full justify-center border-2 border-dashed border-gray-300 dark:border-gray-700"
-        >
-          <Plus className="w-4 h-4" />
-          Add Category
-        </button>
-      )}
+                                <div className="flex-1 space-y-3">
+                                  <div className="flex items-start gap-3">
+                                    <input
+                                      type="text"
+                                      value={item.name}
+                                      onChange={(e) => updateItem(activeCategory, item.id, 'name', e.target.value)}
+                                      className="flex-1 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-sm focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-900 text-gray-900 dark:text-white"
+                                      placeholder="Item name"
+                                    />
+                                    <div className="flex items-center gap-1">
+                                      <span className="text-gray-500 dark:text-gray-400 text-sm">£</span>
+                                      <input
+                                        type="number"
+                                        step="0.01"
+                                        min="0"
+                                        value={item.price || ''}
+                                        onChange={(e) => updateItem(activeCategory, item.id, 'price', e.target.value ? parseFloat(e.target.value) : null)}
+                                        className="w-20 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-sm focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-900 text-gray-900 dark:text-white"
+                                        placeholder="0.00"
+                                      />
+                                    </div>
+                                    <button
+                                      onClick={() => updateItem(activeCategory, item.id, 'is_available', !item.is_available)}
+                                      className={`p-2 rounded ${
+                                        item.is_available
+                                          ? 'text-green-600 dark:text-green-400 hover:bg-green-50 dark:hover:bg-green-900/30'
+                                          : 'text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700'
+                                      }`}
+                                      title={item.is_available ? 'Available' : 'Unavailable'}
+                                    >
+                                      {item.is_available ? <Eye className="w-4 h-4" /> : <EyeOff className="w-4 h-4" />}
+                                    </button>
+                                    <button
+                                      onClick={() => deleteItem(activeCategory, item.id)}
+                                      className="p-2 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/30 rounded"
+                                      title="Delete item"
+                                    >
+                                      <Trash2 className="w-4 h-4" />
+                                    </button>
+                                  </div>
+
+                                  <textarea
+                                    value={item.description || ''}
+                                    onChange={(e) => updateItem(activeCategory, item.id, 'description', e.target.value)}
+                                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-sm focus:ring-2 focus:ring-blue-500 resize-none bg-white dark:bg-gray-900 text-gray-900 dark:text-white"
+                                    placeholder="Description (optional)"
+                                    rows={2}
+                                  />
+
+                                  {/* Dietary Tags */}
+                                  <div className="flex flex-wrap gap-2">
+                                    {DIETARY_TAGS.map(tag => {
+                                      const isSelected = (item.dietary_tags || []).includes(tag.code);
+                                      return (
+                                        <button
+                                          key={tag.code}
+                                          onClick={() => toggleDietaryTag(activeCategory, item.id, tag.code)}
+                                          className={`px-2 py-1 rounded text-xs font-medium transition-all ${
+                                            isSelected
+                                              ? tag.color
+                                              : 'bg-gray-100 dark:bg-gray-700 text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-600'
+                                          }`}
+                                          title={tag.label}
+                                        >
+                                          {tag.code}
+                                        </button>
+                                      );
+                                    })}
+                                  </div>
+
+                                  {/* Image Upload */}
+                                  <div className="flex items-center gap-3 pt-2 border-t border-gray-200 dark:border-gray-700">
+                                    {item.image_url ? (
+                                      <div className="relative group">
+                                        <img
+                                          src={item.image_url}
+                                          alt={item.name}
+                                          className="w-16 h-16 object-cover rounded-lg"
+                                        />
+                                        <button
+                                          onClick={() => removeItemImage(activeCategory, item.id, item.image_url)}
+                                          className="absolute -top-2 -right-2 p-1 bg-red-500 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+                                          title="Remove image"
+                                        >
+                                          <X className="w-3 h-3" />
+                                        </button>
+                                      </div>
+                                    ) : (
+                                      <label className="flex items-center gap-2 px-3 py-2 text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-lg cursor-pointer transition-colors">
+                                        <ImagePlus className="w-4 h-4" />
+                                        <span>Add photo</span>
+                                        <input
+                                          type="file"
+                                          accept="image/*"
+                                          onChange={(e) => uploadItemImage(activeCategory, item.id, e.target.files?.[0])}
+                                          className="hidden"
+                                        />
+                                      </label>
+                                    )}
+                                    <span className="text-xs text-gray-400">Optional - displayed on menu</span>
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                          )}
+                        </Draggable>
+                      ))}
+                      {provided.placeholder}
+                    </div>
+                  )}
+                </Droppable>
+              </DragDropContext>
+
+              {/* Add Item Button */}
+              <button
+                onClick={() => addItem(activeCategory)}
+                className="mt-4 flex items-center gap-2 px-3 py-3 text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg w-full justify-center border-2 border-dashed border-gray-200 dark:border-gray-700"
+              >
+                <Plus className="w-4 h-4" />
+                Add Item to {activeCategoryData.name}
+              </button>
+            </>
+          )}
+        </div>
+      </div>
 
       {/* Footer Info */}
       <div className="text-center">
         <p className="text-sm text-gray-500 dark:text-gray-400">
-          Changes are saved automatically
+          Changes are saved automatically • Drag items to reorder
         </p>
       </div>
     </div>
