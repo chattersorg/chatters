@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo, useCallback } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useVenue } from '../../../context/VenueContext';
 import { usePermissions } from '../../../context/PermissionsContext';
@@ -173,12 +173,9 @@ const multiVenueNavItems = [
     icon: BarChart3,
     path: '/multi-venue/overview',
     color: 'text-purple-600',
-    permission: 'multivenue.view',
-    subItems: [
-      { label: 'Portfolio Overview', path: '/multi-venue/overview', icon: TrendingUp, permission: 'multivenue.view' },
-      { label: 'Venue Comparison', path: '/reports/nps', icon: Building2, permission: 'nps.view' },
-      { label: 'Custom Reports', path: '/reports/builder', icon: FileText, permission: 'reports.create' }
-    ]
+    permission: 'multivenue.view'
+    // Removed subItems - these paths were duplicates of venue section items
+    // which caused sidebar flickering when navigating
   }
 ];
 
@@ -231,14 +228,14 @@ const Sidebar = ({ collapsed, setCollapsed }) => {
 
   // Helper to check if item should be visible based on permission
   // Master users see everything, otherwise check permission
-  const canSeeItem = (item) => {
+  const canSeeItem = useCallback((item) => {
     if (userRole === 'master') return true;
     if (!item.permission) return true;
     return hasPermission(item.permission);
-  };
+  }, [userRole, hasPermission]);
 
-  // Filter nav items based on permissions
-  const filterNavItems = (items) => {
+  // Filter nav items based on permissions - memoized to prevent unnecessary re-renders
+  const filterNavItems = useCallback((items) => {
     return items
       .filter(item => canSeeItem(item))
       .map(item => {
@@ -251,11 +248,11 @@ const Sidebar = ({ collapsed, setCollapsed }) => {
         return item;
       })
       .filter(Boolean);
-  };
+  }, [canSeeItem]);
 
-  // Get filtered nav items
-  const filteredVenueNavItems = filterNavItems(venueNavItems);
-  const filteredMultiVenueNavItems = filterNavItems(multiVenueNavItems);
+  // Get filtered nav items - memoized
+  const filteredVenueNavItems = useMemo(() => filterNavItems(venueNavItems), [filterNavItems]);
+  const filteredMultiVenueNavItems = useMemo(() => filterNavItems(multiVenueNavItems), [filterNavItems]);
 
   // Get account items based on user role, trial status, and permissions
   const accountItems = getAccountItems(userRole, trialInfo, hasBillingPermission);
@@ -263,13 +260,15 @@ const Sidebar = ({ collapsed, setCollapsed }) => {
   // Determine if user has access to multiple venues
   const hasMultipleVenues = allVenues.length > 1;
 
-  const isActive = (path) => {
+  const isActive = useCallback((path) => {
     return location.pathname === path || location.pathname.startsWith(path + '/');
-  };
+  }, [location.pathname]);
 
-  const hasActiveSubitem = (subItems) => {
-    return subItems?.some(subItem => isActive(subItem.path));
-  };
+  const hasActiveSubitem = useCallback((subItems) => {
+    return subItems?.some(subItem =>
+      location.pathname === subItem.path || location.pathname.startsWith(subItem.path + '/')
+    );
+  }, [location.pathname]);
 
   // Fetch trial information for billing access control
   React.useEffect(() => {
@@ -332,19 +331,25 @@ const Sidebar = ({ collapsed, setCollapsed }) => {
     fetchTrialInfo();
   }, [userRole]);
 
-  // Auto-open submenu based on current route
+  // Auto-open/close submenu based on current route
   React.useEffect(() => {
+    if (collapsed) return; // Don't auto-manage submenus when collapsed
+
     const allNavItems = [
       ...filteredVenueNavItems,
       ...(hasMultipleVenues ? filteredMultiVenueNavItems : []),
       ...(userRole === 'master' ? adminNavItems : [])
     ];
     const currentItem = allNavItems.find(item =>
-      item.subItems && item.subItems.some(subItem => isActive(subItem.path))
+      item.subItems && item.subItems.some(subItem =>
+        location.pathname === subItem.path || location.pathname.startsWith(subItem.path + '/')
+      )
     );
-    if (currentItem && !collapsed) {
+    if (currentItem) {
       setActiveSubmenu(currentItem.id);
     }
+    // Note: We intentionally don't close the submenu when navigating to a non-submenu route
+    // to prevent annoying auto-closing behavior when users want to keep a menu open
   }, [location.pathname, collapsed, hasMultipleVenues, userRole, filteredVenueNavItems, filteredMultiVenueNavItems]);
 
   const toggleSubmenu = (itemId) => {
