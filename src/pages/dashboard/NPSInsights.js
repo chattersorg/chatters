@@ -50,10 +50,12 @@ const NPSInsights = () => {
       startDate.setDate(startDate.getDate() - parseInt(dateRange));
 
       // Load NPS submissions first (without join to avoid FK issues)
+      // Filter by responded_at date (when the NPS was actually answered)
       const { data: npsData, error: npsError } = await supabase
         .from('nps_submissions')
         .select('*')
-        .eq('venue_id', venueId);
+        .eq('venue_id', venueId)
+        .gte('responded_at', startDate.toISOString());
 
       if (npsError) throw npsError;
 
