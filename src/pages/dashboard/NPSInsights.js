@@ -33,21 +33,31 @@ const NPSInsights = () => {
   usePageTitle('NPS Insights');
   const { venueId } = useVenue();
 
+  console.log('NPSInsights render - venueId from context:', venueId);
+
   const [loading, setLoading] = useState(true);
   const [dateRange, setDateRange] = useState('30');
   const [insights, setInsights] = useState(null);
 
   useEffect(() => {
-    if (!venueId) return;
+    console.log('NPSInsights useEffect - venueId:', venueId);
+    if (!venueId) {
+      console.log('No venueId, skipping loadInsights');
+      return;
+    }
     loadInsights();
   }, [venueId, dateRange]);
 
   const loadInsights = async () => {
+    console.log('loadInsights called with venueId:', venueId);
+
     try {
       setLoading(true);
 
       const startDate = new Date();
       startDate.setDate(startDate.getDate() - parseInt(dateRange));
+
+      console.log('About to query nps_submissions for venue:', venueId);
 
       // Load NPS submissions with their linked feedback sessions
       const { data: npsData, error: npsError } = await supabase
@@ -61,10 +71,19 @@ const NPSInsights = () => {
             started_at
           )
         `)
-        .eq('venue_id', venueId)
-        .gte('created_at', startDate.toISOString());
+        .eq('venue_id', venueId);
+
+      console.log('Query complete. Error:', npsError, 'Data length:', npsData?.length);
 
       if (npsError) throw npsError;
+
+      console.log('NPS Insights Debug:', {
+        venueId,
+        totalRows: npsData?.length,
+        withScores: npsData?.filter(s => s.score !== null).length,
+        startDate: startDate.toISOString(),
+        sampleData: npsData?.slice(0, 3)
+      });
 
       // Calculate insights - filter for submissions that have a score (responded)
       const linkedSubmissions = (npsData || []).filter(s => s.session_id && s.feedback_sessions && s.score !== null);
