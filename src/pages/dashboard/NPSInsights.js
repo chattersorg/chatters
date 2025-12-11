@@ -62,14 +62,13 @@ const NPSInsights = () => {
           )
         `)
         .eq('venue_id', venueId)
-        .gte('created_at', startDate.toISOString())
-        .not('score', 'is', null);
+        .gte('created_at', startDate.toISOString());
 
       if (npsError) throw npsError;
 
-      // Calculate insights
-      const linkedSubmissions = npsData.filter(s => s.session_id && s.feedback_sessions);
-      const allResponses = npsData.filter(s => s.responded_at);
+      // Calculate insights - filter for submissions that have a score (responded)
+      const linkedSubmissions = (npsData || []).filter(s => s.session_id && s.feedback_sessions && s.score !== null);
+      const allResponses = (npsData || []).filter(s => s.score !== null);
 
       // Only show insights if we have some responses
       if (allResponses.length === 0) {
