@@ -73,14 +73,14 @@ const NPSInsights = () => {
         });
       }
 
-      // Attach feedback to NPS submissions
+      // Attach linked feedback record to NPS submissions (renamed to avoid collision with NPS feedback text field)
       const enrichedNpsData = (npsData || []).map(s => ({
         ...s,
-        feedback: s.session_id ? feedbackBySession[s.session_id] : null
+        linkedFeedback: s.session_id ? feedbackBySession[s.session_id] : null
       }));
 
       // Calculate insights - filter for submissions that have a score (responded)
-      const linkedSubmissions = enrichedNpsData.filter(s => s.session_id && s.feedback && s.score !== null);
+      const linkedSubmissions = enrichedNpsData.filter(s => s.session_id && s.linkedFeedback && s.score !== null);
       const allResponses = enrichedNpsData.filter(s => s.score !== null);
 
       // Only show insights if we have some responses
@@ -105,7 +105,7 @@ const NPSInsights = () => {
       const feedbackAnalysis = analyzeFeedbackText(allResponses);
 
       // Response rate by feedback sentiment (only for linked submissions)
-      const sentimentResponseRate = calculateSentimentResponseRate(enrichedNpsData.filter(s => s.session_id && s.feedback));
+      const sentimentResponseRate = calculateSentimentResponseRate(enrichedNpsData.filter(s => s.session_id && s.linkedFeedback));
 
       setInsights({
         totalLinked: linkedSubmissions.length,
@@ -129,7 +129,7 @@ const NPSInsights = () => {
     const byRating = {};
 
     submissions.forEach(s => {
-      const rating = s.feedback?.rating;
+      const rating = s.linkedFeedback?.rating;
       if (rating !== null && rating !== undefined) {
         if (!byRating[rating]) {
           byRating[rating] = { scores: [], count: 0 };
@@ -161,7 +161,7 @@ const NPSInsights = () => {
 
     submissions.forEach(s => {
       // Try to get table from linked feedback first, then from NPS submission itself
-      const table = s.feedback?.table_number || s.table_number;
+      const table = s.linkedFeedback?.table_number || s.table_number;
       if (table) {
         if (!byTable[table]) {
           byTable[table] = { scores: [], count: 0 };
@@ -281,8 +281,8 @@ const NPSInsights = () => {
     const byRating = {};
 
     submissions.forEach(s => {
-      if (s.feedback?.rating) {
-        const rating = s.feedback.rating;
+      if (s.linkedFeedback?.rating) {
+        const rating = s.linkedFeedback.rating;
         if (!byRating[rating]) {
           byRating[rating] = { sent: 0, responded: 0 };
         }
