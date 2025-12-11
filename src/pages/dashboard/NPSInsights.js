@@ -59,35 +59,50 @@ const NPSInsights = () => {
 
       console.log('About to query nps_submissions for venue:', venueId);
 
-      // Load NPS submissions with their linked feedback sessions
+      // Load NPS submissions first (without join to avoid FK issues)
       const { data: npsData, error: npsError } = await supabase
         .from('nps_submissions')
-        .select(`
-          *,
-          feedback_sessions (
-            id,
-            overall_rating,
-            table_number,
-            started_at
-          )
-        `)
+        .select('*')
         .eq('venue_id', venueId);
 
       console.log('Query complete. Error:', npsError, 'Data length:', npsData?.length);
 
       if (npsError) throw npsError;
 
+      // If we have session_ids, fetch the linked feedback separately
+      const sessionIds = (npsData || []).filter(s => s.session_id).map(s => s.session_id);
+      let feedbackBySession = {};
+
+      if (sessionIds.length > 0) {
+        const { data: feedbackData } = await supabase
+          .from('feedback')
+          .select('id, session_id, rating, table_number, created_at')
+          .in('session_id', sessionIds);
+
+        // Create a lookup map by session_id
+        (feedbackData || []).forEach(f => {
+          feedbackBySession[f.session_id] = f;
+        });
+      }
+
+      // Attach feedback to NPS submissions
+      const enrichedNpsData = (npsData || []).map(s => ({
+        ...s,
+        feedback: s.session_id ? feedbackBySession[s.session_id] : null
+      }));
+
       console.log('NPS Insights Debug:', {
         venueId,
-        totalRows: npsData?.length,
-        withScores: npsData?.filter(s => s.score !== null).length,
+        totalRows: enrichedNpsData?.length,
+        withScores: enrichedNpsData?.filter(s => s.score !== null).length,
+        withFeedback: Object.keys(feedbackBySession).length,
         startDate: startDate.toISOString(),
-        sampleData: npsData?.slice(0, 3)
+        sampleData: enrichedNpsData?.slice(0, 3)
       });
 
       // Calculate insights - filter for submissions that have a score (responded)
-      const linkedSubmissions = (npsData || []).filter(s => s.session_id && s.feedback_sessions && s.score !== null);
-      const allResponses = (npsData || []).filter(s => s.score !== null);
+      const linkedSubmissions = enrichedNpsData.filter(s => s.session_id && s.feedback && s.score !== null);
+      const allResponses = enrichedNpsData.filter(s => s.score !== null);
 
       // Only show insights if we have some responses
       if (allResponses.length === 0) {
@@ -111,7 +126,7 @@ const NPSInsights = () => {
       const feedbackAnalysis = analyzeFeedbackText(allResponses);
 
       // Response rate by feedback sentiment (only for linked submissions)
-      const sentimentResponseRate = calculateSentimentResponseRate(npsData.filter(s => s.session_id && s.feedback_sessions));
+      const sentimentResponseRate = calculateSentimentResponseRate(enrichedNpsData.filter(s => s.session_id && s.feedback));
 
       setInsights({
         totalLinked: linkedSubmissions.length,
@@ -135,7 +150,7 @@ const NPSInsights = () => {
     const byRating = {};
 
     submissions.forEach(s => {
-      const rating = s.feedback_sessions?.overall_rating;
+      const rating = s.feedback?.rating;
       if (rating !== null && rating !== undefined) {
         if (!byRating[rating]) {
           byRating[rating] = { scores: [], count: 0 };
@@ -166,8 +181,8 @@ const NPSInsights = () => {
     const byTable = {};
 
     submissions.forEach(s => {
-      // Try to get table from linked session first, then from NPS submission itself
-      const table = s.feedback_sessions?.table_number || s.table_number;
+      // Try to get table from linked feedback first, then from NPS submission itself
+      const table = s.feedback?.table_number || s.table_number;
       if (table) {
         if (!byTable[table]) {
           byTable[table] = { scores: [], count: 0 };
@@ -287,8 +302,8 @@ const NPSInsights = () => {
     const byRating = {};
 
     submissions.forEach(s => {
-      if (s.feedback_sessions?.overall_rating) {
-        const rating = s.feedback_sessions.overall_rating;
+      if (s.feedback?.rating) {
+        const rating = s.feedback.rating;
         if (!byRating[rating]) {
           byRating[rating] = { sent: 0, responded: 0 };
         }
