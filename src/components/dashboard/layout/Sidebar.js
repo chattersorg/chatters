@@ -264,7 +264,10 @@ const Sidebar = ({ collapsed, setCollapsed }) => {
   // Determine if user has access to multiple venues
   const hasMultipleVenues = allVenues.length > 1;
 
-  const isActive = useCallback((path) => {
+  const isActive = useCallback((path, exactMatch = false) => {
+    if (exactMatch) {
+      return location.pathname === path;
+    }
     return location.pathname === path || location.pathname.startsWith(path + '/');
   }, [location.pathname]);
 
@@ -534,15 +537,22 @@ const Sidebar = ({ collapsed, setCollapsed }) => {
                 {/* Submenu Items */}
                 {showSubmenu && (
                   <div className="ml-2 mt-1 space-y-1 border-l-2 border-gray-100 dark:border-gray-800 pl-4">
-                    {item.subItems.map((subItem) => {
+                    {item.subItems.map((subItem, idx) => {
                       const SubIcon = subItem.icon;
+                      // Check if any sibling path starts with this path - if so, use exact match
+                      const hasSiblingPrefix = item.subItems.some((other, otherIdx) =>
+                        otherIdx !== idx && other.path.startsWith(subItem.path + '/')
+                      );
+                      const subItemActive = hasSiblingPrefix
+                        ? isActive(subItem.path, true)
+                        : isActive(subItem.path);
                       return (
                         <Link
                           key={subItem.path}
                           to={subItem.path}
                           onClick={handleMobileLinkClick}
                           className={`flex items-center justify-between px-3 py-2 text-sm rounded-md transition-colors group ${
-                            isActive(subItem.path)
+                            subItemActive
                               ? 'bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-400 font-medium'
                               : 'text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800 hover:text-gray-700 dark:hover:text-gray-300'
                           }`}
@@ -631,15 +641,22 @@ const Sidebar = ({ collapsed, setCollapsed }) => {
                 {/* Submenu Items */}
                 {showSubmenu && (
                   <div className="ml-2 mt-1 space-y-1 border-l-2 border-gray-100 dark:border-gray-800 pl-4">
-                    {item.subItems.map((subItem) => {
+                    {item.subItems.map((subItem, idx) => {
                       const SubIcon = subItem.icon;
+                      // Check if any sibling path starts with this path - if so, use exact match
+                      const hasSiblingPrefix = item.subItems.some((other, otherIdx) =>
+                        otherIdx !== idx && other.path.startsWith(subItem.path + '/')
+                      );
+                      const subItemActive = hasSiblingPrefix
+                        ? isActive(subItem.path, true)
+                        : isActive(subItem.path);
                       return (
                         <Link
                           key={subItem.path}
                           to={subItem.path}
                           onClick={handleMobileLinkClick}
                           className={`flex items-center justify-between px-3 py-2 text-sm rounded-md transition-colors group ${
-                            isActive(subItem.path)
+                            subItemActive
                               ? 'bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-400 font-medium'
                               : 'text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800 hover:text-gray-700 dark:hover:text-gray-300'
                           }`}
@@ -723,15 +740,22 @@ const Sidebar = ({ collapsed, setCollapsed }) => {
                 {/* Submenu Items */}
                 {showSubmenu && (
                   <div className="ml-2 mt-1 space-y-1 border-l-2 border-gray-100 dark:border-gray-800 pl-4">
-                    {item.subItems.map((subItem) => {
+                    {item.subItems.map((subItem, idx) => {
                       const SubIcon = subItem.icon;
+                      // Check if any sibling path starts with this path - if so, use exact match
+                      const hasSiblingPrefix = item.subItems.some((other, otherIdx) =>
+                        otherIdx !== idx && other.path.startsWith(subItem.path + '/')
+                      );
+                      const subItemActive = hasSiblingPrefix
+                        ? isActive(subItem.path, true)
+                        : isActive(subItem.path);
                       return (
                         <Link
                           key={subItem.path}
                           to={subItem.path}
                           onClick={handleMobileLinkClick}
                           className={`flex items-center justify-between px-3 py-2 text-sm rounded-md transition-colors group ${
-                            isActive(subItem.path)
+                            subItemActive
                               ? 'bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-400 font-medium'
                               : 'text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800 hover:text-gray-700 dark:hover:text-gray-300'
                           }`}

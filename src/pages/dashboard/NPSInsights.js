@@ -33,39 +33,27 @@ const NPSInsights = () => {
   usePageTitle('NPS Insights');
   const { venueId } = useVenue();
 
-  console.log('NPSInsights render - venueId from context:', venueId);
-
   const [loading, setLoading] = useState(true);
   const [dateRange, setDateRange] = useState('30');
   const [insights, setInsights] = useState(null);
 
   useEffect(() => {
-    console.log('NPSInsights useEffect - venueId:', venueId);
-    if (!venueId) {
-      console.log('No venueId, skipping loadInsights');
-      return;
-    }
+    if (!venueId) return;
     loadInsights();
   }, [venueId, dateRange]);
 
   const loadInsights = async () => {
-    console.log('loadInsights called with venueId:', venueId);
-
     try {
       setLoading(true);
 
       const startDate = new Date();
       startDate.setDate(startDate.getDate() - parseInt(dateRange));
 
-      console.log('About to query nps_submissions for venue:', venueId);
-
       // Load NPS submissions first (without join to avoid FK issues)
       const { data: npsData, error: npsError } = await supabase
         .from('nps_submissions')
         .select('*')
         .eq('venue_id', venueId);
-
-      console.log('Query complete. Error:', npsError, 'Data length:', npsData?.length);
 
       if (npsError) throw npsError;
 
@@ -90,15 +78,6 @@ const NPSInsights = () => {
         ...s,
         feedback: s.session_id ? feedbackBySession[s.session_id] : null
       }));
-
-      console.log('NPS Insights Debug:', {
-        venueId,
-        totalRows: enrichedNpsData?.length,
-        withScores: enrichedNpsData?.filter(s => s.score !== null).length,
-        withFeedback: Object.keys(feedbackBySession).length,
-        startDate: startDate.toISOString(),
-        sampleData: enrichedNpsData?.slice(0, 3)
-      });
 
       // Calculate insights - filter for submissions that have a score (responded)
       const linkedSubmissions = enrichedNpsData.filter(s => s.session_id && s.feedback && s.score !== null);
