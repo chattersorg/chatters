@@ -88,8 +88,8 @@ const ModernHeader = ({ sidebarCollapsed, setSidebarCollapsed, trialInfo }) => {
       return { id: 'venues-management', label: 'Venues', icon: Settings, path: '/multi-venue/venues' };
     }
 
-    if (currentPath === '/multi-venue/overview') {
-      return { id: 'portfolio-overview', label: 'Portfolio Overview', icon: BarChart3, path: '/multi-venue/overview' };
+    if (currentPath === '/multi-venue/reporting') {
+      return { id: 'portfolio-reporting', label: 'Portfolio Reporting', icon: BarChart3, path: '/multi-venue/reporting' };
     }
 
     if (currentPath === '/multi-venue/dashboard') {
@@ -97,7 +97,7 @@ const ModernHeader = ({ sidebarCollapsed, setSidebarCollapsed, trialInfo }) => {
     }
 
     // Special handling for different path patterns
-    if (currentPath.startsWith('/settings/')) {
+    if (currentPath.startsWith('/venue-settings/') || currentPath.startsWith('/settings/')) {
       return mainMenuItems.find(item => item.id === 'settings') || mainMenuItems[0];
     }
 
@@ -105,8 +105,12 @@ const ModernHeader = ({ sidebarCollapsed, setSidebarCollapsed, trialInfo }) => {
       return mainMenuItems.find(item => item.id === 'feedback') || mainMenuItems[0];
     }
 
-    if (currentPath.startsWith('/reports/') || currentPath.startsWith('/nps-report/')) {
+    if (currentPath.startsWith('/reports/') || currentPath.startsWith('/nps-report/') || currentPath.startsWith('/nps/')) {
       return mainMenuItems.find(item => item.id === 'reports') || mainMenuItems[0];
+    }
+
+    if (currentPath.startsWith('/ai/')) {
+      return { id: 'ai', label: 'AI', icon: Sparkles, path: '/ai/insights' };
     }
 
     if (currentPath.startsWith('/staff/')) {
@@ -117,8 +121,12 @@ const ModernHeader = ({ sidebarCollapsed, setSidebarCollapsed, trialInfo }) => {
       return { id: 'reviews', label: 'Reviews', icon: MessageSquare, path: '/reviews' };
     }
 
-    if (currentPath === '/ai-insights') {
-      return { id: 'ai-insights', label: 'AI Insights', icon: Sparkles, path: '/ai-insights' };
+    if (currentPath === '/ai/insights') {
+      return { id: 'ai-insights', label: 'AI Insights', icon: Sparkles, path: '/ai/insights' };
+    }
+
+    if (currentPath === '/ai/intelligence') {
+      return { id: 'ai-intelligence', label: 'Chatters Intelligence', icon: Sparkles, path: '/ai/intelligence' };
     }
 
     // Default path-based matching
@@ -142,7 +150,7 @@ const ModernHeader = ({ sidebarCollapsed, setSidebarCollapsed, trialInfo }) => {
       return 'Manage all venues';
     }
 
-    if (currentPath === '/multi-venue/overview') {
+    if (currentPath === '/multi-venue/reporting') {
       return 'Performance metrics across all your venues';
     }
 
@@ -163,7 +171,7 @@ const ModernHeader = ({ sidebarCollapsed, setSidebarCollapsed, trialInfo }) => {
     // Settings subtitles
     if (currentPath.startsWith('/settings/') || currentPath.startsWith('/settings?')) {
       if (currentPath === '/settings/venues' || currentPath === '/settings?tab=Venue') return 'Manage all venues';
-      if (currentPath === '/settings/venue-details') return 'Venue information and settings';
+      if (currentPath === '/venue-settings/details') return 'Venue information and settings';
       if (currentPath === '/settings/feedback' || currentPath === '/settings?tab=Feedback') return 'Feedback configuration';
       if (currentPath === '/settings/branding' || currentPath === '/settings?tab=Branding') return 'Brand colors and logo';
       if (currentPath === '/settings/integrations' || currentPath === '/settings?tab=Integrations') return 'Third-party integrations';

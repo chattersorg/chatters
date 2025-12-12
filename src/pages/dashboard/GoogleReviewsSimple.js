@@ -497,8 +497,8 @@ const GoogleReviewsSimplePage = () => {
             <div className="mt-4 pt-4 border-t border-blue-200 dark:border-blue-700">
               <p className="text-sm text-blue-800 dark:text-blue-200">
                 <strong>Meanwhile:</strong> Manage your Google review request links in{' '}
-                <Link to="/settings/feedback" className="underline hover:text-blue-900 dark:hover:text-blue-100 font-semibold">
-                  Settings → Feedback
+                <Link to="/venue-settings/feedback" className="underline hover:text-blue-900 dark:hover:text-blue-100 font-semibold">
+                  Venue Settings → Feedback
                 </Link>
               </p>
             </div>
@@ -516,7 +516,7 @@ const GoogleReviewsSimplePage = () => {
             </p>
           </div>
           <Link
-            to="/settings/feedback"
+            to="/venue-settings/feedback"
             className="flex items-center gap-2 px-4 py-2 bg-gray-900 dark:bg-gray-700 text-white rounded-lg hover:bg-gray-800 dark:hover:bg-gray-600 transition-colors text-sm"
           >
             <ExternalLink className="w-4 h-4" />

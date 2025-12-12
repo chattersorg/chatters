@@ -57,22 +57,22 @@ const venueNavItems = [
     // No permission - always visible
   },
   {
-    id: 'ai-insights',
-    label: 'AI Insights',
+    id: 'ai',
+    label: 'AI',
     icon: Sparkles,
-    path: '/ai-insights',
+    path: '/ai/insights',
     color: 'text-violet-600',
     permission: 'ai.insights',
     subItems: [
-      { label: 'Weekly Insights', path: '/ai-insights', icon: Sparkles, permission: 'ai.insights' },
-      { label: 'Chatters Intelligence', path: '/ai-chat', icon: MessageSquare, permission: 'ai.chat' }
+      { label: 'Weekly Insights', path: '/ai/insights', icon: Sparkles, permission: 'ai.insights' },
+      { label: 'Chatters Intelligence', path: '/ai/intelligence', icon: MessageSquare, permission: 'ai.chat' }
     ]
   },
   {
-    id: 'feedback',
+    id: 'questions',
     label: 'Questions',
     icon: HelpCircle,
-    path: '/feedback/questions',
+    path: '/questions',
     color: 'text-green-600',
     permission: 'questions.view'
   },
@@ -105,12 +105,12 @@ const venueNavItems = [
     id: 'nps',
     label: 'NPS',
     icon: Star,
-    path: '/reports/nps',
+    path: '/nps/score',
     color: 'text-amber-600',
     permission: 'nps.view',
     subItems: [
-      { label: 'Score', path: '/reports/nps', icon: Star, permission: 'nps.view' },
-      { label: 'Insights', path: '/reports/nps/insights', icon: TrendingUp, permission: 'nps.view' }
+      { label: 'Score', path: '/nps/score', icon: Star, permission: 'nps.view' },
+      { label: 'Insights', path: '/nps/insights', icon: TrendingUp, permission: 'nps.view' }
     ]
   },
   {
@@ -140,15 +140,15 @@ const venueNavItems = [
     id: 'venue-settings',
     label: 'Venue Settings',
     icon: Settings,
-    path: '/settings/feedback',
+    path: '/venue-settings/feedback',
     color: 'text-gray-600',
     permission: 'venue.view',
     subItems: [
-      { label: 'Venue Details', path: '/settings/venue-details', icon: Building2, permission: 'venue.view' },
-      { label: 'Feedback', path: '/settings/feedback', icon: MessageSquare, permission: 'venue.view' },
-      { label: 'Branding', path: '/settings/branding', icon: Palette, permission: 'venue.branding' },
-      { label: 'QR Code', path: '/feedback/qr', icon: QrCode, permission: 'qr.view' },
-      { label: 'Integrations', path: '/settings/integrations', icon: Activity, permission: 'venue.integrations' }
+      { label: 'Venue Details', path: '/venue-settings/details', icon: Building2, permission: 'venue.view' },
+      { label: 'Feedback', path: '/venue-settings/feedback', icon: MessageSquare, permission: 'venue.view' },
+      { label: 'Branding', path: '/venue-settings/branding', icon: Palette, permission: 'venue.branding' },
+      { label: 'QR Code', path: '/venue-settings/qr-code', icon: QrCode, permission: 'qr.view' },
+      { label: 'Integrations', path: '/venue-settings/integrations', icon: Activity, permission: 'venue.integrations' }
     ]
   }
 ];
@@ -175,7 +175,7 @@ const multiVenueNavItems = [
     id: 'multi-reporting',
     label: 'Reporting',
     icon: BarChart3,
-    path: '/multi-venue/overview',
+    path: '/multi-venue/reporting',
     color: 'text-purple-600',
     permission: 'multivenue.view'
     // Removed subItems - these paths were duplicates of venue section items

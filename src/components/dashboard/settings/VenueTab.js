@@ -507,7 +507,7 @@ const VenueTab = ({
                           <button
                             onClick={(e) => {
                               e.stopPropagation();
-                              navigate('/settings/menu-builder');
+                              navigate('/venue-settings/menu-builder');
                             }}
                             className="px-4 py-2 bg-gray-900 dark:bg-gray-100 text-white dark:text-gray-900 text-sm font-medium rounded-lg hover:bg-gray-800 dark:hover:bg-gray-200 transition-colors"
                           >
