@@ -49,9 +49,10 @@ export default async function handler(req, res) {
     const staffPerformance = calculateStaffPerformance(feedbackData, employees);
     const zonePerformance = calculateZonePerformance(feedbackData, zoneData);
     const stats = calculateStats(feedbackData, npsData);
+    const trends = calculateTrends(feedbackData, dateRange);
 
     // Build context for Claude
-    const context = buildContext(feedbackData, npsData, stats, staffPerformance, zonePerformance, questions, venueName, dateRange);
+    const context = buildContext(feedbackData, npsData, stats, staffPerformance, zonePerformance, questions, venueName, dateRange, trends);
 
     // Call Claude Haiku
     const response = await fetch('https://api.anthropic.com/v1/messages', {
@@ -79,7 +80,19 @@ IMPORTANT RULES:
 - You have access to the venue's active feedback questions - use them to understand what customers are being asked
 - When discussing feedback, reference the specific questions being asked (e.g., "For 'How was the food quality?' you're averaging 4.2/5")
 - You have access to zone/area performance data - you know which tables belong to which zones and can report on zone-level performance
-- When asked about zones or areas, provide specific metrics like average rating, feedback count, and any notable issues per zone`,
+- When asked about zones or areas, provide specific metrics like average rating, feedback count, and any notable issues per zone
+- You have access to trend analysis data showing how ratings have changed over time - use it to answer questions about improvements, declines, or changes in feedback quality
+- When discussing trends, reference specific time periods and compare first half vs second half averages, or use weekly breakdowns if available
+
+VISUALISATION CAPABILITY:
+- When presenting data that would benefit from a visual (trends over time, comparisons, distributions), you can offer to show it as a graph or table
+- To include a visualisation, add a special block in your response using this exact format:
+  <!--CHART:{"type":"line|bar|table","title":"Chart Title","data":[{"label":"Label","value":4.5},{"label":"Label2","value":4.2}]}-->
+- Chart types: "line" for trends over time, "bar" for comparisons, "table" for detailed breakdowns
+- Keep the data array concise (max 10-12 data points)
+- Always explain the visualisation in your text response as well
+- Only include ONE visualisation per response
+- Example for weekly trend: <!--CHART:{"type":"line","title":"Weekly Rating Trend","data":[{"label":"Week 1","value":4.2},{"label":"Week 2","value":4.5}]}-->`,
         messages: [
           // Include conversation history for context (if any)
           ...history.map(h => ({
@@ -108,12 +121,41 @@ USER QUESTION: ${message}`,
     const result = await response.json();
     const aiResponse = result.content[0].text;
 
+    // Determine primary data source based on question
+    const lowerMessage = message.toLowerCase();
+    const isNpsQuery = lowerMessage.includes('nps') ||
+                       lowerMessage.includes('net promoter') ||
+                       lowerMessage.includes('recommend') ||
+                       lowerMessage.includes('promoter') ||
+                       lowerMessage.includes('detractor');
+    const isFeedbackQuery = lowerMessage.includes('feedback') ||
+                            lowerMessage.includes('rating') ||
+                            lowerMessage.includes('review') ||
+                            lowerMessage.includes('comment') ||
+                            lowerMessage.includes('star') ||
+                            lowerMessage.includes('service') ||
+                            lowerMessage.includes('food') ||
+                            lowerMessage.includes('staff') ||
+                            lowerMessage.includes('employee');
+
+    // Determine primary data source for display
+    let dataSource = 'both';
+    if (isNpsQuery && !isFeedbackQuery) {
+      dataSource = 'nps';
+    } else if (isFeedbackQuery && !isNpsQuery) {
+      dataSource = 'feedback';
+    } else if (!isNpsQuery && !isFeedbackQuery) {
+      // Default to feedback if no specific type detected
+      dataSource = feedbackData.length > 0 ? 'feedback' : 'nps';
+    }
+
     return res.status(200).json({
       response: aiResponse,
       stats: {
         feedbackCount: feedbackData.length,
         npsCount: npsData.length,
-        dateRange
+        dateRange,
+        dataSource
       }
     });
 
@@ -680,9 +722,96 @@ function calculateStats(feedbackData, npsData) {
 }
 
 /**
+ * Calculate trend data by splitting the date range into periods
+ */
+function calculateTrends(feedbackData, dateRange) {
+  if (feedbackData.length < 2) return null;
+
+  const from = new Date(dateRange.from);
+  const to = new Date(dateRange.to);
+  const totalDays = Math.ceil((to - from) / (1000 * 60 * 60 * 24));
+
+  // Only calculate trends if we have at least 7 days of data
+  if (totalDays < 7) return null;
+
+  // Split into two halves for comparison
+  const midpoint = new Date(from.getTime() + (to - from) / 2);
+
+  const firstHalf = feedbackData.filter(f => new Date(f.created_at) < midpoint);
+  const secondHalf = feedbackData.filter(f => new Date(f.created_at) >= midpoint);
+
+  // Calculate averages for each half
+  const calcAvg = (data) => {
+    const ratings = data.map(f => f.rating).filter(r => r != null);
+    return ratings.length > 0 ? (ratings.reduce((a, b) => a + b, 0) / ratings.length) : null;
+  };
+
+  const firstHalfAvg = calcAvg(firstHalf);
+  const secondHalfAvg = calcAvg(secondHalf);
+
+  // Weekly breakdown if period is long enough
+  let weeklyBreakdown = null;
+  if (totalDays >= 14) {
+    weeklyBreakdown = [];
+    const weekMs = 7 * 24 * 60 * 60 * 1000;
+    let weekStart = new Date(from);
+
+    while (weekStart < to) {
+      const weekEnd = new Date(Math.min(weekStart.getTime() + weekMs, to.getTime()));
+      const weekData = feedbackData.filter(f => {
+        const d = new Date(f.created_at);
+        return d >= weekStart && d < weekEnd;
+      });
+
+      const weekRatings = weekData.map(f => f.rating).filter(r => r != null);
+      const weekAvg = weekRatings.length > 0
+        ? (weekRatings.reduce((a, b) => a + b, 0) / weekRatings.length).toFixed(2)
+        : null;
+
+      weeklyBreakdown.push({
+        weekStart: weekStart.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' }),
+        weekEnd: weekEnd.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' }),
+        count: weekData.length,
+        avgRating: weekAvg,
+        lowRatings: weekData.filter(f => f.rating && f.rating <= 2).length
+      });
+
+      weekStart = weekEnd;
+    }
+  }
+
+  // Calculate overall trend direction
+  let trendDirection = null;
+  if (firstHalfAvg !== null && secondHalfAvg !== null) {
+    const diff = secondHalfAvg - firstHalfAvg;
+    if (Math.abs(diff) >= 0.1) {
+      trendDirection = diff > 0 ? 'improving' : 'declining';
+    } else {
+      trendDirection = 'stable';
+    }
+  }
+
+  return {
+    totalDays,
+    firstHalf: {
+      count: firstHalf.length,
+      avgRating: firstHalfAvg?.toFixed(2) || 'N/A',
+      period: `${from.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })} - ${midpoint.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}`
+    },
+    secondHalf: {
+      count: secondHalf.length,
+      avgRating: secondHalfAvg?.toFixed(2) || 'N/A',
+      period: `${midpoint.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })} - ${to.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}`
+    },
+    trendDirection,
+    weeklyBreakdown
+  };
+}
+
+/**
  * Build context string for Claude
  */
-function buildContext(feedbackData, npsData, stats, staffPerformance, zonePerformance, questions, venueName, dateRange) {
+function buildContext(feedbackData, npsData, stats, staffPerformance, zonePerformance, questions, venueName, dateRange, trends) {
   let context = `## Data Context for ${venueName || 'this venue'}
 Period: ${dateRange.description}
 
@@ -713,6 +842,25 @@ ${questions.length > 0
 - Low ratings (1-2★): ${stats.lowRatingCount}
 - NPS submissions: ${stats.totalNPS}${stats.npsScore !== null ? `, NPS Score: ${stats.npsScore}` : ''}
 `;
+
+  // Add trend analysis if available
+  if (trends) {
+    context += `
+### Trend Analysis (over ${trends.totalDays} days):
+- First half (${trends.firstHalf.period}): ${trends.firstHalf.count} feedback, ${trends.firstHalf.avgRating}/5 avg
+- Second half (${trends.secondHalf.period}): ${trends.secondHalf.count} feedback, ${trends.secondHalf.avgRating}/5 avg
+- Overall trend: ${trends.trendDirection || 'insufficient data'}
+`;
+
+    if (trends.weeklyBreakdown && trends.weeklyBreakdown.length > 0) {
+      context += `\n**Weekly Breakdown:**\n`;
+      trends.weeklyBreakdown.forEach(week => {
+        const rating = week.avgRating ? `${week.avgRating}/5` : 'no ratings';
+        const issues = week.lowRatings > 0 ? ` (${week.lowRatings} low)` : '';
+        context += `- ${week.weekStart} - ${week.weekEnd}: ${week.count} feedback, ${rating}${issues}\n`;
+      });
+    }
+  }
 
   // Add recent feedback with comments (prioritise low ratings)
   const feedbackWithComments = feedbackData

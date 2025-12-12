@@ -1,8 +1,32 @@
-import React, { useState, useRef, useEffect, useCallback } from 'react';
+import React, { useState, useRef, useEffect, useCallback, useMemo } from 'react';
 import { useVenue } from '../../context/VenueContext';
 import { supabase } from '../../utils/supabase';
 import usePageTitle from '../../hooks/usePageTitle';
 import { Send, Loader2, AlertCircle, Plus, MessageSquare, Trash2, ChevronLeft } from 'lucide-react';
+import {
+  Chart as ChartJS,
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  BarElement,
+  Title,
+  Tooltip,
+  Legend,
+} from 'chart.js';
+import { Line, Bar } from 'react-chartjs-2';
+
+// Register Chart.js components
+ChartJS.register(
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  BarElement,
+  Title,
+  Tooltip,
+  Legend
+);
 
 // Chatters logo component with dark mode support
 const ChattersLogo = ({ className = "w-4 h-4" }) => (
@@ -131,6 +155,121 @@ const FormattedMessage = ({ content }) => {
   }
 
   return <div className="space-y-1">{elements}</div>;
+};
+
+// Parse chart data from message content
+const parseChartFromMessage = (content) => {
+  const chartMatch = content.match(/<!--CHART:(.*?)-->/s);
+  if (!chartMatch) return { text: content, chart: null };
+
+  try {
+    const chartData = JSON.parse(chartMatch[1]);
+    const textContent = content.replace(/<!--CHART:.*?-->/s, '').trim();
+    return { text: textContent, chart: chartData };
+  } catch (e) {
+    return { text: content, chart: null };
+  }
+};
+
+// AI Chat Visualisation Component
+const AIChartVisualisation = ({ chartData }) => {
+  const isDark = document.documentElement.classList.contains('dark');
+
+  const chartOptions = useMemo(() => ({
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+      legend: {
+        display: false,
+      },
+      title: {
+        display: true,
+        text: chartData.title,
+        color: isDark ? '#e5e7eb' : '#374151',
+        font: {
+          size: 14,
+          weight: '600',
+        },
+      },
+      tooltip: {
+        backgroundColor: isDark ? '#374151' : '#ffffff',
+        titleColor: isDark ? '#e5e7eb' : '#111827',
+        bodyColor: isDark ? '#d1d5db' : '#4b5563',
+        borderColor: isDark ? '#4b5563' : '#e5e7eb',
+        borderWidth: 1,
+      },
+    },
+    scales: {
+      x: {
+        grid: {
+          color: isDark ? '#374151' : '#f3f4f6',
+        },
+        ticks: {
+          color: isDark ? '#9ca3af' : '#6b7280',
+          font: { size: 11 },
+        },
+      },
+      y: {
+        grid: {
+          color: isDark ? '#374151' : '#f3f4f6',
+        },
+        ticks: {
+          color: isDark ? '#9ca3af' : '#6b7280',
+          font: { size: 11 },
+        },
+        beginAtZero: chartData.type === 'bar',
+      },
+    },
+  }), [chartData.title, chartData.type, isDark]);
+
+  const data = useMemo(() => ({
+    labels: chartData.data.map(d => d.label),
+    datasets: [
+      {
+        data: chartData.data.map(d => d.value),
+        borderColor: '#3b82f6',
+        backgroundColor: chartData.type === 'bar' ? '#3b82f6' : 'rgba(59, 130, 246, 0.1)',
+        borderWidth: 2,
+        fill: chartData.type === 'line',
+        tension: 0.3,
+        pointRadius: 4,
+        pointBackgroundColor: '#3b82f6',
+      },
+    ],
+  }), [chartData]);
+
+  if (chartData.type === 'table') {
+    return (
+      <div className="mt-3 overflow-x-auto">
+        <table className="min-w-full text-sm">
+          <thead>
+            <tr className="border-b border-gray-200 dark:border-gray-600">
+              <th className="text-left py-2 px-3 font-medium text-gray-700 dark:text-gray-300">Item</th>
+              <th className="text-right py-2 px-3 font-medium text-gray-700 dark:text-gray-300">Value</th>
+            </tr>
+          </thead>
+          <tbody>
+            {chartData.data.map((row, idx) => (
+              <tr key={idx} className="border-b border-gray-100 dark:border-gray-700">
+                <td className="py-2 px-3 text-gray-600 dark:text-gray-400">{row.label}</td>
+                <td className="py-2 px-3 text-right text-gray-900 dark:text-gray-100 font-medium">{row.value}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    );
+  }
+
+  return (
+    <div className="mt-3 h-48 bg-white dark:bg-gray-900 rounded-lg p-2">
+      {chartData.type === 'line' ? (
+        <Line data={data} options={chartOptions} />
+      ) : (
+        <Bar data={data} options={chartOptions} />
+      )}
+    </div>
+  );
 };
 
 const AIChat = () => {
@@ -355,7 +494,7 @@ const AIChat = () => {
 
   const suggestedQuestions = [
     "How's my feedback looking today?",
-    "Show me negative feedback from this week",
+    "Show me a graph of my ratings over the last month",
     "Who's our best performing staff member?",
     "What's my NPS score this month?",
   ];
@@ -526,24 +665,40 @@ const AIChat = () => {
                           }`}
                         >
                           {message.role === 'assistant' ? (
-                            <div className="text-sm leading-relaxed">
-                              {typingMessageId === message.id ? (
-                                <TypewriterText
-                                  content={message.content}
-                                  speed={8}
-                                  onComplete={() => setTypingMessageId(null)}
-                                />
-                              ) : (
-                                <FormattedMessage content={message.content} />
-                              )}
-                            </div>
+                            (() => {
+                              const { text, chart } = parseChartFromMessage(message.content);
+                              return (
+                                <div className="text-sm leading-relaxed">
+                                  {typingMessageId === message.id ? (
+                                    <TypewriterText
+                                      content={text}
+                                      speed={8}
+                                      onComplete={() => setTypingMessageId(null)}
+                                    />
+                                  ) : (
+                                    <FormattedMessage content={text} />
+                                  )}
+                                  {chart && !typingMessageId && (
+                                    <AIChartVisualisation chartData={chart} />
+                                  )}
+                                </div>
+                              );
+                            })()
                           ) : (
                             <p className="text-sm whitespace-pre-wrap">{message.content}</p>
                           )}
                           {message.stats && !typingMessageId && (
                             <p className="text-xs mt-3 pt-2 border-t border-gray-200 dark:border-gray-600 opacity-60">
-                              Based on {message.stats.feedbackCount} feedback items
-                              {message.stats.npsCount > 0 && ` and ${message.stats.npsCount} NPS responses`}
+                              {message.stats.dataSource === 'nps' ? (
+                                `Based on ${message.stats.npsCount} NPS responses`
+                              ) : message.stats.dataSource === 'feedback' ? (
+                                `Based on ${message.stats.feedbackCount} feedback items`
+                              ) : (
+                                <>
+                                  Based on {message.stats.feedbackCount} feedback items
+                                  {message.stats.npsCount > 0 && ` and ${message.stats.npsCount} NPS responses`}
+                                </>
+                              )}
                             </p>
                           )}
                         </div>
