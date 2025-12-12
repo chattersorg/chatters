@@ -46,13 +46,14 @@ export default async function handler(req, res) {
     const employees = await fetchEmployees(supabase, venueId);
     const questions = await fetchQuestions(supabase, venueId);
     const zoneData = await fetchZoneData(supabase, venueId);
+    const staffRecognitions = await fetchStaffRecognitions(supabase, venueId, dateRange);
     const staffPerformance = calculateStaffPerformance(feedbackData, employees);
     const zonePerformance = calculateZonePerformance(feedbackData, zoneData);
     const stats = calculateStats(feedbackData, npsData);
     const trends = calculateTrends(feedbackData, dateRange);
 
     // Build context for Claude
-    const context = buildContext(feedbackData, npsData, stats, staffPerformance, zonePerformance, questions, venueName, dateRange, trends);
+    const context = buildContext(feedbackData, npsData, stats, staffPerformance, zonePerformance, questions, venueName, dateRange, trends, employees, staffRecognitions);
 
     // Call Claude Haiku
     const response = await fetch('https://api.anthropic.com/v1/messages', {
@@ -76,13 +77,16 @@ IMPORTANT RULES:
 - Format lists with bullet points for readability
 - If the data doesn't contain what they're asking about, say so clearly
 - You may have conversation history - use it to provide contextual responses
-- You have access to staff performance data - use it to answer questions about employee performance
+- You have access to staff performance data - use it to answer questions about employee performance, who has resolved the most feedback, and response times
+- You have access to the full staff roster including names, roles, and locations - use this to answer "who works here", "how many staff do we have", or questions about specific employees
+- You have access to staff recognitions - customer shoutouts and praise for specific staff members. Use this to identify top performers and most-recognised employees
 - You have access to the venue's active feedback questions - use them to understand what customers are being asked
 - When discussing feedback, reference the specific questions being asked (e.g., "For 'How was the food quality?' you're averaging 4.2/5")
 - You have access to zone/area performance data - you know which tables belong to which zones and can report on zone-level performance
 - When asked about zones or areas, provide specific metrics like average rating, feedback count, and any notable issues per zone
 - You have access to trend analysis data showing how ratings have changed over time - use it to answer questions about improvements, declines, or changes in feedback quality
 - When discussing trends, reference specific time periods and compare first half vs second half averages, or use weekly breakdowns if available
+- When asked about "best staff" or "top performer", consider both feedback resolution stats AND recognition counts to give a complete picture
 
 VISUALISATION CAPABILITY:
 - When the user asks for a graph, chart, or visual, OR when comparing multiple items, you MUST include a visualisation
@@ -406,7 +410,7 @@ async function fetchFeedbackData(supabase, venueId, dateRange) {
     .gte('created_at', dateRange.from)
     .lte('created_at', dateRange.to)
     .order('created_at', { ascending: false })
-    .limit(200);
+    .limit(1000);
 
   if (error) {
     console.error('[AI Chat] Error fetching feedback:', error);
@@ -422,12 +426,44 @@ async function fetchFeedbackData(supabase, venueId, dateRange) {
 async function fetchEmployees(supabase, venueId) {
   const { data, error } = await supabase
     .from('employees')
-    .select('id, name')
-    .eq('venue_id', venueId)
-    .eq('is_active', true);
+    .select('id, name, first_name, last_name, role, location, is_active')
+    .eq('venue_id', venueId);
 
   if (error) {
     console.error('[AI Chat] Error fetching employees:', error);
+    return [];
+  }
+
+  return data || [];
+}
+
+/**
+ * Fetch staff recognitions for the venue
+ */
+async function fetchStaffRecognitions(supabase, venueId, dateRange) {
+  // First get employees for this venue to filter recognitions
+  const { data: employees, error: empError } = await supabase
+    .from('employees')
+    .select('id')
+    .eq('venue_id', venueId);
+
+  if (empError || !employees || employees.length === 0) {
+    return [];
+  }
+
+  const employeeIds = employees.map(e => e.id);
+
+  const { data, error } = await supabase
+    .from('staff_recognitions')
+    .select('*')
+    .in('employee_id', employeeIds)
+    .gte('sent_at', dateRange.from)
+    .lte('sent_at', dateRange.to)
+    .order('sent_at', { ascending: false })
+    .limit(200);
+
+  if (error) {
+    console.error('[AI Chat] Error fetching staff recognitions:', error);
     return [];
   }
 
@@ -510,7 +546,7 @@ async function fetchNPSData(supabase, venueId, dateRange) {
     .gte('created_at', dateRange.from)
     .lte('created_at', dateRange.to)
     .order('created_at', { ascending: false })
-    .limit(100);
+    .limit(500);
 
   if (error) {
     console.error('[AI Chat] Error fetching NPS:', error);
@@ -815,7 +851,7 @@ function calculateTrends(feedbackData, dateRange) {
 /**
  * Build context string for Claude
  */
-function buildContext(feedbackData, npsData, stats, staffPerformance, zonePerformance, questions, venueName, dateRange, trends) {
+function buildContext(feedbackData, npsData, stats, staffPerformance, zonePerformance, questions, venueName, dateRange, trends, employees, staffRecognitions) {
   let context = `## Data Context for ${venueName || 'this venue'}
 Period: ${dateRange.description}
 
@@ -961,6 +997,84 @@ ${questions.length > 0
           context += `- [${zone.name}, Table ${c.table}, ${c.rating}★] "${c.comment}"\n`;
         });
       });
+    }
+  }
+
+  // Add full staff roster
+  if (employees && employees.length > 0) {
+    const activeEmployees = employees.filter(e => e.is_active !== false);
+    const inactiveEmployees = employees.filter(e => e.is_active === false);
+
+    context += `\n### Staff Roster (${activeEmployees.length} active, ${inactiveEmployees.length} inactive):\n`;
+
+    // Group by role if roles exist
+    const byRole = {};
+    activeEmployees.forEach(e => {
+      const role = e.role || 'Unassigned';
+      if (!byRole[role]) byRole[role] = [];
+      const name = e.first_name && e.last_name
+        ? `${e.first_name} ${e.last_name}`
+        : e.name || 'Unknown';
+      byRole[role].push({ name, location: e.location, id: e.id });
+    });
+
+    Object.entries(byRole).forEach(([role, staff]) => {
+      context += `\n**${role}** (${staff.length}):\n`;
+      staff.forEach(s => {
+        const loc = s.location ? ` - ${s.location}` : '';
+        context += `- ${s.name}${loc}\n`;
+      });
+    });
+  }
+
+  // Add staff recognitions
+  if (staffRecognitions && staffRecognitions.length > 0) {
+    // Build employee name lookup
+    const employeeNames = {};
+    (employees || []).forEach(e => {
+      const name = e.first_name && e.last_name
+        ? `${e.first_name} ${e.last_name}`
+        : e.name || 'Unknown';
+      employeeNames[e.id] = name;
+    });
+
+    // Count recognitions per employee
+    const recognitionCounts = {};
+    staffRecognitions.forEach(r => {
+      const empId = r.employee_id;
+      if (!recognitionCounts[empId]) {
+        recognitionCounts[empId] = { count: 0, messages: [] };
+      }
+      recognitionCounts[empId].count++;
+      if (r.message?.trim() && recognitionCounts[empId].messages.length < 3) {
+        recognitionCounts[empId].messages.push(r.message.trim());
+      }
+    });
+
+    context += `\n### Staff Recognitions (${staffRecognitions.length} total in period):\n`;
+
+    // Sort by recognition count and show top performers
+    const sortedRecognitions = Object.entries(recognitionCounts)
+      .map(([empId, data]) => ({
+        name: employeeNames[empId] || 'Unknown',
+        count: data.count,
+        messages: data.messages
+      }))
+      .sort((a, b) => b.count - a.count);
+
+    sortedRecognitions.forEach((s, i) => {
+      context += `${i + 1}. ${s.name}: ${s.count} recognition${s.count !== 1 ? 's' : ''}\n`;
+      if (s.messages.length > 0) {
+        s.messages.forEach(m => {
+          context += `   - "${m}"\n`;
+        });
+      }
+    });
+
+    // Most recognised employee
+    if (sortedRecognitions.length > 0) {
+      const mostRecognised = sortedRecognitions[0];
+      context += `\n**Most Recognised Staff Member:** ${mostRecognised.name} (${mostRecognised.count} recognitions)\n`;
     }
   }
 
