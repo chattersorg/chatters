@@ -8,8 +8,8 @@ import usePageTitle from '../../hooks/usePageTitle';
 import { Link } from 'react-router-dom';
 import { ExternalLink, CheckCircle2 } from 'lucide-react';
 
-// Demo account ID - shows fake Google reviews for demo purposes
-const DEMO_ACCOUNT_ID = 'af1d9502-a1a9-4873-8776-9b7177ed30c3';
+// Demo mode temporarily disabled - all venues use real Google connection
+// const DEMO_ACCOUNT_ID = 'af1d9502-a1a9-4873-8776-9b7177ed30c3';
 
 // Demo reviews data for showcasing the feature
 const generateDemoReviews = (venueName) => {
@@ -296,6 +296,9 @@ const ReviewFilters = ({ value, onChange }) => {
 const GoogleReviewsSimplePage = () => {
   usePageTitle('Google Reviews');
 
+  // DEBUG: Log to verify new code is deployed - remove after testing
+  console.log('🚀 GoogleReviewsSimple v2 - Demo mode disabled');
+
   const { venueId, venueName } = useVenue();
   const [isConnected, setIsConnected] = useState(false);
   const [connectionInfo, setConnectionInfo] = useState(null);
@@ -343,12 +346,13 @@ const GoogleReviewsSimplePage = () => {
         .eq('id', venueId)
         .single();
 
-      if (!venueError && venueData?.account_id === DEMO_ACCOUNT_ID) {
-        setIsDemoMode(true);
-        setIsConnected(true);
-        setLoading(false);
-        return;
-      }
+      // Demo mode temporarily disabled - proceed to check real Google connection
+      // if (!venueError && venueData?.account_id === DEMO_ACCOUNT_ID) {
+      //   setIsDemoMode(true);
+      //   setIsConnected(true);
+      //   setLoading(false);
+      //   return;
+      // }
 
       // For non-demo accounts, check actual connection
       const { data: { session } } = await supabase.auth.getSession();
