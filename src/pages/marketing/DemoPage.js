@@ -2,20 +2,23 @@ import React, { useEffect } from "react";
 import { Helmet } from "react-helmet";
 import Navbar from "../../components/marketing/layout/Navbar";
 import Footer from "../../components/marketing/layout/Footer";
-import { Bell, Shield, TrendingUp, Zap, Clock, Star } from "lucide-react";
+import { Bell, Shield, TrendingUp, Zap, Star } from "lucide-react";
 
-// CSS to make HubSpot iframe fill container seamlessly
+// CSS to make HubSpot iframe fill container seamlessly with no whitespace
 const hubspotStyles = `
   .meetings-iframe-container {
     position: relative;
     width: 100%;
     background: #fff;
+    line-height: 0;
   }
   .meetings-iframe-container iframe {
     width: 100% !important;
-    min-height: 680px !important;
+    height: 700px !important;
     border: none !important;
     display: block;
+    margin: 0 !important;
+    padding: 0 !important;
   }
 `;
 
@@ -59,7 +62,7 @@ const DemoPage = () => {
         <title>See How It Works | Chatters</title>
         <meta
           name="description"
-          content="See how Chatters prevents bad reviews with real-time guest feedback and instant staff alerts. Book a quick 15-minute walkthrough."
+          content="See how Chatters prevents bad reviews with real-time guest feedback and instant staff alerts. Book a walkthrough with our team."
         />
         <link rel="canonical" href="https://getchatters.com/demo" />
         <style>{hubspotStyles}</style>
@@ -76,7 +79,7 @@ const DemoPage = () => {
             <div className="lg:pt-4">
               {/* Eyebrow */}
               <p className="text-sm font-semibold uppercase tracking-wide text-[#4E74FF] mb-4">
-                15-Minute Walkthrough
+                Book a Walkthrough
               </p>
 
               {/* Main Headline */}
@@ -88,7 +91,7 @@ const DemoPage = () => {
 
               {/* Subheadline */}
               <p className="text-lg text-gray-600 mb-8 leading-relaxed">
-                We'll show you exactly how guests leave feedback, how your team gets alerted instantly, and how you protect your ratings — all in 15 minutes.
+                We'll show you exactly how guests leave feedback, how your team gets alerted instantly, and how you protect your ratings.
               </p>
 
               {/* Benefits List */}
@@ -108,10 +111,6 @@ const DemoPage = () => {
 
               {/* Trust indicators */}
               <div className="flex flex-wrap items-center gap-6 text-sm text-gray-500">
-                <div className="flex items-center gap-2">
-                  <Clock className="w-4 h-4" />
-                  <span>15 mins, no pressure</span>
-                </div>
                 <div className="flex items-center gap-2">
                   <Star className="w-4 h-4" />
                   <span>Built for UK hospitality</span>
@@ -212,7 +211,7 @@ const DemoPage = () => {
             {[
               {
                 q: "How long is the demo?",
-                a: "15 minutes. We respect your time — it's a focused walkthrough, not a sales pitch."
+                a: "You choose. Pick a time that works for you — it's a focused walkthrough, not a sales pitch."
               },
               {
                 q: "Do I need to prepare anything?",
