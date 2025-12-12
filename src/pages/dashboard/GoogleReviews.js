@@ -358,6 +358,15 @@ const GoogleReviewsPage = () => {
       const fetchedAccountId = venueData?.account_id;
       setAccountId(fetchedAccountId);
 
+      // Debug logging
+      console.log('Google Reviews Debug:', {
+        venueId,
+        fetchedAccountId,
+        isDemoAccount: fetchedAccountId === DEMO_ACCOUNT_ID,
+        isInLiveVenueIds: LIVE_VENUE_IDS.includes(venueId),
+        shouldSkipDemo: LIVE_VENUE_IDS.includes(venueId)
+      });
+
       // Check if this is the demo account (but exclude specific venues that have live integrations)
       if (fetchedAccountId === DEMO_ACCOUNT_ID && !LIVE_VENUE_IDS.includes(venueId)) {
         setIsDemoMode(true);
