@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react';
 import { supabase, logQuery } from '../utils/supabase';
 
+const IS_DEV = process.env.NODE_ENV === 'development';
+
 const useOverviewStats = (venueId) => {
   const [stats, setStats] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -21,8 +23,7 @@ const useOverviewStats = (venueId) => {
       setLoading(true);
       setError(null);
 
-      console.log('%c⏱️  [PERF] Starting: Overview Stats Fetch', 'color: #3b82f6; font-weight: bold', { venueId });
-      const pageStartTime = performance.now();
+      const pageStartTime = IS_DEV ? performance.now() : 0;
 
       const now = new Date();
       const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
@@ -214,15 +215,7 @@ const useOverviewStats = (venueId) => {
         completionRateSparkline
       });
 
-      const totalDuration = performance.now() - pageStartTime;
-      const color = totalDuration < 500 ? '#22c55e' : totalDuration < 1000 ? '#eab308' : totalDuration < 2000 ? '#f97316' : '#ef4444';
-      console.log(
-        `%c✓ [PERF] Overview Stats Fetch Complete: ${totalDuration.toFixed(2)}ms`,
-        `color: ${color}; font-weight: bold`
-      );
-
     } catch (err) {
-      console.error('%c❌ [PERF] Overview Stats Fetch Failed', 'color: #ef4444; font-weight: bold', err);
       setError(err);
     } finally {
       setLoading(false);

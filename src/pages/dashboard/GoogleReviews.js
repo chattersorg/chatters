@@ -282,9 +282,6 @@ const DemoReviewCard = ({ review, onReplySuccess }) => {
 const GoogleReviewsPage = () => {
   usePageTitle('Google Reviews');
 
-  // DEBUG: Log to verify new code is deployed - remove after testing
-  console.log('🚀 GoogleReviews v2 - Demo mode disabled');
-
   const { venueId, venueName } = useVenue();
   const [reviews, setReviews] = useState([]);
   const [stats, setStats] = useState(null);
@@ -473,8 +470,6 @@ const GoogleReviewsPage = () => {
       });
 
       if (response.ok) {
-        const data = await response.json();
-        console.log('Sync complete:', data.summary);
         // Refresh reviews
         await fetchReviews();
       } else {
@@ -482,7 +477,6 @@ const GoogleReviewsPage = () => {
         alert(`Sync failed: ${error.message}`);
       }
     } catch (error) {
-      console.error('Error syncing:', error);
       alert('Failed to sync reviews');
     } finally {
       setSyncing(false);

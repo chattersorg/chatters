@@ -112,28 +112,21 @@ const GoogleReviewsCard = () => {
   };
 
   const performUnifiedSearch = async (query) => {
-    console.log('🔍 Performing unified search for:', query);
     try {
       const token = (await supabase.auth.getSession()).data.session?.access_token;
-      console.log('🔑 Token exists:', !!token);
       if (!token) {
-        console.error('❌ No authentication token');
         return;
       }
 
       const url = `/api/reviews?platform=unified&action=search&query=${encodeURIComponent(query)}`;
-      console.log('📡 Fetching:', url);
 
       const response = await fetch(url, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
 
-      console.log('📡 Response status:', response.status);
-
       if (response.ok) {
         const data = await response.json();
-        console.log('✅ Unified search results:', data);
-        
+
         // Check if TripAdvisor had errors and show a message
         if (data.tripadvisor?.error && data.tripadvisor.error.includes('unauthorized')) {
           setMessage('TripAdvisor search unavailable - please remove domain restrictions from your TripAdvisor API key to enable server-side requests. Google search is still working.');

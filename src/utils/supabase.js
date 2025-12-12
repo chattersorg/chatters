@@ -3,6 +3,7 @@ import { createClient } from '@supabase/supabase-js';
 
 const supabaseUrl = process.env.REACT_APP_SUPABASE_URL;
 const supabaseAnonKey = process.env.REACT_APP_SUPABASE_ANON_KEY;
+const IS_DEV = process.env.NODE_ENV === 'development';
 
 // Create Supabase client for authenticated users (dashboard, admin, etc.)
 export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
@@ -26,7 +27,13 @@ export const supabaseAnon = createClient(supabaseUrl, supabaseAnonKey, {
 });
 
 // Performance logging wrapper - use this to wrap any query you want to measure
+// Only logs in development mode
 export const logQuery = async (queryName, queryPromise) => {
+  if (!IS_DEV) {
+    // In production, just return the result without logging
+    return await queryPromise;
+  }
+
   const startTime = performance.now();
 
   try {

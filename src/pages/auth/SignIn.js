@@ -71,36 +71,29 @@ const SignInPage = () => {
       }
 
       // 2) Attempt sign in
-      console.log('[SignIn] Starting sign in...');
       const { error: signInErr } = await supabase.auth.signInWithPassword({
         email,
         password
       });
       if (signInErr) throw new Error(signInErr.message);
-      console.log('[SignIn] Sign in successful');
 
       // 3) Get user
-      console.log('[SignIn] Getting user...');
       const { data: auth } = await supabase.auth.getUser();
       const user = auth?.user;
       if (!user) throw new Error('No authenticated user returned');
-      console.log('[SignIn] User retrieved:', user.id);
 
       // 4) Ensure users row exists, then read role
-      console.log('[SignIn] Ensuring users row...');
       const ensured = await Promise.race([
         ensureUsersRow(user),
         new Promise((_, reject) =>
           setTimeout(() => reject(new Error('Timeout checking user role')), 5000)
         )
       ]);
-      console.log('[SignIn] Users row ensured:', ensured);
       const role = ensured?.role ?? null;
 
       // 5) Admin fallback by email domain
       const isAdminByEmail = (user.email || '').toLowerCase().endsWith('@getchatters.com');
       const isAdmin = role === 'admin' || isAdminByEmail;
-      console.log('[SignIn] Role determined:', { role, isAdmin });
 
       // 6) If remember me is NOT checked, set up a session that expires when browser closes
       // We do this by storing a flag that App.js will check on load
@@ -109,10 +102,8 @@ const SignInPage = () => {
       }
 
       // 7) Route to dashboard/admin
-      console.log('[SignIn] Navigating to:', isAdmin ? '/admin' : '/dashboard');
       navigate(isAdmin ? '/admin' : '/dashboard', { replace: true });
     } catch (err) {
-      console.error('[SignIn] Error:', err);
       setError(err.message || 'Sign-in failed');
     } finally {
       setIsLoading(false);

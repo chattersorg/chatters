@@ -296,9 +296,6 @@ const ReviewFilters = ({ value, onChange }) => {
 const GoogleReviewsSimplePage = () => {
   usePageTitle('Google Reviews');
 
-  // DEBUG: Log to verify new code is deployed - remove after testing
-  console.log('🚀 GoogleReviewsSimple v2 - Demo mode disabled');
-
   const { venueId, venueName } = useVenue();
   const [isConnected, setIsConnected] = useState(false);
   const [connectionInfo, setConnectionInfo] = useState(null);

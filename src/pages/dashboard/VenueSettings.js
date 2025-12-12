@@ -244,15 +244,9 @@ const VenueSettingsPage = () => {
         body: JSON.stringify({ accountId }),
       });
 
-      const data = await response.json();
-
-      if (data.updated) {
-        console.log('Stripe subscription updated:', data);
-      } else {
-        console.log('Stripe subscription not updated:', data.message);
-      }
+      await response.json();
     } catch (error) {
-      console.error('Error updating Stripe subscription:', error);
+      // Silently handle subscription update errors
     }
   };
 

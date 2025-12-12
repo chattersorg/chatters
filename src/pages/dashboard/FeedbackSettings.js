@@ -352,8 +352,8 @@ const FeedbackSettings = () => {
             <p className="text-xs text-gray-500 dark:text-gray-400 mb-3">
               Minimum star rating (1-5) required to show review links after feedback
             </p>
-            <div className="flex gap-3">
-              {[3, 4, 5].map((rating) => (
+            <div className="flex flex-wrap gap-3">
+              {[1, 2, 3, 4, 5].map((rating) => (
                 <label key={rating} className="flex items-center cursor-pointer">
                   <input
                     type="radio"
@@ -364,7 +364,7 @@ const FeedbackSettings = () => {
                     className="w-4 h-4 text-blue-600 border-gray-300 dark:border-gray-600 focus:ring-blue-500"
                   />
                   <span className="ml-2 text-sm text-gray-700 dark:text-gray-300">
-                    {rating}+ stars {rating === 4 ? '(default)' : ''}
+                    {rating}+ star{rating !== 1 ? 's' : ''} {rating === 4 ? '(default)' : ''}
                   </span>
                 </label>
               ))}
@@ -379,8 +379,8 @@ const FeedbackSettings = () => {
             <p className="text-xs text-gray-500 dark:text-gray-400 mb-3">
               Minimum NPS score (0-10) required to show review links after NPS survey
             </p>
-            <div className="flex gap-3">
-              {[7, 8, 9, 10].map((score) => (
+            <div className="flex flex-wrap gap-3">
+              {[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((score) => (
                 <label key={score} className="flex items-center cursor-pointer">
                   <input
                     type="radio"

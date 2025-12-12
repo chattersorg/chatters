@@ -117,8 +117,6 @@ const BillingTab = ({ allowExpiredAccess = false }) => {
         ? {}  // Setup only needs auth token (backend gets account from token)
         : { priceId };  // Subscription needs pricing (venueCount fetched from DB on backend)
 
-      console.log('Calling endpoint:', endpoint);
-
       const response = await fetch(endpoint, {
         method: 'POST',
         headers: {
@@ -128,9 +126,7 @@ const BillingTab = ({ allowExpiredAccess = false }) => {
         body: JSON.stringify(body),
       });
 
-      console.log('Response status:', response.status);
       const data = await response.json();
-      console.log('Response data:', data);
 
       if (!response.ok) {
         const errorMessage = data.message || data.error || 'Failed to process payment';
