@@ -15,7 +15,7 @@ const stripePromise = loadStripe(process.env.REACT_APP_STRIPE_PUBLISHABLE_KEY).c
   return null;
 });
 
-const CheckoutForm = ({ onSuccess, onCancel, total, billingPeriod, venueCount, isSetupMode }) => {
+const CheckoutForm = ({ onSuccess, onCancel, subtotal, vat, total, billingPeriod, venueCount, isSetupMode }) => {
   const stripe = useStripe();
   const elements = useElements();
   const [isProcessing, setIsProcessing] = useState(false);
@@ -87,10 +87,22 @@ const CheckoutForm = ({ onSuccess, onCancel, total, billingPeriod, venueCount, i
               <p className="text-sm text-gray-700 leading-relaxed">
                 We're securely saving your payment method. <strong>You will not be charged</strong> until your trial period expires.
               </p>
-              <div className="mt-2 pt-2 border-t border-blue-200">
-                <p className="text-xs text-gray-600">
-                  After trial: <strong>£{total.toLocaleString()}/{billingPeriod === 'monthly' ? 'mo' : 'yr'}</strong> for {venueCount} venue{venueCount !== 1 ? 's' : ''}
-                </p>
+              <div className="mt-2 pt-2 border-t border-blue-200 space-y-1">
+                <p className="text-xs text-gray-600">After trial for {venueCount} venue{venueCount !== 1 ? 's' : ''}:</p>
+                <div className="text-xs text-gray-600 space-y-0.5">
+                  <div className="flex justify-between">
+                    <span>Subtotal</span>
+                    <span>£{subtotal.toLocaleString()}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span>VAT (20%)</span>
+                    <span>£{vat.toLocaleString()}</span>
+                  </div>
+                  <div className="flex justify-between font-semibold text-gray-900">
+                    <span>Total</span>
+                    <span>£{total.toLocaleString()}/{billingPeriod === 'monthly' ? 'mo' : 'yr'}</span>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
@@ -109,13 +121,23 @@ const CheckoutForm = ({ onSuccess, onCancel, total, billingPeriod, venueCount, i
               <p className="font-semibold text-gray-900">{venueCount}</p>
             </div>
           </div>
-          <div className="pt-3 border-t border-blue-200 flex justify-between items-baseline">
-            <span className="text-sm font-medium text-gray-700">Total</span>
-            <div className="text-right">
-              <span className="text-2xl font-bold text-gray-900">£{total.toLocaleString()}</span>
-              <span className="text-xs text-gray-500 ml-1">
-                /{billingPeriod === 'monthly' ? 'mo' : 'yr'}
-              </span>
+          <div className="pt-3 border-t border-blue-200 space-y-1 text-sm">
+            <div className="flex justify-between text-gray-600">
+              <span>Subtotal</span>
+              <span>£{subtotal.toLocaleString()}</span>
+            </div>
+            <div className="flex justify-between text-gray-600">
+              <span>VAT (20%)</span>
+              <span>£{vat.toLocaleString()}</span>
+            </div>
+            <div className="flex justify-between items-baseline pt-2 border-t border-blue-200 mt-2">
+              <span className="font-medium text-gray-700">Total</span>
+              <div className="text-right">
+                <span className="text-2xl font-bold text-gray-900">£{total.toLocaleString()}</span>
+                <span className="text-xs text-gray-500 ml-1">
+                  /{billingPeriod === 'monthly' ? 'mo' : 'yr'}
+                </span>
+              </div>
             </div>
           </div>
         </div>
@@ -190,7 +212,7 @@ const CheckoutForm = ({ onSuccess, onCancel, total, billingPeriod, venueCount, i
   );
 };
 
-const StripeCheckoutModal = ({ isOpen, onClose, onSuccess, clientSecret, total, billingPeriod, venueCount, isSetupMode = false }) => {
+const StripeCheckoutModal = ({ isOpen, onClose, onSuccess, clientSecret, subtotal, vat, total, billingPeriod, venueCount, isSetupMode = false }) => {
   useEffect(() => {
     // Prevent body scroll when modal is open
     if (isOpen) {
@@ -260,6 +282,8 @@ const StripeCheckoutModal = ({ isOpen, onClose, onSuccess, clientSecret, total, 
               <CheckoutForm
                 onSuccess={onSuccess}
                 onCancel={onClose}
+                subtotal={subtotal}
+                vat={vat}
                 total={total}
                 billingPeriod={billingPeriod}
                 venueCount={venueCount}

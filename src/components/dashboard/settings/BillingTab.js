@@ -10,6 +10,7 @@ import { Button } from '../../ui/button';
 // Pricing configuration
 const PRICE_PER_VENUE_MONTHLY = 149; // £149 per venue per month
 const PRICE_PER_VENUE_YEARLY = 1430; // £1,430 per venue per year (20% discount)
+const VAT_RATE = 0.20; // 20% UK VAT
 
 const BillingTab = ({ allowExpiredAccess = false }) => {
   const { userRole } = useVenue();
@@ -180,10 +181,13 @@ const BillingTab = ({ allowExpiredAccess = false }) => {
   };
 
   // Calculate total pricing based on venue count
-  const monthlyTotal = venueCount * PRICE_PER_VENUE_MONTHLY;
-  const yearlyTotal = venueCount * PRICE_PER_VENUE_YEARLY;
-  const yearlyMonthlyEquivalent = yearlyTotal / 12;
-  const yearlyDiscount = ((monthlyTotal * 12 - yearlyTotal) / (monthlyTotal * 12) * 100).toFixed(0);
+  const monthlySubtotal = venueCount * PRICE_PER_VENUE_MONTHLY;
+  const yearlySubtotal = venueCount * PRICE_PER_VENUE_YEARLY;
+  const monthlyVat = monthlySubtotal * VAT_RATE;
+  const yearlyVat = yearlySubtotal * VAT_RATE;
+  const monthlyTotal = monthlySubtotal + monthlyVat;
+  const yearlyTotal = yearlySubtotal + yearlyVat;
+  const yearlyDiscount = ((monthlySubtotal * 12 - yearlySubtotal) / (monthlySubtotal * 12) * 100).toFixed(0);
 
   // Show loading state while data is being fetched
   if (!accountData && userRole !== 'admin') {
@@ -302,7 +306,7 @@ const BillingTab = ({ allowExpiredAccess = false }) => {
                   </div>
                 </div>
                 <div className="text-right">
-                  <span className="text-lg font-bold text-gray-900">£{monthlyTotal.toLocaleString()}</span>
+                  <span className="text-lg font-bold text-gray-900">£{monthlySubtotal.toLocaleString()}</span>
                   <span className="text-gray-500 text-sm">/mo</span>
                 </div>
               </label>
@@ -323,18 +327,18 @@ const BillingTab = ({ allowExpiredAccess = false }) => {
                   />
                   <div>
                     <span className="font-medium text-gray-900">Yearly</span>
-                    <span className="text-gray-500 text-sm ml-2">£{PRICE_PER_VENUE_YEARLY}/venue/yr</span>
+                    <span className="text-gray-500 text-sm ml-2">£{PRICE_PER_VENUE_YEARLY.toLocaleString()}/venue/yr</span>
                   </div>
                 </div>
                 <div className="text-right">
-                  <span className="text-lg font-bold text-gray-900">£{yearlyTotal.toLocaleString()}</span>
+                  <span className="text-lg font-bold text-gray-900">£{yearlySubtotal.toLocaleString()}</span>
                   <span className="text-gray-500 text-sm">/yr</span>
                 </div>
               </label>
             </div>
 
             <p className="text-xs text-gray-500 mt-3">
-              {venueCount} venue{venueCount !== 1 ? 's' : ''} • Secured by Stripe
+              {venueCount} venue{venueCount !== 1 ? 's' : ''} • Prices exclude VAT • Secured by Stripe
             </p>
           </div>
 
@@ -352,7 +356,7 @@ const BillingTab = ({ allowExpiredAccess = false }) => {
                 >
                   {loading ? 'Processing...' : !accountData?.isExpired
                     ? 'Add Payment Details'
-                    : `Subscribe - £${subscriptionType === 'monthly' ? monthlyTotal.toLocaleString() : yearlyTotal.toLocaleString()}${subscriptionType === 'monthly' ? '/mo' : '/yr'}`
+                    : `Subscribe - £${subscriptionType === 'monthly' ? monthlySubtotal.toLocaleString() : yearlySubtotal.toLocaleString()}${subscriptionType === 'monthly' ? '/mo' : '/yr'} + VAT`
                   }
                 </Button>
               </PermissionGate>
@@ -383,6 +387,8 @@ const BillingTab = ({ allowExpiredAccess = false }) => {
         onClose={handleCloseModal}
         onSuccess={handlePaymentSuccess}
         clientSecret={clientSecret}
+        subtotal={subscriptionType === 'monthly' ? monthlySubtotal : yearlySubtotal}
+        vat={subscriptionType === 'monthly' ? monthlyVat : yearlyVat}
         total={subscriptionType === 'monthly' ? monthlyTotal : yearlyTotal}
         billingPeriod={subscriptionType}
         venueCount={venueCount}
