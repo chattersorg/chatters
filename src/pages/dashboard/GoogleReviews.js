@@ -282,6 +282,9 @@ const DemoReviewCard = ({ review, onReplySuccess }) => {
 const GoogleReviewsPage = () => {
   usePageTitle('Google Reviews');
 
+  // DEBUG: Log to verify new code is deployed - remove after testing
+  console.log('🚀 GoogleReviews v2 - Demo mode disabled');
+
   const { venueId, venueName } = useVenue();
   const [reviews, setReviews] = useState([]);
   const [stats, setStats] = useState(null);
