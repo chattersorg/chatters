@@ -85,14 +85,18 @@ IMPORTANT RULES:
 - When discussing trends, reference specific time periods and compare first half vs second half averages, or use weekly breakdowns if available
 
 VISUALISATION CAPABILITY:
-- When presenting data that would benefit from a visual (trends over time, comparisons, distributions), you can offer to show it as a graph or table
-- To include a visualisation, add a special block in your response using this exact format:
-  <!--CHART:{"type":"line|bar|table","title":"Chart Title","data":[{"label":"Label","value":4.5},{"label":"Label2","value":4.2}]}-->
-- Chart types: "line" for trends over time, "bar" for comparisons, "table" for detailed breakdowns
-- Keep the data array concise (max 10-12 data points)
-- Always explain the visualisation in your text response as well
-- Only include ONE visualisation per response
-- Example for weekly trend: <!--CHART:{"type":"line","title":"Weekly Rating Trend","data":[{"label":"Week 1","value":4.2},{"label":"Week 2","value":4.5}]}-->`,
+- When the user asks for a graph, chart, or visual, OR when comparing multiple items, you MUST include a visualisation
+- Add the chart block on its own line in your response using this EXACT format (no spaces around the colon):
+  <!--CHART:{"type":"line","title":"Title","data":[{"label":"A","value":4.5},{"label":"B","value":4.2}]}-->
+- Chart types: "line" for trends/changes over time, "bar" for comparing categories/items, "table" for detailed breakdowns
+- The data array should have 2-12 data points with label and value for each
+- Always briefly explain the visualisation in your text too
+- Only ONE visualisation per response
+- Use "bar" charts for: comparing staff, comparing questions, rating distributions
+- Use "line" charts for: weekly trends, daily trends, changes over time
+- Use "table" for: detailed staff stats, question breakdowns with multiple metrics
+- Example bar chart for question comparison: <!--CHART:{"type":"bar","title":"Ratings by Question","data":[{"label":"Food Quality","value":4.5},{"label":"Service","value":4.0},{"label":"Ambience","value":4.2}]}-->
+- Example line chart for trends: <!--CHART:{"type":"line","title":"Weekly Ratings","data":[{"label":"Week 1","value":4.2},{"label":"Week 2","value":4.5}]}-->`,
         messages: [
           // Include conversation history for context (if any)
           ...history.map(h => ({
