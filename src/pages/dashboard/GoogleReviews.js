@@ -13,6 +13,9 @@ import { Link } from 'react-router-dom';
 // Demo account ID - shows fake Google reviews for demo purposes
 const DEMO_ACCOUNT_ID = 'af1d9502-a1a9-4873-8776-9b7177ed30c3';
 
+// Venues excluded from demo mode (use real integration)
+const LIVE_VENUE_IDS = ['ba9c45d4-3947-4560-9327-7f00c695d177']; // The Fox
+
 // Demo reviews data for showcasing the feature
 const generateDemoReviews = (venueName) => {
   const today = new Date();
@@ -355,8 +358,17 @@ const GoogleReviewsPage = () => {
       const fetchedAccountId = venueData?.account_id;
       setAccountId(fetchedAccountId);
 
-      // Check if this is the demo account
-      if (fetchedAccountId === DEMO_ACCOUNT_ID) {
+      // Debug logging
+      console.log('Google Reviews Debug:', {
+        venueId,
+        fetchedAccountId,
+        isDemoAccount: fetchedAccountId === DEMO_ACCOUNT_ID,
+        isInLiveVenueIds: LIVE_VENUE_IDS.includes(venueId),
+        shouldSkipDemo: LIVE_VENUE_IDS.includes(venueId)
+      });
+
+      // Check if this is the demo account (but exclude specific venues that have live integrations)
+      if (fetchedAccountId === DEMO_ACCOUNT_ID && !LIVE_VENUE_IDS.includes(venueId)) {
         setIsDemoMode(true);
         setIsConnected(true); // Pretend we're connected for demo
         setLoading(false);

@@ -39,8 +39,7 @@ import ReportsFeedbackPage from './pages/dashboard/ReportsFeedback';
 import ReportsImpactPage from './pages/dashboard/ReportsImpact';
 import ReportsMetricsPage from './pages/dashboard/ReportsMetrics';
 import ReportsNPSPage from './pages/dashboard/ReportsNPS';
-import StaffManagersPage from './pages/dashboard/StaffManagers';
-import StaffEmployeesPage from './pages/dashboard/StaffEmployees';
+import NPSInsightsPage from './pages/dashboard/NPSInsights';
 import StaffListPage from './pages/dashboard/StaffList';
 import EmployeeDetail from './pages/dashboard/EmployeeDetail';
 import ManagerDetail from './pages/dashboard/ManagerDetail';
@@ -59,6 +58,7 @@ import NPSReportDetail from './pages/dashboard/NPSReportDetail';
 import GoogleReviewsPage from './pages/dashboard/GoogleReviewsSimple';
 import AIInsightsPage from './pages/dashboard/AIInsights';
 import AIChatPage from './pages/dashboard/AIChat';
+import MenuBuilderPage from './pages/dashboard/MenuBuilderPage';
 
 // Admin pages (master only)
 import ManagerPermissions from './pages/dashboard/admin/ManagerPermissions';
@@ -71,6 +71,7 @@ import KioskPage from './pages/dashboard/KioskPage';
 import CustomerFeedbackPage from './pages/dashboard/CustomerFeedback';
 import FeedbackSplashPage from './pages/dashboard/FeedbackSplash';
 import NPSResponsePage from './pages/dashboard/NPSResponse';
+import PublicMenuPage from './pages/public/PublicMenuPage';
 
 // Testing (outside venue context unless you need it)
 import TestDashboardPage from './pages/admin/TestDashboardPage';
@@ -158,6 +159,7 @@ const DashboardRoutes = () => {
       <Route path="/feedback" element={<CustomerFeedbackPage />} />
       <Route path="/feedback/:venueId" element={<FeedbackSplashPage />} />
       <Route path="/feedback/:venueId/form" element={<CustomerFeedbackPage />} />
+      <Route path="/menu/:venueId" element={<PublicMenuPage />} />
       <Route path="/nps" element={<NPSResponsePage />} />
 
       {/* Kiosk: venue context, no dashboard frame */}
@@ -255,6 +257,11 @@ const DashboardRoutes = () => {
             <ReportsNPSPage />
           </ProtectedRoute>
         } />
+        <Route path="/reports/nps/insights" element={
+          <ProtectedRoute permission="nps.view">
+            <NPSInsightsPage />
+          </ProtectedRoute>
+        } />
         <Route path="/nps-report/:venueId" element={
           <ProtectedRoute permission="nps.view">
             <NPSReportDetail />
@@ -339,6 +346,11 @@ const DashboardRoutes = () => {
         <Route path="/settings/branding" element={
           <ProtectedRoute permission="venue.branding">
             <SettingsBrandingPage />
+          </ProtectedRoute>
+        } />
+        <Route path="/settings/menu-builder" element={
+          <ProtectedRoute permission="venue.edit">
+            <MenuBuilderPage />
           </ProtectedRoute>
         } />
         <Route path="/settings/custom-links" element={<Navigate to="/settings/venue-details" replace />} />

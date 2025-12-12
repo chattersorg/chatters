@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo, useCallback } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useVenue } from '../../../context/VenueContext';
 import { usePermissions } from '../../../context/PermissionsContext';
@@ -107,7 +107,11 @@ const venueNavItems = [
     icon: Star,
     path: '/reports/nps',
     color: 'text-amber-600',
-    permission: 'nps.view'
+    permission: 'nps.view',
+    subItems: [
+      { label: 'Score', path: '/reports/nps', icon: Star, permission: 'nps.view' },
+      { label: 'Insights', path: '/reports/nps/insights', icon: TrendingUp, permission: 'nps.view' }
+    ]
   },
   {
     id: 'staff',
@@ -173,12 +177,9 @@ const multiVenueNavItems = [
     icon: BarChart3,
     path: '/multi-venue/overview',
     color: 'text-purple-600',
-    permission: 'multivenue.view',
-    subItems: [
-      { label: 'Portfolio Overview', path: '/multi-venue/overview', icon: TrendingUp, permission: 'multivenue.view' },
-      { label: 'Venue Comparison', path: '/reports/nps', icon: Building2, permission: 'nps.view' },
-      { label: 'Custom Reports', path: '/reports/builder', icon: FileText, permission: 'reports.create' }
-    ]
+    permission: 'multivenue.view'
+    // Removed subItems - these paths were duplicates of venue section items
+    // which caused sidebar flickering when navigating
   }
 ];
 
@@ -231,14 +232,14 @@ const Sidebar = ({ collapsed, setCollapsed }) => {
 
   // Helper to check if item should be visible based on permission
   // Master users see everything, otherwise check permission
-  const canSeeItem = (item) => {
+  const canSeeItem = useCallback((item) => {
     if (userRole === 'master') return true;
     if (!item.permission) return true;
     return hasPermission(item.permission);
-  };
+  }, [userRole, hasPermission]);
 
-  // Filter nav items based on permissions
-  const filterNavItems = (items) => {
+  // Filter nav items based on permissions - memoized to prevent unnecessary re-renders
+  const filterNavItems = useCallback((items) => {
     return items
       .filter(item => canSeeItem(item))
       .map(item => {
@@ -251,11 +252,11 @@ const Sidebar = ({ collapsed, setCollapsed }) => {
         return item;
       })
       .filter(Boolean);
-  };
+  }, [canSeeItem]);
 
-  // Get filtered nav items
-  const filteredVenueNavItems = filterNavItems(venueNavItems);
-  const filteredMultiVenueNavItems = filterNavItems(multiVenueNavItems);
+  // Get filtered nav items - memoized
+  const filteredVenueNavItems = useMemo(() => filterNavItems(venueNavItems), [filterNavItems]);
+  const filteredMultiVenueNavItems = useMemo(() => filterNavItems(multiVenueNavItems), [filterNavItems]);
 
   // Get account items based on user role, trial status, and permissions
   const accountItems = getAccountItems(userRole, trialInfo, hasBillingPermission);
@@ -263,13 +264,18 @@ const Sidebar = ({ collapsed, setCollapsed }) => {
   // Determine if user has access to multiple venues
   const hasMultipleVenues = allVenues.length > 1;
 
-  const isActive = (path) => {
+  const isActive = useCallback((path, exactMatch = false) => {
+    if (exactMatch) {
+      return location.pathname === path;
+    }
     return location.pathname === path || location.pathname.startsWith(path + '/');
-  };
+  }, [location.pathname]);
 
-  const hasActiveSubitem = (subItems) => {
-    return subItems?.some(subItem => isActive(subItem.path));
-  };
+  const hasActiveSubitem = useCallback((subItems) => {
+    return subItems?.some(subItem =>
+      location.pathname === subItem.path || location.pathname.startsWith(subItem.path + '/')
+    );
+  }, [location.pathname]);
 
   // Fetch trial information for billing access control
   React.useEffect(() => {
@@ -332,19 +338,25 @@ const Sidebar = ({ collapsed, setCollapsed }) => {
     fetchTrialInfo();
   }, [userRole]);
 
-  // Auto-open submenu based on current route
+  // Auto-open/close submenu based on current route
   React.useEffect(() => {
+    if (collapsed) return; // Don't auto-manage submenus when collapsed
+
     const allNavItems = [
       ...filteredVenueNavItems,
       ...(hasMultipleVenues ? filteredMultiVenueNavItems : []),
       ...(userRole === 'master' ? adminNavItems : [])
     ];
     const currentItem = allNavItems.find(item =>
-      item.subItems && item.subItems.some(subItem => isActive(subItem.path))
+      item.subItems && item.subItems.some(subItem =>
+        location.pathname === subItem.path || location.pathname.startsWith(subItem.path + '/')
+      )
     );
-    if (currentItem && !collapsed) {
+    if (currentItem) {
       setActiveSubmenu(currentItem.id);
     }
+    // Note: We intentionally don't close the submenu when navigating to a non-submenu route
+    // to prevent annoying auto-closing behavior when users want to keep a menu open
   }, [location.pathname, collapsed, hasMultipleVenues, userRole, filteredVenueNavItems, filteredMultiVenueNavItems]);
 
   const toggleSubmenu = (itemId) => {
@@ -525,15 +537,22 @@ const Sidebar = ({ collapsed, setCollapsed }) => {
                 {/* Submenu Items */}
                 {showSubmenu && (
                   <div className="ml-2 mt-1 space-y-1 border-l-2 border-gray-100 dark:border-gray-800 pl-4">
-                    {item.subItems.map((subItem) => {
+                    {item.subItems.map((subItem, idx) => {
                       const SubIcon = subItem.icon;
+                      // Check if any sibling path starts with this path - if so, use exact match
+                      const hasSiblingPrefix = item.subItems.some((other, otherIdx) =>
+                        otherIdx !== idx && other.path.startsWith(subItem.path + '/')
+                      );
+                      const subItemActive = hasSiblingPrefix
+                        ? isActive(subItem.path, true)
+                        : isActive(subItem.path);
                       return (
                         <Link
                           key={subItem.path}
                           to={subItem.path}
                           onClick={handleMobileLinkClick}
                           className={`flex items-center justify-between px-3 py-2 text-sm rounded-md transition-colors group ${
-                            isActive(subItem.path)
+                            subItemActive
                               ? 'bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-400 font-medium'
                               : 'text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800 hover:text-gray-700 dark:hover:text-gray-300'
                           }`}
@@ -622,15 +641,22 @@ const Sidebar = ({ collapsed, setCollapsed }) => {
                 {/* Submenu Items */}
                 {showSubmenu && (
                   <div className="ml-2 mt-1 space-y-1 border-l-2 border-gray-100 dark:border-gray-800 pl-4">
-                    {item.subItems.map((subItem) => {
+                    {item.subItems.map((subItem, idx) => {
                       const SubIcon = subItem.icon;
+                      // Check if any sibling path starts with this path - if so, use exact match
+                      const hasSiblingPrefix = item.subItems.some((other, otherIdx) =>
+                        otherIdx !== idx && other.path.startsWith(subItem.path + '/')
+                      );
+                      const subItemActive = hasSiblingPrefix
+                        ? isActive(subItem.path, true)
+                        : isActive(subItem.path);
                       return (
                         <Link
                           key={subItem.path}
                           to={subItem.path}
                           onClick={handleMobileLinkClick}
                           className={`flex items-center justify-between px-3 py-2 text-sm rounded-md transition-colors group ${
-                            isActive(subItem.path)
+                            subItemActive
                               ? 'bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-400 font-medium'
                               : 'text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800 hover:text-gray-700 dark:hover:text-gray-300'
                           }`}
@@ -714,15 +740,22 @@ const Sidebar = ({ collapsed, setCollapsed }) => {
                 {/* Submenu Items */}
                 {showSubmenu && (
                   <div className="ml-2 mt-1 space-y-1 border-l-2 border-gray-100 dark:border-gray-800 pl-4">
-                    {item.subItems.map((subItem) => {
+                    {item.subItems.map((subItem, idx) => {
                       const SubIcon = subItem.icon;
+                      // Check if any sibling path starts with this path - if so, use exact match
+                      const hasSiblingPrefix = item.subItems.some((other, otherIdx) =>
+                        otherIdx !== idx && other.path.startsWith(subItem.path + '/')
+                      );
+                      const subItemActive = hasSiblingPrefix
+                        ? isActive(subItem.path, true)
+                        : isActive(subItem.path);
                       return (
                         <Link
                           key={subItem.path}
                           to={subItem.path}
                           onClick={handleMobileLinkClick}
                           className={`flex items-center justify-between px-3 py-2 text-sm rounded-md transition-colors group ${
-                            isActive(subItem.path)
+                            subItemActive
                               ? 'bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-400 font-medium'
                               : 'text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800 hover:text-gray-700 dark:hover:text-gray-300'
                           }`}

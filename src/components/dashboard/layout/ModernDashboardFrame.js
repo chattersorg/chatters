@@ -83,11 +83,11 @@ const ModernDashboardFrame = ({ children }) => {
   }, []);
 
   // Redirect expired trials
-  const isOnBillingRoute = location.pathname === '/settings/billing' || location.pathname.startsWith('/settings/billing');
-  
+  const isOnBillingRoute = location.pathname === '/account/billing' || location.pathname.startsWith('/account/billing');
+
   useEffect(() => {
     if (trialInfo?.isExpired && !isOnBillingRoute) {
-      navigate('/settings/billing');
+      navigate('/account/billing');
     }
   }, [trialInfo?.isExpired, isOnBillingRoute, navigate]);
 
