@@ -68,7 +68,7 @@ const CustomerFeedbackPage = () => {
         // Load venue data first (including feedback_hours, review links, NPS settings, branding colors, assistance message, and thank you message)
         const { data: venueData, error: venueError } = await supabase
           .from('venues')
-          .select('logo, primary_color, background_color, background_image, text_color, button_text_color, feedback_hours, google_review_link, tripadvisor_link, nps_enabled, assistance_title, assistance_message, assistance_icon, thank_you_title, thank_you_message, thank_you_icon')
+          .select('logo, primary_color, background_color, background_image, text_color, button_text_color, feedback_hours, google_review_link, tripadvisor_link, nps_enabled, assistance_title, assistance_message, assistance_icon, thank_you_title, thank_you_message, thank_you_icon, feedback_review_threshold')
           .eq('id', venueId);
 
         if (venueError) {
@@ -289,16 +289,19 @@ const CustomerFeedbackPage = () => {
     }
   };
 
-  // Check if all feedback ratings are positive (≥4)
+  // Check if all feedback ratings meet the threshold for showing review links
   const isAllFeedbackPositive = () => {
     // Get only feedback with actual ratings (not free text)
     const ratedFeedback = feedbackAnswers.filter(feedback => feedback.rating !== null);
-    
+
     // If no rated feedback, don't show review prompt (only free text submitted)
     if (ratedFeedback.length === 0) return false;
-    
-    // Check ALL ratings are 4 or above (4-star and 5-star)
-    return ratedFeedback.every(feedback => feedback.rating >= 4);
+
+    // Use configurable threshold (default to 4 if not set)
+    const threshold = venue?.feedback_review_threshold ?? 4;
+
+    // Check ALL ratings meet or exceed the threshold
+    return ratedFeedback.every(feedback => feedback.rating >= threshold);
   };
 
   const handleAssistanceRequest = async () => {

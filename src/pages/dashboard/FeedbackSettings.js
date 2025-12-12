@@ -72,6 +72,12 @@ const FeedbackSettings = () => {
   const [coResolverLoading, setCoResolverLoading] = useState(false);
   const [coResolverMessage, setCoResolverMessage] = useState('');
 
+  // Review threshold state
+  const [feedbackReviewThreshold, setFeedbackReviewThreshold] = useState(4);
+  const [npsReviewThreshold, setNpsReviewThreshold] = useState(9);
+  const [reviewThresholdLoading, setReviewThresholdLoading] = useState(false);
+  const [reviewThresholdMessage, setReviewThresholdMessage] = useState('');
+
   useEffect(() => {
     if (!venueId) return;
     fetchFeedbackSettings();
@@ -81,7 +87,7 @@ const FeedbackSettings = () => {
     try {
       const { data: venueData, error } = await supabase
         .from('venues')
-        .select('tripadvisor_link, google_review_link, session_timeout_hours, nps_enabled, nps_delay_hours, nps_question, place_id, tripadvisor_location_id, enable_co_resolving')
+        .select('tripadvisor_link, google_review_link, session_timeout_hours, nps_enabled, nps_delay_hours, nps_question, place_id, tripadvisor_location_id, enable_co_resolving, feedback_review_threshold, nps_review_threshold')
         .eq('id', venueId)
         .single();
 
@@ -100,6 +106,8 @@ const FeedbackSettings = () => {
       setPlaceId(venueData.place_id || '');
       setTripadvisorLocationId(venueData.tripadvisor_location_id || '');
       setEnableCoResolving(venueData.enable_co_resolving || false);
+      setFeedbackReviewThreshold(venueData.feedback_review_threshold ?? 4);
+      setNpsReviewThreshold(venueData.nps_review_threshold ?? 9);
     } catch (error) {
       console.error('Error fetching feedback settings:', error);
     }
@@ -222,6 +230,30 @@ const FeedbackSettings = () => {
     }
   };
 
+  const saveReviewThresholds = async () => {
+    if (!venueId) return;
+    setReviewThresholdLoading(true);
+    setReviewThresholdMessage('');
+
+    try {
+      const { error } = await supabase
+        .from('venues')
+        .update({
+          feedback_review_threshold: feedbackReviewThreshold,
+          nps_review_threshold: npsReviewThreshold
+        })
+        .eq('id', venueId);
+
+      if (error) throw error;
+      setReviewThresholdMessage('Review thresholds updated successfully!');
+    } catch (error) {
+      console.error('Error saving review thresholds:', error);
+      setReviewThresholdMessage(`Failed to save review thresholds: ${error.message}`);
+    } finally {
+      setReviewThresholdLoading(false);
+    }
+  };
+
   if (!venueId) return null;
 
   return (
@@ -299,6 +331,77 @@ const FeedbackSettings = () => {
                 Link your TripAdvisor venue in Settings → Integrations to enable URL generation
               </p>
             )}
+          </div>
+        </div>
+      </SettingsCard>
+
+      {/* Review Prompt Thresholds */}
+      <SettingsCard
+        title="Review Prompt Thresholds"
+        description="Set the minimum score required to show Google/TripAdvisor review links"
+        onSave={saveReviewThresholds}
+        loading={reviewThresholdLoading}
+        message={reviewThresholdMessage}
+      >
+        <div className="space-y-6">
+          {/* Feedback Threshold */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              Feedback Rating Threshold
+            </label>
+            <p className="text-xs text-gray-500 dark:text-gray-400 mb-3">
+              Minimum star rating (1-5) required to show review links after feedback
+            </p>
+            <div className="flex gap-3">
+              {[3, 4, 5].map((rating) => (
+                <label key={rating} className="flex items-center cursor-pointer">
+                  <input
+                    type="radio"
+                    name="feedbackThreshold"
+                    value={rating}
+                    checked={feedbackReviewThreshold === rating}
+                    onChange={() => setFeedbackReviewThreshold(rating)}
+                    className="w-4 h-4 text-blue-600 border-gray-300 dark:border-gray-600 focus:ring-blue-500"
+                  />
+                  <span className="ml-2 text-sm text-gray-700 dark:text-gray-300">
+                    {rating}+ stars {rating === 4 ? '(default)' : ''}
+                  </span>
+                </label>
+              ))}
+            </div>
+          </div>
+
+          {/* NPS Threshold */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              NPS Score Threshold
+            </label>
+            <p className="text-xs text-gray-500 dark:text-gray-400 mb-3">
+              Minimum NPS score (0-10) required to show review links after NPS survey
+            </p>
+            <div className="flex gap-3">
+              {[7, 8, 9, 10].map((score) => (
+                <label key={score} className="flex items-center cursor-pointer">
+                  <input
+                    type="radio"
+                    name="npsThreshold"
+                    value={score}
+                    checked={npsReviewThreshold === score}
+                    onChange={() => setNpsReviewThreshold(score)}
+                    className="w-4 h-4 text-blue-600 border-gray-300 dark:border-gray-600 focus:ring-blue-500"
+                  />
+                  <span className="ml-2 text-sm text-gray-700 dark:text-gray-300">
+                    {score}+ {score === 9 ? '(default)' : ''}
+                  </span>
+                </label>
+              ))}
+            </div>
+          </div>
+
+          <div className="bg-blue-50 dark:bg-blue-900/30 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
+            <p className="text-sm text-blue-800 dark:text-blue-300">
+              <strong>Tip:</strong> Higher thresholds mean only your happiest customers see the review prompt, improving your public ratings.
+            </p>
           </div>
         </div>
       </SettingsCard>

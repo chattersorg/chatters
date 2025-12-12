@@ -122,7 +122,9 @@ const NPSResponse = () => {
 
   // Thank you state after submission
   if (isSubmitted) {
-    const isPromoter = selectedScore >= 9;
+    // Use configurable threshold (default to 9 if not set)
+    const npsThreshold = venue?.nps_review_threshold ?? 9;
+    const meetsThreshold = selectedScore >= npsThreshold;
 
     return (
       <div className="min-h-screen flex items-center justify-center p-4 sm:p-6" style={{ backgroundColor: secondary }}>
@@ -138,8 +140,8 @@ const NPSResponse = () => {
             Your response helps us improve and serve you better.
           </p>
 
-          {/* Review links - only show for promoters (9-10) */}
-          {isPromoter && (venue?.google_review_link || venue?.tripadvisor_link) && (
+          {/* Review links - only show if score meets threshold */}
+          {meetsThreshold && (venue?.google_review_link || venue?.tripadvisor_link) && (
             <div className="space-y-3 mt-8">
               <p className="text-sm sm:text-base text-gray-700 font-medium mb-4">
                 Would you like to share your experience publicly?

@@ -41,15 +41,15 @@ const GoogleRatingTrendCard = ({ venueId }) => {
   const [historicalData, setHistoricalData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [trend, setTrend] = useState(null);
-  const [dateRangePreset, setDateRangePreset] = useState('last7');
+  const [dateRangePreset, setDateRangePreset] = useState('last30');
   const [dateRange, setDateRange] = useState(() => {
     const now = new Date();
-    const sevenDaysAgo = new Date(now);
-    sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 6);
-    sevenDaysAgo.setHours(0, 0, 0, 0);
+    const thirtyDaysAgo = new Date(now);
+    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 29);
+    thirtyDaysAgo.setHours(0, 0, 0, 0);
     const endOfDay = new Date(now);
     endOfDay.setHours(23, 59, 59, 999);
-    return { from: sevenDaysAgo, to: endOfDay };
+    return { from: thirtyDaysAgo, to: endOfDay };
   });
 
   useEffect(() => {
