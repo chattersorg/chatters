@@ -40,17 +40,67 @@ export default async function handler(req, res) {
     // Determine date range based on the user's question
     const dateRange = parseDateRange(message);
 
-    // Fetch relevant feedback data
-    const feedbackData = await fetchFeedbackData(supabase, venueId, dateRange);
-    const npsData = await fetchNPSData(supabase, venueId, dateRange);
-    const employees = await fetchEmployees(supabase, venueId);
-    const questions = await fetchQuestions(supabase, venueId);
-    const zoneData = await fetchZoneData(supabase, venueId);
-    const staffRecognitions = await fetchStaffRecognitions(supabase, venueId, dateRange);
-    const staffPerformance = calculateStaffPerformance(feedbackData, employees);
-    const zonePerformance = calculateZonePerformance(feedbackData, zoneData);
-    const stats = calculateStats(feedbackData, npsData);
-    const trends = calculateTrends(feedbackData, dateRange);
+    // Analyze what data the question needs
+    const dataNeeds = analyzeQuestionIntent(message);
+    console.log('[AI Chat] Data needs:', dataNeeds);
+
+    // Only fetch what we need based on the question
+    let feedbackData = [];
+    let npsData = [];
+    let employees = [];
+    let questions = [];
+    let zoneData = { zones: [], tableToZone: {} };
+    let staffRecognitions = [];
+    let assistanceRequests = [];
+
+    // Always fetch questions (lightweight, needed for context)
+    questions = await fetchQuestions(supabase, venueId);
+
+    // Fetch data based on needs
+    if (dataNeeds.feedback || dataNeeds.trends || dataNeeds.zones) {
+      feedbackData = await fetchFeedbackData(supabase, venueId, dateRange);
+    }
+
+    if (dataNeeds.nps) {
+      npsData = await fetchNPSData(supabase, venueId, dateRange);
+    }
+
+    if (dataNeeds.staff || dataNeeds.feedback) {
+      // Need employees for staff roster and for resolving feedback attribution
+      employees = await fetchEmployees(supabase, venueId);
+    }
+
+    if (dataNeeds.zones) {
+      zoneData = await fetchZoneData(supabase, venueId);
+    }
+
+    if (dataNeeds.staff) {
+      staffRecognitions = await fetchStaffRecognitions(supabase, venueId, dateRange);
+      assistanceRequests = await fetchAssistanceRequests(supabase, venueId, dateRange);
+    }
+
+    // Calculate derived data only if we have the source data
+    const staffPerformance = (dataNeeds.staff && employees.length > 0)
+      ? calculateStaffPerformance(feedbackData, employees, assistanceRequests)
+      : null;
+    const zonePerformance = (dataNeeds.zones && feedbackData.length > 0)
+      ? calculateZonePerformance(feedbackData, zoneData)
+      : null;
+    const stats = (dataNeeds.feedback || dataNeeds.nps)
+      ? calculateStats(feedbackData, npsData)
+      : { totalFeedback: 0, totalNPS: 0, avgRating: null, ratingCounts: { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 }, npsScore: null, feedbackWithComments: 0, lowRatingCount: 0 };
+    const trends = dataNeeds.trends ? calculateTrends(feedbackData, dateRange) : null;
+
+    // Debug logging
+    console.log('[AI Chat] Data fetched:', {
+      feedbackCount: feedbackData.length,
+      npsCount: npsData.length,
+      employeesCount: employees.length,
+      questionsCount: questions.length,
+      recognitionsCount: staffRecognitions.length,
+      assistanceCount: assistanceRequests.length,
+      dataNeeds
+    });
 
     // Build context for Claude
     const context = buildContext(feedbackData, npsData, stats, staffPerformance, zonePerformance, questions, venueName, dateRange, trends, employees, staffRecognitions);
@@ -163,7 +213,8 @@ USER QUESTION: ${message}`,
         feedbackCount: feedbackData.length,
         npsCount: npsData.length,
         dateRange,
-        dataSource
+        dataSource,
+        dataFetched: dataNeeds
       }
     });
 
@@ -400,6 +451,107 @@ function getDateRangeDescription(from, to) {
 }
 
 /**
+ * Analyze the user's question to determine what data sources are needed
+ * Returns an object indicating which data types to fetch
+ */
+function analyzeQuestionIntent(message) {
+  const lower = message.toLowerCase();
+
+  // Default: nothing needed
+  const needs = {
+    feedback: false,
+    nps: false,
+    staff: false,
+    zones: false,
+    trends: false,
+    questionsOnly: false
+  };
+
+  // Questions-only patterns (don't need feedback data)
+  const questionsOnlyPatterns = [
+    /what (are|questions|do you ask)/i,
+    /which questions/i,
+    /show.*questions/i,
+    /list.*questions/i,
+    /what feedback questions/i,
+    /what do (we|you) ask/i
+  ];
+
+  if (questionsOnlyPatterns.some(p => p.test(message))) {
+    needs.questionsOnly = true;
+    return needs;
+  }
+
+  // Staff-related patterns
+  const staffPatterns = [
+    /staff/i, /employee/i, /team/i, /worker/i, /server/i, /waiter/i, /waitress/i,
+    /who (resolved|handled|fixed)/i, /best performer/i, /top performer/i,
+    /recognition/i, /shoutout/i, /praise/i, /who works/i, /how many staff/i,
+    /fastest (response|responder)/i, /resolution time/i, /who is/i, /roster/i
+  ];
+
+  // NPS-related patterns
+  const npsPatterns = [
+    /nps/i, /net promoter/i, /recommend/i, /promoter/i, /detractor/i,
+    /likely.*recommend/i, /loyalty/i
+  ];
+
+  // Zone/area patterns
+  const zonePatterns = [
+    /zone/i, /area/i, /section/i, /table \d+/i, /tables/i,
+    /which (zone|area|section)/i, /best (zone|area|section)/i,
+    /worst (zone|area|section)/i
+  ];
+
+  // Trend patterns
+  const trendPatterns = [
+    /trend/i, /over time/i, /change/i, /improv/i, /declin/i, /week by week/i,
+    /weekly/i, /daily/i, /compare/i, /vs/i, /versus/i, /getting better/i,
+    /getting worse/i, /progress/i
+  ];
+
+  // Feedback-related patterns (general)
+  const feedbackPatterns = [
+    /feedback/i, /rating/i, /review/i, /comment/i, /star/i, /score/i,
+    /complain/i, /issue/i, /problem/i, /negative/i, /positive/i, /happy/i,
+    /unhappy/i, /satisfied/i, /dissatisfied/i, /average/i, /how (are|is) (we|it)/i,
+    /what (are|do) (customers|people|guests)/i, /food/i, /service/i, /quality/i,
+    /how.*doing/i, /performance/i, /summary/i, /overview/i
+  ];
+
+  // Check each category
+  if (staffPatterns.some(p => p.test(message))) {
+    needs.staff = true;
+    needs.feedback = true; // Need feedback to see who resolved what
+  }
+
+  if (npsPatterns.some(p => p.test(message))) {
+    needs.nps = true;
+  }
+
+  if (zonePatterns.some(p => p.test(message))) {
+    needs.zones = true;
+    needs.feedback = true; // Need feedback to calculate zone performance
+  }
+
+  if (trendPatterns.some(p => p.test(message))) {
+    needs.trends = true;
+    needs.feedback = true; // Need feedback for trend analysis
+  }
+
+  if (feedbackPatterns.some(p => p.test(message))) {
+    needs.feedback = true;
+  }
+
+  // If nothing specific was detected, default to feedback (most common use case)
+  if (!needs.feedback && !needs.nps && !needs.staff && !needs.zones && !needs.trends && !needs.questionsOnly) {
+    needs.feedback = true;
+  }
+
+  return needs;
+}
+
+/**
  * Fetch feedback data for the venue
  */
 async function fetchFeedbackData(supabase, venueId, dateRange) {
@@ -464,6 +616,27 @@ async function fetchStaffRecognitions(supabase, venueId, dateRange) {
 
   if (error) {
     console.error('[AI Chat] Error fetching staff recognitions:', error);
+    return [];
+  }
+
+  return data || [];
+}
+
+/**
+ * Fetch assistance requests for the venue
+ */
+async function fetchAssistanceRequests(supabase, venueId, dateRange) {
+  const { data, error } = await supabase
+    .from('assistance_requests')
+    .select('*')
+    .eq('venue_id', venueId)
+    .gte('created_at', dateRange.from)
+    .lte('created_at', dateRange.to)
+    .order('created_at', { ascending: false })
+    .limit(500);
+
+  if (error) {
+    console.error('[AI Chat] Error fetching assistance requests:', error);
     return [];
   }
 
@@ -655,20 +828,22 @@ function calculateZonePerformance(feedbackData, zoneData) {
 /**
  * Calculate staff performance metrics
  */
-function calculateStaffPerformance(feedbackData, employees) {
+function calculateStaffPerformance(feedbackData, employees, assistanceRequests = []) {
   if (!employees || employees.length === 0) {
     return null;
   }
 
-  // Create a map of employee IDs to names
+  // Create a map of employee IDs to names (handle both name formats)
   const employeeMap = {};
   employees.forEach(e => {
-    employeeMap[e.id] = e.name;
+    const name = e.first_name && e.last_name
+      ? `${e.first_name} ${e.last_name}`
+      : e.name || 'Unknown';
+    employeeMap[e.id] = name;
   });
 
   // Calculate resolved feedback per employee
   const resolvedByEmployee = {};
-  const resolutionTimes = {};
 
   feedbackData.forEach(f => {
     if (f.resolved_by && f.is_actioned) {
@@ -678,6 +853,7 @@ function calculateStaffPerformance(feedbackData, employees) {
           count: 0,
           positiveCleared: 0,
           issuesResolved: 0,
+          assistanceResolved: 0,
           totalResolutionTime: 0,
           resolutionCount: 0
         };
@@ -704,6 +880,25 @@ function calculateStaffPerformance(feedbackData, employees) {
     }
   });
 
+  // Also count assistance requests resolved
+  assistanceRequests.forEach(ar => {
+    if (ar.resolved_by) {
+      const employeeId = ar.resolved_by;
+      if (!resolvedByEmployee[employeeId]) {
+        resolvedByEmployee[employeeId] = {
+          count: 0,
+          positiveCleared: 0,
+          issuesResolved: 0,
+          assistanceResolved: 0,
+          totalResolutionTime: 0,
+          resolutionCount: 0
+        };
+      }
+      resolvedByEmployee[employeeId].assistanceResolved++;
+      resolvedByEmployee[employeeId].count++;
+    }
+  });
+
   // Build performance array with employee names
   const performance = Object.entries(resolvedByEmployee)
     .map(([employeeId, data]) => ({
@@ -711,6 +906,7 @@ function calculateStaffPerformance(feedbackData, employees) {
       resolved: data.count,
       positiveCleared: data.positiveCleared,
       issuesResolved: data.issuesResolved,
+      assistanceResolved: data.assistanceResolved,
       avgResolutionTime: data.resolutionCount > 0
         ? Math.round(data.totalResolutionTime / data.resolutionCount)
         : null
@@ -859,20 +1055,24 @@ Period: ${dateRange.description}
 ${questions.length > 0
     ? questions.map((q, i) => `${i + 1}. "${q.question}"`).join('\n')
     : 'No active questions configured'}
+`;
 
+  // Only show per-question breakdown and stats if we have feedback data
+  if (feedbackData.length > 0) {
+    context += `
 ### Per-Question Breakdown:
 ${questions.length > 0
-    ? questions.map(q => {
-        const questionFeedback = feedbackData.filter(f => f.question_id === q.id);
-        const ratings = questionFeedback.map(f => f.rating).filter(r => r != null);
-        const avgRating = ratings.length > 0
-          ? (ratings.reduce((a, b) => a + b, 0) / ratings.length).toFixed(1)
-          : 'N/A';
-        const lowCount = ratings.filter(r => r <= 2).length;
-        const highCount = ratings.filter(r => r >= 4).length;
-        return `- "${q.question}": ${ratings.length} responses, ${avgRating}/5 avg (${highCount} positive, ${lowCount} negative)`;
-      }).join('\n')
-    : 'No question data available'}
+      ? questions.map(q => {
+          const questionFeedback = feedbackData.filter(f => f.question_id === q.id);
+          const ratings = questionFeedback.map(f => f.rating).filter(r => r != null);
+          const avgRating = ratings.length > 0
+            ? (ratings.reduce((a, b) => a + b, 0) / ratings.length).toFixed(1)
+            : 'N/A';
+          const lowCount = ratings.filter(r => r <= 2).length;
+          const highCount = ratings.filter(r => r >= 4).length;
+          return `- "${q.question}": ${ratings.length} responses, ${avgRating}/5 avg (${highCount} positive, ${lowCount} negative)`;
+        }).join('\n')
+      : 'No question data available'}
 
 ### Summary Statistics:
 - Total feedback submissions: ${stats.totalFeedback}
@@ -880,8 +1080,13 @@ ${questions.length > 0
 - Rating breakdown: 5★: ${stats.ratingCounts[5]}, 4★: ${stats.ratingCounts[4]}, 3★: ${stats.ratingCounts[3]}, 2★: ${stats.ratingCounts[2]}, 1★: ${stats.ratingCounts[1]}
 - Feedback with comments: ${stats.feedbackWithComments}
 - Low ratings (1-2★): ${stats.lowRatingCount}
-- NPS submissions: ${stats.totalNPS}${stats.npsScore !== null ? `, NPS Score: ${stats.npsScore}` : ''}
 `;
+  }
+
+  // Only show NPS stats if we have NPS data
+  if (npsData.length > 0) {
+    context += `- NPS submissions: ${stats.totalNPS}${stats.npsScore !== null ? `, NPS Score: ${stats.npsScore}` : ''}\n`;
+  }
 
   // Add trend analysis if available
   if (trends) {
@@ -935,7 +1140,8 @@ ${questions.length > 0
       const avgTime = staff.avgResolutionTime
         ? `${staff.avgResolutionTime} min avg response`
         : 'no timing data';
-      context += `${i + 1}. ${staff.name}: ${staff.resolved} feedback resolved (${staff.issuesResolved} issues fixed, ${staff.positiveCleared} positive cleared) - ${avgTime}\n`;
+      const assistPart = staff.assistanceResolved > 0 ? `, ${staff.assistanceResolved} assistance requests` : '';
+      context += `${i + 1}. ${staff.name}: ${staff.resolved} total resolved (${staff.issuesResolved} issues, ${staff.positiveCleared} positive${assistPart}) - ${avgTime}\n`;
     });
 
     // Add top performer summary
