@@ -4,27 +4,21 @@ import Navbar from "../../components/marketing/layout/Navbar";
 import Footer from "../../components/marketing/layout/Footer";
 import { Bell, Shield, TrendingUp, Zap, Star } from "lucide-react";
 
-// CSS to make HubSpot iframe fill container seamlessly with no whitespace
-// HubSpot has internal padding in their widget, so we use negative margins and overflow to crop it
+// CSS for HubSpot iframe - scale up and clip whitespace
 const hubspotStyles = `
   .meetings-iframe-container {
-    position: relative;
-    width: calc(100% + 32px);
-    margin-left: -16px;
-    margin-right: -16px;
-    margin-top: -16px;
-    margin-bottom: -32px;
     background: #fff;
     line-height: 0;
     overflow: hidden;
+    height: 640px;
   }
   .meetings-iframe-container iframe {
-    width: 100% !important;
-    height: 720px !important;
+    width: 115% !important;
+    height: 750px !important;
     border: none !important;
     display: block;
-    margin: 0 !important;
-    padding: 0 !important;
+    transform: scale(0.87);
+    transform-origin: top left;
   }
 `;
 
