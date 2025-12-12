@@ -1,9 +1,23 @@
 import React, { useEffect } from "react";
 import { Helmet } from "react-helmet";
-import { Link } from "react-router-dom";
 import Navbar from "../../components/marketing/layout/Navbar";
 import Footer from "../../components/marketing/layout/Footer";
 import { Bell, Shield, TrendingUp, Zap, Clock, Star } from "lucide-react";
+
+// CSS to make HubSpot iframe fill container seamlessly
+const hubspotStyles = `
+  .meetings-iframe-container {
+    position: relative;
+    width: 100%;
+    background: #fff;
+  }
+  .meetings-iframe-container iframe {
+    width: 100% !important;
+    min-height: 680px !important;
+    border: none !important;
+    display: block;
+  }
+`;
 
 const DemoPage = () => {
   useEffect(() => {
@@ -48,6 +62,7 @@ const DemoPage = () => {
           content="See how Chatters prevents bad reviews with real-time guest feedback and instant staff alerts. Book a quick 15-minute walkthrough."
         />
         <link rel="canonical" href="https://getchatters.com/demo" />
+        <style>{hubspotStyles}</style>
       </Helmet>
 
       <Navbar overlay />
@@ -108,18 +123,17 @@ const DemoPage = () => {
             <div className="lg:sticky lg:top-24">
               <div className="relative">
                 {/* Card container */}
-                <div className="rounded-2xl border border-gray-200 bg-white shadow-[0_4px_40px_rgba(0,0,0,0.08)] overflow-hidden">
+                <div className="rounded-2xl border border-gray-200 bg-white shadow-[0_8px_40px_rgba(0,0,0,0.12)] overflow-hidden">
                   {/* Card header */}
-                  <div className="bg-gray-900 px-6 py-4">
-                    <p className="text-white font-semibold">Book Your Walkthrough</p>
-                    <p className="text-gray-400 text-sm">Pick a time that works for you</p>
+                  <div className="bg-gray-900 px-6 py-5 text-center">
+                    <p className="text-white font-semibold text-lg">Book Your Walkthrough</p>
+                    <p className="text-gray-400 text-sm mt-1">Pick a time that works for you</p>
                   </div>
 
                   {/* HubSpot Meetings inline embed */}
                   <div
-                    className="meetings-iframe-container"
+                    className="meetings-iframe-container bg-white"
                     data-src="https://meetings.hubspot.com/will902?embed=true"
-                    style={{ minWidth: "320px", height: "660px" }}
                   ></div>
                 </div>
 
