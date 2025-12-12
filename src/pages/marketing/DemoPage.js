@@ -146,13 +146,6 @@ const DemoPage = () => {
                 />
               </div>
 
-              {/* Alternative contact */}
-              <p className="text-sm text-gray-500 mt-4 text-center">
-                Prefer email?{" "}
-                <a href="mailto:hello@getchatters.com" className="text-[#4E74FF] hover:underline font-medium">
-                  hello@getchatters.com
-                </a>
-              </p>
             </div>
           </div>
         </div>
