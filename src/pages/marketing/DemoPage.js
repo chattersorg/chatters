@@ -9,18 +9,18 @@ import { Bell, Shield, TrendingUp, Zap, Star } from "lucide-react";
 const hubspotStyles = `
   .meetings-iframe-container {
     position: relative;
-    width: calc(100% + 64px);
-    margin-left: -32px;
-    margin-right: -32px;
-    margin-top: -24px;
-    margin-bottom: -24px;
+    width: calc(100% + 32px);
+    margin-left: -16px;
+    margin-right: -16px;
+    margin-top: -16px;
+    margin-bottom: -32px;
     background: #fff;
     line-height: 0;
     overflow: hidden;
   }
   .meetings-iframe-container iframe {
     width: 100% !important;
-    height: 700px !important;
+    height: 720px !important;
     border: none !important;
     display: block;
     margin: 0 !important;
