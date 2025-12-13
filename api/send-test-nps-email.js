@@ -77,7 +77,7 @@ module.exports = async function handler(req, res) {
   </div>` : ''}
 
   <div style="background: #fff3cd; border: 1px solid #ffc107; border-radius: 8px; padding: 12px 16px; margin-bottom: 20px; text-align: center;">
-    <strong style="color: #856404;">🧪 This is a test email</strong>
+    <strong style="color: #856404;">This is a test email</strong>
     <p style="color: #856404; margin: 4px 0 0 0; font-size: 14px;">This is a preview of how your NPS survey email will look to customers.</p>
   </div>
 

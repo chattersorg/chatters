@@ -13,6 +13,7 @@ import VerifyEmailChange from './pages/auth/VerifyEmailChange';
 import DashboardPage from './pages/dashboard/DashboardNew';
 import ManageQuestions from './pages/dashboard/ManageQuestions';
 import Floorplan from './pages/dashboard/Floorplan';
+import FloorplanEditor from './pages/dashboard/FloorplanEditor';
 import SettingsPage from './pages/dashboard/SettingsPage';
 import TemplatesPage from './pages/dashboard/QRTemplates';
 import ReportsPage from './pages/dashboard/ReportsPage';
@@ -458,6 +459,11 @@ const DashboardRoutes = () => {
         <Route path="/floorplan" element={
           <ProtectedRoute permission="floorplan.view">
             <Floorplan />
+          </ProtectedRoute>
+        } />
+        <Route path="/floorplan/edit" element={
+          <ProtectedRoute permission="floorplan.edit">
+            <FloorplanEditor />
           </ProtectedRoute>
         } />
       </Route>
