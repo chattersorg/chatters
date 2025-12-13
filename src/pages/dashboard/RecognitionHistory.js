@@ -5,6 +5,7 @@ import usePageTitle from '../../hooks/usePageTitle';
 import { useVenue } from '../../context/VenueContext';
 import { PermissionGate } from '../../context/PermissionsContext';
 import { Trophy, Mail, Calendar, Award, Download } from 'lucide-react';
+import FilterSelect from '../../components/ui/FilterSelect';
 import dayjs from 'dayjs';
 import relativeTime from 'dayjs/plugin/relativeTime';
 dayjs.extend(relativeTime);
@@ -206,20 +207,17 @@ const RecognitionHistory = () => {
         actions={
           <div className="flex items-center space-x-4">
             {/* Date Filter */}
-            <div className="flex items-center space-x-2">
-              <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Period:</label>
-              <select
-                value={timeFilter}
-                onChange={(e) => setTimeFilter(e.target.value)}
-                className="px-3 py-2 text-sm border border-gray-300 dark:border-gray-700 rounded-md bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500"
-              >
-                <option value="today">Today</option>
-                <option value="thisWeek">This Week</option>
-                <option value="thisMonth">This Month</option>
-                <option value="last30">Last 30 Days</option>
-                <option value="all">All Time</option>
-              </select>
-            </div>
+            <FilterSelect
+              value={timeFilter}
+              onChange={(e) => setTimeFilter(e.target.value)}
+              options={[
+                { value: 'today', label: 'Today' },
+                { value: 'thisWeek', label: 'This Week' },
+                { value: 'thisMonth', label: 'This Month' },
+                { value: 'last30', label: 'Last 30 Days' },
+                { value: 'all', label: 'All Time' }
+              ]}
+            />
 
             {/* Export Button */}
             <PermissionGate permission="reports.export">

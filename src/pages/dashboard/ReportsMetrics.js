@@ -4,6 +4,7 @@ import usePageTitle from '../../hooks/usePageTitle';
 import { useVenue } from '../../context/VenueContext';
 import { Activity, TrendingUp, Users, Clock } from 'lucide-react';
 import { supabase } from '../../utils/supabase';
+import FilterSelect from '../../components/ui/FilterSelect';
 
 function startOfDay(d) { const x = new Date(d); x.setHours(0,0,0,0); return x; }
 function endOfDay(d)   { const x = new Date(d); x.setHours(23,59,59,999); return x; }
@@ -394,21 +395,18 @@ const ReportsMetricsPage = () => {
         title="Metrics Dashboard"
         subtitle="Comprehensive metrics and KPIs for your feedback system"
         actions={
-          <div className="flex items-center space-x-2">
-            <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Period:</label>
-            <select
-              value={timeframe}
-              onChange={(e) => setTimeframe(e.target.value)}
-              className="px-3 py-2 text-sm border border-gray-300 dark:border-gray-700 rounded-md bg-white dark:bg-gray-800 text-gray-700 dark:text-white shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-            >
-              <option value="today">Today</option>
-              <option value="yesterday">Yesterday</option>
-              <option value="last7">Last 7 Days</option>
-              <option value="last14">Last 14 Days</option>
-              <option value="last30">Last 30 Days</option>
-              <option value="all">All-time</option>
-            </select>
-          </div>
+          <FilterSelect
+            value={timeframe}
+            onChange={(e) => setTimeframe(e.target.value)}
+            options={[
+              { value: 'today', label: 'Today' },
+              { value: 'yesterday', label: 'Yesterday' },
+              { value: 'last7', label: 'Last 7 Days' },
+              { value: 'last14', label: 'Last 14 Days' },
+              { value: 'last30', label: 'Last 30 Days' },
+              { value: 'all', label: 'All-time' }
+            ]}
+          />
         }
       >
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-2 gap-6">

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect } from 'react';
 import { supabase } from '../../../utils/supabase';
 import { useVenue } from '../../../context/VenueContext';
 import { Button } from '../../ui/button';
@@ -9,134 +9,21 @@ import {
 } from '../../ui/popover';
 import { cn } from '../../../lib/utils';
 import { ChevronDown, Calendar, Check } from 'lucide-react';
+import DatePicker from '../inputs/DatePicker';
+import dayjs from 'dayjs';
 
 const ReportBuilderTab = () => {
   const { venueId, userRole } = useVenue();
-  
-  // Date range options with calculated values
-  const dateRangeOptions = useMemo(() => [
-    {
-      label: 'Today',
-      getValue: () => {
-        const today = new Date();
-        return {
-          startDate: today.toISOString().split('T')[0],
-          endDate: today.toISOString().split('T')[0],
-          label: 'Today'
-        };
-      }
-    },
-    {
-      label: 'Yesterday',
-      getValue: () => {
-        const yesterday = new Date();
-        yesterday.setDate(yesterday.getDate() - 1);
-        return {
-          startDate: yesterday.toISOString().split('T')[0],
-          endDate: yesterday.toISOString().split('T')[0],
-          label: 'Yesterday'
-        };
-      }
-    },
-    {
-      label: 'Last 7 days',
-      getValue: () => {
-        const endDate = new Date();
-        const startDate = new Date();
-        startDate.setDate(endDate.getDate() - 7);
-        return {
-          startDate: startDate.toISOString().split('T')[0],
-          endDate: endDate.toISOString().split('T')[0],
-          label: 'Last 7 days'
-        };
-      }
-    },
-    {
-      label: 'Last 14 days',
-      getValue: () => {
-        const endDate = new Date();
-        const startDate = new Date();
-        startDate.setDate(endDate.getDate() - 14);
-        return {
-          startDate: startDate.toISOString().split('T')[0],
-          endDate: endDate.toISOString().split('T')[0],
-          label: 'Last 14 days'
-        };
-      }
-    },
-    {
-      label: 'Last 30 days',
-      getValue: () => {
-        const endDate = new Date();
-        const startDate = new Date();
-        startDate.setDate(endDate.getDate() - 30);
-        return {
-          startDate: startDate.toISOString().split('T')[0],
-          endDate: endDate.toISOString().split('T')[0],
-          label: 'Last 30 days'
-        };
-      }
-    },
-    {
-      label: 'This month',
-      getValue: () => {
-        const now = new Date();
-        const startDate = new Date(now.getFullYear(), now.getMonth(), 1);
-        const endDate = new Date();
-        return {
-          startDate: startDate.toISOString().split('T')[0],
-          endDate: endDate.toISOString().split('T')[0],
-          label: 'This month'
-        };
-      }
-    },
-    {
-      label: 'Last month',
-      getValue: () => {
-        const now = new Date();
-        const startDate = new Date(now.getFullYear(), now.getMonth() - 1, 1);
-        const endDate = new Date(now.getFullYear(), now.getMonth(), 0);
-        return {
-          startDate: startDate.toISOString().split('T')[0],
-          endDate: endDate.toISOString().split('T')[0],
-          label: 'Last month'
-        };
-      }
-    },
-    {
-      label: 'Last 90 days',
-      getValue: () => {
-        const endDate = new Date();
-        const startDate = new Date();
-        startDate.setDate(endDate.getDate() - 90);
-        return {
-          startDate: startDate.toISOString().split('T')[0],
-          endDate: endDate.toISOString().split('T')[0],
-          label: 'Last 90 days'
-        };
-      }
-    },
-    {
-      label: 'All-time',
-      getValue: () => {
-        const endDate = new Date();
-        const startDate = new Date('2020-01-01'); // Set a reasonable start date for "all time"
-        return {
-          startDate: startDate.toISOString().split('T')[0],
-          endDate: endDate.toISOString().split('T')[0],
-          label: 'All-time'
-        };
-      }
-    }
-  ], []);
-  
-  // Form state
-  const [dateRange, setDateRange] = useState({
-    startDate: '',
-    endDate: '',
-    label: 'Last 14 days'
+
+  // Form state - default to last 14 days
+  const [startDate, setStartDate] = useState(() => {
+    const date = new Date();
+    date.setDate(date.getDate() - 14);
+    return date.toISOString().split('T')[0];
   });
-  const [dateRangeDropdownOpen, setDateRangeDropdownOpen] = useState(false);
+  const [endDate, setEndDate] = useState(() => {
+    return new Date().toISOString().split('T')[0];
+  });
   const [selectedVenues, setSelectedVenues] = useState([]);
   const [selectedMetrics, setSelectedMetrics] = useState([]);
   const [availableVenues, setAvailableVenues] = useState([]);
@@ -174,11 +61,6 @@ const ReportBuilderTab = () => {
     { id: 'staff_resolution_count', label: 'Staff Resolution Count', description: 'Number of issues resolved per staff member' }
   ];
 
-  // Initialize date range to last 14 days
-  useEffect(() => {
-    const defaultRange = dateRangeOptions[3].getValue(); // Last 14 days
-    setDateRange(defaultRange);
-  }, [dateRangeOptions]);
 
   // Load available venues based on user role
   useEffect(() => {
@@ -233,23 +115,6 @@ const ReportBuilderTab = () => {
     loadVenues();
   }, [venueId, userRole]);
 
-  // Handle date range selection
-  const handleDateRangeSelect = (option) => {
-    const newRange = option.getValue();
-    setDateRange(newRange);
-    setDateRangeDropdownOpen(false);
-  };
-
-  // Format date for display
-  const formatDateForDisplay = (dateString) => {
-    const date = new Date(dateString);
-    return date.toLocaleDateString('en-US', { 
-      month: 'short', 
-      day: 'numeric', 
-      year: date.getFullYear() !== new Date().getFullYear() ? 'numeric' : undefined 
-    });
-  };
-
   const handleVenueToggle = (venueId) => {
     setSelectedVenues(prev => 
       prev.includes(venueId)
@@ -267,7 +132,7 @@ const ReportBuilderTab = () => {
   };
 
   const generateReport = async () => {
-    if (selectedMetrics.length === 0 || selectedVenues.length === 0 || !dateRange.startDate || !dateRange.endDate) {
+    if (selectedMetrics.length === 0 || selectedVenues.length === 0 || !startDate || !endDate) {
       setError('Please select at least one metric, venue, and date range');
       return;
     }
@@ -277,8 +142,8 @@ const ReportBuilderTab = () => {
     setReportData(null);
 
     try {
-      const startDateTime = new Date(dateRange.startDate + 'T00:00:00').toISOString();
-      const endDateTime = new Date(dateRange.endDate + 'T23:59:59').toISOString();
+      const startDateTime = new Date(startDate + 'T00:00:00').toISOString();
+      const endDateTime = new Date(endDate + 'T23:59:59').toISOString();
 
       // Get venue names for display
       const venueNames = {};
@@ -633,7 +498,7 @@ const ReportBuilderTab = () => {
     const url = window.URL.createObjectURL(blob);
     const link = document.createElement('a');
     link.href = url;
-    link.download = `custom_report_${dateRange.startDate}_to_${dateRange.endDate}.csv`;
+    link.download = `custom_report_${startDate}_to_${endDate}.csv`;
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
@@ -646,62 +511,23 @@ const ReportBuilderTab = () => {
       <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-4">
         <h3 className="text-base font-medium text-gray-900 dark:text-white mb-3">Report Configuration</h3>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-          {/* Date Range */}
-          <div className="space-y-1.5">
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Date Range</label>
-            <Popover open={dateRangeDropdownOpen} onOpenChange={setDateRangeDropdownOpen}>
-              <PopoverTrigger asChild>
-                <Button
-                  variant="outline"
-                  role="combobox"
-                  aria-expanded={dateRangeDropdownOpen}
-                  className="w-full justify-between text-left font-normal h-auto py-2 px-3 bg-white dark:bg-gray-700 shadow-sm border-gray-300 dark:border-gray-600 hover:border-gray-400 dark:hover:border-gray-500 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 rounded-lg"
-                >
-                  <div className="flex items-center space-x-2">
-                    <Calendar className="h-4 w-4 text-gray-400 dark:text-gray-400" />
-                    <span className="text-sm font-medium text-gray-900 dark:text-gray-100">{dateRange.label}</span>
-                  </div>
-                  <ChevronDown className={cn("ml-2 h-4 w-4 shrink-0 opacity-50 transition-transform duration-200", dateRangeDropdownOpen && "transform rotate-180")} />
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent className="w-full p-0 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 shadow-lg rounded-lg" align="start">
-                <div className="py-2 px-2">
-                  <div className="grid grid-cols-2 gap-1 max-h-72 overflow-y-auto">
-                    {dateRangeOptions.map((option, index) => {
-                      const optionValue = option.getValue();
-                      const isSelected = dateRange.label === option.label;
+        <div className="grid grid-cols-1 lg:grid-cols-4 gap-4">
+          {/* Start Date */}
+          <DatePicker
+            label="From Date"
+            value={startDate}
+            onChange={(e) => setStartDate(e.target.value)}
+            max={endDate || dayjs().format('YYYY-MM-DD')}
+          />
 
-                      return (
-                        <div key={index}
-                          className={cn(
-                            "flex items-center justify-between px-3 py-2 hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer transition-colors duration-150 rounded-md",
-                            isSelected && "bg-blue-50 dark:bg-blue-900/30 border border-blue-200 dark:border-blue-700"
-                          )}
-                          onClick={() => handleDateRangeSelect(option)}
-                        >
-                          <div className="flex flex-col flex-1 min-w-0">
-                            <span className={cn(
-                              "text-sm font-medium",
-                              isSelected ? "text-blue-700 dark:text-blue-400" : "text-gray-900 dark:text-gray-100"
-                            )}>
-                              {option.label}
-                            </span>
-                            <span className="text-xs text-gray-500 dark:text-gray-400 truncate">
-                              {formatDateForDisplay(optionValue.startDate)} - {formatDateForDisplay(optionValue.endDate)}
-                            </span>
-                          </div>
-                          {isSelected && (
-                            <Check className="h-3 w-3 text-blue-600 dark:text-blue-400 ml-2 flex-shrink-0" strokeWidth={2} />
-                          )}
-                        </div>
-                      );
-                    })}
-                  </div>
-                </div>
-              </PopoverContent>
-            </Popover>
-          </div>
+          {/* End Date */}
+          <DatePicker
+            label="To Date"
+            value={endDate}
+            onChange={(e) => setEndDate(e.target.value)}
+            min={startDate}
+            max={dayjs().format('YYYY-MM-DD')}
+          />
 
           {/* Metrics Dropdown */}
           <div className="space-y-1.5">
@@ -822,7 +648,7 @@ const ReportBuilderTab = () => {
           </div>
           <Button
             onClick={generateReport}
-            disabled={isGenerating || selectedMetrics.length === 0 || selectedVenues.length === 0 || !dateRange.startDate || !dateRange.endDate}
+            disabled={isGenerating || selectedMetrics.length === 0 || selectedVenues.length === 0 || !startDate || !endDate}
             className="px-6 py-2 bg-blue-600 dark:bg-blue-600 text-white rounded-lg hover:bg-blue-700 dark:hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed font-medium transition-all duration-200 shadow-sm hover:shadow-md"
             size="default"
           >

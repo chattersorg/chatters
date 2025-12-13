@@ -18,6 +18,10 @@ interface NPSSubmission {
     primary_color: string;
     nps_enabled: boolean;
     account_id: string;
+    nps_email_subject: string | null;
+    nps_email_greeting: string | null;
+    nps_email_body: string | null;
+    nps_email_button_text: string | null;
   };
 }
 
@@ -49,7 +53,7 @@ serve(async (req) => {
     const now = new Date().toISOString();
     const { data: submissions, error: fetchError } = await supabase
       .from("nps_submissions")
-      .select("*, venues(name, logo, nps_question, primary_color, nps_enabled, account_id)")
+      .select("*, venues(name, logo, nps_question, primary_color, nps_enabled, account_id, nps_email_subject, nps_email_greeting, nps_email_body, nps_email_button_text)")
       .lte("scheduled_send_at", now)
       .is("sent_at", null)
       .limit(50); // Process max 50 per run
@@ -113,6 +117,15 @@ serve(async (req) => {
           submission.venues.nps_question ||
           "How likely are you to recommend us to a friend or colleague?";
 
+        // Get customizable email content with defaults
+        const emailSubject = (submission.venues.nps_email_subject || "How was your visit to {venue_name}?")
+          .replace(/{venue_name}/g, venueName);
+        const emailGreeting = (submission.venues.nps_email_greeting || "Thank you for visiting {venue_name}!")
+          .replace(/{venue_name}/g, venueName);
+        const emailBody = submission.venues.nps_email_body ||
+          "We hope you had a great experience. We'd love to hear your feedback.";
+        const emailButtonText = submission.venues.nps_email_button_text || "Rate Your Experience";
+
         // Create email HTML
         const emailHtml = `
 <!DOCTYPE html>
@@ -135,11 +148,11 @@ serve(async (req) => {
     <h1 style="color: ${
       submission.venues.primary_color || "#111827"
     }; font-size: 24px; margin-top: 0;">
-      Thank you for visiting ${venueName}!
+      ${emailGreeting}
     </h1>
 
     <p style="font-size: 16px; color: #4b5563;">
-      We hope you had a great experience. We'd love to hear your feedback.
+      ${emailBody}
     </p>
 
     <p style="font-size: 18px; font-weight: 600; color: #1f2937; margin-top: 30px; margin-bottom: 20px;">
@@ -151,7 +164,7 @@ serve(async (req) => {
          style="display: inline-block; background: ${
            submission.venues.primary_color || "#3b82f6"
          }; color: white; padding: 16px 32px; text-decoration: none; border-radius: 8px; font-weight: 600; font-size: 16px;">
-        Rate Your Experience
+        ${emailButtonText}
       </a>
     </div>
 
@@ -180,7 +193,7 @@ serve(async (req) => {
           body: JSON.stringify({
             from: `${venueName} <feedback@getchatters.com>`,
             to: [submission.customer_email],
-            subject: `How was your visit to ${venueName}?`,
+            subject: emailSubject,
             html: emailHtml,
           }),
         });

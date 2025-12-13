@@ -79,6 +79,7 @@ const NPSChartTile = ({ config = {}, onRemove, onConfigure }) => {
           .not('score', 'is', null)
           .gte('responded_at', startDate)
           .lte('responded_at', endDate)
+          .order('responded_at', { ascending: true })
       );
       const currentData = currentResult.data;
       const currentError = currentResult.error;
@@ -130,6 +131,10 @@ const NPSChartTile = ({ config = {}, onRemove, onConfigure }) => {
         }
       }
 
+      // Generate time-series data for line chart
+      // Group by appropriate interval based on date range
+      const timeSeries = generateTimeSeries(currentData || [], dateRange.from, dateRange.to, daysDiff);
+
       const newData = {
         score: npsScore,
         promoters,
@@ -137,7 +142,8 @@ const NPSChartTile = ({ config = {}, onRemove, onConfigure }) => {
         detractors,
         total,
         trend,
-        trendDirection
+        trendDirection,
+        timeSeries // Add time series data for line chart
       };
 
       setNpsData(newData);
@@ -150,6 +156,61 @@ const NPSChartTile = ({ config = {}, onRemove, onConfigure }) => {
     } finally {
       setLoading(false);
     }
+  };
+
+  // Generate time-series data grouped by appropriate intervals
+  const generateTimeSeries = (data, startDate, endDate, daysDiff) => {
+    if (!data || data.length === 0) return [];
+
+    // Determine grouping interval based on date range
+    let interval = 'day';
+    if (daysDiff > 365) {
+      interval = 'month';
+    } else if (daysDiff > 90) {
+      interval = 'week';
+    }
+
+    // Group submissions by interval
+    const groups = {};
+
+    data.forEach(submission => {
+      const date = new Date(submission.responded_at);
+      let key;
+
+      if (interval === 'month') {
+        key = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+      } else if (interval === 'week') {
+        // Get the Monday of the week
+        const monday = new Date(date);
+        monday.setDate(date.getDate() - date.getDay() + 1);
+        key = monday.toISOString().split('T')[0];
+      } else {
+        key = date.toISOString().split('T')[0];
+      }
+
+      if (!groups[key]) {
+        groups[key] = [];
+      }
+      groups[key].push(submission.score);
+    });
+
+    // Calculate NPS for each group
+    const timeSeries = Object.entries(groups)
+      .map(([date, scores]) => {
+        const promoters = scores.filter(s => s >= 9).length;
+        const detractors = scores.filter(s => s <= 6).length;
+        const total = scores.length;
+        const nps = total > 0 ? Math.round(((promoters - detractors) / total) * 100) : 0;
+
+        return {
+          date,
+          nps,
+          responses: total
+        };
+      })
+      .sort((a, b) => a.date.localeCompare(b.date));
+
+    return timeSeries;
   };
 
   // Render different chart types

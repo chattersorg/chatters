@@ -4,6 +4,7 @@ import { useVenue } from '../../context/VenueContext';
 import { supabase } from '../../utils/supabase';
 import usePageTitle from '../../hooks/usePageTitle';
 import { TrendingUp, TrendingDown, Minus, Mail, MailCheck, MailX, ChevronRight, Building2 } from 'lucide-react';
+import FilterSelect from '../../components/ui/FilterSelect';
 import {
   AreaChart,
   Area,
@@ -227,19 +228,16 @@ const ReportsNPS = () => {
               {isAllVenuesMode ? "All venues overview" : `${selectedVenueIds.length} selected venues`}
             </p>
           </div>
-          <div className="flex items-center space-x-2">
-            <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Period:</label>
-            <select
-              value={dateRange}
-              onChange={(e) => setDateRange(e.target.value)}
-              className="px-3 py-2 text-sm border border-gray-300 dark:border-gray-700 rounded-md bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-            >
-              <option value="7">Last 7 days</option>
-              <option value="30">Last 30 days</option>
-              <option value="90">Last 90 days</option>
-              <option value="365">Last year</option>
-            </select>
-          </div>
+          <FilterSelect
+            value={dateRange}
+            onChange={(e) => setDateRange(e.target.value)}
+            options={[
+              { value: '7', label: 'Last 7 days' },
+              { value: '30', label: 'Last 30 days' },
+              { value: '90', label: 'Last 90 days' },
+              { value: '365', label: 'Last year' }
+            ]}
+          />
         </div>
 
         <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl overflow-hidden p-6">
@@ -332,19 +330,16 @@ const ReportsNPS = () => {
           <h1 className="text-2xl font-semibold text-gray-900 dark:text-white">NPS Reports</h1>
           <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">Net Promoter Score analytics and customer sentiment</p>
         </div>
-        <div className="flex items-center space-x-2">
-          <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Period:</label>
-          <select
-            value={dateRange}
-            onChange={(e) => setDateRange(e.target.value)}
-            className="px-3 py-2 text-sm border border-gray-300 dark:border-gray-700 rounded-md bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-          >
-            <option value="7">Last 7 days</option>
-            <option value="30">Last 30 days</option>
-            <option value="90">Last 90 days</option>
-            <option value="365">Last year</option>
-          </select>
-        </div>
+        <FilterSelect
+          value={dateRange}
+          onChange={(e) => setDateRange(e.target.value)}
+          options={[
+            { value: '7', label: 'Last 7 days' },
+            { value: '30', label: 'Last 30 days' },
+            { value: '90', label: 'Last 90 days' },
+            { value: '365', label: 'Last year' }
+          ]}
+        />
       </div>
 
       <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl overflow-hidden p-6">

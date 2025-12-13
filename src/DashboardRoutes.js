@@ -40,6 +40,7 @@ import ReportsImpactPage from './pages/dashboard/ReportsImpact';
 import ReportsMetricsPage from './pages/dashboard/ReportsMetrics';
 import ReportsNPSPage from './pages/dashboard/ReportsNPS';
 import NPSInsightsPage from './pages/dashboard/NPSInsights';
+import NPSSettingsPage from './pages/dashboard/NPSSettings';
 import StaffListPage from './pages/dashboard/StaffList';
 import EmployeeDetail from './pages/dashboard/EmployeeDetail';
 import ManagerDetail from './pages/dashboard/ManagerDetail';
@@ -183,9 +184,14 @@ const DashboardRoutes = () => {
             <AIChatPage />
           </ProtectedRoute>
         } />
+        <Route path="/ai/chat" element={
+          <ProtectedRoute permission="ai.chat">
+            <AIChatPage />
+          </ProtectedRoute>
+        } />
         {/* Legacy AI routes */}
         <Route path="/ai-insights" element={<Navigate to="/ai/insights" replace />} />
-        <Route path="/ai-chat" element={<Navigate to="/ai/intelligence" replace />} />
+        <Route path="/ai-chat" element={<Navigate to="/ai/chat" replace />} />
 
         {/* Multi-Venue Section */}
         <Route path="/multi-venue/venues" element={
@@ -225,8 +231,18 @@ const DashboardRoutes = () => {
           </ProtectedRoute>
         } />
 
+        <Route path="/feedback/questions" element={
+          <ProtectedRoute permission="questions.view">
+            <FeedbackQuestionsPage />
+          </ProtectedRoute>
+        } />
+        <Route path="/feedback/insights" element={
+          <ProtectedRoute permission="reports.view">
+            <CustomerInsightsPage />
+          </ProtectedRoute>
+        } />
+
         {/* Legacy feedback routes */}
-        <Route path="/feedback/questions" element={<Navigate to="/questions" replace />} />
         <Route path="/feedbackfeed" element={
           <ProtectedRoute permission="feedback.view">
             <FeedbackFeed />
@@ -270,6 +286,11 @@ const DashboardRoutes = () => {
             <NPSInsightsPage />
           </ProtectedRoute>
         } />
+        <Route path="/nps/settings" element={
+          <ProtectedRoute permission="nps.edit">
+            <NPSSettingsPage />
+          </ProtectedRoute>
+        } />
         <Route path="/nps-report/:venueId" element={
           <ProtectedRoute permission="nps.view">
             <NPSReportDetail />
@@ -311,6 +332,11 @@ const DashboardRoutes = () => {
             <StaffListPage />
           </ProtectedRoute>
         } />
+        <Route path="/staff/team" element={
+          <ProtectedRoute permission="staff.view">
+            <StaffListPage />
+          </ProtectedRoute>
+        } />
         {/* Legacy routes - redirect to combined staff list */}
         <Route path="/staff/managers" element={<Navigate to="/staff/list" replace />} />
         <Route path="/staff/employees" element={<Navigate to="/staff/list" replace />} />
@@ -343,7 +369,29 @@ const DashboardRoutes = () => {
         {/* Legacy staff routes */}
         <Route path="/staff" element={<Navigate to="/staff/leaderboard" replace />} />
 
-        {/* Venue Settings Section */}
+        {/* Settings Section (new paths) */}
+        <Route path="/settings/venue" element={
+          <ProtectedRoute permission="venue.view">
+            <VenueSettingsPage />
+          </ProtectedRoute>
+        } />
+        <Route path="/settings/branding" element={
+          <ProtectedRoute permission="venue.branding">
+            <SettingsBrandingPage />
+          </ProtectedRoute>
+        } />
+        <Route path="/settings/qr-code" element={
+          <ProtectedRoute permission="qr.view">
+            <FeedbackQRPage />
+          </ProtectedRoute>
+        } />
+        <Route path="/settings/integrations" element={
+          <ProtectedRoute permission="venue.integrations">
+            <IntegrationsSettingsPage />
+          </ProtectedRoute>
+        } />
+
+        {/* Venue Settings Section (legacy paths) */}
         <Route path="/venue-settings/details" element={
           <ProtectedRoute permission="venue.view">
             <VenueSettingsPage />
@@ -375,17 +423,15 @@ const DashboardRoutes = () => {
           </ProtectedRoute>
         } />
 
-        {/* Legacy settings routes */}
-        <Route path="/settings" element={<Navigate to="/venue-settings/details" replace />} />
-        <Route path="/settings/venue-details" element={<Navigate to="/venue-settings/details" replace />} />
-        <Route path="/settings/feedback" element={<Navigate to="/venue-settings/feedback" replace />} />
-        <Route path="/settings/branding" element={<Navigate to="/venue-settings/branding" replace />} />
-        <Route path="/settings/integrations" element={<Navigate to="/venue-settings/integrations" replace />} />
+        {/* Legacy settings routes - redirect to new paths */}
+        <Route path="/settings" element={<Navigate to="/settings/venue" replace />} />
+        <Route path="/settings/venue-details" element={<Navigate to="/settings/venue" replace />} />
+        <Route path="/settings/feedback" element={<Navigate to="/nps/settings" replace />} />
         <Route path="/settings/menu-builder" element={<Navigate to="/venue-settings/menu-builder" replace />} />
-        <Route path="/settings/custom-links" element={<Navigate to="/venue-settings/details" replace />} />
+        <Route path="/settings/custom-links" element={<Navigate to="/settings/venue" replace />} />
         <Route path="/settings/venues" element={<Navigate to="/multi-venue/venues" replace />} />
         <Route path="/settings/billing" element={<Navigate to="/account/billing" replace />} />
-        <Route path="/feedback/qr" element={<Navigate to="/venue-settings/qr-code" replace />} />
+        <Route path="/feedback/qr" element={<Navigate to="/settings/qr-code" replace />} />
 
         {/* Account Settings Section */}
         <Route path="/account/profile" element={<AccountProfilePage />} />

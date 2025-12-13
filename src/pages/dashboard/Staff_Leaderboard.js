@@ -6,6 +6,7 @@ import { useVenue } from '../../context/VenueContext';
 import { PermissionGate } from '../../context/PermissionsContext';
 import { Mail, Trophy, Download } from 'lucide-react';
 import { Button } from '../../components/ui/button';
+import FilterSelect from '../../components/ui/FilterSelect';
 import dayjs from 'dayjs';
 import relativeTime from 'dayjs/plugin/relativeTime';
 dayjs.extend(relativeTime);
@@ -308,17 +309,17 @@ const StaffLeaderboard = () => {
               <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">Staff ranked by total resolutions</p>
             </div>
             <div className="flex items-center gap-3">
-              <select
+              <FilterSelect
                 value={timeFilter}
                 onChange={(e) => setTimeFilter(e.target.value)}
-                className="px-3 py-2 text-sm border border-gray-300 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-              >
-                <option value="today">Today</option>
-                <option value="thisWeek">This Week</option>
-                <option value="last7">Last 7 Days</option>
-                <option value="last30">Last 30 Days</option>
-                <option value="all">All Time</option>
-              </select>
+                options={[
+                  { value: 'today', label: 'Today' },
+                  { value: 'thisWeek', label: 'This Week' },
+                  { value: 'last7', label: 'Last 7 Days' },
+                  { value: 'last30', label: 'Last 30 Days' },
+                  { value: 'all', label: 'All Time' }
+                ]}
+              />
               <PermissionGate permission="reports.export">
                 <Button
                   variant="secondary"

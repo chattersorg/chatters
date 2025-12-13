@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useVenue } from '../../context/VenueContext';
 import { supabase } from '../../utils/supabase';
 import usePageTitle from '../../hooks/usePageTitle';
+import FilterSelect from '../../components/ui/FilterSelect';
 import {
   TrendingUp,
   TrendingDown,
@@ -350,19 +351,16 @@ const NPSInsights = () => {
             Deep analysis correlating NPS with feedback data
           </p>
         </div>
-        <div className="flex items-center space-x-2">
-          <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Period:</label>
-          <select
-            value={dateRange}
-            onChange={(e) => setDateRange(e.target.value)}
-            className="px-3 py-2 text-sm border border-gray-300 dark:border-gray-700 rounded-md bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-          >
-            <option value="7">Last 7 days</option>
-            <option value="30">Last 30 days</option>
-            <option value="90">Last 90 days</option>
-            <option value="365">Last year</option>
-          </select>
-        </div>
+        <FilterSelect
+          value={dateRange}
+          onChange={(e) => setDateRange(e.target.value)}
+          options={[
+            { value: '7', label: 'Last 7 days' },
+            { value: '30', label: 'Last 30 days' },
+            { value: '90', label: 'Last 90 days' },
+            { value: '365', label: 'Last year' }
+          ]}
+        />
       </div>
 
       {/* Summary Stats */}
