@@ -376,6 +376,11 @@ const DashboardRoutes = () => {
             <VenueSettingsPage />
           </ProtectedRoute>
         } />
+        <Route path="/settings/feedback" element={
+          <ProtectedRoute permission="venue.view">
+            <FeedbackSettings />
+          </ProtectedRoute>
+        } />
         <Route path="/settings/branding" element={
           <ProtectedRoute permission="venue.branding">
             <SettingsBrandingPage />
@@ -427,7 +432,6 @@ const DashboardRoutes = () => {
         {/* Legacy settings routes - redirect to new paths */}
         <Route path="/settings" element={<Navigate to="/settings/venue" replace />} />
         <Route path="/settings/venue-details" element={<Navigate to="/settings/venue" replace />} />
-        <Route path="/settings/feedback" element={<Navigate to="/nps/settings" replace />} />
         <Route path="/settings/menu-builder" element={<Navigate to="/venue-settings/menu-builder" replace />} />
         <Route path="/settings/custom-links" element={<Navigate to="/settings/venue" replace />} />
         <Route path="/settings/venues" element={<Navigate to="/multi-venue/venues" replace />} />

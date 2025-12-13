@@ -417,8 +417,8 @@ const FeedbackDetailModal = ({
     }
   };
   
-  const urgencyLevel = session.avg_rating <= 2 ? 'urgent' : 
-                      session.avg_rating <= 3 && session.has_comments ? 'attention' : 'info';
+  const urgencyLevel = session.avg_rating !== null && session.avg_rating < 3 ? 'urgent' :
+                      session.avg_rating !== null && session.avg_rating <= 4 ? 'attention' : 'info';
   
   const urgencyConfig = {
     urgent: { 
@@ -474,45 +474,34 @@ const FeedbackDetailModal = ({
       size="lg"
       className="overflow-hidden"
     >
-      <div className="space-y-0">
+      <div>
         {/* Professional Header */}
-        <div className={`${urgency.bgColor} ${urgency.borderColor} border-b px-6 py-6 -mx-4 -mt-4 mb-6`}>
-          <div className="flex items-start justify-between">
-            <div className="flex items-start gap-4">
-              <div className="flex-shrink-0">
-                <div className="w-12 h-12 bg-white rounded-xl flex items-center justify-center shadow-md border border-gray-200">
-                  <svg className="w-6 h-6 text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 8h10m0 0V6a2 2 0 00-2-2H9a2 2 0 00-2 2v2m0 0v8a2 2 0 002 2h6a2 2 0 002-2V8M9 12h6" />
-                  </svg>
-                </div>
+        <div className={`${urgency.bgColor} ${urgency.borderColor} border-b px-6 py-5 -mx-4 -mt-4 mb-4`}>
+          <div className="flex items-center justify-between gap-4">
+            <div className="flex items-center gap-3 min-w-0">
+              <div className="w-10 h-10 bg-white rounded-lg flex items-center justify-center shadow-sm border border-gray-200 flex-shrink-0">
+                <svg className="w-5 h-5 text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 8h10m0 0V6a2 2 0 00-2-2H9a2 2 0 00-2 2v2m0 0v8a2 2 0 002 2h6a2 2 0 002-2V8M9 12h6" />
+                </svg>
               </div>
-              <div>
-                <h3 className="text-xl font-semibold text-slate-900 mb-1">
-                  {isPositiveFeedback(session) ? 'View Feedback' : 'Resolve Feedback'} - Table {session.table_number}
+              <div className="min-w-0">
+                <h3 className="text-lg font-semibold text-slate-900 truncate">
+                  Table {session.table_number}
                 </h3>
-                <div className="flex items-center gap-4 text-sm text-slate-600">
-                  <div className="flex items-center gap-1">
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                    </svg>
-                    Submitted {dayjs(session.created_at).fromNow()}
-                  </div>
-                  <div className="flex items-center gap-1">
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                    </svg>
-                    {session.items.length} response{session.items.length !== 1 ? 's' : ''}
-                  </div>
+                <div className="flex items-center gap-3 text-xs text-slate-600">
+                  <span>{dayjs(session.created_at).fromNow()}</span>
+                  <span>•</span>
+                  <span>{session.items.length} response{session.items.length !== 1 ? 's' : ''}</span>
                 </div>
               </div>
             </div>
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2 flex-shrink-0">
               {session.avg_rating && (
-                <div className="bg-white rounded-lg px-3 py-2 shadow-sm border">
+                <div className="bg-white rounded-lg px-2 py-1.5 shadow-sm border">
                   <StarRating rating={session.avg_rating} />
                 </div>
               )}
-              <span className={`inline-flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-bold ${urgency.color} shadow-md`}>
+              <span className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold ${urgency.color} shadow-sm whitespace-nowrap`}>
                 {urgency.icon}
                 {urgency.label}
               </span>
@@ -521,27 +510,18 @@ const FeedbackDetailModal = ({
         </div>
         
         {/* Customer Responses */}
-        <div className="space-y-5">
-          <div className="flex items-center gap-2">
-            <h4 className="text-lg font-semibold text-slate-900">Customer Responses</h4>
-            <div className="h-px bg-slate-200 flex-1"></div>
-          </div>
-          
-          <div className="space-y-4">
+        <div className="space-y-3 mb-5">
             {session.items.map((item, index) => {
               const rating = getRowRating(item);
               const question = item.questions?.question || `Question ${index + 1}`;
-              
+
               return (
-                <div key={item.id} className="bg-white border border-gray-200 rounded-xl p-5 shadow-sm hover:shadow-lg transition-all duration-200">
-                  <div className="flex items-start justify-between mb-3">
-                    <div className="flex-1 pr-4">
-                      <h6 className="font-semibold text-slate-900 mb-1">
+                <div key={item.id} className="bg-white border border-gray-200 rounded-lg p-4 shadow-sm">
+                  <div className="flex items-center justify-between gap-3">
+                    <div className="min-w-0 flex-1">
+                      <h6 className="font-medium text-slate-900 text-sm truncate">
                         {question}
                       </h6>
-                      <div className="text-xs text-slate-500 font-medium">
-                        Response {index + 1} • {dayjs(item.created_at).format('MMM D, YYYY [at] h:mm A')}
-                      </div>
                     </div>
                     {rating && (
                       <div className="flex-shrink-0">
@@ -549,378 +529,186 @@ const FeedbackDetailModal = ({
                       </div>
                     )}
                   </div>
-                  
+
                   {item.additional_feedback && item.additional_feedback.trim() && (
-                    <div className="mt-4 bg-blue-50 border border-blue-200 rounded-xl p-4">
-                      <div className="flex items-start gap-3">
-                        <svg className="w-5 h-5 text-blue-500 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z" />
-                        </svg>
-                        <div>
-                          <div className="text-xs font-semibold text-slate-700 mb-1">Customer Comment</div>
-                          <p className="text-sm text-slate-700 leading-relaxed">
-                            "{item.additional_feedback.trim()}"
-                          </p>
-                        </div>
-                      </div>
+                    <div className="mt-3 bg-blue-50 border border-blue-100 rounded-lg p-3">
+                      <p className="text-sm text-slate-700 leading-relaxed">
+                        "{item.additional_feedback.trim()}"
+                      </p>
                     </div>
                   )}
                 </div>
               );
             })}
-          </div>
         </div>
-        
-        {/* Multiple Sessions Alert */}
+
+        {/* Multiple Sessions Alert - Compact */}
         {sessions.length > 1 && (
-          <div className="bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-200 rounded-xl p-4">
-            <div className="flex items-start gap-3">
-              <div className="flex-shrink-0">
-                <div className="w-8 h-8 bg-amber-100 rounded-lg flex items-center justify-center">
-                  <svg className="w-5 h-5 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-                  </svg>
-                </div>
-              </div>
-              <div>
-                <h5 className="font-semibold text-amber-900 mb-1">Multiple Feedback Sessions</h5>
-                <p className="text-sm text-amber-800 leading-relaxed">
-                  This table has submitted <strong>{sessions.length} separate feedback sessions</strong>. 
-                  Taking action will resolve all related sessions simultaneously.
-                </p>
-              </div>
-            </div>
+          <div className="bg-amber-50 border border-amber-200 rounded-lg p-3 flex items-center gap-2 mt-4">
+            <svg className="w-4 h-4 text-amber-600 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+            </svg>
+            <span className="text-sm text-amber-800">
+              <strong>{sessions.length} sessions</strong> will be resolved together
+            </span>
           </div>
         )}
-        
-        {/* Professional Resolution Section */}
-        <div className="bg-gray-50 border border-gray-200 rounded-xl p-6 mt-8 shadow-sm">
-          <div className="flex items-center gap-2 mb-6">
-            <h4 className="text-lg font-semibold text-slate-900">
-              {isPositiveFeedback(session) ? 'Acknowledgment' : 'Resolution Actions'}
-            </h4>
-            <div className="h-px bg-slate-300 flex-1"></div>
-          </div>
-          
+
+        {/* Compact Resolution Section */}
+        <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
           {isPositiveFeedback(session) ? (
-            // For positive feedback - just show clear button
-            <div className="space-y-4">
-              <div className="bg-emerald-50 border border-emerald-200 rounded-xl p-5 shadow-sm">
-                <div className="flex items-start gap-3">
-                  <div className="w-8 h-8 bg-emerald-100 rounded-lg flex items-center justify-center flex-shrink-0">
-                    <svg className="w-5 h-5 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                    </svg>
-                  </div>
-                  <div>
-                    <h5 className="font-semibold text-emerald-900 mb-1">Positive Feedback Received</h5>
-                    <p className="text-sm text-emerald-800">
-                      This customer had a great experience! Simply acknowledge that you've seen this feedback.
-                    </p>
-                  </div>
-                </div>
+            // For positive feedback - compact clear button
+            <div className="space-y-3">
+              <div className="flex items-center gap-2 text-emerald-700">
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                </svg>
+                <span className="text-sm font-medium">Positive feedback - acknowledge to clear</span>
               </div>
-              
-              <button
-                onClick={clearPositiveFeedback}
-                disabled={isResolving}
-                className="w-full px-6 py-3 rounded-xl font-bold transition-all shadow-md bg-emerald-600 hover:bg-emerald-700 hover:shadow-lg text-white disabled:bg-slate-400 disabled:cursor-not-allowed disabled:shadow-none focus:outline-none focus:ring-2 focus:ring-emerald-500"
-              >
-                {isResolving ? (
-                  <span className="flex items-center justify-center gap-2">
-                    <svg className="animate-spin h-5 w-5" fill="none" viewBox="0 0 24 24">
-                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                    </svg>
-                    Acknowledging...
-                  </span>
-                ) : (
-                  <span className="flex items-center justify-center gap-2">
-                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                    </svg>
-                    Acknowledge & Clear Feedback
-                  </span>
-                )}
-              </button>
-              
-              <button
-                onClick={onClose}
-                className="w-full px-6 py-3 border-2 border-gray-300 rounded-xl text-gray-700 font-bold hover:bg-gray-50 transition-all shadow-sm hover:shadow-md focus:outline-none focus:ring-2 focus:ring-gray-400"
-              >
-                Cancel
-              </button>
+              <div className="flex gap-2">
+                <button
+                  onClick={clearPositiveFeedback}
+                  disabled={isResolving}
+                  className="flex-1 px-4 py-2 rounded-lg font-semibold bg-emerald-600 hover:bg-emerald-700 text-white text-sm disabled:bg-slate-400"
+                >
+                  {isResolving ? 'Acknowledging...' : 'Acknowledge & Clear'}
+                </button>
+                <button
+                  onClick={onClose}
+                  className="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 font-medium text-sm hover:bg-gray-50"
+                >
+                  Cancel
+                </button>
+              </div>
             </div>
           ) : (
-            // For negative feedback - show full resolution workflow
-            <div className="space-y-6">
-              {/* Action Type Selection */}
-              <div>
-                <label className="block text-sm font-semibold text-slate-700 mb-3">
-                  Select Action Type
-                </label>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                <label className={`relative flex items-start p-4 border-2 rounded-xl cursor-pointer transition-all ${
-                  resolutionType === 'resolved' 
-                    ? 'border-emerald-500 bg-emerald-50' 
-                    : 'border-slate-200 bg-white hover:border-slate-300'
-                }`}>
-                  <input
-                    type="radio"
-                    name="resolutionType"
-                    value="resolved"
-                    checked={resolutionType === 'resolved'}
-                    onChange={(e) => setResolutionType(e.target.value)}
-                    className="mt-1 mr-3 text-emerald-600 focus:ring-emerald-500"
-                  />
-                  <div className="flex items-start gap-3">
-                    <div className="w-8 h-8 bg-emerald-100 rounded-lg flex items-center justify-center flex-shrink-0">
-                      <svg className="w-5 h-5 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                      </svg>
-                    </div>
-                    <div>
-                      <div className="font-semibold text-emerald-900">Mark as Resolved</div>
-                      <div className="text-sm text-emerald-700 mt-1">Issue has been addressed and corrected</div>
-                    </div>
-                  </div>
-                </label>
-                <label className={`relative flex items-start p-4 border-2 rounded-xl cursor-pointer transition-all ${
-                  resolutionType === 'dismissed' 
-                    ? 'border-amber-500 bg-amber-50' 
-                    : 'border-slate-200 bg-white hover:border-slate-300'
-                }`}>
-                  <input
-                    type="radio"
-                    name="resolutionType"
-                    value="dismissed"
-                    checked={resolutionType === 'dismissed'}
-                    onChange={(e) => setResolutionType(e.target.value)}
-                    className="mt-1 mr-3 text-amber-600 focus:ring-amber-500"
-                  />
-                  <div className="flex items-start gap-3">
-                    <div className="w-8 h-8 bg-amber-100 rounded-lg flex items-center justify-center flex-shrink-0">
-                      <svg className="w-5 h-5 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                      </svg>
-                    </div>
-                    <div>
-                      <div className="font-semibold text-amber-900">Acknowledge & Dismiss</div>
-                      <div className="text-sm text-amber-700 mt-1">Reviewed but no action required</div>
-                    </div>
-                  </div>
-                </label>
+            // For negative feedback - compact resolution workflow
+            <div className="space-y-4">
+              {/* Inline Action Type Selection */}
+              <div className="flex gap-2">
+                <button
+                  onClick={() => setResolutionType('resolved')}
+                  className={`flex-1 px-3 py-2 rounded-lg text-sm font-medium transition-all flex items-center justify-center gap-2 ${
+                    resolutionType === 'resolved'
+                      ? 'bg-emerald-600 text-white'
+                      : 'bg-white border border-gray-300 text-gray-700 hover:bg-gray-50'
+                  }`}
+                >
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                  </svg>
+                  Resolve
+                </button>
+                <button
+                  onClick={() => setResolutionType('dismissed')}
+                  className={`flex-1 px-3 py-2 rounded-lg text-sm font-medium transition-all flex items-center justify-center gap-2 ${
+                    resolutionType === 'dismissed'
+                      ? 'bg-amber-600 text-white'
+                      : 'bg-white border border-gray-300 text-gray-700 hover:bg-gray-50'
+                  }`}
+                >
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                  </svg>
+                  Dismiss
+                </button>
               </div>
-            </div>
-            
-            {/* Dismissal Reason */}
-            {resolutionType === 'dismissed' && (
-              <div className="bg-amber-50 border border-amber-200 rounded-lg p-4">
-                <label htmlFor="dismissalReason" className="block text-sm font-semibold text-amber-900 mb-2">
-                  Reason for Dismissal <span className="text-amber-600">*</span>
-                </label>
+
+              {/* Dismissal Reason - Compact */}
+              {resolutionType === 'dismissed' && (
                 <textarea
-                  id="dismissalReason"
                   value={dismissalReason}
                   onChange={(e) => setDismissalReason(e.target.value)}
-                  placeholder="Please provide a clear reason for dismissing this feedback (e.g., 'Issue resolved through direct customer contact', 'Not actionable - outside our control', etc.)"
-                  rows={3}
-                  className="w-full px-3 py-3 border border-amber-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-amber-500 bg-white placeholder-amber-500 text-sm"
+                  placeholder="Reason for dismissal..."
+                  rows={2}
+                  className="w-full px-3 py-2 border border-amber-300 rounded-lg text-sm bg-amber-50 placeholder-amber-500 resize-none"
                 />
-              </div>
-            )}
-            
-            {/* Staff Member Selection */}
-            <div>
-              <label htmlFor="staffMember" className="block text-sm font-semibold text-slate-700 mb-3">
-                Responsible Staff Member <span className="text-red-500">*</span>
-              </label>
-              
-              <select
-                id="staffMember"
-                value={selectedStaffMember}
-                onChange={(e) => setSelectedStaffMember(e.target.value)}
-                className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white text-sm font-medium shadow-sm"
-              >
-                <option value="">Choose staff member...</option>
-                
-                {staffMembers.length === 0 && (
-                  <option value="" disabled>No staff members found for this venue</option>
-                )}
-                
-                {staffMembers.some(person => person.source === 'employee') && (
-                  <optgroup label="Staff Members">
-                    {staffMembers
-                      .filter(person => person.source === 'employee')
-                      .map(employee => (
-                        <option key={`employee-${employee.id}`} value={`employee-${employee.id}`}>
-                          {employee.display_name} ({employee.role_display})
-                        </option>
-                      ))
-                    }
-                  </optgroup>
-                )}
-              </select>
-              {selectedStaff && (
-                <div className="mt-2 flex items-center gap-2 text-sm">
-                  <div className="w-2 h-2 rounded-full bg-blue-500"></div>
-                  <span className="text-slate-600">
-                    <strong>{selectedStaff.display_name}</strong> ({selectedStaff.role_display})
-                  </span>
-                </div>
               )}
-            </div>
 
-            {/* Co-Resolver Section - Only show if feature is enabled and main resolver is selected */}
-            {enableCoResolving && selectedStaffMember && (
-              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                <div className="space-y-4">
-                  {/* Checkbox to enable co-resolver */}
-                  <label className="flex items-start cursor-pointer">
-                    <input
-                      type="checkbox"
-                      checked={addCoResolver}
-                      onChange={(e) => {
-                        setAddCoResolver(e.target.checked);
-                        if (!e.target.checked) {
-                          setSelectedCoResolver('');
-                        }
-                      }}
-                      className="mt-1 mr-3 w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
-                    />
-                    <div>
-                      <div className="text-sm font-semibold text-blue-900">Add co-resolver</div>
-                      <div className="text-xs text-blue-700 mt-1">Select a second staff member who helped resolve this issue</div>
-                    </div>
-                  </label>
+              {/* Staff Member Selection - Compact */}
+              <div>
+                <label className="block text-xs font-medium text-slate-600 mb-1">
+                  Staff Member <span className="text-red-500">*</span>
+                </label>
+                <select
+                  value={selectedStaffMember}
+                  onChange={(e) => setSelectedStaffMember(e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm bg-white"
+                >
+                  <option value="">Select staff...</option>
+                  {staffMembers.filter(p => p.source === 'employee').map(employee => (
+                    <option key={`employee-${employee.id}`} value={`employee-${employee.id}`}>
+                      {employee.display_name}
+                    </option>
+                  ))}
+                </select>
+              </div>
 
-                  {/* Co-resolver dropdown - only show if checkbox is checked */}
+              {/* Co-Resolver - Compact inline */}
+              {enableCoResolving && selectedStaffMember && (
+                <div className="flex items-center gap-2">
+                  <input
+                    type="checkbox"
+                    id="addCoResolver"
+                    checked={addCoResolver}
+                    onChange={(e) => {
+                      setAddCoResolver(e.target.checked);
+                      if (!e.target.checked) setSelectedCoResolver('');
+                    }}
+                    className="w-4 h-4 text-blue-600 rounded"
+                  />
+                  <label htmlFor="addCoResolver" className="text-xs text-slate-600">Add co-resolver</label>
                   {addCoResolver && (
-                    <div>
-                      <label htmlFor="coResolver" className="block text-sm font-semibold text-slate-700 mb-2">
-                        Co-Resolver <span className="text-red-500">*</span>
-                      </label>
-                      <select
-                        id="coResolver"
-                        value={selectedCoResolver}
-                        onChange={(e) => setSelectedCoResolver(e.target.value)}
-                        className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white text-sm font-medium shadow-sm"
-                      >
-                        <option value="">Choose co-resolver...</option>
-
-                        {staffMembers.length === 0 && (
-                          <option value="" disabled>No staff members found for this venue</option>
-                        )}
-
-                        {staffMembers.some(person => person.source === 'employee') && (
-                          <optgroup label="Staff Members">
-                            {staffMembers
-                              .filter(person => {
-                                // Exclude the main resolver from co-resolver options
-                                const personId = `employee-${person.id}`;
-                                return person.source === 'employee' && personId !== selectedStaffMember;
-                              })
-                              .map(employee => (
-                                <option key={`employee-${employee.id}`} value={`employee-${employee.id}`}>
-                                  {employee.display_name} ({employee.role_display})
-                                </option>
-                              ))
-                            }
-                          </optgroup>
-                        )}
-                      </select>
-                      {selectedCoResolver && (() => {
-                        const coResolverStaff = staffMembers.find(s => {
-                          if (selectedCoResolver.startsWith('employee-')) {
-                            return s.source === 'employee' && String(s.id) === String(selectedCoResolver.replace('employee-', ''));
-                          }
-                          return false;
-                        });
-                        return coResolverStaff ? (
-                          <div className="mt-2 flex items-center gap-2 text-sm">
-                            <div className="w-2 h-2 rounded-full bg-green-500"></div>
-                            <span className="text-slate-600">
-                              <strong>{coResolverStaff.display_name}</strong> ({coResolverStaff.role_display})
-                            </span>
-                          </div>
-                        ) : null;
-                      })()}
-                    </div>
+                    <select
+                      value={selectedCoResolver}
+                      onChange={(e) => setSelectedCoResolver(e.target.value)}
+                      className="flex-1 px-2 py-1 border border-gray-300 rounded text-sm bg-white"
+                    >
+                      <option value="">Select...</option>
+                      {staffMembers
+                        .filter(p => p.source === 'employee' && `employee-${p.id}` !== selectedStaffMember)
+                        .map(employee => (
+                          <option key={`employee-${employee.id}`} value={`employee-${employee.id}`}>
+                            {employee.display_name}
+                          </option>
+                        ))}
+                    </select>
                   )}
                 </div>
-              </div>
-            )}
+              )}
 
-            {/* Resolution Message (Optional) - Only show for resolved type */}
-            {resolutionType === 'resolved' && (
-              <div>
-                <label htmlFor="resolutionMessage" className="block text-sm font-semibold text-slate-700 mb-3">
-                  Resolution Details <span className="text-slate-500">(Optional)</span>
-                </label>
+              {/* Resolution Notes - Compact, optional */}
+              {resolutionType === 'resolved' && (
                 <textarea
-                  id="resolutionMessage"
                   value={resolutionMessage}
                   onChange={(e) => setResolutionMessage(e.target.value)}
-                  placeholder="Describe how the issue was resolved (e.g., 'Spoke with kitchen manager, implemented new temperature checks', 'Provided fresh meal and discount coupon', etc.)"
-                  rows={3}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white placeholder-gray-400 text-sm resize-none shadow-sm"
+                  placeholder="Resolution notes (optional)..."
+                  rows={2}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm placeholder-gray-400 resize-none"
                   maxLength={500}
                 />
-                <div className="mt-2 flex items-center justify-between text-xs text-slate-500">
-                  <span>Help track what actions were taken to resolve similar issues in the future</span>
-                  <span>{resolutionMessage.length}/500</span>
-                </div>
+              )}
+
+              {/* Action Buttons - Compact */}
+              <div className="flex gap-2 pt-2">
+                <button
+                  onClick={handleMarkResolved}
+                  disabled={isResolving || !selectedStaffMember || (resolutionType === 'dismissed' && !dismissalReason.trim())}
+                  className={`flex-1 px-4 py-2 rounded-lg font-semibold text-sm text-white ${
+                    resolutionType === 'resolved'
+                      ? 'bg-emerald-600 hover:bg-emerald-700'
+                      : 'bg-amber-600 hover:bg-amber-700'
+                  } disabled:bg-slate-400`}
+                >
+                  {isResolving ? 'Processing...' : (resolutionType === 'resolved' ? 'Mark Resolved' : 'Dismiss')}
+                </button>
+                <button
+                  onClick={onClose}
+                  className="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 font-medium text-sm hover:bg-gray-50"
+                >
+                  Cancel
+                </button>
               </div>
-            )}
-            
-            {/* Action Buttons */}
-            <div className="flex gap-3 pt-4 border-t border-slate-200">
-              <button
-                onClick={handleMarkResolved}
-                disabled={isResolving || !selectedStaffMember || (resolutionType === 'dismissed' && !dismissalReason.trim())}
-                className={`flex-1 px-6 py-3 rounded-xl font-bold transition-all shadow-md hover:shadow-lg focus:outline-none ${
-                  resolutionType === 'resolved' 
-                    ? 'bg-emerald-600 hover:bg-emerald-700 text-white' 
-                    : 'bg-amber-600 hover:bg-amber-700 text-white'
-                } disabled:bg-slate-400 disabled:cursor-not-allowed disabled:shadow-none`}
-              >
-                {isResolving ? (
-                  <span className="flex items-center justify-center gap-2">
-                    <svg className="animate-spin h-5 w-5" fill="none" viewBox="0 0 24 24">
-                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                    </svg>
-                    {resolutionType === 'resolved' ? 'Resolving...' : 'Dismissing...'}
-                  </span>
-                ) : (
-                  <>
-                    {resolutionType === 'resolved' ? (
-                      <span className="flex items-center justify-center gap-2">
-                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                        </svg>
-                        Mark as Resolved
-                      </span>
-                    ) : (
-                      <span className="flex items-center justify-center gap-2">
-                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                        </svg>
-                        Dismiss Feedback
-                      </span>
-                    )}
-                  </>
-                )}
-              </button>
-              
-              <button
-                onClick={onClose}
-                className="px-6 py-3 border-2 border-gray-300 rounded-xl text-gray-700 font-bold hover:bg-gray-50 transition-all shadow-sm hover:shadow-md focus:outline-none focus:ring-2 focus:ring-gray-400"
-              >
-                Cancel
-              </button>
-            </div>
             </div>
           )}
         </div>

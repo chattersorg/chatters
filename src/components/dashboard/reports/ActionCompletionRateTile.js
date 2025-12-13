@@ -58,6 +58,7 @@ export default function ActionCompletionRateTile({
 
   // data
   const [actionedCount, setActionedCount] = useState(propActionedCount ?? 0);
+  const [dismissedCount, setDismissedCount] = useState(0);
   const [totalCount, setTotalCount] = useState(propTotalCount ?? 0);
   const [yesterdayActionedCount, setYesterdayActionedCount] = useState(0);
   const [yesterdayTotalCount, setYesterdayTotalCount] = useState(0);
@@ -81,7 +82,7 @@ export default function ActionCompletionRateTile({
         // Fetch feedback sessions
         const { data: feedbackData, error: feedbackError } = await supabase
           .from('feedback')
-          .select('session_id, is_actioned, dismissed, created_at, resolved_at')
+          .select('session_id, is_actioned, dismissed, resolution_type, created_at, resolved_at')
           .eq('venue_id', venueId)
           .or(`and(resolved_at.gte.${start},resolved_at.lte.${end}),and(resolved_at.is.null,created_at.gte.${start},created_at.lte.${end})`);
 
@@ -96,6 +97,7 @@ export default function ActionCompletionRateTile({
 
         let total = 0;
         let resolved = 0;
+        let dismissed = 0;
 
         // Process feedback sessions
         if (feedbackData?.length) {
@@ -121,9 +123,17 @@ export default function ActionCompletionRateTile({
 
             total += 1;
 
+            // Check if all items in session are dismissed
+            const allDismissed = rows.every(x => x.dismissed === true || x.resolution_type === 'dismissed');
+            // Check if all items are actioned (resolved or positive cleared)
             const allActioned = rows.every(x => x.is_actioned === true);
-            const allDismissed = rows.every(x => x.dismissed === true);
-            if (allActioned || allDismissed) resolved += 1;
+            const isResolved = rows.some(x => x.resolution_type === 'staff_resolved' || x.resolution_type === 'positive_feedback_cleared');
+
+            if (allDismissed) {
+              dismissed += 1;
+            } else if (allActioned || isResolved) {
+              resolved += 1;
+            }
           }
         }
 
@@ -147,6 +157,7 @@ export default function ActionCompletionRateTile({
         }
 
         setActionedCount(resolved);
+        setDismissedCount(dismissed);
         setTotalCount(total);
 
         // Fetch yesterday's data only if timeframe is 'today'
@@ -262,11 +273,18 @@ export default function ActionCompletionRateTile({
     };
   };
 
+  const description = useMemo(() => {
+    if (dismissedCount > 0) {
+      return `${actionedCount} resolved, ${dismissedCount} dismissed of ${totalCount}`;
+    }
+    return `${actionedCount}/${totalCount} items resolved`;
+  }, [actionedCount, dismissedCount, totalCount]);
+
   return (
     <MetricCard
       title="Completion Rate"
       value={loading ? '—' : `${rate.toFixed(1)}%`}
-      description={`${actionedCount}/${totalCount} items resolved`}
+      description={description}
       icon={CheckCircle}
       variant={rate >= 80 ? "success" : rate >= 60 ? "neutral" : "warning"}
       loading={loading}

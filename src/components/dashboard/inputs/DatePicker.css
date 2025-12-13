@@ -165,3 +165,85 @@
     transform: translateY(0);
   }
 }
+
+/* ==================== DARK MODE STYLES ==================== */
+
+/* Calendar Container - Dark Mode */
+.dark .custom-calendar {
+  background: #1f2937 !important;
+  border: 1px solid #374151 !important;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3), 0 4px 6px rgba(0, 0, 0, 0.2) !important;
+}
+
+/* Header - Dark Mode */
+.dark .custom-calendar .react-datepicker__header {
+  background: #1f2937 !important;
+  border-bottom: 1px solid #374151 !important;
+}
+
+.dark .custom-calendar .react-datepicker__current-month {
+  color: #f9fafb !important;
+}
+
+/* Navigation Arrows - Dark Mode */
+.dark .custom-calendar .react-datepicker__navigation:hover {
+  background: #374151 !important;
+}
+
+.dark .custom-calendar .react-datepicker__navigation-icon::before {
+  border-color: #9ca3af !important;
+}
+
+/* Day Names - Dark Mode */
+.dark .custom-calendar .react-datepicker__day-name {
+  color: #9ca3af !important;
+}
+
+/* Days - Dark Mode */
+.dark .custom-calendar .react-datepicker__day {
+  color: #e5e7eb !important;
+}
+
+.dark .custom-calendar .react-datepicker__day:hover {
+  background: #374151 !important;
+  color: #60a5fa !important;
+}
+
+/* Selected Day - Dark Mode */
+.dark .custom-calendar .react-datepicker__day--selected {
+  background: #2563eb !important;
+  color: white !important;
+}
+
+.dark .custom-calendar .react-datepicker__day--selected:hover {
+  background: #1d4ed8 !important;
+}
+
+/* Today - Dark Mode */
+.dark .custom-calendar .react-datepicker__day--today {
+  color: #60a5fa !important;
+}
+
+.dark .custom-calendar .react-datepicker__day--today:not(.react-datepicker__day--selected) {
+  border: 2px solid #60a5fa !important;
+}
+
+/* Keyboard Selected - Dark Mode */
+.dark .custom-calendar .react-datepicker__day--keyboard-selected {
+  background: #374151 !important;
+  color: #60a5fa !important;
+}
+
+/* Outside Month - Dark Mode */
+.dark .custom-calendar .react-datepicker__day--outside-month {
+  color: #6b7280 !important;
+}
+
+/* Disabled Days - Dark Mode */
+.dark .custom-calendar .react-datepicker__day--disabled {
+  color: #4b5563 !important;
+}
+
+.dark .custom-calendar .react-datepicker__day--disabled:hover {
+  background: transparent !important;
+}

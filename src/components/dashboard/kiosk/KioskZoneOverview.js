@@ -103,7 +103,7 @@ const KioskZoneOverview = ({ zones, tables, feedbackMap, feedbackList, assistanc
     // Fall back to feedback status
     if (feedbackAvg == null) return { border: 'border-gray-300', bg: 'bg-gray-700', status: 'no-feedback' };
     if (feedbackAvg > 4) return { border: 'border-green-500', bg: 'bg-gray-700', status: 'happy' };
-    if (feedbackAvg >= 2.5) return { border: 'border-yellow-500', bg: 'bg-gray-700', status: 'attention' };
+    if (feedbackAvg >= 3) return { border: 'border-yellow-500', bg: 'bg-gray-700', status: 'attention' };
     return { border: 'border-red-500', bg: 'bg-gray-700', status: 'unhappy' };
   };
 
@@ -160,27 +160,17 @@ const KioskZoneOverview = ({ zones, tables, feedbackMap, feedbackList, assistanc
     <>
       <style>{pulseKeyframes}</style>
 
-      <div className="h-full p-4 md:p-6 bg-gray-50">
-        {/* Header */}
-        <div className="mb-6 md:mb-8">
-          <div className="flex items-end justify-between">
-            <div>
-              <h1 className="text-xl md:text-2xl font-semibold text-gray-900">Zone Overview</h1>
-              <p className="text-sm text-gray-600 mt-1">Click a table to jump into its zone.</p>
-            </div>
-          </div>
-        </div>
-
+      <div className="h-full p-4 md:p-6 bg-gray-50 dark:bg-gray-900 overflow-y-auto">
         {zonesWithMeta.length === 0 ? (
-          <div className="grid place-items-center h-[60vh]">
-            <div className="text-center text-gray-600">
-              <div className="w-14 h-14 mx-auto mb-4 rounded-lg bg-white border border-gray-200 grid place-items-center">
-                <svg className="w-7 h-7 text-gray-400" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+          <div className="grid place-items-center h-full">
+            <div className="text-center text-gray-600 dark:text-gray-400">
+              <div className="w-14 h-14 mx-auto mb-4 rounded-lg bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 grid place-items-center">
+                <svg className="w-7 h-7 text-gray-400 dark:text-gray-500" viewBox="0 0 24 24" fill="none" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 7h16M4 12h16M4 17h16" />
                 </svg>
               </div>
               <div className="font-medium">No zones configured</div>
-              <div className="text-sm text-gray-500 mt-1">Ask an admin to set up your floor plan.</div>
+              <div className="text-sm text-gray-500 dark:text-gray-500 mt-1">Ask an admin to set up your floor plan.</div>
             </div>
           </div>
         ) : (
@@ -191,7 +181,7 @@ const KioskZoneOverview = ({ zones, tables, feedbackMap, feedbackList, assistanc
               return (
                 <section
                   key={zone.id}
-                  className="relative rounded-xl border border-gray-200 bg-white shadow-sm hover:shadow transition-shadow"
+                  className="relative rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 shadow-sm hover:shadow transition-shadow"
                 >
                   {/* Accent bar */}
                   <div className={`absolute left-0 top-0 bottom-0 w-1.5 rounded-l-xl ${accent}`} />
@@ -200,8 +190,8 @@ const KioskZoneOverview = ({ zones, tables, feedbackMap, feedbackList, assistanc
                     {/* Header row */}
                     <div className="flex items-center justify-between mb-4">
                       <div className="flex items-center gap-3 md:gap-4">
-                        <h2 className="text-base md:text-lg font-semibold text-gray-900">{zone.name}</h2>
-                        <span className="text-xs md:text-sm text-gray-600 bg-gray-100 px-2 py-0.5 rounded-full">
+                        <h2 className="text-base md:text-lg font-semibold text-gray-900 dark:text-white">{zone.name}</h2>
+                        <span className="text-xs md:text-sm text-gray-600 dark:text-gray-400 bg-gray-100 dark:bg-gray-700 px-2 py-0.5 rounded-full">
                           {zoneTables.length} table{zoneTables.length !== 1 ? 's' : ''}
                         </span>
                       </div>
@@ -230,11 +220,11 @@ const KioskZoneOverview = ({ zones, tables, feedbackMap, feedbackList, assistanc
 
                     {/* Tables (flex wrap so long chips don't bunch) */}
                     {zoneTables.length === 0 ? (
-                      <div className="py-10 text-center text-gray-500 border border-dashed border-gray-200 rounded-lg bg-gray-50">
+                      <div className="py-10 text-center text-gray-500 dark:text-gray-400 border border-dashed border-gray-200 dark:border-gray-700 rounded-lg bg-gray-50 dark:bg-gray-900">
                         <div className="text-sm">No tables configured in this zone</div>
                       </div>
                     ) : (
-                      <div className="rounded-lg border border-gray-100 p-4 bg-white">
+                      <div className="rounded-lg border border-gray-100 dark:border-gray-700 p-4 bg-white dark:bg-gray-800">
                         <div className="flex flex-wrap gap-3 md:gap-3">
                           {zoneTables.map((table) => renderTable(table))}
                         </div>
@@ -242,7 +232,7 @@ const KioskZoneOverview = ({ zones, tables, feedbackMap, feedbackList, assistanc
                     )}
 
                     {/* Subtle footer meta */}
-                    <div className="mt-3 flex items-center justify-between text-[11px] md:text-xs text-gray-500">
+                    <div className="mt-3 flex items-center justify-between text-[11px] md:text-xs text-gray-500 dark:text-gray-400">
                       <div className="flex items-center gap-3">
                         <span className="inline-flex items-center gap-1">
                           <span className="w-1.5 h-1.5 rounded-full bg-red-500" /> Urgent

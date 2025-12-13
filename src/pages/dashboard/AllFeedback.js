@@ -135,12 +135,18 @@ const AllFeedback = () => {
         // Check if any item has the _is_assistance flag
         const isAssistanceRequest = session.items.some(item => item._is_assistance);
 
+        // Check if dismissed
+        const isDismissed = session.items.every(item =>
+          item.dismissed === true || item.resolution_type === 'dismissed'
+        );
+
         return {
           ...session,
           avg_rating: avgRating,
           comments: comments,
           has_comments: comments.length > 0,
-          is_resolved: session.items.every(item => item.resolved_at),
+          is_resolved: session.items.every(item => item.resolved_at || item.is_actioned),
+          is_dismissed: isDismissed,
           type: isAssistanceRequest ? 'assistance' : 'feedback',
         };
       });
@@ -169,8 +175,9 @@ const AllFeedback = () => {
       if (typeFilter === 'assistance' && session.type !== 'assistance') return false;
 
       // Status filter
-      if (statusFilter === 'unresolved' && session.is_resolved) return false;
-      if (statusFilter === 'resolved' && !session.is_resolved) return false;
+      if (statusFilter === 'unresolved' && (session.is_resolved || session.is_dismissed)) return false;
+      if (statusFilter === 'resolved' && (!session.is_resolved || session.is_dismissed)) return false;
+      if (statusFilter === 'dismissed' && !session.is_dismissed) return false;
 
       // Rating filter
       if (ratingFilter !== 'all' && session.avg_rating !== null) {
@@ -370,7 +377,8 @@ const AllFeedback = () => {
               options={[
                 { value: 'all', label: 'All Status' },
                 { value: 'unresolved', label: 'Unresolved' },
-                { value: 'resolved', label: 'Resolved' }
+                { value: 'resolved', label: 'Resolved' },
+                { value: 'dismissed', label: 'Dismissed' }
               ]}
             />
 
@@ -506,7 +514,11 @@ const AllFeedback = () => {
                         )}
                       </td>
                       <td className="px-4 py-3">
-                        {session.is_resolved ? (
+                        {session.is_dismissed ? (
+                          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800 border border-gray-300 dark:bg-gray-900/30 dark:text-gray-300 dark:border-gray-700">
+                            Dismissed
+                          </span>
+                        ) : session.is_resolved ? (
                           <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800 border border-green-300 dark:bg-green-900/30 dark:text-green-300 dark:border-green-700">
                             Resolved
                           </span>
@@ -637,14 +649,16 @@ const AllFeedback = () => {
                   <div>
                     <p className="text-sm text-gray-600">Status</p>
                     <p className="font-medium text-gray-900">
-                      {selectedSession.is_resolved ? (
+                      {selectedSession.is_dismissed ? (
+                        <span className="text-gray-600">Dismissed</span>
+                      ) : selectedSession.is_resolved ? (
                         <span className="text-green-600">Resolved</span>
                       ) : (
                         <span className="text-yellow-600">Unresolved</span>
                       )}
                     </p>
                   </div>
-                  {selectedSession.is_resolved && selectedSession.resolver && (
+                  {(selectedSession.is_resolved || selectedSession.is_dismissed) && selectedSession.resolver && (
                     <div className="col-span-2">
                       <p className="text-sm text-gray-600 mb-1">Resolved By</p>
                       <p className="font-medium text-gray-900">
@@ -724,7 +738,7 @@ const AllFeedback = () => {
                 >
                   Close
                 </button>
-                {!selectedSession.is_resolved && (
+                {!selectedSession.is_resolved && !selectedSession.is_dismissed && (
                   <PermissionGate permission="feedback.respond">
                     <button
                       onClick={async () => {

@@ -78,7 +78,8 @@ const venueNavItems = [
     subItems: [
       { label: 'All Feedback', path: '/feedback/all', icon: List, permission: 'feedback.view' },
       { label: 'Questions', path: '/feedback/questions', icon: HelpCircle, permission: 'questions.view' },
-      { label: 'Insights', path: '/feedback/insights', icon: Zap, permission: 'reports.view' }
+      { label: 'Insights', path: '/feedback/insights', icon: Zap, permission: 'reports.view' },
+      { label: 'Settings', path: '/settings/feedback', icon: Settings, permission: 'venue.view' }
     ]
   },
   {
