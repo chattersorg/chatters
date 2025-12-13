@@ -1,6 +1,7 @@
 import { createContext, useContext, useEffect, useState, useRef } from 'react';
 import { supabase, logQuery } from '../utils/supabase';
 
+const IS_DEV = process.env.NODE_ENV === 'development';
 const VenueContext = createContext();
 export const useVenue = () => useContext(VenueContext);
 
@@ -100,23 +101,18 @@ export const VenueProvider = ({ children }) => {
     const init = async (forceReload = false) => {
       // Prevent concurrent initialization using ref (synchronous check)
       if (isInitializingRef.current && !forceReload) {
-        console.log('%c⚠️  [PERF] Skipping duplicate VenueContext Init', 'color: #f59e0b; font-weight: bold');
         return;
       }
 
       isInitializingRef.current = true;
-      console.log('%c⏱️  [PERF] Starting: VenueContext Init', 'color: #8b5cf6; font-weight: bold');
-      const contextStartTime = performance.now();
+      const contextStartTime = IS_DEV ? performance.now() : 0;
 
       // If forcing reload, reset initialized flag
       if (forceReload) {
         setInitialized(false);
       }
       try {
-        const sessionStartTime = performance.now();
         const { data: { session } } = await supabase.auth.getSession();
-        const sessionDuration = performance.now() - sessionStartTime;
-        console.log(`%c✓ [CONTEXT] getSession: ${sessionDuration.toFixed(2)}ms`, 'color: #8b5cf6; font-weight: bold');
         if (!session) {
           return;
         }
@@ -293,14 +289,8 @@ export const VenueProvider = ({ children }) => {
         setVenueName(staffRow.venues.name);
         localStorage.setItem('chatters_currentVenueId', staffRow.venues.id);
       } catch (error) {
-        console.error('%c❌ [PERF] VenueContext Init Failed', 'color: #ef4444; font-weight: bold', error);
+        // Silently handle initialization errors
       } finally {
-        const totalDuration = performance.now() - contextStartTime;
-        const color = totalDuration < 500 ? '#22c55e' : totalDuration < 1000 ? '#eab308' : totalDuration < 2000 ? '#f97316' : '#ef4444';
-        console.log(
-          `%c✓ [PERF] VenueContext Init Complete: ${totalDuration.toFixed(2)}ms`,
-          `color: ${color}; font-weight: bold`
-        );
         setLoading(false);
         setInitialized(true);
         isInitializingRef.current = false;

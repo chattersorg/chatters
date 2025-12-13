@@ -116,11 +116,8 @@ const EmployeeDetail = () => {
         .order('changed_at', { ascending: false });
 
       if (logsError) {
-        console.error('Error fetching change logs:', logsError);
         throw logsError;
       }
-
-      console.log('Successfully fetched change logs:', logsData);
 
       // Then get user info for each unique changed_by user
       if (logsData && logsData.length > 0) {
@@ -166,13 +163,9 @@ const EmployeeDetail = () => {
         change_type: 'update'
       });
 
-      if (error) {
-        console.error('Error inserting change log:', error);
-      } else {
-        console.log('Change logged successfully:', fieldName, oldValue, '->', newValue);
-      }
+      // Silently handle change log errors
     } catch (error) {
-      console.error('Error logging change:', error);
+      // Silently handle change log errors
     }
   };
 

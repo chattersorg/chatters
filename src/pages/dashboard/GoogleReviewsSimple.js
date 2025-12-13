@@ -8,8 +8,8 @@ import usePageTitle from '../../hooks/usePageTitle';
 import { Link } from 'react-router-dom';
 import { ExternalLink, CheckCircle2 } from 'lucide-react';
 
-// Demo account ID - shows fake Google reviews for demo purposes
-const DEMO_ACCOUNT_ID = 'af1d9502-a1a9-4873-8776-9b7177ed30c3';
+// Demo mode temporarily disabled - all venues use real Google connection
+// const DEMO_ACCOUNT_ID = 'af1d9502-a1a9-4873-8776-9b7177ed30c3';
 
 // Demo reviews data for showcasing the feature
 const generateDemoReviews = (venueName) => {
@@ -343,12 +343,13 @@ const GoogleReviewsSimplePage = () => {
         .eq('id', venueId)
         .single();
 
-      if (!venueError && venueData?.account_id === DEMO_ACCOUNT_ID) {
-        setIsDemoMode(true);
-        setIsConnected(true);
-        setLoading(false);
-        return;
-      }
+      // Demo mode temporarily disabled - proceed to check real Google connection
+      // if (!venueError && venueData?.account_id === DEMO_ACCOUNT_ID) {
+      //   setIsDemoMode(true);
+      //   setIsConnected(true);
+      //   setLoading(false);
+      //   return;
+      // }
 
       // For non-demo accounts, check actual connection
       const { data: { session } } = await supabase.auth.getSession();
@@ -496,8 +497,8 @@ const GoogleReviewsSimplePage = () => {
             <div className="mt-4 pt-4 border-t border-blue-200 dark:border-blue-700">
               <p className="text-sm text-blue-800 dark:text-blue-200">
                 <strong>Meanwhile:</strong> Manage your Google review request links in{' '}
-                <Link to="/settings/feedback" className="underline hover:text-blue-900 dark:hover:text-blue-100 font-semibold">
-                  Settings → Feedback
+                <Link to="/venue-settings/feedback" className="underline hover:text-blue-900 dark:hover:text-blue-100 font-semibold">
+                  Venue Settings → Feedback
                 </Link>
               </p>
             </div>
@@ -515,7 +516,7 @@ const GoogleReviewsSimplePage = () => {
             </p>
           </div>
           <Link
-            to="/settings/feedback"
+            to="/venue-settings/feedback"
             className="flex items-center gap-2 px-4 py-2 bg-gray-900 dark:bg-gray-700 text-white rounded-lg hover:bg-gray-800 dark:hover:bg-gray-600 transition-colors text-sm"
           >
             <ExternalLink className="w-4 h-4" />

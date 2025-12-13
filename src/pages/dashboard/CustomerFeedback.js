@@ -62,30 +62,19 @@ const CustomerFeedbackPage = () => {
   useEffect(() => {
     const loadData = async () => {
       try {
-        console.log('Loading data for venueId:', venueId);
-        console.log('VenueId type:', typeof venueId);
-        
         // Load venue data first (including feedback_hours, review links, NPS settings, branding colors, assistance message, and thank you message)
         const { data: venueData, error: venueError } = await supabase
           .from('venues')
-          .select('logo, primary_color, background_color, background_image, text_color, button_text_color, feedback_hours, google_review_link, tripadvisor_link, nps_enabled, assistance_title, assistance_message, assistance_icon, thank_you_title, thank_you_message, thank_you_icon')
+          .select('logo, primary_color, background_color, background_image, text_color, button_text_color, feedback_hours, google_review_link, tripadvisor_link, nps_enabled, assistance_title, assistance_message, assistance_icon, thank_you_title, thank_you_message, thank_you_icon, feedback_review_threshold')
           .eq('id', venueId);
 
         if (venueError) {
-          console.error('Venue error:', venueError);
           throw new Error(`Failed to load venue: ${venueError.message}`);
         }
-
-        console.log('Raw venue data:', venueData);
-        console.log('Venue data length:', venueData?.length);
 
         // Handle multiple or no venues found
         if (!venueData || venueData.length === 0) {
           throw new Error(`Venue not found with ID: ${venueId}`);
-        }
-        
-        if (venueData.length > 1) {
-          console.warn(`Multiple venues found with ID ${venueId}, using the first one`);
         }
 
         // Use the first venue (or only venue)
@@ -109,7 +98,6 @@ const CustomerFeedbackPage = () => {
           .order('order');
 
         if (questionsError) {
-          console.error('Questions error:', questionsError);
           throw new Error(`Failed to load questions: ${questionsError.message}`);
         }
 
@@ -119,17 +107,6 @@ const CustomerFeedbackPage = () => {
           .select('table_number')
           .eq('venue_id', venueId)
           .order('table_number');
-
-        if (tablesError) {
-          console.error('Tables error:', tablesError);
-          // Don't throw error here, just log it and continue with empty tables
-          console.warn('Could not load tables, continuing without table selection');
-        }
-
-        console.log('Questions loaded:', questionsData?.length || 0);
-        console.log('Venue loaded:', venue ? 'success' : 'failed');
-        console.log('Tables loaded:', tablesData?.length || 0);
-        console.log('Raw tables data:', tablesData);
 
         if (!questionsData || questionsData.length === 0) {
           throw new Error('No active questions found for this venue');
@@ -157,17 +134,14 @@ const CustomerFeedbackPage = () => {
               return a.localeCompare(b, undefined, { numeric: true, sensitivity: 'base' });
             });
 
-          console.log('Sorted tables after filter:', sortedTables);
           setActiveTables(sortedTables);
         } else {
-          console.log('No tables data or empty array, setting activeTables to []');
           setActiveTables([]);
         }
-        
+
         setError(null);
 
       } catch (err) {
-        console.error('Error loading feedback form:', err);
         setError(err.message);
       } finally {
         setLoading(false);
@@ -289,21 +263,23 @@ const CustomerFeedbackPage = () => {
     }
   };
 
-  // Check if all feedback ratings are positive (≥4)
+  // Check if all feedback ratings meet the threshold for showing review links
   const isAllFeedbackPositive = () => {
     // Get only feedback with actual ratings (not free text)
     const ratedFeedback = feedbackAnswers.filter(feedback => feedback.rating !== null);
-    
+
     // If no rated feedback, don't show review prompt (only free text submitted)
     if (ratedFeedback.length === 0) return false;
-    
-    // Check ALL ratings are 4 or above (4-star and 5-star)
-    return ratedFeedback.every(feedback => feedback.rating >= 4);
+
+    // Use configurable threshold (default to 4 if not set)
+    const threshold = venue?.feedback_review_threshold ?? 4;
+
+    // Check ALL ratings meet or exceed the threshold
+    return ratedFeedback.every(feedback => feedback.rating >= threshold);
   };
 
   const handleAssistanceRequest = async () => {
     if (assistanceLoading || !tableNumber) {
-      console.log('Assistance request blocked:', { assistanceLoading, tableNumber });
       return;
     }
 
@@ -316,39 +292,14 @@ const CustomerFeedbackPage = () => {
         status: 'pending',
         message: 'Just need assistance - Our team will be right with you'
       };
-      
-      console.log('Submitting assistance request for:', requestData);
-      console.log('Current timestamp:', new Date().toISOString());
-      console.log('Venue ID type:', typeof venueId, venueId);
-      console.log('Table number type:', typeof parseInt(tableNumber), parseInt(tableNumber));
 
-      // Test Supabase connection and permissions
-      const { data: testData, error: testError } = await supabase
-        .from('assistance_requests')
-        .select('count', { count: 'exact', head: true })
-        .eq('venue_id', venueId);
-      
-      console.log('Supabase connection test:', { testData, testError });
-      
-      // Test if we can read existing records
-      const { data: readTest, error: readError } = await supabase
-        .from('assistance_requests')
-        .select('*')
-        .eq('venue_id', venueId)
-        .limit(1);
-        
-      console.log('Read permission test:', { readTest, readError });
-
-      // Use the exact same approach as feedback submission
+      // Insert assistance request
       const { data, error } = await supabase
         .from('assistance_requests')
         .insert([requestData])
         .select();
 
-      console.log('Assistance request response:', { data, error });
-
       if (error) {
-        console.error('Error requesting assistance:', error);
         setAlertModal({
           type: 'error',
           title: 'Assistance Request Failed',
@@ -357,33 +308,8 @@ const CustomerFeedbackPage = () => {
         return;
       }
 
-      if (!data || data.length === 0) {
-        console.warn('Warning: No data returned from assistance request insertion');
-        console.log('Full response details:', { data, error });
-        
-        // Let's try a verification query to see if it was actually inserted
-        const { data: verifyData, error: verifyError } = await supabase
-          .from('assistance_requests')
-          .select('*')
-          .eq('venue_id', venueId)
-          .eq('table_number', parseInt(tableNumber))
-          .gte('created_at', new Date(Date.now() - 60000).toISOString()) // Last minute
-          .order('created_at', { ascending: false })
-          .limit(1);
-          
-        console.log('Verification query result:', { verifyData, verifyError });
-        
-        if (verifyData && verifyData.length > 0) {
-          console.log('✅ Record found in verification query - insertion was successful!');
-        } else {
-          console.error('❌ Record not found in verification query - insertion may have failed silently');
-        }
-      }
-
-      console.log('Assistance request submitted successfully:', data);
       setAssistanceRequested(true);
     } catch (err) {
-      console.error('Error requesting assistance:', err);
       setAlertModal({
         type: 'error',
         title: 'Assistance Request Failed',

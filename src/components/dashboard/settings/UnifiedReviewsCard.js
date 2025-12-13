@@ -171,16 +171,13 @@ const UnifiedReviewsCard = () => {
   };
 
   const performGoogleSearch = async (query) => {
-    console.log('🔍 Performing Google search for:', query);
     try {
       const token = (await supabase.auth.getSession()).data.session?.access_token;
       if (!token) {
-        console.error('❌ No authentication token');
         return;
       }
 
       const url = `/api/reviews?platform=google&action=places-search&query=${encodeURIComponent(query)}`;
-      console.log('📡 Fetching:', url);
 
       const response = await fetch(url, {
         headers: { 'Authorization': `Bearer ${token}` }
@@ -188,14 +185,11 @@ const UnifiedReviewsCard = () => {
 
       if (response.ok) {
         const data = await response.json();
-        console.log('✅ Google search results:', data);
         setGoogleResults(data.suggestions || []);
       } else {
-        console.error('❌ Google search failed:', response.status);
         setGoogleResults([]);
       }
     } catch (error) {
-      console.error('💥 Google search error:', error);
       setGoogleResults([]);
     } finally {
       setIsSearchingGoogle(false);
@@ -203,16 +197,13 @@ const UnifiedReviewsCard = () => {
   };
 
   const performTripadvisorSearch = async (query) => {
-    console.log('🔍 Performing TripAdvisor search for:', query);
     try {
       const token = (await supabase.auth.getSession()).data.session?.access_token;
       if (!token) {
-        console.error('❌ No authentication token');
         return;
       }
 
       const url = `/api/reviews?platform=tripadvisor&action=location-search&query=${encodeURIComponent(query)}`;
-      console.log('📡 Fetching:', url);
 
       const response = await fetch(url, {
         headers: { 'Authorization': `Bearer ${token}` }
@@ -220,14 +211,11 @@ const UnifiedReviewsCard = () => {
 
       if (response.ok) {
         const data = await response.json();
-        console.log('✅ TripAdvisor search results:', data);
         setTripadvisorResults(data.suggestions || []);
       } else {
-        console.error('❌ TripAdvisor search failed:', response.status);
         setTripadvisorResults([]);
       }
     } catch (error) {
-      console.error('💥 TripAdvisor search error:', error);
       setTripadvisorResults([]);
     } finally {
       setIsSearchingTripadvisor(false);

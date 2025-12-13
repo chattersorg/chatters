@@ -10,11 +10,9 @@ import ReviewFilters from '../../components/google-reviews/ReviewFilters';
 import ReviewStats from '../../components/google-reviews/ReviewStats';
 import { Link } from 'react-router-dom';
 
-// Demo account ID - shows fake Google reviews for demo purposes
-const DEMO_ACCOUNT_ID = 'af1d9502-a1a9-4873-8776-9b7177ed30c3';
-
-// Venues excluded from demo mode (use real integration)
-const LIVE_VENUE_IDS = ['ba9c45d4-3947-4560-9327-7f00c695d177']; // The Fox
+// Demo mode temporarily disabled - all venues use real Google connection
+// const DEMO_ACCOUNT_ID = 'af1d9502-a1a9-4873-8776-9b7177ed30c3';
+// const LIVE_VENUE_IDS = ['ba9c45d4-3947-4560-9327-7f00c695d177']; // The Fox
 
 // Demo reviews data for showcasing the feature
 const generateDemoReviews = (venueName) => {
@@ -358,22 +356,7 @@ const GoogleReviewsPage = () => {
       const fetchedAccountId = venueData?.account_id;
       setAccountId(fetchedAccountId);
 
-      // Debug logging
-      console.log('Google Reviews Debug:', {
-        venueId,
-        fetchedAccountId,
-        isDemoAccount: fetchedAccountId === DEMO_ACCOUNT_ID,
-        isInLiveVenueIds: LIVE_VENUE_IDS.includes(venueId),
-        shouldSkipDemo: LIVE_VENUE_IDS.includes(venueId)
-      });
-
-      // Check if this is the demo account (but exclude specific venues that have live integrations)
-      if (fetchedAccountId === DEMO_ACCOUNT_ID && !LIVE_VENUE_IDS.includes(venueId)) {
-        setIsDemoMode(true);
-        setIsConnected(true); // Pretend we're connected for demo
-        setLoading(false);
-        return;
-      }
+      // Demo mode temporarily disabled - proceed to check real Google connection for all venues
 
       // Get auth token
       const { data: { session } } = await supabase.auth.getSession();
@@ -487,8 +470,6 @@ const GoogleReviewsPage = () => {
       });
 
       if (response.ok) {
-        const data = await response.json();
-        console.log('Sync complete:', data.summary);
         // Refresh reviews
         await fetchReviews();
       } else {
@@ -496,7 +477,6 @@ const GoogleReviewsPage = () => {
         alert(`Sync failed: ${error.message}`);
       }
     } catch (error) {
-      console.error('Error syncing:', error);
       alert('Failed to sync reviews');
     } finally {
       setSyncing(false);

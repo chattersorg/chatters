@@ -8,9 +8,6 @@ const NpsTrendChart = ({ dailyNpsData }) => {
   const averageNps =
     dailyNpsData.reduce((sum, entry) => sum + (entry['NPS Score'] || 0), 0) / dailyNpsData.length;
 
-  console.log('Daily NPS Data:', dailyNpsData); // Debugging
-  console.log('Average NPS:', averageNps); // Debugging
-
   // Custom Tooltip for the chart
   const CustomTooltip = ({ active, payload, label }) => {
     if (active && payload && payload.length) {

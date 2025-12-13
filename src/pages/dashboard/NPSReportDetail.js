@@ -170,7 +170,7 @@ const NPSReportDetail = () => {
     return (
       <div className="p-6">
         <button
-          onClick={() => navigate('/reports/nps')}
+          onClick={() => navigate('/nps/score')}
           className="flex items-center gap-2 text-gray-600 hover:text-gray-900 mb-4 transition-colors"
         >
           <ArrowLeft className="w-4 h-4" />
@@ -184,7 +184,7 @@ const NPSReportDetail = () => {
   return (
     <div className="space-y-6">
       <button
-        onClick={() => navigate('/reports/nps')}
+        onClick={() => navigate('/nps/score')}
         className="flex items-center gap-2 text-gray-600 hover:text-gray-900 transition-colors"
       >
         <ArrowLeft className="w-4 h-4" />

@@ -68,8 +68,6 @@ const FeedbackChartTile = ({ config = {}, onRemove, onConfigure }) => {
   const fetchFeedbackData = async () => {
     try {
       setLoading(true);
-      console.log('%c⏱️  [PERF] Starting: Feedback Tile Data Fetch', 'color: #3b82f6; font-weight: bold', { dateRangePreset, venueCount: selectedVenueIds.length });
-      const startTime = performance.now();
 
       const dateRange = getDateRangeFromPreset(dateRangePreset);
       const startDate = dateRange.from.toISOString();
@@ -161,15 +159,8 @@ const FeedbackChartTile = ({ config = {}, onRemove, onConfigure }) => {
       // Cache the data for this configuration
       const cacheKey = `${selectedVenueIds.sort().join(',')}_${dateRangePreset}`;
       setCachedData(prev => ({ ...prev, [cacheKey]: newData }));
-
-      const totalDuration = performance.now() - startTime;
-      const color = totalDuration < 500 ? '#22c55e' : totalDuration < 1000 ? '#eab308' : totalDuration < 2000 ? '#f97316' : '#ef4444';
-      console.log(
-        `%c✓ [PERF] Feedback Tile Data Fetch Complete: ${totalDuration.toFixed(2)}ms`,
-        `color: ${color}; font-weight: bold`
-      );
     } catch (error) {
-      console.error('%c❌ [PERF] Feedback Tile Data Fetch Failed', 'color: #ef4444; font-weight: bold', error);
+      // Silently handle errors
     } finally {
       setLoading(false);
     }

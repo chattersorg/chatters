@@ -31,13 +31,8 @@ const FeedbackSplashPage = () => {
     const enabledLinks = (data.custom_links || []).filter(link => link.id !== 'menu' && link.enabled && link.url);
     const hasMenu = data.menu_type && data.menu_type !== 'none';
 
-    console.log('Venue data:', data);
-    console.log('Enabled links:', enabledLinks);
-    console.log('Has menu:', hasMenu);
-
     // If no custom links are enabled AND no menu configured, go straight to feedback
     if (enabledLinks.length === 0 && !hasMenu) {
-      console.log('No enabled links or menu, redirecting to form');
       navigate(`/feedback/${venueId}/form`, { replace: true });
       return;
     }
