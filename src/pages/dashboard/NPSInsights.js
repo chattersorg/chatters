@@ -288,15 +288,18 @@ const NPSInsights = () => {
         if (!byRating[rating]) {
           byRating[rating] = { sent: 0, responded: 0 };
         }
-        if (s.sent_at) byRating[rating].sent++;
+        // Count as "sent" if either sent_at exists OR if they responded (they must have received it)
+        if (s.sent_at || s.responded_at) byRating[rating].sent++;
         if (s.responded_at) byRating[rating].responded++;
       }
     });
 
+    // Filter out ratings with no sends (nothing to show)
     return Object.entries(byRating)
+      .filter(([_, data]) => data.sent > 0)
       .map(([rating, data]) => ({
         rating: parseInt(rating),
-        responseRate: data.sent > 0 ? Math.round((data.responded / data.sent) * 100) : 0,
+        responseRate: Math.round((data.responded / data.sent) * 100),
         sent: data.sent,
         responded: data.responded
       }))
@@ -470,8 +473,7 @@ const NPSInsights = () => {
         {/* NPS by Day of Week */}
         <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl p-6">
           <div className="mb-4">
-            <h3 className="text-lg font-semibold text-gray-900 dark:text-white flex items-center gap-2">
-              <Calendar className="w-5 h-5 text-gray-500" />
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
               NPS by Day of Week
             </h3>
             <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
@@ -507,8 +509,7 @@ const NPSInsights = () => {
         {/* Response Time Distribution */}
         <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl p-6">
           <div className="mb-4">
-            <h3 className="text-lg font-semibold text-gray-900 dark:text-white flex items-center gap-2">
-              <Clock className="w-5 h-5 text-gray-500" />
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
               Response Time Distribution
             </h3>
             <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
@@ -554,8 +555,7 @@ const NPSInsights = () => {
       {insights.tableAnalysis.length > 0 && (
         <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl p-6">
           <div className="mb-4">
-            <h3 className="text-lg font-semibold text-gray-900 dark:text-white flex items-center gap-2">
-              <Table2 className="w-5 h-5 text-gray-500" />
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
               NPS by Table/Location
             </h3>
             <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
@@ -605,8 +605,7 @@ const NPSInsights = () => {
       {insights.feedbackAnalysis.total > 0 && (
         <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl p-6">
           <div className="mb-4">
-            <h3 className="text-lg font-semibold text-gray-900 dark:text-white flex items-center gap-2">
-              <MessageSquare className="w-5 h-5 text-gray-500" />
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
               Recent NPS Feedback Comments
             </h3>
             <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
@@ -660,8 +659,7 @@ const NPSInsights = () => {
       {insights.sentimentResponseRate.length > 0 && (
         <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl p-6">
           <div className="mb-4">
-            <h3 className="text-lg font-semibold text-gray-900 dark:text-white flex items-center gap-2">
-              <Users className="w-5 h-5 text-gray-500" />
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
               Response Rate by Original Feedback Rating
             </h3>
             <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
@@ -669,7 +667,9 @@ const NPSInsights = () => {
             </p>
           </div>
           <div className="grid grid-cols-5 gap-4">
-            {insights.sentimentResponseRate.map(item => (
+            {insights.sentimentResponseRate
+              .filter(item => item.sent > 0)
+              .map(item => (
               <div key={item.rating} className="text-center p-4 bg-gray-50 dark:bg-gray-800 rounded-lg">
                 <div className="flex items-center justify-center gap-1 mb-2">
                   {[...Array(item.rating)].map((_, i) => (
