@@ -92,14 +92,30 @@ const KioskFloorPlan = forwardRef(({ tables, selectedZoneId, feedbackMap, select
     setPanOffset({ x: centerX, y: centerY });
   }, [processedTables, containerSize]);
 
-  // Auto-fit when data or container changes
+  // Track the last zone we fitted for
+  const lastFittedZoneRef = useRef(null);
+  const [isTransitioning, setIsTransitioning] = useState(false);
+
+  // Reset and refit when zone changes
   useEffect(() => {
-    if (processedTables.length > 0 && containerSize.width > 0) {
-      // Small delay to ensure container is fully rendered
-      const timer = setTimeout(fitToScreen, 50);
-      return () => clearTimeout(timer);
+    if (selectedZoneId !== lastFittedZoneRef.current) {
+      // Hide tables during transition to prevent jumping
+      setIsTransitioning(true);
+      lastFittedZoneRef.current = selectedZoneId;
     }
-  }, [selectedZoneId, processedTables.length, containerSize.width, containerSize.height, fitToScreen]);
+  }, [selectedZoneId]);
+
+  // Fit to screen after zone change, once tables are processed
+  useEffect(() => {
+    if (isTransitioning && processedTables.length > 0 && containerSize.width > 0) {
+      // Calculate fit immediately
+      fitToScreen();
+      // Show tables after a brief delay to allow state to settle
+      requestAnimationFrame(() => {
+        setIsTransitioning(false);
+      });
+    }
+  }, [isTransitioning, processedTables.length, containerSize.width, containerSize.height, fitToScreen]);
 
   // Table rendering helpers
   const getTableStatus = (tableNumber, feedbackAvg) => {
@@ -179,7 +195,7 @@ const KioskFloorPlan = forwardRef(({ tables, selectedZoneId, feedbackMap, select
           )}
 
           {/* Tables */}
-          {processedTables.map((table) => {
+          {!isTransitioning && processedTables.map((table) => {
             const avg = feedbackMap[table.table_number];
             const tableStatus = getTableStatus(table.table_number, avg);
             const cfg = getTableShapeClasses(table, tableStatus);

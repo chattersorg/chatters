@@ -44,7 +44,7 @@ const SettingsCard = ({ title, description, children, onSave, loading, message, 
 
 const NPSSettings = () => {
   usePageTitle('NPS Settings');
-  const { venueId } = useVenue();
+  const { venueId, venueName } = useVenue();
 
   // NPS state
   const [npsEnabled, setNpsEnabled] = useState(false);
@@ -317,16 +317,16 @@ const NPSSettings = () => {
                 Email Subject
               </label>
               <p className="text-xs text-gray-500 dark:text-gray-400 mb-2">
-                The subject line of the NPS email. Use {'{venue_name}'} to include your venue name.
+                The subject line of the NPS email
               </p>
               <FilterSelect
                 value={npsEmailSubject}
                 onChange={(e) => setNpsEmailSubject(e.target.value)}
                 options={[
-                  { value: 'How was your visit to {venue_name}?', label: 'How was your visit to {venue_name}?' },
-                  { value: 'We\'d love your feedback, {venue_name}', label: 'We\'d love your feedback, {venue_name}' },
-                  { value: '{venue_name} wants to hear from you', label: '{venue_name} wants to hear from you' },
-                  { value: 'Quick question about your visit to {venue_name}', label: 'Quick question about your visit to {venue_name}' }
+                  { value: 'How was your visit to {venue_name}?', label: `How was your visit to ${venueName}?` },
+                  { value: 'We\'d love your feedback, {venue_name}', label: `We'd love your feedback, ${venueName}` },
+                  { value: '{venue_name} wants to hear from you', label: `${venueName} wants to hear from you` },
+                  { value: 'Quick question about your visit to {venue_name}', label: `Quick question about your visit to ${venueName}` }
                 ]}
               />
             </div>
@@ -343,10 +343,10 @@ const NPSSettings = () => {
                 value={npsEmailGreeting}
                 onChange={(e) => setNpsEmailGreeting(e.target.value)}
                 options={[
-                  { value: 'Thank you for visiting {venue_name}!', label: 'Thank you for visiting {venue_name}!' },
+                  { value: 'Thank you for visiting {venue_name}!', label: `Thank you for visiting ${venueName}!` },
                   { value: 'We hope you enjoyed your visit!', label: 'We hope you enjoyed your visit!' },
-                  { value: 'Thanks for stopping by {venue_name}!', label: 'Thanks for stopping by {venue_name}!' },
-                  { value: 'We loved having you at {venue_name}!', label: 'We loved having you at {venue_name}!' }
+                  { value: 'Thanks for stopping by {venue_name}!', label: `Thanks for stopping by ${venueName}!` },
+                  { value: 'We loved having you at {venue_name}!', label: `We loved having you at ${venueName}!` }
                 ]}
               />
             </div>
@@ -394,8 +394,8 @@ const NPSSettings = () => {
             <div className="bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-4">
               <p className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Email Preview</p>
               <div className="text-xs text-gray-600 dark:text-gray-400 space-y-1">
-                <p><span className="font-medium">Subject:</span> {npsEmailSubject.replace('{venue_name}', 'Your Venue')}</p>
-                <p><span className="font-medium">Greeting:</span> {npsEmailGreeting.replace('{venue_name}', 'Your Venue')}</p>
+                <p><span className="font-medium">Subject:</span> {npsEmailSubject.replace('{venue_name}', venueName)}</p>
+                <p><span className="font-medium">Greeting:</span> {npsEmailGreeting.replace('{venue_name}', venueName)}</p>
                 <p><span className="font-medium">Body:</span> {npsEmailBody}</p>
                 <p><span className="font-medium">Question:</span> {npsQuestion}</p>
                 <p><span className="font-medium">Button:</span> [{npsEmailButtonText}]</p>
@@ -436,13 +436,14 @@ const NPSSettings = () => {
       )}
 
       {/* NPS Review Prompt Threshold */}
-      <SettingsCard
-        title="NPS Review Prompt Threshold"
-        description="Set the minimum NPS score required to show Google/TripAdvisor review links after NPS surveys"
-        onSave={saveReviewThresholds}
-        loading={reviewThresholdLoading}
-        message={reviewThresholdMessage}
-      >
+      {npsEnabled && (
+        <SettingsCard
+          title="NPS Review Prompt Threshold"
+          description="Set the minimum NPS score required to show Google/TripAdvisor review links after NPS surveys"
+          onSave={saveReviewThresholds}
+          loading={reviewThresholdLoading}
+          message={reviewThresholdMessage}
+        >
         <div className="space-y-6">
           {/* NPS Threshold */}
           <div>
@@ -478,6 +479,7 @@ const NPSSettings = () => {
           </div>
         </div>
       </SettingsCard>
+      )}
     </div>
   );
 };

@@ -76,7 +76,8 @@ const KioskPage = () => {
   const [currentView, setCurrentView] = useState('overview'); // 'overview' or zone id
   const [inactivityTimer, setInactivityTimer] = useState(null); // kept for easy re-enable
   const [selectedFeedback, setSelectedFeedback] = useState(null);
-  const [sessionTimeoutHours, setSessionTimeoutHours] = useState(2); // Default 2 hours
+  const [sessionTimeoutHours, setSessionTimeoutHours] = useState(24); // Default 24 hours to avoid missing feedback
+  const sessionTimeoutRef = useRef(24); // Ref to ensure real-time handlers always have current value
   const [exitConfirmation, setExitConfirmation] = useState(false);
   const [alertModal, setAlertModal] = useState(null);
   const hasAutoNavigated = useRef(false);
@@ -128,65 +129,91 @@ const KioskPage = () => {
   useEffect(() => {
     if (!venueId) return;
 
+    let channel = null;
+    let reconnectTimeout = null;
 
-    const channel = supabase
-      .channel(`kiosk_updates_${venueId}`) // More specific channel name
-      .on(
-        'postgres_changes',
-        { 
-          event: 'INSERT', 
-          schema: 'public', 
-          table: 'feedback', 
-          filter: `venue_id=eq.${venueId}` 
-        },
-        (payload) => {
-          fetchFeedback(venueId);
-        }
-      )
-      .on(
-        'postgres_changes',
-        { 
-          event: 'UPDATE', 
-          schema: 'public', 
-          table: 'feedback', 
-          filter: `venue_id=eq.${venueId}` 
-        },
-        (payload) => {
-          fetchFeedback(venueId);
-        }
-      )
-      .on(
-        'postgres_changes',
-        { 
-          event: 'INSERT', 
-          schema: 'public', 
-          table: 'assistance_requests', 
-          filter: `venue_id=eq.${venueId}` 
-        },
-        (payload) => {
-          fetchAssistanceRequests(venueId);
-        }
-      )
-      .on(
-        'postgres_changes',
-        { 
-          event: 'UPDATE', 
-          schema: 'public', 
-          table: 'assistance_requests', 
-          filter: `venue_id=eq.${venueId}` 
-        },
-        (payload) => {
-          fetchAssistanceRequests(venueId);
-        }
-      )
-      .subscribe((status) => {
-        if (status === 'CHANNEL_ERROR') {
-          // Real-time subscription error - falling back to polling
-        }
-      });
+    const setupChannel = () => {
+      // Remove existing channel if any
+      if (channel) {
+        supabase.removeChannel(channel);
+      }
+
+      channel = supabase
+        .channel(`kiosk_updates_${venueId}_${Date.now()}`) // Unique channel name to avoid conflicts
+        .on(
+          'postgres_changes',
+          {
+            event: 'INSERT',
+            schema: 'public',
+            table: 'feedback',
+            filter: `venue_id=eq.${venueId}`
+          },
+          (payload) => {
+            fetchFeedback(venueId, sessionTimeoutRef.current);
+          }
+        )
+        .on(
+          'postgres_changes',
+          {
+            event: 'UPDATE',
+            schema: 'public',
+            table: 'feedback',
+            filter: `venue_id=eq.${venueId}`
+          },
+          (payload) => {
+            fetchFeedback(venueId, sessionTimeoutRef.current);
+          }
+        )
+        .on(
+          'postgres_changes',
+          {
+            event: 'INSERT',
+            schema: 'public',
+            table: 'assistance_requests',
+            filter: `venue_id=eq.${venueId}`
+          },
+          (payload) => {
+            fetchAssistanceRequests(venueId, sessionTimeoutRef.current);
+          }
+        )
+        .on(
+          'postgres_changes',
+          {
+            event: 'UPDATE',
+            schema: 'public',
+            table: 'assistance_requests',
+            filter: `venue_id=eq.${venueId}`
+          },
+          (payload) => {
+            fetchAssistanceRequests(venueId, sessionTimeoutRef.current);
+          }
+        )
+        .subscribe((status) => {
+          if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT') {
+            // Real-time subscription error - attempt to reconnect after 5 seconds
+            console.warn('Kiosk real-time subscription error, reconnecting...');
+            reconnectTimeout = setTimeout(() => {
+              setupChannel();
+            }, 5000);
+          } else if (status === 'CLOSED') {
+            // Channel closed unexpectedly - reconnect
+            console.warn('Kiosk real-time channel closed, reconnecting...');
+            reconnectTimeout = setTimeout(() => {
+              setupChannel();
+            }, 2000);
+          }
+        });
+    };
+
+    setupChannel();
 
     return () => {
-      supabase.removeChannel(channel);
+      if (reconnectTimeout) {
+        clearTimeout(reconnectTimeout);
+      }
+      if (channel) {
+        supabase.removeChannel(channel);
+      }
     };
   }, [venueId]);
 
@@ -195,8 +222,8 @@ const KioskPage = () => {
     if (!venueId) return;
 
     const pollInterval = setInterval(() => {
-      fetchFeedback(venueId);
-      fetchAssistanceRequests(venueId);
+      fetchFeedback(venueId, sessionTimeoutRef.current);
+      fetchAssistanceRequests(venueId, sessionTimeoutRef.current);
     }, 30000); // Poll every 30 seconds as fallback
 
     return () => clearInterval(pollInterval);
@@ -297,8 +324,9 @@ const KioskPage = () => {
       .eq('id', venueId)
       .single();
 
-    const hours = (!error && data?.session_timeout_hours) ? data.session_timeout_hours : 2;
+    const hours = (!error && data?.session_timeout_hours) ? data.session_timeout_hours : 24;
     setSessionTimeoutHours(hours);
+    sessionTimeoutRef.current = hours; // Update ref for real-time handlers
     return hours; // Return the value for immediate use
   };
 
@@ -659,14 +687,17 @@ const KioskPage = () => {
       <div className="flex-shrink-0 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800 px-4 py-3">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
-            {currentView !== 'overview' && (
-              <button
-                onClick={handleBackToOverview}
-                className="p-2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors"
-              >
-                <ChevronLeft className="w-5 h-5" />
-              </button>
-            )}
+            <img
+              src="/img/logo/chatters-logo-black-2025.svg"
+              alt="Chatters"
+              className="h-6 dark:hidden"
+            />
+            <img
+              src="/img/logo/chatters-logo-white-2025.svg"
+              alt="Chatters"
+              className="h-6 hidden dark:block"
+            />
+            <div className="h-6 w-px bg-gray-200 dark:bg-gray-700" />
             <div>
               <h1 className="text-lg font-semibold text-gray-900 dark:text-white">Staff View</h1>
               <p className="text-sm text-gray-500 dark:text-gray-400">{venueName}</p>

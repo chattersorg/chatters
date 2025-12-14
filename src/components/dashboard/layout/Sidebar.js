@@ -437,10 +437,7 @@ const Sidebar = ({ collapsed, setCollapsed }) => {
                   onClick={() => setVenueDropdownOpen(!venueDropdownOpen)}
                   className="w-full flex items-center justify-between px-3 py-2.5 rounded-lg bg-gray-50 dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors border border-gray-200 dark:border-gray-700"
                 >
-                  <div className="flex items-center gap-2 min-w-0">
-                    <Building2 className="w-5 h-5 text-gray-600 dark:text-gray-300 flex-shrink-0" />
-                    <span className="text-sm font-medium text-gray-900 dark:text-gray-100 truncate">{venueName}</span>
-                  </div>
+                  <span className="text-sm font-medium text-gray-900 dark:text-gray-100 truncate">{venueName}</span>
                   <ChevronDown className={`w-4 h-4 text-gray-400 dark:text-gray-400 flex-shrink-0 transition-transform ${venueDropdownOpen ? 'rotate-180' : ''}`} />
                 </button>
                 {venueDropdownOpen && (
@@ -456,7 +453,6 @@ const Sidebar = ({ collapsed, setCollapsed }) => {
                           venue.id === venueId ? 'bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-400 font-medium' : 'text-gray-700 dark:text-gray-300'
                         }`}
                       >
-                        <Building2 className="w-4 h-4 flex-shrink-0" />
                         <span className="truncate">{venue.name}</span>
                         {venue.id === venueId && <span className="ml-auto text-blue-600 dark:text-blue-400">✓</span>}
                       </button>
@@ -465,8 +461,7 @@ const Sidebar = ({ collapsed, setCollapsed }) => {
                 )}
               </div>
             ) : (
-              <div className="flex items-center gap-2 px-3 py-2.5 rounded-lg bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700">
-                <Building2 className="w-5 h-5 text-gray-600 dark:text-gray-300 flex-shrink-0" />
+              <div className="px-3 py-2.5 rounded-lg bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700">
                 <span className="text-sm font-medium text-gray-900 dark:text-gray-100 truncate">{venueName}</span>
               </div>
             )}

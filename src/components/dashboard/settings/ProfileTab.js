@@ -23,8 +23,6 @@ const ProfileTab = ({
 
   const { isDarkMode, toggleDarkMode } = useDarkMode();
   const [weeklyReportSaving, setWeeklyReportSaving] = useState(false);
-  const [testEmailSending, setTestEmailSending] = useState(false);
-  const [testEmailMessage, setTestEmailMessage] = useState('');
 
   const toggleWeeklyReport = async () => {
     const newValue = !weeklyReportEnabled;
@@ -50,38 +48,6 @@ const ProfileTab = ({
       console.error('Error updating weekly report preference:', error);
     } finally {
       setWeeklyReportSaving(false);
-    }
-  };
-
-  const sendTestEmail = async () => {
-    setTestEmailSending(true);
-    setTestEmailMessage('');
-
-    try {
-      // Get current user ID
-      const { data: auth } = await supabase.auth.getUser();
-      const userId = auth?.user?.id;
-
-      if (!userId) {
-        throw new Error('User not authenticated');
-      }
-
-      const response = await fetch(`/api/cron/send-weekly-reports?test=true&userId=${userId}`, {
-        method: 'GET'
-      });
-
-      const data = await response.json();
-
-      if (response.ok) {
-        setTestEmailMessage(`Test email sent successfully! Check your inbox.`);
-      } else {
-        throw new Error(data.error || 'Failed to send test email');
-      }
-    } catch (error) {
-      console.error('Error sending test email:', error);
-      setTestEmailMessage(`Error: ${error.message}`);
-    } finally {
-      setTestEmailSending(false);
     }
   };
 
@@ -450,28 +416,6 @@ const ProfileTab = ({
                   ? 'You will receive a performance summary email every Sunday morning'
                   : 'Enable to receive weekly performance summaries for your venues'}
               </p>
-
-              {/* Test Email Button - Remove after testing */}
-              <div className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
-                <Button
-                  variant="secondary"
-                  onClick={sendTestEmail}
-                  loading={testEmailSending}
-                  className="text-sm"
-                >
-                  {testEmailSending ? 'Sending...' : 'Send Test Email'}
-                </Button>
-                <p className="text-xs text-gray-400 mt-1">For testing only - sends email to your address</p>
-                {testEmailMessage && (
-                  <div className={`text-xs mt-2 p-3 rounded-lg ${
-                    testEmailMessage.includes('successfully')
-                      ? 'text-green-700 dark:text-green-400 bg-green-50 dark:bg-green-900/30 border border-green-200 dark:border-green-800'
-                      : 'text-red-700 dark:text-red-400 bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-800'
-                  }`}>
-                    {testEmailMessage}
-                  </div>
-                )}
-              </div>
             </div>
           </div>
         </div>

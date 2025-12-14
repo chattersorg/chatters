@@ -159,16 +159,19 @@ const BrandingTab = ({
         .from('venue-logos')
         .getPublicUrl(filePath);
 
+      // Add cache-busting parameter to force browser to load new image
+      const cacheBustedUrl = `${publicUrl}?t=${Date.now()}`;
+
       const { error: updateError } = await supabase
         .from('venues')
-        .update({ logo: publicUrl })
+        .update({ logo: cacheBustedUrl })
         .eq('id', venueId);
 
       if (updateError) {
         throw new Error('Failed to update logo: ' + updateError.message);
       }
 
-      setLogo(publicUrl);
+      setLogo(cacheBustedUrl);
       setLogoMessage('Logo updated successfully!');
     } catch (error) {
       console.error('Error updating logo:', error);
@@ -210,16 +213,19 @@ const BrandingTab = ({
         .from('venue-logos')
         .getPublicUrl(filePath);
 
+      // Add cache-busting parameter to force browser to load new image
+      const cacheBustedUrl = `${publicUrl}?t=${Date.now()}`;
+
       const { error: updateError } = await supabase
         .from('venues')
-        .update({ background_image: publicUrl })
+        .update({ background_image: cacheBustedUrl })
         .eq('id', venueId);
 
       if (updateError) {
         throw new Error('Failed to update background: ' + updateError.message);
       }
 
-      setBackgroundImage(publicUrl);
+      setBackgroundImage(cacheBustedUrl);
       setBackgroundImageMessage('Background image updated successfully!');
     } catch (error) {
       console.error('Error updating background:', error);

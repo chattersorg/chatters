@@ -272,18 +272,22 @@ const StaffListPage = () => {
       return nameA.localeCompare(nameB);
     });
 
-  // Get unique managers
+  // Get unique managers for the current venue
   const uniqueManagers = useMemo(() => {
+    // First filter to only managers assigned to the current venue
+    const managersInVenue = managers.filter(m => m.venue_id === venueId);
+
+    // Then deduplicate by user_id
     const unique = [];
     const seenUserIds = new Set();
-    managers.forEach(manager => {
+    managersInVenue.forEach(manager => {
       if (!seenUserIds.has(manager.user_id)) {
         seenUserIds.add(manager.user_id);
         unique.push(manager);
       }
     });
     return unique;
-  }, [managers]);
+  }, [managers, venueId]);
 
   // Filter data based on search and active tab
   const filteredData = useMemo(() => {

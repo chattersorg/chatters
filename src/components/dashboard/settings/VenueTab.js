@@ -27,8 +27,23 @@ const VenueTab = ({
   const [menuType, setMenuType] = useState('none');
   const [menuUrl, setMenuUrl] = useState('');
   const [menuPdfUrl, setMenuPdfUrl] = useState('');
+  const [menuCurrency, setMenuCurrency] = useState('GBP');
   const [uploadingPdf, setUploadingPdf] = useState(false);
   const navigate = useNavigate();
+
+  const CURRENCY_OPTIONS = [
+    { code: 'GBP', symbol: '£', name: 'British Pound' },
+    { code: 'EUR', symbol: '€', name: 'Euro' },
+    { code: 'USD', symbol: '$', name: 'US Dollar' },
+    { code: 'AUD', symbol: 'A$', name: 'Australian Dollar' },
+    { code: 'CAD', symbol: 'C$', name: 'Canadian Dollar' },
+    { code: 'CHF', symbol: 'CHF', name: 'Swiss Franc' },
+    { code: 'NZD', symbol: 'NZ$', name: 'New Zealand Dollar' },
+    { code: 'SEK', symbol: 'kr', name: 'Swedish Krona' },
+    { code: 'NOK', symbol: 'kr', name: 'Norwegian Krone' },
+    { code: 'DKK', symbol: 'kr', name: 'Danish Krone' },
+    { code: 'RON', symbol: 'lei', name: 'Romanian Leu' },
+  ];
 
   const defaultLinkTemplates = [
     { id: 'order', label: 'Order Food', url: '', enabled: false },
@@ -59,7 +74,7 @@ const VenueTab = ({
   const loadVenueData = useCallback(async () => {
     const { data, error } = await supabase
       .from('venues')
-      .select('custom_links, menu_type, menu_url, menu_pdf_url')
+      .select('custom_links, menu_type, menu_url, menu_pdf_url, menu_currency')
       .eq('id', venueId)
       .single();
 
@@ -77,6 +92,7 @@ const VenueTab = ({
     setMenuType(data?.menu_type || 'none');
     setMenuUrl(data?.menu_url || '');
     setMenuPdfUrl(data?.menu_pdf_url || '');
+    setMenuCurrency(data?.menu_currency || 'GBP');
   }, [venueId]);
 
   useEffect(() => {
@@ -197,7 +213,8 @@ const VenueTab = ({
         custom_links: links,
         menu_type: menuType,
         menu_url: menuType === 'link' ? menuUrl : null,
-        menu_pdf_url: menuType === 'pdf' ? menuPdfUrl : null
+        menu_pdf_url: menuType === 'pdf' ? menuPdfUrl : null,
+        menu_currency: menuCurrency
       })
       .eq('id', venueId);
 
@@ -538,6 +555,29 @@ const VenueTab = ({
                         )}
                       </div>
                     </label>
+
+                    {/* Currency Selection - only show when menu is enabled */}
+                    {menuType !== 'none' && (
+                      <div className="pt-4 mt-4 border-t border-gray-200 dark:border-gray-700">
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                          Menu Currency
+                        </label>
+                        <select
+                          value={menuCurrency}
+                          onChange={(e) => setMenuCurrency(e.target.value)}
+                          className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
+                        >
+                          {CURRENCY_OPTIONS.map(currency => (
+                            <option key={currency.code} value={currency.code}>
+                              {currency.symbol} - {currency.name} ({currency.code})
+                            </option>
+                          ))}
+                        </select>
+                        <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                          Currency symbol shown on your menu prices
+                        </p>
+                      </div>
+                    )}
                   </div>
                 </div>
               )}

@@ -599,60 +599,6 @@ const NPSInsights = () => {
         </div>
       )}
 
-      {/* Recent NPS Feedback Comments */}
-      {insights.feedbackAnalysis.total > 0 && (
-        <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl p-6">
-          <div className="mb-4">
-            <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
-              Recent NPS Feedback Comments
-            </h3>
-            <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
-              {insights.feedbackAnalysis.total} responses included additional feedback
-            </p>
-          </div>
-
-          <div className="flex gap-4 mb-4">
-            <div className="px-3 py-1 bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300 rounded-full text-sm">
-              {insights.feedbackAnalysis.promoters} Promoters
-            </div>
-            <div className="px-3 py-1 bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-300 rounded-full text-sm">
-              {insights.feedbackAnalysis.passives} Passives
-            </div>
-            <div className="px-3 py-1 bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300 rounded-full text-sm">
-              {insights.feedbackAnalysis.detractors} Detractors
-            </div>
-          </div>
-
-          <div className="space-y-3">
-            {insights.feedbackAnalysis.recentFeedback.map((item) => {
-              const category = item.score >= 9 ? 'promoter' : item.score >= 7 ? 'passive' : 'detractor';
-              const colors = {
-                promoter: 'border-l-green-500 bg-green-50 dark:bg-green-900/10',
-                passive: 'border-l-yellow-500 bg-yellow-50 dark:bg-yellow-900/10',
-                detractor: 'border-l-red-500 bg-red-50 dark:bg-red-900/10'
-              };
-
-              return (
-                <div key={item.id} className={`p-4 rounded-lg border-l-4 ${colors[category]}`}>
-                  <div className="flex items-center justify-between mb-2">
-                    <span className={`font-bold ${
-                      category === 'promoter' ? 'text-green-600' :
-                      category === 'passive' ? 'text-yellow-600' : 'text-red-600'
-                    }`}>
-                      Score: {item.score}
-                    </span>
-                    <span className="text-xs text-gray-500 dark:text-gray-400">
-                      {new Date(item.responded_at).toLocaleDateString()}
-                    </span>
-                  </div>
-                  <p className="text-gray-700 dark:text-gray-300">{item.feedback}</p>
-                </div>
-              );
-            })}
-          </div>
-        </div>
-      )}
-
       {/* Response Rate by Original Sentiment */}
       {insights.sentimentResponseRate.length > 0 && (
         <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl p-6">

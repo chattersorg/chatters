@@ -125,7 +125,10 @@ const FloorPlanCanvas = forwardRef(
     // Auto-fit when zone changes or initial load
     useEffect(() => {
       if (processedTables.length > 0 && containerSize.width > 0) {
-        setTimeout(fitToScreen, 100);
+        // Use requestAnimationFrame instead of setTimeout for smoother transition
+        requestAnimationFrame(() => {
+          fitToScreen();
+        });
       }
     }, [selectedZoneId, fitToScreen]); // Only when zone changes, not when tables change
 
@@ -411,9 +414,9 @@ const FloorPlanCanvas = forwardRef(
             ) : (
               <div
                 key={table.id}
-                className="absolute"
-                style={{ 
-                  left: screenX, 
+                className="absolute transition-all duration-150 ease-out"
+                style={{
+                  left: screenX,
                   top: screenY,
                   width: screenWidth,
                   height: screenHeight

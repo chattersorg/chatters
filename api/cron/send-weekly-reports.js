@@ -374,47 +374,56 @@ function generateEmailHtml(user, venueReports, weekRangeText) {
     const primaryColor = venue.primary_color || '#3b82f6';
 
     return `
-      <div style="background: #f9fafb; border-radius: 12px; padding: 24px; margin-bottom: 20px;">
-        <div style="display: flex; align-items: center; margin-bottom: 20px;">
-          ${venue.logo ? `<img src="${venue.logo}" alt="${venue.name}" style="height: 40px; margin-right: 12px; border-radius: 8px;">` : ''}
-          <h2 style="color: #111827; font-size: 20px; margin: 0;">${venue.name}</h2>
-        </div>
-
-        <table style="width: 100%; border-collapse: separate; border-spacing: 8px;">
+      <div style="background: #f9fafb; border-radius: 12px; padding: 20px; margin-bottom: 20px;">
+        <!-- Venue Header -->
+        <table style="width: 100%; margin-bottom: 16px;">
           <tr>
-            <td style="background: #ffffff; border-radius: 8px; padding: 16px; text-align: center; width: 25%; border: 1px solid #e5e7eb;">
-              <div style="font-size: 24px; font-weight: 700; color: #0369a1;">${metrics.feedbackCount}</div>
-              <div style="font-size: 11px; color: #6b7280; margin-top: 4px;">Feedback</div>
+            ${venue.logo ? `<td style="width: 48px; vertical-align: middle;"><img src="${venue.logo}" alt="${venue.name}" style="width: 40px; height: 40px; object-fit: contain; border-radius: 8px;"></td>` : ''}
+            <td style="vertical-align: middle; padding-left: ${venue.logo ? '12px' : '0'};">
+              <h2 style="color: #111827; font-size: 18px; margin: 0; font-weight: 600;">${venue.name}</h2>
             </td>
-            <td style="background: #ffffff; border-radius: 8px; padding: 16px; text-align: center; width: 25%; border: 1px solid #e5e7eb;">
-              <div style="font-size: 24px; font-weight: 700; color: #ca8a04;">${metrics.avgRating || 'N/A'}${metrics.avgRating ? '/5' : ''}</div>
-              <div style="font-size: 11px; color: #6b7280; margin-top: 4px;">Avg Rating</div>
+          </tr>
+        </table>
+
+        <!-- Metrics Grid - 2x2 for mobile -->
+        <table style="width: 100%; border-collapse: separate; border-spacing: 6px;">
+          <tr>
+            <td style="background: #ffffff; border-radius: 8px; padding: 12px; text-align: center; width: 50%; border: 1px solid #e5e7eb;">
+              <div style="font-size: 22px; font-weight: 700; color: #0369a1;">${metrics.feedbackCount}</div>
+              <div style="font-size: 11px; color: #6b7280; margin-top: 2px;">Feedback</div>
             </td>
-            <td style="background: #ffffff; border-radius: 8px; padding: 16px; text-align: center; width: 25%; border: 1px solid #e5e7eb;">
-              <div style="font-size: 24px; font-weight: 700; color: #16a34a;">${metrics.completionRate !== null ? metrics.completionRate + '%' : 'N/A'}</div>
-              <div style="font-size: 11px; color: #6b7280; margin-top: 4px;">Completion</div>
+            <td style="background: #ffffff; border-radius: 8px; padding: 12px; text-align: center; width: 50%; border: 1px solid #e5e7eb;">
+              <div style="font-size: 22px; font-weight: 700; color: #ca8a04;">${metrics.avgRating || 'N/A'}${metrics.avgRating ? '/5' : ''}</div>
+              <div style="font-size: 11px; color: #6b7280; margin-top: 2px;">Avg Rating</div>
             </td>
-            <td style="background: #ffffff; border-radius: 8px; padding: 16px; text-align: center; width: 25%; border: 1px solid #e5e7eb;">
-              <div style="font-size: 24px; font-weight: 700; color: #7c3aed;">${formatResolutionTime(metrics.avgResolutionMins)}</div>
-              <div style="font-size: 11px; color: #6b7280; margin-top: 4px;">Avg Response</div>
+          </tr>
+          <tr>
+            <td style="background: #ffffff; border-radius: 8px; padding: 12px; text-align: center; width: 50%; border: 1px solid #e5e7eb;">
+              <div style="font-size: 22px; font-weight: 700; color: #16a34a;">${metrics.completionRate !== null ? metrics.completionRate + '%' : 'N/A'}</div>
+              <div style="font-size: 11px; color: #6b7280; margin-top: 2px;">Completion</div>
+            </td>
+            <td style="background: #ffffff; border-radius: 8px; padding: 12px; text-align: center; width: 50%; border: 1px solid #e5e7eb;">
+              <div style="font-size: 22px; font-weight: 700; color: #7c3aed;">${formatResolutionTime(metrics.avgResolutionMins)}</div>
+              <div style="font-size: 11px; color: #6b7280; margin-top: 2px;">Avg Response</div>
             </td>
           </tr>
         </table>
 
         ${npsData ? `
-        <div style="margin-top: 16px; background: ${npsData.score >= 50 ? '#dcfce7' : npsData.score >= 0 ? '#fef9c3' : '#fee2e2'}; border-radius: 8px; padding: 16px;">
-          <div style="display: flex; align-items: center; justify-content: space-between;">
-            <div>
-              <div style="font-size: 12px; color: #6b7280; margin-bottom: 4px;">NPS Score</div>
-              <div style="font-size: 28px; font-weight: 700; color: ${npsData.score >= 50 ? '#16a34a' : npsData.score >= 0 ? '#ca8a04' : '#dc2626'};">${npsData.score}</div>
-            </div>
-            <div style="text-align: right; font-size: 12px; color: #6b7280;">
+        <!-- NPS Section -->
+        <table style="width: 100%; margin-top: 12px; background: ${npsData.score >= 50 ? '#dcfce7' : npsData.score >= 0 ? '#fef9c3' : '#fee2e2'}; border-radius: 8px;">
+          <tr>
+            <td style="padding: 14px; vertical-align: middle;">
+              <div style="font-size: 11px; color: #6b7280; margin-bottom: 2px;">NPS Score</div>
+              <div style="font-size: 26px; font-weight: 700; color: ${npsData.score >= 50 ? '#16a34a' : npsData.score >= 0 ? '#ca8a04' : '#dc2626'};">${npsData.score}</div>
+            </td>
+            <td style="padding: 14px; text-align: right; vertical-align: middle; font-size: 12px; color: #6b7280;">
               <div>${npsData.promoters} Promoters</div>
               <div>${npsData.passives} Passives</div>
               <div>${npsData.detractors} Detractors</div>
-            </div>
-          </div>
-        </div>
+            </td>
+          </tr>
+        </table>
         ` : ''}
       </div>
     `;
