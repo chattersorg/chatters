@@ -573,13 +573,13 @@ const CustomerFeedbackPage = () => {
                   style={{
                     borderColor: primary,
                     backgroundColor: tableNumber ? '#ffffff' : 'rgba(255, 255, 255, 0.7)',
-                    color: tableNumber ? buttonTextColor : '#9ca3af',
+                    color: tableNumber ? textColor : '#9ca3af',
                     opacity: tableNumber ? 1 : 0.85,
                   }}
                 >
                   <option value="" style={{ color: '#9ca3af', opacity: 0.7 }}>Choose your table</option>
                   {activeTables.map((tableNum) => (
-                    <option key={tableNum} value={tableNum} style={{ color: buttonTextColor, backgroundColor: '#ffffff' }}>
+                    <option key={tableNum} value={tableNum} style={{ color: textColor, backgroundColor: '#ffffff' }}>
                       {tableNum}
                     </option>
                   ))}
