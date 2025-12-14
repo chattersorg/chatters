@@ -5,7 +5,7 @@ import { PermissionGate } from '../../context/PermissionsContext';
 import { ChartCard } from '../../components/dashboard/layout/ModernCard';
 import usePageTitle from '../../hooks/usePageTitle';
 import dayjs from 'dayjs';
-import { Search, Calendar, Filter, CheckSquare, Square, Eye, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Search, Calendar, Filter, CheckSquare, Square, Eye, ChevronLeft, ChevronRight, ArrowUp, ArrowDown, ArrowUpDown } from 'lucide-react';
 import ConfirmationModal from '../../components/ui/ConfirmationModal';
 import AlertModal from '../../components/ui/AlertModal';
 import DatePicker from '../../components/dashboard/inputs/DatePicker';
@@ -33,6 +33,8 @@ const AllFeedback = () => {
   const [alertModal, setAlertModal] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [resolveLoading, setResolveLoading] = useState(false);
+  const [sortField, setSortField] = useState('created_at'); // 'created_at', 'type', 'avg_rating'
+  const [sortDirection, setSortDirection] = useState('desc'); // 'asc' or 'desc'
 
   // Load feedback sessions
   useEffect(() => {
@@ -167,9 +169,9 @@ const AllFeedback = () => {
     }
   };
 
-  // Filtered sessions
+  // Filtered and sorted sessions
   const filteredSessions = useMemo(() => {
-    return feedbackSessions.filter(session => {
+    const filtered = feedbackSessions.filter(session => {
       // Type filter
       if (typeFilter === 'feedback' && session.type !== 'feedback') return false;
       if (typeFilter === 'assistance' && session.type !== 'assistance') return false;
@@ -196,12 +198,53 @@ const AllFeedback = () => {
 
       return true;
     });
-  }, [feedbackSessions, statusFilter, ratingFilter, typeFilter, searchTerm]);
 
-  // Reset to page 1 when filters change
+    // Sort the filtered results
+    return filtered.sort((a, b) => {
+      let comparison = 0;
+
+      if (sortField === 'created_at') {
+        comparison = new Date(a.created_at) - new Date(b.created_at);
+      } else if (sortField === 'type') {
+        comparison = a.type.localeCompare(b.type);
+      } else if (sortField === 'avg_rating') {
+        // Handle null ratings - put them at the end
+        if (a.avg_rating === null && b.avg_rating === null) comparison = 0;
+        else if (a.avg_rating === null) comparison = 1;
+        else if (b.avg_rating === null) comparison = -1;
+        else comparison = a.avg_rating - b.avg_rating;
+      }
+
+      return sortDirection === 'asc' ? comparison : -comparison;
+    });
+  }, [feedbackSessions, statusFilter, ratingFilter, typeFilter, searchTerm, sortField, sortDirection]);
+
+  // Reset to page 1 when filters or sort changes
   useEffect(() => {
     setCurrentPage(1);
-  }, [statusFilter, ratingFilter, typeFilter, searchTerm, dateFrom, dateTo]);
+  }, [statusFilter, ratingFilter, typeFilter, searchTerm, dateFrom, dateTo, sortField, sortDirection]);
+
+  // Handle sort click
+  const handleSort = (field) => {
+    if (sortField === field) {
+      // Toggle direction if same field
+      setSortDirection(prev => prev === 'asc' ? 'desc' : 'asc');
+    } else {
+      // Set new field and default to descending
+      setSortField(field);
+      setSortDirection('desc');
+    }
+  };
+
+  // Render sort icon
+  const SortIcon = ({ field }) => {
+    if (sortField !== field) {
+      return <ArrowUpDown className="w-3 h-3 text-gray-400" />;
+    }
+    return sortDirection === 'asc'
+      ? <ArrowUp className="w-3 h-3 text-blue-600" />
+      : <ArrowDown className="w-3 h-3 text-blue-600" />;
+  };
 
   // Pagination calculations
   const totalPages = Math.ceil(filteredSessions.length / ITEMS_PER_PAGE);
@@ -447,10 +490,34 @@ const AllFeedback = () => {
                         )}
                       </button>
                     </th>
-                    <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase">Date/Time</th>
+                    <th className="px-4 py-3 text-left">
+                      <button
+                        onClick={() => handleSort('created_at')}
+                        className="flex items-center gap-1.5 text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase hover:text-gray-900 dark:hover:text-gray-200 transition-colors"
+                      >
+                        Date/Time
+                        <SortIcon field="created_at" />
+                      </button>
+                    </th>
                     <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase">Table</th>
-                    <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase">Type</th>
-                    <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase">Avg Rating</th>
+                    <th className="px-4 py-3 text-left">
+                      <button
+                        onClick={() => handleSort('type')}
+                        className="flex items-center gap-1.5 text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase hover:text-gray-900 dark:hover:text-gray-200 transition-colors"
+                      >
+                        Type
+                        <SortIcon field="type" />
+                      </button>
+                    </th>
+                    <th className="px-4 py-3 text-left">
+                      <button
+                        onClick={() => handleSort('avg_rating')}
+                        className="flex items-center gap-1.5 text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase hover:text-gray-900 dark:hover:text-gray-200 transition-colors"
+                      >
+                        Avg Rating
+                        <SortIcon field="avg_rating" />
+                      </button>
+                    </th>
                     <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase">Questions</th>
                     <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase">Comments</th>
                     <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase">Status</th>

@@ -69,7 +69,8 @@ const ReportsMetricsPage = () => {
     peakHour: null,
     busiestDay: null,
     hourlyPattern: [],
-    dailyPattern: []
+    dailyPattern: [],
+    daysInPeriod: 1
   });
   const [loading, setLoading] = useState(true);
 
@@ -207,8 +208,10 @@ const ReportsMetricsPage = () => {
             sum + (staff.resolutions > 0 ? staff.totalTime / staff.resolutions : 0), 0) / Object.values(staffPerformance).length
         : 0;
 
+      // Only count primary resolutions to avoid double-counting
+      // (co-resolutions are the same feedback items, just with a helper)
       const staffResolutionCount = Object.values(staffPerformance).reduce(
-        (sum, staff) => sum + staff.resolutions + staff.coResolutions, 0
+        (sum, staff) => sum + staff.resolutions, 0
       );
 
       // === TIME PATTERN METRICS ===
@@ -252,6 +255,11 @@ const ReportsMetricsPage = () => {
         count: dailyData[day] || 0
       }));
 
+      // Calculate actual number of days in the selected period
+      const startDate = new Date(start);
+      const endDate = new Date(end);
+      const daysDiff = Math.max(1, Math.ceil((endDate - startDate) / (1000 * 60 * 60 * 24)));
+
       setMetrics({
         totalResponses,
         responseRate,
@@ -267,7 +275,9 @@ const ReportsMetricsPage = () => {
         peakHour,
         busiestDay,
         hourlyPattern,
-        dailyPattern
+        dailyPattern,
+        // Days in period for daily average calculation
+        daysInPeriod: daysDiff
       });
 
     } catch (error) {
@@ -278,10 +288,7 @@ const ReportsMetricsPage = () => {
   };
 
   const formatNumber = (num) => {
-    if (num >= 1000) {
-      return (num / 1000).toFixed(1) + 'k';
-    }
-    return num.toString();
+    return num.toLocaleString();
   };
 
   const formatTime = (minutes) => {
@@ -355,9 +362,9 @@ const ReportsMetricsPage = () => {
           period: 'Time to resolve'
         },
         {
-          label: 'Total Staff Resolutions',
+          label: 'Staff Resolutions',
           value: loading ? '—' : formatNumber(metrics.staffResolutionCount),
-          period: 'Issues handled by staff'
+          period: 'Feedback resolved by staff'
         }
       ]
     },
@@ -376,10 +383,10 @@ const ReportsMetricsPage = () => {
           value: loading ? '—' : (metrics.busiestDay ? metrics.busiestDay.day : 'No data'), 
           period: `${metrics.busiestDay ? metrics.busiestDay.count : 0} activities` 
         },
-        { 
-          label: 'Daily Average', 
-          value: loading ? '—' : Math.round((metrics.totalResponses || 0) / 7), 
-          period: 'Activities per day' 
+        {
+          label: 'Daily Average',
+          value: loading ? '—' : Math.round((metrics.totalResponses || 0) / (metrics.daysInPeriod || 1)),
+          period: 'Activities per day'
         }
       ]
     }

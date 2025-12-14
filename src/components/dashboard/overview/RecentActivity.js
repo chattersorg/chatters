@@ -1,4 +1,5 @@
 import React from 'react';
+import { Link } from 'react-router-dom';
 import { Clock, MessageSquare, HandHeart, CheckCircle, AlertTriangle, Star } from 'lucide-react';
 
 const ActivityItem = ({ icon: Icon, title, description, timestamp, status, rating }) => {
@@ -138,9 +139,9 @@ const RecentActivity = ({ activities, loading }) => {
           <Clock className="w-5 h-5 text-gray-600 dark:text-gray-400" />
           <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Recent Activity</h3>
         </div>
-        <button className="text-sm text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 font-medium">
+        <Link to="/feedback/all" className="text-sm text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 font-medium">
           View All
-        </button>
+        </Link>
       </div>
 
       {normalizedActivities.length === 0 ? (
