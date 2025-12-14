@@ -1,36 +1,55 @@
-import React, { useRef } from 'react';
-import { QRCodeSVG } from 'qrcode.react';
+import React, { useRef, useState, useEffect } from 'react';
+import { QRCodeCanvas } from 'qrcode.react';
 import { Download, Share2 } from 'lucide-react';
 import { PermissionGate } from '../../../context/PermissionsContext';
+import { supabase } from '../../../utils/supabase';
 
-const QRCodeSection = ({ feedbackUrl }) => {
+const QRCodeSection = ({ feedbackUrl, venueId }) => {
   const qrCodeRef = useRef(null);
+  const [logoDataUrl, setLogoDataUrl] = useState(null);
+
+  // Fetch venue logo and convert to base64 data URL to avoid CORS issues
+  useEffect(() => {
+    const fetchVenueLogo = async () => {
+      if (!venueId) return;
+
+      const { data, error } = await supabase
+        .from('venues')
+        .select('logo')
+        .eq('id', venueId)
+        .single();
+
+      if (!error && data?.logo) {
+        // Convert external URL to base64 data URL to avoid canvas tainting
+        try {
+          const response = await fetch(data.logo);
+          const blob = await response.blob();
+          const reader = new FileReader();
+          reader.onloadend = () => {
+            setLogoDataUrl(reader.result);
+          };
+          reader.readAsDataURL(blob);
+        } catch (err) {
+          console.error('Failed to load logo for QR code:', err);
+        }
+      }
+    };
+
+    fetchVenueLogo();
+  }, [venueId]);
 
   const downloadQRCode = () => {
     const qrCodeElement = qrCodeRef.current;
     if (!qrCodeElement) return;
 
-    const canvas = document.createElement('canvas');
-    canvas.width = qrCodeElement.clientWidth;
-    canvas.height = qrCodeElement.clientHeight;
+    const canvas = qrCodeElement.querySelector('canvas');
+    if (!canvas) return;
 
-    const ctx = canvas.getContext('2d');
-    if (!ctx) return;
-
-    const svg = qrCodeElement.querySelector('svg');
-    const svgData = new XMLSerializer().serializeToString(svg);
-    const img = new Image();
-    img.src = `data:image/svg+xml;base64,${btoa(svgData)}`;
-
-    img.onload = () => {
-      ctx.drawImage(img, 0, 0);
-
-      const pngFile = canvas.toDataURL('image/png');
-      const downloadLink = document.createElement('a');
-      downloadLink.download = 'feedback-qr-code.png';
-      downloadLink.href = pngFile;
-      downloadLink.click();
-    };
+    const pngFile = canvas.toDataURL('image/png');
+    const downloadLink = document.createElement('a');
+    downloadLink.download = 'feedback-qr-code.png';
+    downloadLink.href = pngFile;
+    downloadLink.click();
   };
 
   const copyToClipboard = async () => {
@@ -67,7 +86,17 @@ const QRCodeSection = ({ feedbackUrl }) => {
         <div className="flex flex-col lg:flex-row items-start lg:items-center gap-6 lg:gap-8">
           {/* QR Code Container */}
           <div className="flex-shrink-0 p-4 lg:p-6 bg-gray-50 dark:bg-white rounded-lg border border-gray-200 dark:border-gray-700 mx-auto lg:mx-0" ref={qrCodeRef}>
-            <QRCodeSVG value={feedbackUrl} size={160} />
+            <QRCodeCanvas
+              value={feedbackUrl}
+              size={160}
+              level="H"
+              imageSettings={logoDataUrl ? {
+                src: logoDataUrl,
+                height: 40,
+                width: 40,
+                excavate: true,
+              } : undefined}
+            />
           </div>
 
           {/* Text and Link Container */}

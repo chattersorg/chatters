@@ -1,4 +1,5 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
+import { ChevronDown, Pencil } from 'lucide-react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { supabase } from '../../utils/supabase';
 import PageContainer from '../../components/dashboard/layout/PageContainer';
@@ -8,6 +9,62 @@ import { PermissionGate } from '../../context/PermissionsContext';
 import dayjs from 'dayjs';
 import relativeTime from 'dayjs/plugin/relativeTime';
 dayjs.extend(relativeTime);
+
+// Custom Select component matching site styling
+const CustomSelect = ({ value, onChange, options }) => {
+  const [isOpen, setIsOpen] = useState(false);
+  const containerRef = useRef(null);
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (containerRef.current && !containerRef.current.contains(event.target)) {
+        setIsOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  const selectedOption = options.find(opt => opt.value === value);
+  const displayLabel = selectedOption?.label || 'Select...';
+
+  const handleSelect = (optionValue) => {
+    onChange(optionValue);
+    setIsOpen(false);
+  };
+
+  return (
+    <div className="relative" ref={containerRef}>
+      <button
+        type="button"
+        onClick={() => setIsOpen(!isOpen)}
+        className="w-full px-4 py-2.5 text-sm border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 hover:border-gray-300 dark:hover:border-gray-600 font-medium cursor-pointer flex items-center justify-between min-w-[140px]"
+      >
+        <span>{displayLabel}</span>
+        <ChevronDown className={`w-4 h-4 text-gray-400 dark:text-gray-500 transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`} />
+      </button>
+
+      {isOpen && (
+        <div className="absolute z-50 w-full mt-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg overflow-hidden">
+          {options.map((option) => (
+            <button
+              key={option.value}
+              type="button"
+              onClick={() => handleSelect(option.value)}
+              className={`w-full px-4 py-2.5 text-sm text-left hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors ${
+                value === option.value
+                  ? 'bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 font-medium'
+                  : 'text-gray-900 dark:text-gray-100'
+              }`}
+            >
+              {option.label}
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+};
 
 const StaffMemberDetails = () => {
   const { staffId } = useParams();
@@ -24,6 +81,10 @@ const StaffMemberDetails = () => {
     assistanceResolved: 0,
     totalResolved: 0
   });
+
+  // Pagination state
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10;
   
   const [detailedAnalytics, setDetailedAnalytics] = useState({
     averageResolutionTime: 0,
@@ -104,7 +165,7 @@ const StaffMemberDetails = () => {
       setStaffMember(staffInfo);
 
       // Get resolved feedback and assistance requests
-      await fetchResolvedItems(staffId);
+      await fetchResolvedItems(staffId, staffInfo.joinedDate);
 
     } catch (error) {
       console.error('Error loading staff member details:', error);
@@ -113,7 +174,7 @@ const StaffMemberDetails = () => {
     }
   };
 
-  const fetchResolvedItems = async (employeeId) => {
+  const fetchResolvedItems = async (employeeId, joinedDate = null) => {
     const { start: fromDate } = getDateRange(timeFilter);
 
     // Fetch feedback sessions where employee is main resolver
@@ -273,10 +334,10 @@ const StaffMemberDetails = () => {
     });
 
     // Calculate detailed analytics
-    calculateDetailedAnalytics(combinedData);
+    calculateDetailedAnalytics(combinedData, joinedDate);
   };
 
-  const calculateDetailedAnalytics = (data) => {
+  const calculateDetailedAnalytics = (data, joinedDate = null) => {
     if (!data || data.length === 0) {
       setDetailedAnalytics({
         averageResolutionTime: 0,
@@ -294,6 +355,9 @@ const StaffMemberDetails = () => {
       });
       return;
     }
+
+    // Parse the joined date for filtering monthly stats
+    const staffJoinedDate = joinedDate ? new Date(joinedDate) : null;
 
     // Calculate resolution times
     const resolutionTimes = data.map(item => {
@@ -356,33 +420,38 @@ const StaffMemberDetails = () => {
       hourStats[hour]++;
     });
 
-    // Monthly performance (last 6 months)
+    // Monthly performance (last 6 months, but only show months after staff joined)
     const monthlyStats = [];
     for (let i = 5; i >= 0; i--) {
       const date = new Date();
       date.setMonth(date.getMonth() - i);
       const monthStart = new Date(date.getFullYear(), date.getMonth(), 1);
       const monthEnd = new Date(date.getFullYear(), date.getMonth() + 1, 0);
-      
+
+      // Skip months before staff member joined
+      if (staffJoinedDate && monthEnd < staffJoinedDate) {
+        continue;
+      }
+
       const monthData = data.filter(item => {
         const resolvedDate = new Date(item.resolved_at);
         return resolvedDate >= monthStart && resolvedDate <= monthEnd;
       });
-      
-      const monthAvgTime = monthData.length > 0 
+
+      const monthAvgTime = monthData.length > 0
         ? monthData.reduce((sum, item) => {
             const created = new Date(item.created_at);
             const resolved = new Date(item.resolved_at);
             return sum + ((resolved - created) / (1000 * 60));
-          }, 0) / monthData.length 
+          }, 0) / monthData.length
         : 0;
 
       monthlyStats.push({
         month: date.toLocaleDateString('en-US', { month: 'short', year: '2-digit' }),
         resolved: monthData.length,
         avgTime: monthAvgTime,
-        avgRating: monthData.filter(item => item.rating).length > 0 
-          ? monthData.filter(item => item.rating).reduce((sum, item) => sum + item.rating, 0) / monthData.filter(item => item.rating).length 
+        avgRating: monthData.filter(item => item.rating).length > 0
+          ? monthData.filter(item => item.rating).reduce((sum, item) => sum + item.rating, 0) / monthData.filter(item => item.rating).length
           : 0
       });
     }
@@ -509,6 +578,7 @@ const StaffMemberDetails = () => {
   useEffect(() => {
     if (venueId && staffId) {
       fetchStaffMemberDetails();
+      setCurrentPage(1); // Reset to first page when filter changes
     }
   }, [venueId, staffId, timeFilter]);
 
@@ -559,7 +629,18 @@ const StaffMemberDetails = () => {
               {staffMember.name.split(' ').map(word => word[0]).join('').toUpperCase()}
             </div>
             <div>
-              <h1 className="text-xl lg:text-2xl font-bold text-gray-900 dark:text-gray-100">{staffMember.name}</h1>
+              <div className="flex items-center gap-3">
+                <h1 className="text-xl lg:text-2xl font-bold text-gray-900 dark:text-gray-100">{staffMember.name}</h1>
+                <PermissionGate permission="staff.edit">
+                  <button
+                    onClick={() => navigate(`/staff/employees/${staffId}`)}
+                    className="inline-flex items-center gap-1.5 px-2.5 py-1 text-xs font-medium text-gray-600 dark:text-gray-400 bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-md transition-colors"
+                  >
+                    <Pencil className="w-3 h-3" />
+                    Edit Profile
+                  </button>
+                </PermissionGate>
+              </div>
               <p className="text-gray-600 dark:text-gray-400 text-sm lg:text-base">{staffMember.role}</p>
               <p className="text-gray-500 dark:text-gray-500 text-xs">Member since {dayjs(staffMember.joinedDate).format('MMM YYYY')}</p>
             </div>
@@ -569,18 +650,18 @@ const StaffMemberDetails = () => {
             {/* Time Filter */}
             <div className="flex items-center space-x-2">
               <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Period:</label>
-              <select
+              <CustomSelect
                 value={timeFilter}
-                onChange={(e) => setTimeFilter(e.target.value)}
-                className="px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-              >
-                <option value="today">Today</option>
-                <option value="thisWeek">This Week</option>
-                <option value="last7">Last 7 Days</option>
-                <option value="last30">Last 30 Days</option>
-                <option value="last90">Last 90 Days</option>
-                <option value="all">All Time</option>
-              </select>
+                onChange={setTimeFilter}
+                options={[
+                  { value: 'today', label: 'Today' },
+                  { value: 'thisWeek', label: 'This Week' },
+                  { value: 'last7', label: 'Last 7 Days' },
+                  { value: 'last30', label: 'Last 30 Days' },
+                  { value: 'last90', label: 'Last 90 Days' },
+                  { value: 'all', label: 'All Time' }
+                ]}
+              />
             </div>
 
             {/* Export Buttons */}
@@ -866,100 +947,151 @@ const StaffMemberDetails = () => {
           <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100">Resolved Feedback & Assistance Requests</h3>
           <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
             {timeFilter === 'all' ? 'All time' : `Filtered by: ${timeFilter.replace(/([A-Z])/g, ' $1').toLowerCase()}`}
+            {resolvedFeedback.length > 0 && ` • ${resolvedFeedback.length} total items`}
           </p>
         </div>
 
         {resolvedFeedback.length > 0 ? (
-          <div className="overflow-x-auto">
-            <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-              <thead className="bg-gray-50 dark:bg-gray-800">
-                <tr>
-                  <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wider">
-                    Date Resolved
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wider">
-                    Type
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wider">
-                    Content
-                  </th>
-                  <th className="px-6 py-3 text-center text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wider">
-                    Table
-                  </th>
-                  <th className="px-6 py-3 text-center text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wider">
-                    Rating
-                  </th>
-                  <th className="px-6 py-3 text-center text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wider">
-                    Resolution Time
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="bg-white dark:bg-gray-900 divide-y divide-gray-100 dark:divide-gray-800">
-                {resolvedFeedback.map((item, index) => (
-                  <tr
-                    key={`${item.type}-${item.id}`}
-                    className={`hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors duration-150 ${
-                      index % 2 === 0 ? 'bg-white dark:bg-gray-900' : 'bg-gray-50 dark:bg-gray-800/50'
-                    }`}
-                  >
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm text-gray-900 dark:text-gray-100">
-                        {dayjs(item.resolved_at).format('MMM D, YYYY')}
-                      </div>
-                      <div className="text-xs text-gray-500 dark:text-gray-400">
-                        {dayjs(item.resolved_at).format('h:mm A')}
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="flex flex-col gap-1">
-                        <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
-                          item.type === 'feedback'
-                            ? 'bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-300'
-                            : 'bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-300'
-                        }`}>
-                          {item.type === 'feedback' ? 'Negative Feedback' : 'Assistance'}
-                        </span>
-                        {item.isCoResolved && (
-                          <span className="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-purple-100 dark:bg-purple-900/30 text-purple-800 dark:text-purple-300">
-                            Co-resolved
-                          </span>
-                        )}
-                      </div>
-                    </td>
-                    <td className="px-6 py-4">
-                      <div className="text-sm text-gray-900 dark:text-gray-100 max-w-md">
-                        <div className="line-clamp-2">
-                          {item.content || 'No content provided'}
-                        </div>
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-center">
-                      <div className="text-sm text-gray-900 dark:text-gray-100">
-                        {item.table_number || 'N/A'}
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-center">
-                      {item.type === 'feedback' ? (
-                        <div className={`text-sm font-medium ${
-                          item.rating <= 2 ? 'text-red-600 dark:text-red-400' :
-                          item.rating <= 3 ? 'text-yellow-600 dark:text-yellow-400' : 'text-green-600 dark:text-green-400'
-                        }`}>
-                          {item.rating ? `${item.rating}/5` : 'N/A'}
-                        </div>
-                      ) : (
-                        <span className="text-sm text-gray-400 dark:text-gray-500">N/A</span>
-                      )}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-center">
-                      <div className="text-sm text-gray-900 dark:text-gray-100">
-                        {dayjs(item.resolved_at).from(dayjs(item.created_at), true)}
-                      </div>
-                    </td>
+          <>
+            <div className="overflow-x-auto">
+              <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                <thead className="bg-gray-50 dark:bg-gray-800">
+                  <tr>
+                    <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wider">
+                      Date Resolved
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wider">
+                      Type
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wider">
+                      Content
+                    </th>
+                    <th className="px-6 py-3 text-center text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wider">
+                      Table
+                    </th>
+                    <th className="px-6 py-3 text-center text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wider">
+                      Rating
+                    </th>
+                    <th className="px-6 py-3 text-center text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wider">
+                      Resolution Time
+                    </th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+                </thead>
+                <tbody className="bg-white dark:bg-gray-900 divide-y divide-gray-100 dark:divide-gray-800">
+                  {resolvedFeedback
+                    .slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage)
+                    .map((item, index) => (
+                    <tr
+                      key={`${item.type}-${item.id}`}
+                      className={`hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors duration-150 ${
+                        index % 2 === 0 ? 'bg-white dark:bg-gray-900' : 'bg-gray-50 dark:bg-gray-800/50'
+                      }`}
+                    >
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="text-sm text-gray-900 dark:text-gray-100">
+                          {dayjs(item.resolved_at).format('MMM D, YYYY')}
+                        </div>
+                        <div className="text-xs text-gray-500 dark:text-gray-400">
+                          {dayjs(item.resolved_at).format('h:mm A')}
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="flex flex-col gap-1">
+                          <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
+                            item.type === 'feedback'
+                              ? 'bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-300'
+                              : 'bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-300'
+                          }`}>
+                            {item.type === 'feedback' ? 'Negative Feedback' : 'Assistance'}
+                          </span>
+                          {item.isCoResolved && (
+                            <span className="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-purple-100 dark:bg-purple-900/30 text-purple-800 dark:text-purple-300">
+                              Co-resolved
+                            </span>
+                          )}
+                        </div>
+                      </td>
+                      <td className="px-6 py-4">
+                        <div className="text-sm max-w-md">
+                          {item.content ? (
+                            <div className="line-clamp-2 text-gray-900 dark:text-gray-100">
+                              {item.content}
+                            </div>
+                          ) : (
+                            <span className="text-gray-400 dark:text-gray-500">N/A</span>
+                          )}
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-center">
+                        <div className="text-sm text-gray-900 dark:text-gray-100">
+                          {item.table_number || 'N/A'}
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-center">
+                        {item.type === 'feedback' ? (
+                          <div className={`text-sm font-medium ${
+                            item.rating <= 2 ? 'text-red-600 dark:text-red-400' :
+                            item.rating <= 3 ? 'text-yellow-600 dark:text-yellow-400' : 'text-green-600 dark:text-green-400'
+                          }`}>
+                            {item.rating ? `${item.rating}/5` : 'N/A'}
+                          </div>
+                        ) : (
+                          <span className="text-sm text-gray-400 dark:text-gray-500">N/A</span>
+                        )}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-center">
+                        <div className="text-sm text-gray-900 dark:text-gray-100">
+                          {dayjs(item.resolved_at).from(dayjs(item.created_at), true)}
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+
+            {/* Pagination Controls */}
+            {resolvedFeedback.length > itemsPerPage && (
+              <div className="px-6 py-4 border-t border-gray-200 dark:border-gray-700 flex items-center justify-between">
+                <div className="text-sm text-gray-600 dark:text-gray-400">
+                  Showing {((currentPage - 1) * itemsPerPage) + 1} to {Math.min(currentPage * itemsPerPage, resolvedFeedback.length)} of {resolvedFeedback.length} items
+                </div>
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={() => setCurrentPage(1)}
+                    disabled={currentPage === 1}
+                    className="px-3 py-1.5 text-sm font-medium rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                  >
+                    First
+                  </button>
+                  <button
+                    onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                    disabled={currentPage === 1}
+                    className="px-3 py-1.5 text-sm font-medium rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                  >
+                    Previous
+                  </button>
+                  <span className="px-3 py-1.5 text-sm text-gray-700 dark:text-gray-300">
+                    Page {currentPage} of {Math.ceil(resolvedFeedback.length / itemsPerPage)}
+                  </span>
+                  <button
+                    onClick={() => setCurrentPage(prev => Math.min(prev + 1, Math.ceil(resolvedFeedback.length / itemsPerPage)))}
+                    disabled={currentPage >= Math.ceil(resolvedFeedback.length / itemsPerPage)}
+                    className="px-3 py-1.5 text-sm font-medium rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                  >
+                    Next
+                  </button>
+                  <button
+                    onClick={() => setCurrentPage(Math.ceil(resolvedFeedback.length / itemsPerPage))}
+                    disabled={currentPage >= Math.ceil(resolvedFeedback.length / itemsPerPage)}
+                    className="px-3 py-1.5 text-sm font-medium rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                  >
+                    Last
+                  </button>
+                </div>
+              </div>
+            )}
+          </>
         ) : (
           <div className="px-6 py-12 text-center text-gray-500 dark:text-gray-400">
             <div className="flex flex-col items-center">

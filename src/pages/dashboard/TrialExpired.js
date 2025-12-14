@@ -15,6 +15,7 @@ import StripeCheckoutModal from '../../components/dashboard/settings/StripeCheck
 // Pricing configuration (must match BillingTab)
 const PRICE_PER_VENUE_MONTHLY = 149;
 const PRICE_PER_VENUE_YEARLY = 1430;
+const VAT_RATE = 0.20; // 20% UK VAT
 
 const TrialExpired = () => {
   const navigate = useNavigate();
@@ -182,11 +183,17 @@ const TrialExpired = () => {
     });
   };
 
-  // Calculate totals
-  const monthlyTotal = venueCount * PRICE_PER_VENUE_MONTHLY;
-  const yearlyTotal = venueCount * PRICE_PER_VENUE_YEARLY;
-  const yearlyMonthlyEquivalent = yearlyTotal / 12;
-  const yearlyDiscount = ((monthlyTotal * 12 - yearlyTotal) / (monthlyTotal * 12) * 100).toFixed(0);
+  // Calculate totals (matching BillingTab structure)
+  const monthlySubtotal = venueCount * PRICE_PER_VENUE_MONTHLY;
+  const monthlyVat = Math.round(monthlySubtotal * VAT_RATE);
+  const monthlyTotal = monthlySubtotal + monthlyVat;
+
+  const yearlySubtotal = venueCount * PRICE_PER_VENUE_YEARLY;
+  const yearlyVat = Math.round(yearlySubtotal * VAT_RATE);
+  const yearlyTotal = yearlySubtotal + yearlyVat;
+
+  const yearlyMonthlyEquivalent = yearlySubtotal / 12;
+  const yearlyDiscount = ((monthlySubtotal * 12 - yearlySubtotal) / (monthlySubtotal * 12) * 100).toFixed(0);
 
   // Check if user is a manager (not master)
   const isManager = userRole === 'manager';
@@ -213,7 +220,7 @@ const TrialExpired = () => {
       <div className="bg-white border-b border-gray-200 px-6 py-4">
         <div className="max-w-4xl mx-auto flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <img src="/img/logo.svg" alt="Chatters" className="h-8" />
+            <img src="/img/logo/chatters-logo-2025.svg" alt="Chatters" className="h-8" />
           </div>
           <button
             onClick={handleLogout}
@@ -317,7 +324,7 @@ const TrialExpired = () => {
                       <div className="text-sm text-gray-500">
                         Total for {venueCount} venue{venueCount !== 1 ? 's' : ''}
                       </div>
-                      <span className="text-2xl font-bold text-gray-800">£{monthlyTotal.toLocaleString()}</span>
+                      <span className="text-2xl font-bold text-gray-800">£{monthlySubtotal.toLocaleString()}</span>
                       <span className="text-gray-600">/mo</span>
                     </div>
                     <input
@@ -347,7 +354,7 @@ const TrialExpired = () => {
                       <div className="text-sm text-gray-500">
                         Total for {venueCount} venue{venueCount !== 1 ? 's' : ''}
                       </div>
-                      <span className="text-2xl font-bold text-gray-800">£{yearlyTotal.toLocaleString()}</span>
+                      <span className="text-2xl font-bold text-gray-800">£{yearlySubtotal.toLocaleString()}</span>
                       <span className="text-gray-600">/yr</span>
                       <p className="text-xs text-green-600 font-medium mt-1">
                         £{yearlyMonthlyEquivalent.toFixed(2)}/mo equivalent
@@ -362,6 +369,11 @@ const TrialExpired = () => {
                     />
                   </div>
                 </label>
+
+                {/* VAT note */}
+                <p className="text-xs text-gray-500 text-center">
+                  {venueCount} venue{venueCount !== 1 ? 's' : ''} · Prices exclude VAT · Secured by Stripe
+                </p>
               </div>
 
               {/* CTA */}
@@ -379,7 +391,7 @@ const TrialExpired = () => {
                   ) : (
                     <>
                       <CreditCard className="w-5 h-5" />
-                      Subscribe Now - £{subscriptionType === 'monthly' ? monthlyTotal.toLocaleString() : yearlyTotal.toLocaleString()}{subscriptionType === 'monthly' ? '/mo' : '/yr'}
+                      Subscribe - £{subscriptionType === 'monthly' ? monthlySubtotal.toLocaleString() : yearlySubtotal.toLocaleString()}{subscriptionType === 'monthly' ? '/mo' : '/yr'} + VAT
                     </>
                   )}
                 </button>
@@ -412,6 +424,8 @@ const TrialExpired = () => {
           onClose={handleCloseModal}
           onSuccess={handlePaymentSuccess}
           clientSecret={clientSecret}
+          subtotal={subscriptionType === 'monthly' ? monthlySubtotal : yearlySubtotal}
+          vat={subscriptionType === 'monthly' ? monthlyVat : yearlyVat}
           total={subscriptionType === 'monthly' ? monthlyTotal : yearlyTotal}
           billingPeriod={subscriptionType}
           venueCount={venueCount}

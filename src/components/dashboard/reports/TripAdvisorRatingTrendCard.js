@@ -26,17 +26,13 @@ ChartJS.register(
   Filler
 );
 
-// TripAdvisor logo SVG component
+// TripAdvisor logo component
 const TripAdvisorLogo = () => (
-  <svg width="20" height="20" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <circle cx="24" cy="24" r="20" fill="#00AA6C"/>
-    <circle cx="17" cy="24" r="6" fill="white"/>
-    <circle cx="31" cy="24" r="6" fill="white"/>
-    <circle cx="17" cy="24" r="3" fill="black"/>
-    <circle cx="31" cy="24" r="3" fill="black"/>
-    <path d="M11 18C11 18 8 15 4 15" stroke="white" strokeWidth="2" strokeLinecap="round"/>
-    <path d="M37 18C37 18 40 15 44 15" stroke="white" strokeWidth="2" strokeLinecap="round"/>
-  </svg>
+  <img
+    src="https://www.skydivespain.com/wp-content/uploads/tripadvisor-logo-circle-owl-icon-black-green-858x858-1.png"
+    alt="TripAdvisor"
+    className="w-5 h-5"
+  />
 );
 
 const TripAdvisorRatingTrendCard = ({ venueId }) => {

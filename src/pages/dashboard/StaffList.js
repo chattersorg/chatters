@@ -272,18 +272,22 @@ const StaffListPage = () => {
       return nameA.localeCompare(nameB);
     });
 
-  // Get unique managers
+  // Get unique managers for the current venue
   const uniqueManagers = useMemo(() => {
+    // First filter to only managers assigned to the current venue
+    const managersInVenue = managers.filter(m => m.venue_id === venueId);
+
+    // Then deduplicate by user_id
     const unique = [];
     const seenUserIds = new Set();
-    managers.forEach(manager => {
+    managersInVenue.forEach(manager => {
       if (!seenUserIds.has(manager.user_id)) {
         seenUserIds.add(manager.user_id);
         unique.push(manager);
       }
     });
     return unique;
-  }, [managers]);
+  }, [managers, venueId]);
 
   // Filter data based on search and active tab
   const filteredData = useMemo(() => {
@@ -783,9 +787,12 @@ const StaffListPage = () => {
                                 {((manager.users?.first_name || '') + ' ' + (manager.users?.last_name || '')).split(' ').map(word => word[0]).join('').toUpperCase()}
                               </div>
                               <div>
-                                <div className="text-sm font-medium text-gray-900 dark:text-white">
+                                <button
+                                  onClick={() => navigate(`/staff/managers/${manager.user_id}`)}
+                                  className="text-sm font-medium text-gray-900 dark:text-white hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
+                                >
                                   {manager.users?.first_name} {manager.users?.last_name}
-                                </div>
+                                </button>
                               </div>
                             </div>
                           </td>
@@ -813,7 +820,7 @@ const StaffListPage = () => {
                             <div className="flex items-center justify-center space-x-2">
                               <button
                                 onClick={() => navigate(`/staff/managers/${manager.user_id}`)}
-                                className="text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 text-sm font-medium flex items-center gap-1"
+                                className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-md transition-colors"
                               >
                                 <Eye className="w-3.5 h-3.5" />
                                 View
@@ -830,15 +837,6 @@ const StaffListPage = () => {
                                   </button>
                                 </PermissionGate>
                               )}
-
-                              <PermissionGate permission="managers.remove">
-                                <button
-                                  onClick={() => setManagerToDelete(manager)}
-                                  className="text-red-600 dark:text-red-400 hover:text-red-800 dark:hover:text-red-300 text-sm font-medium"
-                                >
-                                  Delete
-                                </button>
-                              </PermissionGate>
                             </div>
                           </td>
                         </tr>
@@ -861,9 +859,12 @@ const StaffListPage = () => {
                               {`${employee.first_name?.[0] || ''}${employee.last_name?.[0] || ''}`.toUpperCase()}
                             </div>
                             <div>
-                              <div className="text-sm font-medium text-gray-900 dark:text-white">
+                              <button
+                                onClick={() => navigate(`/staff/employees/${employee.id}`)}
+                                className="text-sm font-medium text-gray-900 dark:text-white hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
+                              >
                                 {employee.first_name} {employee.last_name}
-                              </div>
+                              </button>
                             </div>
                           </div>
                         </td>
@@ -893,31 +894,13 @@ const StaffListPage = () => {
                           )}
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-center">
-                          <div className="flex items-center justify-center space-x-2">
-                            <button
-                              onClick={() => navigate(`/staff/employees/${employee.id}`)}
-                              className="text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 text-sm font-medium flex items-center gap-1"
-                            >
-                              <Eye className="w-3.5 h-3.5" />
-                              View
-                            </button>
-                            <PermissionGate permission="staff.edit">
-                              <button
-                                onClick={() => handleEditEmployee(employee)}
-                                className="text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-300 text-sm font-medium"
-                              >
-                                Edit
-                              </button>
-                            </PermissionGate>
-                            <PermissionGate permission="staff.edit">
-                              <button
-                                onClick={() => handleDeleteEmployee(employee)}
-                                className="text-red-600 dark:text-red-400 hover:text-red-800 dark:hover:text-red-300 text-sm font-medium"
-                              >
-                                Delete
-                              </button>
-                            </PermissionGate>
-                          </div>
+                          <button
+                            onClick={() => navigate(`/staff/employees/${employee.id}`)}
+                            className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-md transition-colors"
+                          >
+                            <Eye className="w-3.5 h-3.5" />
+                            View
+                          </button>
                         </td>
                       </tr>
                     ))}

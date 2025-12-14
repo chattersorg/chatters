@@ -40,7 +40,6 @@ import {
   List,
   LayoutDashboard,
   Sparkles,
-  Shield,
   Key
 } from 'lucide-react';
 
@@ -65,16 +64,35 @@ const venueNavItems = [
     permission: 'ai.insights',
     subItems: [
       { label: 'Weekly Insights', path: '/ai/insights', icon: Sparkles, permission: 'ai.insights' },
-      { label: 'Chatters Intelligence', path: '/ai/intelligence', icon: MessageSquare, permission: 'ai.chat' }
+      { label: 'Chat', path: '/ai/chat', icon: MessageSquare, permission: 'ai.chat' }
     ]
   },
   {
-    id: 'questions',
-    label: 'Questions',
-    icon: HelpCircle,
-    path: '/questions',
+    id: 'feedback',
+    label: 'Feedback',
+    icon: MessageSquare,
+    path: '/feedback/all',
     color: 'text-green-600',
-    permission: 'questions.view'
+    permission: 'feedback.view',
+    subItems: [
+      { label: 'All Feedback', path: '/feedback/all', icon: List, permission: 'feedback.view' },
+      { label: 'Questions', path: '/feedback/questions', icon: HelpCircle, permission: 'questions.view' },
+      { label: 'Insights', path: '/feedback/insights', icon: Zap, permission: 'reports.view' },
+      { label: 'Settings', path: '/settings/feedback', icon: Settings, permission: 'venue.view' }
+    ]
+  },
+  {
+    id: 'nps',
+    label: 'NPS',
+    icon: Star,
+    path: '/nps/score',
+    color: 'text-amber-600',
+    permission: 'nps.view',
+    subItems: [
+      { label: 'Score', path: '/nps/score', icon: Star, permission: 'nps.view' },
+      { label: 'Insights', path: '/nps/insights', icon: TrendingUp, permission: 'nps.view' },
+      { label: 'Settings', path: '/nps/settings', icon: Settings, permission: 'nps.edit' }
+    ]
   },
   {
     id: 'reviews',
@@ -87,30 +105,15 @@ const venueNavItems = [
   },
   {
     id: 'reports',
-    label: 'Reporting',
+    label: 'Reports',
     icon: BarChart3,
-    path: '/reports/feedback',
+    path: '/reports/performance',
     color: 'text-purple-600',
     permission: 'reports.view',
     subItems: [
-      { label: 'Feedback', path: '/reports/feedback', icon: MessageSquare, permission: 'reports.view' },
       { label: 'Performance', path: '/reports/performance', icon: TrendingUp, permission: 'reports.view' },
-      { label: 'Impact', path: '/reports/impact', icon: Target, permission: 'reports.view' },
-      { label: 'Insights', path: '/reports/insights', icon: Zap, permission: 'reports.view' },
       { label: 'Metrics', path: '/reports/metrics', icon: PieChart, permission: 'reports.view' },
       { label: 'Custom', path: '/reports/builder', icon: FileText, permission: 'reports.create' }
-    ]
-  },
-  {
-    id: 'nps',
-    label: 'NPS',
-    icon: Star,
-    path: '/nps/score',
-    color: 'text-amber-600',
-    permission: 'nps.view',
-    subItems: [
-      { label: 'Score', path: '/nps/score', icon: Star, permission: 'nps.view' },
-      { label: 'Insights', path: '/nps/insights', icon: TrendingUp, permission: 'nps.view' }
     ]
   },
   {
@@ -119,13 +122,13 @@ const venueNavItems = [
     icon: Users,
     path: '/staff/leaderboard',
     color: 'text-orange-600',
-    permission: 'staff.leaderboard', // Show if user has any staff permission
+    permission: 'staff.leaderboard',
     subItems: [
       { label: 'Leaderboard', path: '/staff/leaderboard', icon: Trophy, permission: 'staff.leaderboard' },
       { label: 'Recognition', path: '/staff/recognition', icon: Award, permission: 'staff.recognition' },
-      { label: 'Staff List', path: '/staff/list', icon: Users, permission: 'staff.view' },
-      { label: 'Roles', path: '/staff/roles', icon: UserPlus, badge: 'BETA', permission: 'staff.edit' },
-      { label: 'Locations', path: '/staff/locations', icon: Building2, badge: 'BETA', permission: 'staff.edit' }
+      { label: 'Team', path: '/staff/team', icon: Users, permission: 'staff.view' },
+      { label: 'Roles', path: '/staff/roles', icon: UserCheck, permission: 'staff.roles' },
+      { label: 'Locations', path: '/staff/locations', icon: Map, permission: 'staff.locations' }
     ]
   },
   {
@@ -137,18 +140,17 @@ const venueNavItems = [
     permission: 'floorplan.view'
   },
   {
-    id: 'venue-settings',
-    label: 'Venue Settings',
+    id: 'settings',
+    label: 'Settings',
     icon: Settings,
-    path: '/venue-settings/feedback',
+    path: '/settings/venue',
     color: 'text-gray-600',
     permission: 'venue.view',
     subItems: [
-      { label: 'Venue Details', path: '/venue-settings/details', icon: Building2, permission: 'venue.view' },
-      { label: 'Feedback', path: '/venue-settings/feedback', icon: MessageSquare, permission: 'venue.view' },
-      { label: 'Branding', path: '/venue-settings/branding', icon: Palette, permission: 'venue.branding' },
-      { label: 'QR Code', path: '/venue-settings/qr-code', icon: QrCode, permission: 'qr.view' },
-      { label: 'Integrations', path: '/venue-settings/integrations', icon: Activity, permission: 'venue.integrations' }
+      { label: 'Venue', path: '/settings/venue', icon: Building2, permission: 'venue.view' },
+      { label: 'Branding', path: '/settings/branding', icon: Palette, permission: 'venue.branding' },
+      { label: 'QR Code', path: '/settings/qr-code', icon: QrCode, permission: 'qr.view' },
+      { label: 'Integrations', path: '/settings/integrations', icon: Activity, permission: 'venue.integrations' }
     ]
   }
 ];
@@ -186,15 +188,11 @@ const multiVenueNavItems = [
 // Administration Section - Master-only for account-wide management
 const adminNavItems = [
   {
-    id: 'permissions',
-    label: 'Permissions',
-    icon: Shield,
-    path: '/admin/permissions',
-    color: 'text-rose-600',
-    subItems: [
-      { label: 'Manager Access', path: '/admin/permissions/managers', icon: Users },
-      { label: 'Role Templates', path: '/admin/permissions/templates', icon: Key }
-    ]
+    id: 'permission-templates',
+    label: 'Permission Templates',
+    icon: Key,
+    path: '/admin/permissions/templates',
+    color: 'text-rose-600'
   }
 ];
 
@@ -439,10 +437,7 @@ const Sidebar = ({ collapsed, setCollapsed }) => {
                   onClick={() => setVenueDropdownOpen(!venueDropdownOpen)}
                   className="w-full flex items-center justify-between px-3 py-2.5 rounded-lg bg-gray-50 dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors border border-gray-200 dark:border-gray-700"
                 >
-                  <div className="flex items-center gap-2 min-w-0">
-                    <Building2 className="w-5 h-5 text-gray-600 dark:text-gray-300 flex-shrink-0" />
-                    <span className="text-sm font-medium text-gray-900 dark:text-gray-100 truncate">{venueName}</span>
-                  </div>
+                  <span className="text-sm font-medium text-gray-900 dark:text-gray-100 truncate">{venueName}</span>
                   <ChevronDown className={`w-4 h-4 text-gray-400 dark:text-gray-400 flex-shrink-0 transition-transform ${venueDropdownOpen ? 'rotate-180' : ''}`} />
                 </button>
                 {venueDropdownOpen && (
@@ -458,7 +453,6 @@ const Sidebar = ({ collapsed, setCollapsed }) => {
                           venue.id === venueId ? 'bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-400 font-medium' : 'text-gray-700 dark:text-gray-300'
                         }`}
                       >
-                        <Building2 className="w-4 h-4 flex-shrink-0" />
                         <span className="truncate">{venue.name}</span>
                         {venue.id === venueId && <span className="ml-auto text-blue-600 dark:text-blue-400">✓</span>}
                       </button>
@@ -467,8 +461,7 @@ const Sidebar = ({ collapsed, setCollapsed }) => {
                 )}
               </div>
             ) : (
-              <div className="flex items-center gap-2 px-3 py-2.5 rounded-lg bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700">
-                <Building2 className="w-5 h-5 text-gray-600 dark:text-gray-300 flex-shrink-0" />
+              <div className="px-3 py-2.5 rounded-lg bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700">
                 <span className="text-sm font-medium text-gray-900 dark:text-gray-100 truncate">{venueName}</span>
               </div>
             )}

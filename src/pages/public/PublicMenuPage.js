@@ -11,8 +11,22 @@ const DIETARY_TAGS = {
   N: { label: 'Contains Nuts', color: 'bg-red-100 text-red-700', dot: 'bg-red-500' }
 };
 
+const CURRENCY_SYMBOLS = {
+  GBP: '£',
+  EUR: '€',
+  USD: '$',
+  AUD: 'A$',
+  CAD: 'C$',
+  CHF: 'CHF',
+  NZD: 'NZ$',
+  SEK: 'kr',
+  NOK: 'kr',
+  DKK: 'kr',
+  RON: 'lei',
+};
+
 // Item Detail Modal Component
-const ItemDetailModal = ({ item, onClose }) => {
+const ItemDetailModal = ({ item, onClose, currencySymbol = '£' }) => {
   if (!item) return null;
 
   return (
@@ -54,7 +68,7 @@ const ItemDetailModal = ({ item, onClose }) => {
             <h2 className="text-xl font-bold text-gray-900">{item.name}</h2>
             {item.price !== null && (
               <span className="text-xl font-bold text-gray-900 whitespace-nowrap">
-                £{item.price.toFixed(2)}
+                {currencySymbol}{item.price.toFixed(2)}
               </span>
             )}
           </div>
@@ -100,6 +114,7 @@ const PublicMenuPage = () => {
   const [activeCategory, setActiveCategory] = useState('all');
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedItem, setSelectedItem] = useState(null);
+  const [currencySymbol, setCurrencySymbol] = useState('£');
   const categoryTabsRef = useRef(null);
   const searchInputRef = useRef(null);
 
@@ -125,7 +140,7 @@ const PublicMenuPage = () => {
 
     const { data: venueData, error: venueError } = await supabase
       .from('venues')
-      .select('name, logo, primary_color, background_color, text_color, menu_type, menu_url, menu_pdf_url')
+      .select('name, logo, primary_color, background_color, text_color, menu_type, menu_url, menu_pdf_url, menu_currency')
       .eq('id', venueId)
       .single();
 
@@ -136,6 +151,11 @@ const PublicMenuPage = () => {
     }
 
     setVenue(venueData);
+
+    // Set currency symbol from venue settings
+    if (venueData.menu_currency) {
+      setCurrencySymbol(CURRENCY_SYMBOLS[venueData.menu_currency] || '£');
+    }
 
     if (venueData.menu_type === 'link' && venueData.menu_url) {
       window.location.href = venueData.menu_url.startsWith('http')
@@ -405,7 +425,7 @@ const PublicMenuPage = () => {
                   {/* Price */}
                   {item.price !== null && (
                     <p className="text-lg font-bold text-gray-900">
-                      £{item.price.toFixed(2)}
+                      {currencySymbol}{item.price.toFixed(2)}
                     </p>
                   )}
                 </div>
@@ -427,6 +447,7 @@ const PublicMenuPage = () => {
         <ItemDetailModal
           item={selectedItem}
           onClose={() => setSelectedItem(null)}
+          currencySymbol={currencySymbol}
         />
       )}
     </div>

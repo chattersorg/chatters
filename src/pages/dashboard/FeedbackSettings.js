@@ -60,13 +60,6 @@ const FeedbackSettings = () => {
   const [sessionTimeoutLoading, setSessionTimeoutLoading] = useState(false);
   const [sessionTimeoutMessage, setSessionTimeoutMessage] = useState('');
 
-  // NPS state
-  const [npsEnabled, setNpsEnabled] = useState(false);
-  const [npsDelayHours, setNpsDelayHours] = useState(24);
-  const [npsQuestion, setNpsQuestion] = useState('How likely are you to recommend us to a friend or colleague?');
-  const [npsLoading, setNpsLoading] = useState(false);
-  const [npsMessage, setNpsMessage] = useState('');
-
   // Co-resolver state
   const [enableCoResolving, setEnableCoResolving] = useState(false);
   const [coResolverLoading, setCoResolverLoading] = useState(false);
@@ -74,7 +67,6 @@ const FeedbackSettings = () => {
 
   // Review threshold state
   const [feedbackReviewThreshold, setFeedbackReviewThreshold] = useState(4);
-  const [npsReviewThreshold, setNpsReviewThreshold] = useState(9);
   const [reviewThresholdLoading, setReviewThresholdLoading] = useState(false);
   const [reviewThresholdMessage, setReviewThresholdMessage] = useState('');
 
@@ -87,7 +79,7 @@ const FeedbackSettings = () => {
     try {
       const { data: venueData, error } = await supabase
         .from('venues')
-        .select('tripadvisor_link, google_review_link, session_timeout_hours, nps_enabled, nps_delay_hours, nps_question, place_id, tripadvisor_location_id, enable_co_resolving, feedback_review_threshold, nps_review_threshold')
+        .select('tripadvisor_link, google_review_link, session_timeout_hours, place_id, tripadvisor_location_id, enable_co_resolving, feedback_review_threshold')
         .eq('id', venueId)
         .single();
 
@@ -100,14 +92,10 @@ const FeedbackSettings = () => {
       setGoogleReviewLink(venueData.google_review_link || '');
       setSessionTimeoutHours(venueData.session_timeout_hours || 2);
       setSelectedTimeoutHours(venueData.session_timeout_hours || 2);
-      setNpsEnabled(venueData.nps_enabled || false);
-      setNpsDelayHours(venueData.nps_delay_hours || 24);
-      setNpsQuestion(venueData.nps_question || 'How likely are you to recommend us to a friend or colleague?');
       setPlaceId(venueData.place_id || '');
       setTripadvisorLocationId(venueData.tripadvisor_location_id || '');
       setEnableCoResolving(venueData.enable_co_resolving || false);
       setFeedbackReviewThreshold(venueData.feedback_review_threshold ?? 4);
-      setNpsReviewThreshold(venueData.nps_review_threshold ?? 9);
     } catch (error) {
       console.error('Error fetching feedback settings:', error);
     }
@@ -184,31 +172,6 @@ const FeedbackSettings = () => {
     }
   };
 
-  const saveNPSSettings = async () => {
-    if (!venueId) return;
-    setNpsLoading(true);
-    setNpsMessage('');
-
-    try {
-      const { error } = await supabase
-        .from('venues')
-        .update({
-          nps_enabled: npsEnabled,
-          nps_delay_hours: npsDelayHours,
-          nps_question: npsQuestion
-        })
-        .eq('id', venueId);
-
-      if (error) throw error;
-      setNpsMessage('NPS settings updated successfully!');
-    } catch (error) {
-      console.error('Error saving NPS settings:', error);
-      setNpsMessage(`Failed to save NPS settings: ${error.message}`);
-    } finally {
-      setNpsLoading(false);
-    }
-  };
-
   const saveCoResolverSettings = async () => {
     if (!venueId) return;
     setCoResolverLoading(true);
@@ -230,7 +193,7 @@ const FeedbackSettings = () => {
     }
   };
 
-  const saveReviewThresholds = async () => {
+  const saveReviewThreshold = async () => {
     if (!venueId) return;
     setReviewThresholdLoading(true);
     setReviewThresholdMessage('');
@@ -239,16 +202,15 @@ const FeedbackSettings = () => {
       const { error } = await supabase
         .from('venues')
         .update({
-          feedback_review_threshold: feedbackReviewThreshold,
-          nps_review_threshold: npsReviewThreshold
+          feedback_review_threshold: feedbackReviewThreshold
         })
         .eq('id', venueId);
 
       if (error) throw error;
-      setReviewThresholdMessage('Review thresholds updated successfully!');
+      setReviewThresholdMessage('Review threshold updated successfully!');
     } catch (error) {
-      console.error('Error saving review thresholds:', error);
-      setReviewThresholdMessage(`Failed to save review thresholds: ${error.message}`);
+      console.error('Error saving review threshold:', error);
+      setReviewThresholdMessage(`Failed to save review threshold: ${error.message}`);
     } finally {
       setReviewThresholdLoading(false);
     }
@@ -335,16 +297,15 @@ const FeedbackSettings = () => {
         </div>
       </SettingsCard>
 
-      {/* Review Prompt Thresholds */}
+      {/* Review Prompt Threshold */}
       <SettingsCard
-        title="Review Prompt Thresholds"
-        description="Set the minimum score required to show Google/TripAdvisor review links"
-        onSave={saveReviewThresholds}
+        title="Feedback Review Prompt Threshold"
+        description="Set the minimum star rating required to show Google/TripAdvisor review links after feedback"
+        onSave={saveReviewThreshold}
         loading={reviewThresholdLoading}
         message={reviewThresholdMessage}
       >
-        <div className="space-y-6">
-          {/* Feedback Threshold */}
+        <div className="space-y-4">
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
               Feedback Rating Threshold
@@ -365,33 +326,6 @@ const FeedbackSettings = () => {
                   />
                   <span className="ml-2 text-sm text-gray-700 dark:text-gray-300">
                     {rating}+ star{rating !== 1 ? 's' : ''} {rating === 4 ? '(default)' : ''}
-                  </span>
-                </label>
-              ))}
-            </div>
-          </div>
-
-          {/* NPS Threshold */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-              NPS Score Threshold
-            </label>
-            <p className="text-xs text-gray-500 dark:text-gray-400 mb-3">
-              Minimum NPS score (0-10) required to show review links after NPS survey
-            </p>
-            <div className="flex flex-wrap gap-3">
-              {[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((score) => (
-                <label key={score} className="flex items-center cursor-pointer">
-                  <input
-                    type="radio"
-                    name="npsThreshold"
-                    value={score}
-                    checked={npsReviewThreshold === score}
-                    onChange={() => setNpsReviewThreshold(score)}
-                    className="w-4 h-4 text-blue-600 border-gray-300 dark:border-gray-600 focus:ring-blue-500"
-                  />
-                  <span className="ml-2 text-sm text-gray-700 dark:text-gray-300">
-                    {score}+ {score === 9 ? '(default)' : ''}
                   </span>
                 </label>
               ))}
@@ -435,78 +369,6 @@ const FeedbackSettings = () => {
 
       {/* Feedback Collection Hours */}
       <FeedbackTimeSelection currentVenueId={venueId} />
-
-      {/* NPS Settings */}
-      <SettingsCard
-        title="Net Promoter Score (NPS)"
-        description="Send automated follow-up emails to gather customer loyalty insights"
-        onSave={saveNPSSettings}
-        loading={npsLoading}
-        message={npsMessage}
-      >
-        <div className="space-y-6">
-          {/* Enable Toggle */}
-          <div className="flex items-center justify-between">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                Enable NPS Emails
-              </label>
-              <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">Automatically send NPS surveys after visits</p>
-            </div>
-            <label className="relative inline-flex items-center cursor-pointer">
-              <input
-                type="checkbox"
-                checked={npsEnabled}
-                onChange={(e) => setNpsEnabled(e.target.checked)}
-                className="sr-only peer"
-              />
-              <div className="w-11 h-6 bg-gray-200 dark:bg-gray-700 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 dark:after:border-gray-600 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#2548CC]"></div>
-            </label>
-          </div>
-
-          {npsEnabled && (
-            <>
-              {/* Delay Hours */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
-                  Send Delay
-                </label>
-                <div className="flex gap-4">
-                  {[12, 24, 36].map((hours) => (
-                    <label key={hours} className="flex items-center cursor-pointer">
-                      <input
-                        type="radio"
-                        name="npsDelay"
-                        value={hours}
-                        checked={npsDelayHours === hours}
-                        onChange={() => setNpsDelayHours(hours)}
-                        className="w-4 h-4 text-blue-600 border-gray-300 dark:border-gray-600 focus:ring-blue-500"
-                      />
-                      <span className="ml-2 text-sm text-gray-700 dark:text-gray-300">
-                        {hours}h {hours === 24 ? '(recommended)' : ''}
-                      </span>
-                    </label>
-                  ))}
-                </div>
-              </div>
-
-              {/* NPS Question */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  NPS Question
-                </label>
-                <textarea
-                  value={npsQuestion}
-                  onChange={(e) => setNpsQuestion(e.target.value)}
-                  rows={2}
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 dark:bg-gray-800 dark:text-white dark:placeholder-gray-400 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
-                  placeholder="How likely are you to recommend us to a friend or colleague?"
-                />
-              </div>
-            </>
-          )}
-        </div>
-      </SettingsCard>
 
       {/* Co-Resolver Settings */}
       <SettingsCard

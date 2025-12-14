@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { ArrowRight, Loader2, Eye, EyeOff } from 'lucide-react';
 import { supabase } from '../../utils/supabase';
 import { getMarketingUrl } from '../../utils/domainUtils';
@@ -13,6 +13,7 @@ const SetPasswordPage = () => {
   const [message, setMessage] = useState('');
   const [formReady, setFormReady] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [invitationToken, setInvitationToken] = useState(null);
   const [invitationEmail, setInvitationEmail] = useState('');
   const [isTokenBased, setIsTokenBased] = useState(false);
@@ -96,19 +97,18 @@ const SetPasswordPage = () => {
     e.preventDefault();
     setError('');
     setMessage('');
-    setIsLoading(true);
 
     if (password !== confirmPassword) {
       setError('Passwords do not match.');
-      setIsLoading(false);
       return;
     }
 
     if (password.length < 6) {
       setError('Password must be at least 6 characters long.');
-      setIsLoading(false);
       return;
     }
+
+    setIsSubmitting(true);
 
     try {
       if (isTokenBased) {
@@ -127,7 +127,7 @@ const SetPasswordPage = () => {
         if (!response.ok || !data.success) {
           console.error('[SetPassword] Token-based account creation error:', data);
           setError(data.message || 'Failed to create account. Please try again or request a new invitation.');
-          setIsLoading(false);
+          setIsSubmitting(false);
           return;
         }
 
@@ -140,7 +140,7 @@ const SetPasswordPage = () => {
         if (error) {
           console.error('[SetPassword] Password update error:', error.message);
           setError('Failed to set password. Please try again.');
-          setIsLoading(false);
+          setIsSubmitting(false);
         } else {
           setMessage('Password successfully set! Redirecting...');
           setTimeout(() => navigate('/signin'), 2000);
@@ -149,285 +149,142 @@ const SetPasswordPage = () => {
     } catch (err) {
       console.error('[SetPassword] Unexpected error:', err);
       setError('Something went wrong. Please try again.');
-      setIsLoading(false);
+      setIsSubmitting(false);
     }
   };
 
   return (
-    <div className="min-h-screen flex">
-      {/* Mobile Layout - Dark theme with spacing */}
-      <div className="lg:hidden w-full bg-gray-900 flex flex-col min-h-screen">
-        {/* Mobile Header */}
-        <div className="flex items-center justify-between p-6">
-          <a
-            href={getMarketingUrl()}
-            className="text-gray-300 hover:text-white flex items-center transition-colors text-sm font-medium"
-          >
-            <ArrowRight className="h-4 w-4 rotate-180 mr-2" />
-            Back to website
-          </a>
-        </div>
-        
-        {/* Mobile Logo */}
-        <div className="flex justify-center mb-8">
-          <img
-            src={getMarketingUrl('/img/Logo.svg')}
-            alt="Chatters Logo"
-            className="h-8 w-auto filter invert brightness-0 invert"
-          />
-        </div>
-
-        {/* Mobile Form */}
-        <div className="flex-1 flex items-center justify-center px-6 pb-8">
-          <div className="w-full max-w-sm">
-            <div className="mb-8">
-              <h2 className="text-3xl font-bold text-white mb-2 text-center">
-                Set Your Password
-              </h2>
-              <p className="text-gray-300 text-center text-sm">
-                Enter a new password for your account
-              </p>
-            </div>
-
-            {error && (
-              <div className="mb-6 p-4 bg-red-900/20 border border-red-500/30 text-red-400 rounded-lg text-sm">
-                {error}
-              </div>
-            )}
-
-            {message && (
-              <div className="mb-6 p-4 bg-green-900/20 border border-green-500/30 text-green-400 rounded-lg text-sm">
-                {message}
-              </div>
-            )}
-
-            {!isLoading && formReady && (
-              <form onSubmit={handleSetPassword} className="space-y-6">
-                <div>
-                  <label htmlFor="password-mobile" className="block text-sm font-medium text-gray-300 mb-2">
-                    New Password
-                  </label>
-                  <div className="relative">
-                    <input
-                      type={showPassword ? 'text' : 'password'}
-                      id="password-mobile"
-                      value={password}
-                      onChange={(e) => setPassword(e.target.value)}
-                      required
-                      className="w-full px-4 py-3 pr-12 border border-gray-600 bg-gray-800 text-white rounded-lg focus:ring-2 focus:ring-white focus:border-transparent outline-none transition-all placeholder:text-gray-400"
-                      placeholder="Enter new password"
-                    />
-                    <button
-                      type="button"
-                      onClick={() => setShowPassword(!showPassword)}
-                      className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-white"
-                      aria-label={showPassword ? 'Hide password' : 'Show password'}
-                    >
-                      {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
-                    </button>
-                  </div>
-                </div>
-
-                <div>
-                  <label htmlFor="confirmPassword-mobile" className="block text-sm font-medium text-gray-300 mb-2">
-                    Confirm Password
-                  </label>
-                  <div className="relative">
-                    <input
-                      type={showConfirmPassword ? 'text' : 'password'}
-                      id="confirmPassword-mobile"
-                      value={confirmPassword}
-                      onChange={(e) => setConfirmPassword(e.target.value)}
-                      required
-                      className="w-full px-4 py-3 pr-12 border border-gray-600 bg-gray-800 text-white rounded-lg focus:ring-2 focus:ring-white focus:border-transparent outline-none transition-all placeholder:text-gray-400"
-                      placeholder="Confirm new password"
-                    />
-                    <button
-                      type="button"
-                      onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                      className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-white"
-                      aria-label={showConfirmPassword ? 'Hide password' : 'Show password'}
-                    >
-                      {showConfirmPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
-                    </button>
-                  </div>
-                </div>
-
-                <button
-                  type="submit"
-                  disabled={isLoading}
-                  className="w-full bg-white text-gray-900 py-3 px-4 rounded-lg font-semibold hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-gray-900 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center justify-center"
-                >
-                  {isLoading ? (
-                    <>
-                      <Loader2 className="w-5 h-5 animate-spin mr-2" />
-                      Setting Password...
-                    </>
-                  ) : (
-                    'Set Password'
-                  )}
-                </button>
-              </form>
-            )}
-
-            {isLoading && (
-              <div className="flex items-center justify-center py-8">
-                <Loader2 className="w-8 h-8 animate-spin text-white" />
-                <span className="ml-3 text-white">Validating reset link...</span>
-              </div>
-            )}
-          </div>
-        </div>
+    <div className="min-h-screen bg-white flex flex-col">
+      {/* Back to website link */}
+      <div className="p-6">
+        <a
+          href={getMarketingUrl()}
+          className="text-gray-500 hover:text-gray-700 flex items-center transition-colors text-sm font-medium"
+        >
+          <ArrowRight className="h-4 w-4 rotate-180 mr-2" />
+          Back to website
+        </a>
       </div>
 
-      {/* Desktop Layout - Full screen split */}
-      <div className="hidden lg:flex w-full min-h-screen">
-        {/* Left Panel - Brand with gradient background */}
-        <div className="w-1/2 bg-gradient-to-br from-blue-100 via-green-100 via-orange-100 to-purple-100 p-12 flex flex-col justify-center relative">
-          <div className="absolute top-6 left-6 z-10">
-            <a
-              href={getMarketingUrl()}
-              className="text-gray-700 hover:text-gray-900 flex items-center transition-colors text-sm font-medium"
-            >
-              <ArrowRight className="h-4 w-4 rotate-180 mr-2" />
-              Back to website
-            </a>
+      {/* Centered content */}
+      <div className="flex-1 flex items-center justify-center px-6 pb-12">
+        <div className="w-full max-w-sm">
+          {/* Logo */}
+          <div className="flex justify-center mb-8">
+            <img
+              src={getMarketingUrl('/img/logo/chatters-logo-2025.svg')}
+              alt="Chatters"
+              className="h-8 w-auto"
+            />
           </div>
 
-          <div className="max-w-xl">
-            <div className="mb-8">
-              <img
-                src={getMarketingUrl('/img/Logo.svg')}
-                alt="Chatters Logo"
-                className="h-8 w-auto mb-12"
-              />
-            </div>
-
-            <div>
-              <h1 className="text-5xl font-bold text-gray-900 mb-6 leading-tight">
-                Set your new password
-              </h1>
-              <p className="text-gray-700 text-lg leading-relaxed mb-8">
-                Create a secure password for your account to complete the setup process.
-              </p>
-            </div>
-
-            <div className="space-y-4">
-              <div className="flex items-center text-gray-700">
-                <div className="w-2 h-2 bg-green-500 rounded-full mr-3 flex-shrink-0"></div>
-                <span>Secure password setup</span>
-              </div>
-              <div className="flex items-center text-gray-700">
-                <div className="w-2 h-2 bg-green-500 rounded-full mr-3 flex-shrink-0"></div>
-                <span>Encrypted data protection</span>
-              </div>
-              <div className="flex items-center text-gray-700">
-                <div className="w-2 h-2 bg-green-500 rounded-full mr-3 flex-shrink-0"></div>
-                <span>Instant account activation</span>
-              </div>
-            </div>
+          {/* Header */}
+          <div className="text-center mb-8">
+            <h1 className="text-2xl font-bold text-gray-900 mb-2">
+              Set your password
+            </h1>
+            <p className="text-gray-500">
+              Create a password for your account
+            </p>
           </div>
-        </div>
 
-        {/* Right Panel - Black background with form */}
-        <div className="w-1/2 bg-black p-12 flex flex-col justify-center">
-          <div className="max-w-md mx-auto w-full">
-            <div className="mb-8">
-              <h2 className="text-3xl font-bold text-white mb-2">
-                Set Your Password
-              </h2>
-              <p className="text-gray-300 text-sm">
-                Enter a new password for your account
-              </p>
+          {/* Error message */}
+          {error && (
+            <div className="mb-6 p-4 bg-red-50 border border-red-200 text-red-600 rounded-lg text-sm">
+              {error}
             </div>
+          )}
 
-            {error && (
-              <div className="mb-6 p-4 bg-red-900/20 border border-red-500/30 text-red-400 rounded-lg text-sm">
-                {error}
-              </div>
-            )}
+          {/* Success message */}
+          {message && (
+            <div className="mb-6 p-4 bg-green-50 border border-green-200 text-green-600 rounded-lg text-sm">
+              {message}
+            </div>
+          )}
 
-            {message && (
-              <div className="mb-6 p-4 bg-green-900/20 border border-green-500/30 text-green-400 rounded-lg text-sm">
-                {message}
-              </div>
-            )}
+          {/* Loading state */}
+          {isLoading && (
+            <div className="flex items-center justify-center py-8">
+              <Loader2 className="w-8 h-8 animate-spin text-[#4E74FF]" />
+              <span className="ml-3 text-gray-600">Validating invitation...</span>
+            </div>
+          )}
 
-            {!isLoading && formReady && (
-              <form onSubmit={handleSetPassword} className="space-y-6">
-                <div>
-                  <label htmlFor="password" className="block text-sm font-medium text-gray-300 mb-2">
-                    New Password
-                  </label>
-                  <div className="relative">
-                    <input
-                      type={showPassword ? 'text' : 'password'}
-                      id="password"
-                      value={password}
-                      onChange={(e) => setPassword(e.target.value)}
-                      required
-                      className="w-full px-4 py-3 pr-12 border border-gray-600 bg-gray-800 text-white rounded-lg focus:ring-2 focus:ring-white focus:border-transparent outline-none transition-all placeholder:text-gray-400"
-                      placeholder="Enter new password"
-                    />
-                    <button
-                      type="button"
-                      onClick={() => setShowPassword(!showPassword)}
-                      className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-white"
-                      aria-label={showPassword ? 'Hide password' : 'Show password'}
-                    >
-                      {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
-                    </button>
-                  </div>
+          {/* Form */}
+          {!isLoading && formReady && (
+            <form onSubmit={handleSetPassword} className="space-y-5">
+              <div>
+                <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-2">
+                  New Password
+                </label>
+                <div className="relative">
+                  <input
+                    type={showPassword ? 'text' : 'password'}
+                    id="password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    required
+                    className="w-full px-4 py-3 pr-12 border border-gray-300 bg-white text-gray-900 rounded-lg focus:ring-2 focus:ring-[#4E74FF] focus:border-transparent outline-none transition-all placeholder:text-gray-400"
+                    placeholder="Enter new password"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                    aria-label={showPassword ? 'Hide password' : 'Show password'}
+                  >
+                    {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                  </button>
                 </div>
-
-                <div>
-                  <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-300 mb-2">
-                    Confirm Password
-                  </label>
-                  <div className="relative">
-                    <input
-                      type={showConfirmPassword ? 'text' : 'password'}
-                      id="confirmPassword"
-                      value={confirmPassword}
-                      onChange={(e) => setConfirmPassword(e.target.value)}
-                      required
-                      className="w-full px-4 py-3 pr-12 border border-gray-600 bg-gray-800 text-white rounded-lg focus:ring-2 focus:ring-white focus:border-transparent outline-none transition-all placeholder:text-gray-400"
-                      placeholder="Confirm new password"
-                    />
-                    <button
-                      type="button"
-                      onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                      className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-white"
-                      aria-label={showConfirmPassword ? 'Hide password' : 'Show password'}
-                    >
-                      {showConfirmPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
-                    </button>
-                  </div>
-                </div>
-
-                <button
-                  type="submit"
-                  disabled={isLoading}
-                  className="w-full bg-white text-gray-900 py-3 px-4 rounded-lg font-semibold hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-gray-900 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center justify-center"
-                >
-                  {isLoading ? (
-                    <>
-                      <Loader2 className="w-5 h-5 animate-spin mr-2" />
-                      Setting Password...
-                    </>
-                  ) : (
-                    'Set Password'
-                  )}
-                </button>
-              </form>
-            )}
-
-            {isLoading && (
-              <div className="flex items-center justify-center py-8">
-                <Loader2 className="w-8 h-8 animate-spin text-white" />
-                <span className="ml-3 text-white">Validating reset link...</span>
               </div>
-            )}
+
+              <div>
+                <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700 mb-2">
+                  Confirm Password
+                </label>
+                <div className="relative">
+                  <input
+                    type={showConfirmPassword ? 'text' : 'password'}
+                    id="confirmPassword"
+                    value={confirmPassword}
+                    onChange={(e) => setConfirmPassword(e.target.value)}
+                    required
+                    className="w-full px-4 py-3 pr-12 border border-gray-300 bg-white text-gray-900 rounded-lg focus:ring-2 focus:ring-[#4E74FF] focus:border-transparent outline-none transition-all placeholder:text-gray-400"
+                    placeholder="Confirm new password"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                    aria-label={showConfirmPassword ? 'Hide password' : 'Show password'}
+                  >
+                    {showConfirmPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                  </button>
+                </div>
+              </div>
+
+              <button
+                type="submit"
+                disabled={isSubmitting}
+                className="w-full bg-[#4E74FF] text-white py-3 px-4 rounded-lg font-semibold hover:bg-[#2F5CFF] focus:outline-none focus:ring-2 focus:ring-[#4E74FF] focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center justify-center"
+              >
+                {isSubmitting ? (
+                  <>
+                    <Loader2 className="w-5 h-5 animate-spin mr-2" />
+                    Setting Password...
+                  </>
+                ) : (
+                  'Set Password'
+                )}
+              </button>
+            </form>
+          )}
+
+          {/* Back to sign in link */}
+          <div className="mt-6 text-center">
+            <Link to="/signin" className="text-sm font-medium text-[#4E74FF] hover:text-[#2F5CFF]">
+              Back to sign in
+            </Link>
           </div>
         </div>
       </div>

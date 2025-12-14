@@ -14,6 +14,7 @@ const CustomLinksTab = ({ venueId }) => {
   const [menuPdfUrl, setMenuPdfUrl] = useState('');
   const [uploadingPdf, setUploadingPdf] = useState(false);
   const [showMenuBuilder, setShowMenuBuilder] = useState(false);
+  const [showAddMenu, setShowAddMenu] = useState(false);
 
   useEffect(() => {
     if (venueId) {
@@ -35,7 +36,8 @@ const CustomLinksTab = ({ venueId }) => {
 
     // Load custom links (excluding the special 'menu' link which we handle separately)
     const customLinks = (data?.custom_links || []).filter(link => link.id !== 'menu');
-    setLinks(customLinks.length > 0 ? customLinks : getDefaultLinks());
+    // If no custom_links field exists (null), use defaults. If empty array, keep empty (user deleted all)
+    setLinks(data?.custom_links === null || data?.custom_links === undefined ? getDefaultLinks() : customLinks);
 
     // Load menu settings
     setMenuType(data?.menu_type || 'none');
@@ -43,11 +45,31 @@ const CustomLinksTab = ({ venueId }) => {
     setMenuPdfUrl(data?.menu_pdf_url || '');
   };
 
-  const getDefaultLinks = () => [
-    { id: 'order', label: 'Order Food', url: '', enabled: false, order: 1 },
-    { id: 'pay', label: 'Pay Your Bill', url: '', enabled: false, order: 2 },
-    { id: 'book', label: 'Book a Table', url: '', enabled: false, order: 3 }
+  const defaultLinkTemplates = [
+    { id: 'order', label: 'Order Food', url: '', enabled: false },
+    { id: 'pay', label: 'Pay Your Bill', url: '', enabled: false },
+    { id: 'book', label: 'Book a Table', url: '', enabled: false }
   ];
+
+  const getDefaultLinks = () => defaultLinkTemplates.map((link, index) => ({
+    ...link,
+    order: index + 1
+  }));
+
+  // Get default links that are not already in the list
+  const getAvailableDefaultLinks = () => {
+    const existingIds = links.map(l => l.id);
+    return defaultLinkTemplates.filter(link => !existingIds.includes(link.id));
+  };
+
+  const addDefaultLink = (linkTemplate) => {
+    const newLink = {
+      ...linkTemplate,
+      order: links.length + 1
+    };
+    setLinks([...links, newLink]);
+    setShowAddMenu(false);
+  };
 
   const handleDragEnd = (result) => {
     if (!result.destination) return;
@@ -380,13 +402,47 @@ const CustomLinksTab = ({ venueId }) => {
       <div className="space-y-4">
         <div className="flex items-center justify-between">
           <h3 className="text-lg font-medium text-gray-900">Other Action Links</h3>
-          <button
-            onClick={addCustomLink}
-            className="flex items-center gap-2 px-3 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50"
-          >
-            <Plus className="w-4 h-4" />
-            Add Custom Link
-          </button>
+          <div className="relative">
+            <button
+              onClick={() => setShowAddMenu(!showAddMenu)}
+              className="flex items-center gap-2 px-3 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50"
+            >
+              <Plus className="w-4 h-4" />
+              Add Link
+              <ChevronDown className="w-4 h-4" />
+            </button>
+            {showAddMenu && (
+              <>
+                <div
+                  className="fixed inset-0 z-10"
+                  onClick={() => setShowAddMenu(false)}
+                />
+                <div className="absolute right-0 mt-2 w-48 bg-white border border-gray-200 rounded-lg shadow-lg z-20 py-1">
+                  {getAvailableDefaultLinks().map((link) => (
+                    <button
+                      key={link.id}
+                      onClick={() => addDefaultLink(link)}
+                      className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                    >
+                      {link.label}
+                    </button>
+                  ))}
+                  {getAvailableDefaultLinks().length > 0 && (
+                    <div className="border-t border-gray-100 my-1" />
+                  )}
+                  <button
+                    onClick={() => {
+                      addCustomLink();
+                      setShowAddMenu(false);
+                    }}
+                    className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                  >
+                    Custom Link
+                  </button>
+                </div>
+              </>
+            )}
+          </div>
         </div>
 
         <DragDropContext onDragEnd={handleDragEnd}>
@@ -435,15 +491,13 @@ const CustomLinksTab = ({ venueId }) => {
                               >
                                 {link.enabled ? <Eye className="w-4 h-4" /> : <EyeOff className="w-4 h-4" />}
                               </button>
-                              {link.id.startsWith('custom-') && (
-                                <button
-                                  onClick={() => deleteLink(link.id)}
-                                  className="p-2 text-red-600 hover:bg-red-50 rounded-md"
-                                  title="Delete"
-                                >
-                                  <Trash2 className="w-4 h-4" />
-                                </button>
-                              )}
+                              <button
+                                onClick={() => deleteLink(link.id)}
+                                className="p-2 text-red-600 hover:bg-red-50 rounded-md"
+                                title="Remove link"
+                              >
+                                <Trash2 className="w-4 h-4" />
+                              </button>
                             </div>
 
                             <div className="flex items-center gap-2">
@@ -473,6 +527,13 @@ const CustomLinksTab = ({ venueId }) => {
                   </Draggable>
                 ))}
                 {provided.placeholder}
+                {links.length === 0 && (
+                  <div className="text-center py-8 text-gray-500">
+                    <Link className="w-8 h-8 mx-auto mb-2 text-gray-300" />
+                    <p className="text-sm">No action links configured</p>
+                    <p className="text-xs mt-1">Click "Add Link" to add links for ordering, payments, bookings, or custom actions</p>
+                  </div>
+                )}
               </div>
             )}
           </Droppable>

@@ -59,7 +59,7 @@ export default async function handler(req, res) {
     // Get account
     const { data: account, error: accountError } = await supabase
       .from('accounts')
-      .select('stripe_customer_id')
+      .select('stripe_customer_id, name')
       .eq('id', user.account_id)
       .single();
 
@@ -119,6 +119,35 @@ export default async function handler(req, res) {
     });
 
     const paymentIntent = subscription.latest_invoice.payment_intent;
+
+    // Send Slack notification for checkout initiated
+    if (process.env.SLACK_WEBHOOK_URL) {
+      try {
+        const isMonthly = priceId === process.env.REACT_APP_STRIPE_PRICE_MONTHLY;
+        const planType = isMonthly ? 'Monthly' : 'Annual';
+
+        // Calculate pricing (must match frontend)
+        const PRICE_PER_VENUE_MONTHLY = 149;
+        const PRICE_PER_VENUE_YEARLY = 1430;
+        const VAT_RATE = 0.20;
+
+        const subtotal = quantity * (isMonthly ? PRICE_PER_VENUE_MONTHLY : PRICE_PER_VENUE_YEARLY);
+        const vat = Math.round(subtotal * VAT_RATE);
+        const total = subtotal + vat;
+        const period = isMonthly ? 'mo' : 'yr';
+
+        await fetch(process.env.SLACK_WEBHOOK_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            text: `Checkout started for: *${account.name || 'Unknown'}*\nPlan: *${planType}*\nVenues: *${quantity}*\nSubtotal: *£${subtotal.toLocaleString()}/${period}*\nVAT (20%): *£${vat.toLocaleString()}*\nTotal: *£${total.toLocaleString()}/${period}*\n\nAwaiting card details...`
+          })
+        });
+      } catch (slackError) {
+        // Don't fail the checkout if Slack notification fails
+        console.error('Slack notification failed:', slackError);
+      }
+    }
 
     return res.status(200).json({
       subscriptionId: subscription.id,

@@ -5,7 +5,7 @@ import { TrendingUp, TrendingDown, Minus } from 'lucide-react';
 
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend, Filler);
 
-const NPSLineChart = ({ npsData, loading }) => {
+const NPSLineChart = ({ npsData, loading, dateRangePreset }) => {
   const getScoreColor = (score) => {
     if (score >= 50) return 'text-green-600';
     if (score >= 0) return 'text-yellow-600';
@@ -20,9 +20,48 @@ const NPSLineChart = ({ npsData, loading }) => {
     return 'Critical';
   };
 
-  // For now, show a simple current score with historical context message
-  // In the future, this could be enhanced to show actual time-series data
-  const chartData = {
+  // Format date labels based on the date range
+  const formatDateLabel = (dateStr) => {
+    if (!dateStr) return '';
+
+    // Check if it's a month format (YYYY-MM)
+    if (dateStr.length === 7) {
+      const [year, month] = dateStr.split('-');
+      // Use local date constructor to avoid timezone issues
+      const date = new Date(parseInt(year), parseInt(month) - 1, 1);
+      return date.toLocaleDateString('en-US', { month: 'short', year: '2-digit' });
+    }
+
+    // Regular date format (YYYY-MM-DD) - parse manually to avoid timezone issues
+    const [year, month, day] = dateStr.split('-').map(Number);
+    const date = new Date(year, month - 1, day);
+
+    // Show month and day
+    return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+  };
+
+  // Use time-series data if available, otherwise fall back to simple 2-point chart
+  const hasTimeSeries = npsData.timeSeries && npsData.timeSeries.length > 0;
+
+  const chartData = hasTimeSeries ? {
+    labels: npsData.timeSeries.map(point => formatDateLabel(point.date)),
+    datasets: [
+      {
+        label: 'NPS Score',
+        data: npsData.timeSeries.map(point => point.nps),
+        fill: true,
+        backgroundColor: 'rgba(59, 130, 246, 0.1)',
+        borderColor: 'rgba(59, 130, 246, 1)',
+        borderWidth: 2,
+        pointBackgroundColor: 'rgba(59, 130, 246, 1)',
+        pointBorderColor: '#fff',
+        pointBorderWidth: 2,
+        pointRadius: npsData.timeSeries.length > 20 ? 2 : 4,
+        pointHoverRadius: 6,
+        tension: 0.3,
+      },
+    ],
+  } : {
     labels: ['Previous Period', 'Current Period'],
     datasets: [
       {
@@ -54,6 +93,13 @@ const NPSLineChart = ({ npsData, loading }) => {
       },
       tooltip: {
         callbacks: {
+          title: function(context) {
+            if (hasTimeSeries && npsData.timeSeries[context[0].dataIndex]) {
+              const point = npsData.timeSeries[context[0].dataIndex];
+              return `${formatDateLabel(point.date)} (${point.responses} responses)`;
+            }
+            return context[0].label;
+          },
           label: function(context) {
             return `NPS Score: ${context.parsed.y}`;
           }
@@ -83,8 +129,12 @@ const NPSLineChart = ({ npsData, loading }) => {
         },
         ticks: {
           font: {
-            size: 11
-          }
+            size: 10
+          },
+          maxRotation: 45,
+          minRotation: 0,
+          autoSkip: true,
+          maxTicksLimit: hasTimeSeries && npsData.timeSeries.length > 15 ? 10 : undefined
         }
       }
     },

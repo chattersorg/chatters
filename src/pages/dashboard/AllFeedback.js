@@ -5,10 +5,13 @@ import { PermissionGate } from '../../context/PermissionsContext';
 import { ChartCard } from '../../components/dashboard/layout/ModernCard';
 import usePageTitle from '../../hooks/usePageTitle';
 import dayjs from 'dayjs';
-import { Search, Calendar, Filter, CheckSquare, Square, Eye } from 'lucide-react';
+import { Search, Calendar, Filter, CheckSquare, Square, Eye, ChevronLeft, ChevronRight, ArrowUp, ArrowDown, ArrowUpDown } from 'lucide-react';
 import ConfirmationModal from '../../components/ui/ConfirmationModal';
 import AlertModal from '../../components/ui/AlertModal';
 import DatePicker from '../../components/dashboard/inputs/DatePicker';
+import FilterSelect from '../../components/ui/FilterSelect';
+
+const ITEMS_PER_PAGE = 20;
 
 const AllFeedback = () => {
   usePageTitle('All Feedback');
@@ -28,6 +31,10 @@ const AllFeedback = () => {
   const [showDetailsModal, setShowDetailsModal] = useState(false);
   const [selectedSession, setSelectedSession] = useState(null);
   const [alertModal, setAlertModal] = useState(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [resolveLoading, setResolveLoading] = useState(false);
+  const [sortField, setSortField] = useState('created_at'); // 'created_at', 'type', 'avg_rating'
+  const [sortDirection, setSortDirection] = useState('desc'); // 'asc' or 'desc'
 
   // Load feedback sessions
   useEffect(() => {
@@ -130,12 +137,18 @@ const AllFeedback = () => {
         // Check if any item has the _is_assistance flag
         const isAssistanceRequest = session.items.some(item => item._is_assistance);
 
+        // Check if dismissed
+        const isDismissed = session.items.every(item =>
+          item.dismissed === true || item.resolution_type === 'dismissed'
+        );
+
         return {
           ...session,
           avg_rating: avgRating,
           comments: comments,
           has_comments: comments.length > 0,
-          is_resolved: session.items.every(item => item.resolved_at),
+          is_resolved: session.items.every(item => item.resolved_at || item.is_actioned),
+          is_dismissed: isDismissed,
           type: isAssistanceRequest ? 'assistance' : 'feedback',
         };
       });
@@ -156,16 +169,17 @@ const AllFeedback = () => {
     }
   };
 
-  // Filtered sessions
+  // Filtered and sorted sessions
   const filteredSessions = useMemo(() => {
-    return feedbackSessions.filter(session => {
+    const filtered = feedbackSessions.filter(session => {
       // Type filter
       if (typeFilter === 'feedback' && session.type !== 'feedback') return false;
       if (typeFilter === 'assistance' && session.type !== 'assistance') return false;
 
       // Status filter
-      if (statusFilter === 'unresolved' && session.is_resolved) return false;
-      if (statusFilter === 'resolved' && !session.is_resolved) return false;
+      if (statusFilter === 'unresolved' && (session.is_resolved || session.is_dismissed)) return false;
+      if (statusFilter === 'resolved' && (!session.is_resolved || session.is_dismissed)) return false;
+      if (statusFilter === 'dismissed' && !session.is_dismissed) return false;
 
       // Rating filter
       if (ratingFilter !== 'all' && session.avg_rating !== null) {
@@ -184,7 +198,59 @@ const AllFeedback = () => {
 
       return true;
     });
-  }, [feedbackSessions, statusFilter, ratingFilter, typeFilter, searchTerm]);
+
+    // Sort the filtered results
+    return filtered.sort((a, b) => {
+      let comparison = 0;
+
+      if (sortField === 'created_at') {
+        comparison = new Date(a.created_at) - new Date(b.created_at);
+      } else if (sortField === 'type') {
+        comparison = a.type.localeCompare(b.type);
+      } else if (sortField === 'avg_rating') {
+        // Handle null ratings - put them at the end
+        if (a.avg_rating === null && b.avg_rating === null) comparison = 0;
+        else if (a.avg_rating === null) comparison = 1;
+        else if (b.avg_rating === null) comparison = -1;
+        else comparison = a.avg_rating - b.avg_rating;
+      }
+
+      return sortDirection === 'asc' ? comparison : -comparison;
+    });
+  }, [feedbackSessions, statusFilter, ratingFilter, typeFilter, searchTerm, sortField, sortDirection]);
+
+  // Reset to page 1 when filters or sort changes
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [statusFilter, ratingFilter, typeFilter, searchTerm, dateFrom, dateTo, sortField, sortDirection]);
+
+  // Handle sort click
+  const handleSort = (field) => {
+    if (sortField === field) {
+      // Toggle direction if same field
+      setSortDirection(prev => prev === 'asc' ? 'desc' : 'asc');
+    } else {
+      // Set new field and default to descending
+      setSortField(field);
+      setSortDirection('desc');
+    }
+  };
+
+  // Render sort icon
+  const SortIcon = ({ field }) => {
+    if (sortField !== field) {
+      return <ArrowUpDown className="w-3 h-3 text-gray-400" />;
+    }
+    return sortDirection === 'asc'
+      ? <ArrowUp className="w-3 h-3 text-blue-600" />
+      : <ArrowDown className="w-3 h-3 text-blue-600" />;
+  };
+
+  // Pagination calculations
+  const totalPages = Math.ceil(filteredSessions.length / ITEMS_PER_PAGE);
+  const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
+  const endIndex = startIndex + ITEMS_PER_PAGE;
+  const paginatedSessions = filteredSessions.slice(startIndex, endIndex);
 
   // Selection handlers
   const toggleSelectAll = () => {
@@ -207,22 +273,68 @@ const AllFeedback = () => {
 
   // Bulk resolve
   const handleBulkResolve = async () => {
+    setResolveLoading(true);
     try {
+      // Get current user and their staff ID for this venue
+      const { data: { user } } = await supabase.auth.getUser();
+
+      // Look up the staff record for this user in this venue
+      const { data: staffRecord } = await supabase
+        .from('staff')
+        .select('id')
+        .eq('user_id', user?.id)
+        .eq('venue_id', venueId)
+        .single();
+
+      const staffId = staffRecord?.id || null;
+
       const sessionIds = Array.from(selectedSessions);
-      const feedbackIds = feedbackSessions
-        .filter(s => sessionIds.includes(s.session_id))
-        .flatMap(s => s.items.map(item => item.id));
+      const selectedSessionData = feedbackSessions.filter(s => sessionIds.includes(s.session_id));
 
-      const { error } = await supabase
-        .from('feedback')
-        .update({
+      // Separate feedback and assistance items
+      const feedbackIds = [];
+      const assistanceIds = [];
+
+      selectedSessionData.forEach(s => {
+        s.items.forEach(item => {
+          if (item._is_assistance) {
+            assistanceIds.push(item.id);
+          } else {
+            feedbackIds.push(item.id);
+          }
+        });
+      });
+
+      // Update feedback items
+      if (feedbackIds.length > 0) {
+        const updateData = { resolved_at: new Date().toISOString() };
+        if (staffId) updateData.resolved_by = staffId;
+
+        const { error: feedbackError } = await supabase
+          .from('feedback')
+          .update(updateData)
+          .in('id', feedbackIds);
+
+        if (feedbackError) throw feedbackError;
+      }
+
+      // Update assistance requests
+      if (assistanceIds.length > 0) {
+        const updateData = {
           resolved_at: new Date().toISOString(),
-          resolved_by: 'bulk-action'
-        })
-        .in('id', feedbackIds);
+          status: 'resolved'
+        };
+        if (staffId) updateData.resolved_by = staffId;
 
-      if (error) throw error;
+        const { error: assistanceError } = await supabase
+          .from('assistance_requests')
+          .update(updateData)
+          .in('id', assistanceIds);
 
+        if (assistanceError) throw assistanceError;
+      }
+
+      setShowResolveModal(false);
       setAlertModal({
         type: 'success',
         title: 'Success',
@@ -239,7 +351,7 @@ const AllFeedback = () => {
         message: error.message,
       });
     } finally {
-      setShowResolveModal(false);
+      setResolveLoading(false);
     }
   };
 
@@ -269,7 +381,7 @@ const AllFeedback = () => {
     <div className="space-y-6">
       <ChartCard
         title="All Feedback"
-        subtitle={`Showing ${filteredSessions.length} of ${feedbackSessions.length} feedback sessions`}
+        subtitle={`${filteredSessions.length} feedback sessions within selected timeframe`}
       >
         {/* Filters */}
         <div className="mb-6 space-y-4">
@@ -290,51 +402,40 @@ const AllFeedback = () => {
               max={dayjs().format('YYYY-MM-DD')}
             />
 
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                Type
-              </label>
-              <select
-                value={typeFilter}
-                onChange={(e) => setTypeFilter(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-              >
-                <option value="all">All Types</option>
-                <option value="feedback">Feedback</option>
-                <option value="assistance">Assistance</option>
-              </select>
-            </div>
+            <FilterSelect
+              label="Type"
+              value={typeFilter}
+              onChange={(e) => setTypeFilter(e.target.value)}
+              options={[
+                { value: 'all', label: 'All Types' },
+                { value: 'feedback', label: 'Feedback' },
+                { value: 'assistance', label: 'Assistance' }
+              ]}
+            />
 
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                Status
-              </label>
-              <select
-                value={statusFilter}
-                onChange={(e) => setStatusFilter(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 dark:bg-gray-800 dark:text-white rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-              >
-                <option value="all">All Status</option>
-                <option value="unresolved">Unresolved</option>
-                <option value="resolved">Resolved</option>
-              </select>
-            </div>
+            <FilterSelect
+              label="Status"
+              value={statusFilter}
+              onChange={(e) => setStatusFilter(e.target.value)}
+              options={[
+                { value: 'all', label: 'All Status' },
+                { value: 'unresolved', label: 'Unresolved' },
+                { value: 'resolved', label: 'Resolved' },
+                { value: 'dismissed', label: 'Dismissed' }
+              ]}
+            />
 
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                Rating
-              </label>
-              <select
-                value={ratingFilter}
-                onChange={(e) => setRatingFilter(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 dark:bg-gray-800 dark:text-white rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-              >
-                <option value="all">All Ratings</option>
-                <option value="poor">Poor (1-3 stars)</option>
-                <option value="average">Average (3 stars)</option>
-                <option value="good">Good (4-5 stars)</option>
-              </select>
-            </div>
+            <FilterSelect
+              label="Rating"
+              value={ratingFilter}
+              onChange={(e) => setRatingFilter(e.target.value)}
+              options={[
+                { value: 'all', label: 'All Ratings' },
+                { value: 'poor', label: 'Poor (1-3 stars)' },
+                { value: 'average', label: 'Average (3 stars)' },
+                { value: 'good', label: 'Good (4-5 stars)' }
+              ]}
+            />
           </div>
 
           {/* Search */}
@@ -375,124 +476,208 @@ const AllFeedback = () => {
             No feedback found for the selected filters.
           </div>
         ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead className="bg-gray-50 border-b border-gray-200">
-                <tr>
-                  <th className="px-4 py-3 text-left">
-                    <button onClick={toggleSelectAll} className="hover:text-blue-600">
-                      {selectedSessions.size === filteredSessions.length ? (
-                        <CheckSquare className="w-5 h-5" />
-                      ) : (
-                        <Square className="w-5 h-5" />
-                      )}
-                    </button>
-                  </th>
-                  <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Date/Time</th>
-                  <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Table</th>
-                  <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Type</th>
-                  <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Avg Rating</th>
-                  <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Questions</th>
-                  <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Comments</th>
-                  <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Status</th>
-                  <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Actions</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-200">
-                {filteredSessions.map((session) => (
-                  <tr
-                    key={session.session_id}
-                    className={`hover:bg-gray-50 transition-colors ${
-                      selectedSessions.has(session.session_id) ? 'bg-blue-50' : ''
-                    }`}
-                  >
-                    <td className="px-4 py-3">
-                      <button
-                        onClick={() => toggleSelectSession(session.session_id)}
-                        className="hover:text-blue-600"
-                      >
-                        {selectedSessions.has(session.session_id) ? (
-                          <CheckSquare className="w-5 h-5 text-blue-600" />
+          <>
+            <div className="overflow-x-auto">
+              <table className="w-full">
+                <thead className="bg-gray-50 dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
+                  <tr>
+                    <th className="px-4 py-3 text-left">
+                      <button onClick={toggleSelectAll} className="hover:text-blue-600 dark:text-gray-300">
+                        {selectedSessions.size === filteredSessions.length ? (
+                          <CheckSquare className="w-5 h-5" />
                         ) : (
                           <Square className="w-5 h-5" />
                         )}
                       </button>
-                    </td>
-                    <td className="px-4 py-3 text-sm text-gray-900">
-                      {dayjs(session.created_at).format('MMM D, YYYY h:mm A')}
-                    </td>
-                    <td className="px-4 py-3 text-sm font-medium text-gray-900">
-                      {session.table_number || 'N/A'}
-                    </td>
-                    <td className="px-4 py-3">
-                      {session.type === 'assistance' ? (
-                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-orange-100 text-orange-800 border border-orange-300">
-                          Assistance
-                        </span>
-                      ) : (
-                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 border border-blue-300">
-                          Feedback
-                        </span>
-                      )}
-                    </td>
-                    <td className="px-4 py-3">
-                      {session.avg_rating !== null ? (
-                        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border ${getRatingBadge(session.avg_rating)}`}>
-                          {session.avg_rating.toFixed(1)} stars
-                        </span>
-                      ) : (
-                        <span className="text-sm text-gray-400">N/A</span>
-                      )}
-                    </td>
-                    <td className="px-4 py-3 text-sm text-gray-600">
-                      {session.items.length}
-                    </td>
-                    <td className="px-4 py-3 text-sm text-gray-600">
-                      {session.has_comments ? (
-                        <span className="text-blue-600 font-medium">{session.comments.length}</span>
-                      ) : (
-                        <span className="text-gray-400">0</span>
-                      )}
-                    </td>
-                    <td className="px-4 py-3">
-                      {session.is_resolved ? (
-                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800 border border-green-300">
-                          Resolved
-                        </span>
-                      ) : (
-                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800 border border-yellow-300">
-                          Unresolved
-                        </span>
-                      )}
-                    </td>
-                    <td className="px-4 py-3">
+                    </th>
+                    <th className="px-4 py-3 text-left">
                       <button
-                        onClick={() => handleViewDetails(session)}
-                        className="text-blue-600 hover:text-blue-800 font-medium text-sm flex items-center gap-1"
+                        onClick={() => handleSort('created_at')}
+                        className="flex items-center gap-1.5 text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase hover:text-gray-900 dark:hover:text-gray-200 transition-colors"
                       >
-                        <Eye className="w-4 h-4" />
-                        View
+                        Date/Time
+                        <SortIcon field="created_at" />
                       </button>
-                    </td>
+                    </th>
+                    <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase">Table</th>
+                    <th className="px-4 py-3 text-left">
+                      <button
+                        onClick={() => handleSort('type')}
+                        className="flex items-center gap-1.5 text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase hover:text-gray-900 dark:hover:text-gray-200 transition-colors"
+                      >
+                        Type
+                        <SortIcon field="type" />
+                      </button>
+                    </th>
+                    <th className="px-4 py-3 text-left">
+                      <button
+                        onClick={() => handleSort('avg_rating')}
+                        className="flex items-center gap-1.5 text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase hover:text-gray-900 dark:hover:text-gray-200 transition-colors"
+                      >
+                        Avg Rating
+                        <SortIcon field="avg_rating" />
+                      </button>
+                    </th>
+                    <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase">Questions</th>
+                    <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase">Comments</th>
+                    <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase">Status</th>
+                    <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase">Actions</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+                </thead>
+                <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
+                  {paginatedSessions.map((session) => (
+                    <tr
+                      key={session.session_id}
+                      className={`hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors ${
+                        selectedSessions.has(session.session_id) ? 'bg-blue-50 dark:bg-blue-900/20' : ''
+                      }`}
+                    >
+                      <td className="px-4 py-3">
+                        <button
+                          onClick={() => toggleSelectSession(session.session_id)}
+                          className="hover:text-blue-600 dark:text-gray-300"
+                        >
+                          {selectedSessions.has(session.session_id) ? (
+                            <CheckSquare className="w-5 h-5 text-blue-600" />
+                          ) : (
+                            <Square className="w-5 h-5" />
+                          )}
+                        </button>
+                      </td>
+                      <td className="px-4 py-3 text-sm text-gray-900 dark:text-gray-100">
+                        {dayjs(session.created_at).format('ddd, MMM D, YYYY h:mm A')}
+                      </td>
+                      <td className="px-4 py-3 text-sm font-medium text-gray-900 dark:text-gray-100">
+                        {session.table_number || 'N/A'}
+                      </td>
+                      <td className="px-4 py-3">
+                        {session.type === 'assistance' ? (
+                          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-orange-100 text-orange-800 border border-orange-300 dark:bg-orange-900/30 dark:text-orange-300 dark:border-orange-700">
+                            Assistance
+                          </span>
+                        ) : (
+                          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 border border-blue-300 dark:bg-blue-900/30 dark:text-blue-300 dark:border-blue-700">
+                            Feedback
+                          </span>
+                        )}
+                      </td>
+                      <td className="px-4 py-3">
+                        {session.avg_rating !== null ? (
+                          <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border ${getRatingBadge(session.avg_rating)}`}>
+                            {session.avg_rating.toFixed(1)} stars
+                          </span>
+                        ) : (
+                          <span className="text-sm text-gray-400">N/A</span>
+                        )}
+                      </td>
+                      <td className="px-4 py-3 text-sm text-gray-600 dark:text-gray-400">
+                        {session.items.length}
+                      </td>
+                      <td className="px-4 py-3 text-sm text-gray-600 dark:text-gray-400">
+                        {session.has_comments ? (
+                          <span className="text-blue-600 dark:text-blue-400 font-medium">{session.comments.length}</span>
+                        ) : (
+                          <span className="text-gray-400">0</span>
+                        )}
+                      </td>
+                      <td className="px-4 py-3">
+                        {session.is_dismissed ? (
+                          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800 border border-gray-300 dark:bg-gray-900/30 dark:text-gray-300 dark:border-gray-700">
+                            Dismissed
+                          </span>
+                        ) : session.is_resolved ? (
+                          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800 border border-green-300 dark:bg-green-900/30 dark:text-green-300 dark:border-green-700">
+                            Resolved
+                          </span>
+                        ) : (
+                          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800 border border-yellow-300 dark:bg-yellow-900/30 dark:text-yellow-300 dark:border-yellow-700">
+                            Unresolved
+                          </span>
+                        )}
+                      </td>
+                      <td className="px-4 py-3">
+                        <button
+                          onClick={() => handleViewDetails(session)}
+                          className="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 font-medium text-sm flex items-center gap-1"
+                        >
+                          <Eye className="w-4 h-4" />
+                          View
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+
+            {/* Pagination */}
+            {totalPages > 1 && (
+              <div className="flex items-center justify-between border-t border-gray-200 dark:border-gray-700 px-4 py-3 mt-4">
+                <div className="text-sm text-gray-600 dark:text-gray-400">
+                  Showing {startIndex + 1} to {Math.min(endIndex, filteredSessions.length)} of {filteredSessions.length} results
+                </div>
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+                    disabled={currentPage === 1}
+                    className="p-2 rounded-lg border border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-800 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                  >
+                    <ChevronLeft className="w-4 h-4 text-gray-600 dark:text-gray-400" />
+                  </button>
+                  <div className="flex items-center gap-1">
+                    {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+                      let pageNum;
+                      if (totalPages <= 5) {
+                        pageNum = i + 1;
+                      } else if (currentPage <= 3) {
+                        pageNum = i + 1;
+                      } else if (currentPage >= totalPages - 2) {
+                        pageNum = totalPages - 4 + i;
+                      } else {
+                        pageNum = currentPage - 2 + i;
+                      }
+                      return (
+                        <button
+                          key={pageNum}
+                          onClick={() => setCurrentPage(pageNum)}
+                          className={`w-8 h-8 rounded-lg text-sm font-medium transition-colors ${
+                            currentPage === pageNum
+                              ? 'bg-blue-600 text-white'
+                              : 'hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-600 dark:text-gray-400'
+                          }`}
+                        >
+                          {pageNum}
+                        </button>
+                      );
+                    })}
+                  </div>
+                  <button
+                    onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
+                    disabled={currentPage === totalPages}
+                    className="p-2 rounded-lg border border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-800 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                  >
+                    <ChevronRight className="w-4 h-4 text-gray-600 dark:text-gray-400" />
+                  </button>
+                </div>
+              </div>
+            )}
+          </>
         )}
       </ChartCard>
 
       {/* Bulk Resolve Confirmation Modal */}
-      {showResolveModal && (
-        <ConfirmationModal
-          title="Confirm Bulk Resolve"
-          message={`Are you sure you want to mark ${selectedSessions.size} session(s) as resolved?`}
-          confirmText="Resolve"
-          cancelText="Cancel"
-          onConfirm={handleBulkResolve}
-          onCancel={() => setShowResolveModal(false)}
-        />
-      )}
+      <ConfirmationModal
+        isOpen={showResolveModal}
+        title="Confirm Bulk Resolve"
+        message={`Are you sure you want to mark ${selectedSessions.size} session(s) as resolved?`}
+        confirmText="Resolve"
+        cancelText="Cancel"
+        confirmButtonStyle="primary"
+        icon="info"
+        loading={resolveLoading}
+        onConfirm={handleBulkResolve}
+        onCancel={() => setShowResolveModal(false)}
+      />
 
       {/* Details Modal */}
       {showDetailsModal && selectedSession && (
@@ -531,14 +716,16 @@ const AllFeedback = () => {
                   <div>
                     <p className="text-sm text-gray-600">Status</p>
                     <p className="font-medium text-gray-900">
-                      {selectedSession.is_resolved ? (
+                      {selectedSession.is_dismissed ? (
+                        <span className="text-gray-600">Dismissed</span>
+                      ) : selectedSession.is_resolved ? (
                         <span className="text-green-600">Resolved</span>
                       ) : (
                         <span className="text-yellow-600">Unresolved</span>
                       )}
                     </p>
                   </div>
-                  {selectedSession.is_resolved && selectedSession.resolver && (
+                  {(selectedSession.is_resolved || selectedSession.is_dismissed) && selectedSession.resolver && (
                     <div className="col-span-2">
                       <p className="text-sm text-gray-600 mb-1">Resolved By</p>
                       <p className="font-medium text-gray-900">
@@ -618,7 +805,7 @@ const AllFeedback = () => {
                 >
                   Close
                 </button>
-                {!selectedSession.is_resolved && (
+                {!selectedSession.is_resolved && !selectedSession.is_dismissed && (
                   <PermissionGate permission="feedback.respond">
                     <button
                       onClick={async () => {

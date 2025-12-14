@@ -4,6 +4,7 @@ import { useVenue } from '../../context/VenueContext';
 import { supabase } from '../../utils/supabase';
 import usePageTitle from '../../hooks/usePageTitle';
 import { TrendingUp, TrendingDown, Minus, Mail, MailCheck, MailX, ChevronRight, Building2 } from 'lucide-react';
+import FilterSelect from '../../components/ui/FilterSelect';
 import {
   AreaChart,
   Area,
@@ -56,8 +57,30 @@ const ReportsNPS = () => {
 
       if (error) throw error;
 
-      setSubmissions(data || []);
-      calculateNPSMetrics(data || []);
+      // Fetch linked feedback to get table numbers
+      const sessionIds = (data || []).filter(s => s.session_id).map(s => s.session_id);
+      let feedbackBySession = {};
+
+      if (sessionIds.length > 0) {
+        const { data: feedbackData } = await supabase
+          .from('feedback')
+          .select('id, session_id, rating, table_number, created_at')
+          .in('session_id', sessionIds);
+
+        // Create a lookup map by session_id
+        (feedbackData || []).forEach(f => {
+          feedbackBySession[f.session_id] = f;
+        });
+      }
+
+      // Enrich NPS submissions with linked feedback data
+      const enrichedData = (data || []).map(s => ({
+        ...s,
+        linkedFeedback: s.session_id ? feedbackBySession[s.session_id] : null
+      }));
+
+      setSubmissions(enrichedData);
+      calculateNPSMetrics(enrichedData);
     } catch (error) {
       console.error('Error loading NPS data:', error);
     } finally {
@@ -227,19 +250,16 @@ const ReportsNPS = () => {
               {isAllVenuesMode ? "All venues overview" : `${selectedVenueIds.length} selected venues`}
             </p>
           </div>
-          <div className="flex items-center space-x-2">
-            <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Period:</label>
-            <select
-              value={dateRange}
-              onChange={(e) => setDateRange(e.target.value)}
-              className="px-3 py-2 text-sm border border-gray-300 dark:border-gray-700 rounded-md bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-            >
-              <option value="7">Last 7 days</option>
-              <option value="30">Last 30 days</option>
-              <option value="90">Last 90 days</option>
-              <option value="365">Last year</option>
-            </select>
-          </div>
+          <FilterSelect
+            value={dateRange}
+            onChange={(e) => setDateRange(e.target.value)}
+            options={[
+              { value: '7', label: 'Last 7 days' },
+              { value: '30', label: 'Last 30 days' },
+              { value: '90', label: 'Last 90 days' },
+              { value: '365', label: 'Last year' }
+            ]}
+          />
         </div>
 
         <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl overflow-hidden p-6">
@@ -332,19 +352,16 @@ const ReportsNPS = () => {
           <h1 className="text-2xl font-semibold text-gray-900 dark:text-white">NPS Reports</h1>
           <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">Net Promoter Score analytics and customer sentiment</p>
         </div>
-        <div className="flex items-center space-x-2">
-          <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Period:</label>
-          <select
-            value={dateRange}
-            onChange={(e) => setDateRange(e.target.value)}
-            className="px-3 py-2 text-sm border border-gray-300 dark:border-gray-700 rounded-md bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-          >
-            <option value="7">Last 7 days</option>
-            <option value="30">Last 30 days</option>
-            <option value="90">Last 90 days</option>
-            <option value="365">Last year</option>
-          </select>
-        </div>
+        <FilterSelect
+          value={dateRange}
+          onChange={(e) => setDateRange(e.target.value)}
+          options={[
+            { value: '7', label: 'Last 7 days' },
+            { value: '30', label: 'Last 30 days' },
+            { value: '90', label: 'Last 90 days' },
+            { value: '365', label: 'Last year' }
+          ]}
+        />
       </div>
 
       <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl overflow-hidden p-6">
@@ -635,8 +652,10 @@ const ReportsNPS = () => {
                 <thead>
                   <tr className="border-b border-gray-200 dark:border-gray-800">
                     <th className="text-left py-3 px-4 font-medium text-gray-700 dark:text-gray-300">Email</th>
+                    <th className="text-left py-3 px-4 font-medium text-gray-700 dark:text-gray-300">Table</th>
                     <th className="text-left py-3 px-4 font-medium text-gray-700 dark:text-gray-300">Score</th>
                     <th className="text-left py-3 px-4 font-medium text-gray-700 dark:text-gray-300">Category</th>
+                    <th className="text-left py-3 px-4 font-medium text-gray-700 dark:text-gray-300">Comment</th>
                     <th className="text-left py-3 px-4 font-medium text-gray-700 dark:text-gray-300">Date</th>
                     <th className="text-left py-3 px-4 font-medium text-gray-700 dark:text-gray-300">Status</th>
                   </tr>
@@ -644,6 +663,7 @@ const ReportsNPS = () => {
                 <tbody>
                   {submissions
                     .filter((s) => s.responded_at)
+                    .sort((a, b) => new Date(b.responded_at) - new Date(a.responded_at))
                     .slice(0, 10)
                     .map((submission) => {
                       const category =
@@ -656,6 +676,13 @@ const ReportsNPS = () => {
                       return (
                         <tr key={submission.id} className="border-b border-gray-200 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-800">
                           <td className="py-3 px-4 text-sm text-gray-900 dark:text-gray-300">{submission.customer_email}</td>
+                          <td className="py-3 px-4 text-sm text-gray-600 dark:text-gray-400">
+                            {submission.linkedFeedback?.table_number || submission.table_number ? (
+                              <span>{submission.linkedFeedback?.table_number || submission.table_number}</span>
+                            ) : (
+                              <span className="text-gray-400 dark:text-gray-500">—</span>
+                            )}
+                          </td>
                           <td className="py-3 px-4">
                             <span className={`text-lg font-bold ${category.color}`}>
                               {submission.score}
@@ -665,6 +692,15 @@ const ReportsNPS = () => {
                             <span className={`text-sm font-medium ${category.color}`}>
                               {category.label}
                             </span>
+                          </td>
+                          <td className="py-3 px-4 text-sm text-gray-600 dark:text-gray-400 max-w-xs">
+                            {submission.feedback ? (
+                              <span className="line-clamp-2" title={submission.feedback}>
+                                {submission.feedback}
+                              </span>
+                            ) : (
+                              <span className="text-gray-400 dark:text-gray-500">—</span>
+                            )}
                           </td>
                           <td className="py-3 px-4 text-sm text-gray-600 dark:text-gray-400">
                             {new Date(submission.responded_at).toLocaleDateString()}
@@ -679,7 +715,7 @@ const ReportsNPS = () => {
                     })}
                   {submissions.filter((s) => s.responded_at).length === 0 && (
                     <tr>
-                      <td colSpan="5" className="py-8 text-center text-gray-400">
+                      <td colSpan="7" className="py-8 text-center text-gray-400">
                         No responses yet
                       </td>
                     </tr>

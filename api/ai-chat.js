@@ -92,6 +92,7 @@ export default async function handler(req, res) {
     const trends = dataNeeds.trends ? calculateTrends(feedbackData, dateRange) : null;
 
     // Debug logging
+    console.log('[AI Chat] Date range:', dateRange);
     console.log('[AI Chat] Data fetched:', {
       feedbackCount: feedbackData.length,
       npsCount: npsData.length,
@@ -116,27 +117,26 @@ export default async function handler(req, res) {
       body: JSON.stringify({
         model: 'claude-haiku-4-5-20251001',
         max_tokens: 1024,
-        system: `You are a helpful assistant for "${venueName || 'this venue'}", a hospitality business. You help staff understand their customer feedback data.
+        system: `You are a helpful assistant for "${venueName || 'this venue'}", a hospitality business.
 
-IMPORTANT RULES:
-- Be concise and direct - staff are busy
-- Use UK English spelling (organisation, analyse, colour, etc.)
+CRITICAL - BREVITY IS MANDATORY:
+- Give SHORT, DIRECT answers. 2-3 sentences max for simple questions.
+- Lead with the answer, not the explanation.
+- Only elaborate if specifically asked for details.
+- NO verbose context or unnecessary background.
+- Example good response: "Ethan Collins is your top performer with 91 resolved interactions and a 10-min average response time."
+- Example bad response: Long paragraphs explaining methodology, comparisons to peers, multiple metrics unprompted.
+
+OTHER RULES:
+- Use UK English (organisation, analyse, colour)
 - Reference specific data when available
-- If asked about specific feedback, quote it directly
-- Keep responses under 150 words unless showing multiple feedback items
-- Format lists with bullet points for readability
-- If the data doesn't contain what they're asking about, say so clearly
-- You may have conversation history - use it to provide contextual responses
-- You have access to staff performance data - use it to answer questions about employee performance, who has resolved the most feedback, and response times
-- You have access to the full staff roster including names, roles, and locations - use this to answer "who works here", "how many staff do we have", or questions about specific employees
-- You have access to staff recognitions - customer shoutouts and praise for specific staff members. Use this to identify top performers and most-recognised employees
-- You have access to the venue's active feedback questions - use them to understand what customers are being asked
-- When discussing feedback, reference the specific questions being asked (e.g., "For 'How was the food quality?' you're averaging 4.2/5")
-- You have access to zone/area performance data - you know which tables belong to which zones and can report on zone-level performance
-- When asked about zones or areas, provide specific metrics like average rating, feedback count, and any notable issues per zone
-- You have access to trend analysis data showing how ratings have changed over time - use it to answer questions about improvements, declines, or changes in feedback quality
-- When discussing trends, reference specific time periods and compare first half vs second half averages, or use weekly breakdowns if available
-- When asked about "best staff" or "top performer", consider both feedback resolution stats AND recognition counts to give a complete picture
+- Use bullet points only when listing 3+ items
+
+HANDLING MISSING DATA:
+- You CAN access all data types: feedback, NPS, staff, zones, trends. Don't claim you can't.
+- If no data exists for a time period, simply say "No [data type] recorded for [period]."
+- Don't add filler about other data that IS available - just answer the question asked.
+- For absurd dates (before 2020 or future), just say "No data for that period." - don't elaborate.
 
 VISUALISATION CAPABILITY:
 - When the user asks for a graph, chart, or visual, OR when comparing multiple items, you MUST include a visualisation
@@ -355,10 +355,10 @@ function parseDateRange(message) {
     }
   }
 
-  // Named month: "in November", "for October", "during September"
+  // Named month with optional prefix: "November 2025", "in November", "for October"
   const monthNames = ['january', 'february', 'march', 'april', 'may', 'june',
                       'july', 'august', 'september', 'october', 'november', 'december'];
-  const monthMatch = lowerMessage.match(/(?:in|for|during)\s+(january|february|march|april|may|june|july|august|september|october|november|december)(?:\s+(\d{4}))?/i);
+  const monthMatch = lowerMessage.match(/(?:in\s+|for\s+|during\s+)?(january|february|march|april|may|june|july|august|september|october|november|december)(?:\s+(\d{4}))?/i);
   if (monthMatch) {
     const monthIndex = monthNames.indexOf(monthMatch[1].toLowerCase());
     const year = monthMatch[2] ? parseInt(monthMatch[2]) : currentYear;
@@ -370,6 +370,21 @@ function parseDateRange(message) {
       from: fromDate.toISOString(),
       to: toDate.toISOString(),
       description: getDateRangeDescription(fromDate, toDate)
+    };
+  }
+
+  // Standalone year: "2024", "2024?", "in 2024" (must come after month match)
+  const yearMatch = lowerMessage.match(/\b(20[0-9]{2})\b/);
+  if (yearMatch) {
+    const year = parseInt(yearMatch[1]);
+    fromDate = new Date(year, 0, 1);
+    fromDate.setHours(0, 0, 0, 0);
+    toDate = new Date(year, 11, 31);
+    toDate.setHours(23, 59, 59, 999);
+    return {
+      from: fromDate.toISOString(),
+      to: toDate.toISOString(),
+      description: `${year}`
     };
   }
 
@@ -430,11 +445,11 @@ function parseDateRange(message) {
     toDate = new Date(now.getFullYear() - 1, 11, 31);
     toDate.setHours(23, 59, 59, 999);
   } else if (lowerMessage.includes('all time') || lowerMessage.includes('ever') || lowerMessage.includes('overall')) {
-    // All time - go back 2 years
-    fromDate.setFullYear(now.getFullYear() - 2);
+    // All time - go back 5 years
+    fromDate.setFullYear(now.getFullYear() - 5);
   } else {
-    // Default: last 30 days
-    fromDate.setDate(now.getDate() - 30);
+    // Default: all time (5 years back) - let the AI work with all available data
+    fromDate.setFullYear(now.getFullYear() - 5);
   }
 
   return {
@@ -555,21 +570,34 @@ function analyzeQuestionIntent(message) {
  * Fetch feedback data for the venue
  */
 async function fetchFeedbackData(supabase, venueId, dateRange) {
-  const { data, error } = await supabase
-    .from('feedback')
-    .select('*, questions(question)')
-    .eq('venue_id', venueId)
-    .gte('created_at', dateRange.from)
-    .lte('created_at', dateRange.to)
-    .order('created_at', { ascending: false })
-    .limit(1000);
+  // Supabase has a hard 1000-row limit per request. Paginate to get more.
+  const allData = [];
+  const pageSize = 1000;
+  const maxPages = 3; // Up to 3000 items for AI context
 
-  if (error) {
-    console.error('[AI Chat] Error fetching feedback:', error);
-    return [];
+  for (let page = 0; page < maxPages; page++) {
+    const { data, error } = await supabase
+      .from('feedback')
+      .select('*, questions(question)')
+      .eq('venue_id', venueId)
+      .gte('created_at', dateRange.from)
+      .lte('created_at', dateRange.to)
+      .order('created_at', { ascending: false })
+      .range(page * pageSize, (page + 1) * pageSize - 1);
+
+    if (error) {
+      console.error('[AI Chat] Error fetching feedback page', page, ':', error);
+      break;
+    }
+
+    if (!data || data.length === 0) break;
+    allData.push(...data);
+
+    if (data.length < pageSize) break;
   }
 
-  return data || [];
+  console.log('[AI Chat] Feedback - fetched:', allData.length, 'items');
+  return allData;
 }
 
 /**
@@ -578,7 +606,7 @@ async function fetchFeedbackData(supabase, venueId, dateRange) {
 async function fetchEmployees(supabase, venueId) {
   const { data, error } = await supabase
     .from('employees')
-    .select('id, name, first_name, last_name, role, location, is_active')
+    .select('id, first_name, last_name, role, location, is_active')
     .eq('venue_id', venueId);
 
   if (error) {
@@ -836,9 +864,9 @@ function calculateStaffPerformance(feedbackData, employees, assistanceRequests =
   // Create a map of employee IDs to names (handle both name formats)
   const employeeMap = {};
   employees.forEach(e => {
-    const name = e.first_name && e.last_name
-      ? `${e.first_name} ${e.last_name}`
-      : e.name || 'Unknown';
+    const name = e.first_name || e.last_name
+      ? `${e.first_name || ''} ${e.last_name || ''}`.trim()
+      : 'Unknown';
     employeeMap[e.id] = name;
   });
 
@@ -1218,9 +1246,9 @@ ${questions.length > 0
     activeEmployees.forEach(e => {
       const role = e.role || 'Unassigned';
       if (!byRole[role]) byRole[role] = [];
-      const name = e.first_name && e.last_name
-        ? `${e.first_name} ${e.last_name}`
-        : e.name || 'Unknown';
+      const name = e.first_name || e.last_name
+        ? `${e.first_name || ''} ${e.last_name || ''}`.trim()
+        : 'Unknown';
       byRole[role].push({ name, location: e.location, id: e.id });
     });
 
@@ -1238,9 +1266,9 @@ ${questions.length > 0
     // Build employee name lookup
     const employeeNames = {};
     (employees || []).forEach(e => {
-      const name = e.first_name && e.last_name
-        ? `${e.first_name} ${e.last_name}`
-        : e.name || 'Unknown';
+      const name = e.first_name || e.last_name
+        ? `${e.first_name || ''} ${e.last_name || ''}`.trim()
+        : 'Unknown';
       employeeNames[e.id] = name;
     });
 

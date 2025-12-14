@@ -1,44 +1,35 @@
-// File: Floorplan.jsx
+// File: Floorplan.jsx - Floor plan preview page
 import React, { useEffect, useRef, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { supabase } from '../../utils/supabase';
-import { v4 as uuidv4 } from 'uuid';
 import usePageTitle from '../../hooks/usePageTitle';
 import { useVenue } from '../../context/VenueContext';
-import ConfirmationModal from '../../components/ui/ConfirmationModal';
-import AlertModal from '../../components/ui/AlertModal';
+import { Pencil, Grid3X3, Layers } from 'lucide-react';
 
 // Components
 import FloorPlanCanvas from '../../components/dashboard/floorplan/FloorPlanCanvas';
 import ZoneSelector from '../../components/dashboard/floorplan/ZoneSelector';
-import EditControls from '../../components/dashboard/floorplan/EditControls';
 import MobileNotice from '../../components/dashboard/floorplan/MobileNotice';
 
 const Floorplan = () => {
   usePageTitle('Floor Plan');
+  const navigate = useNavigate();
   const { venueId } = useVenue();
   const layoutRef = useRef(null);
 
   // Mobile detection
   const [isMobile, setIsMobile] = useState(false);
 
-  // Designer state
+  // State
   const [zones, setZones] = useState([]);
   const [selectedZoneId, setSelectedZoneId] = useState(null);
   const [tables, setTables] = useState([]);
-  const [saving, setSaving] = useState(false);
-  const [editMode, setEditMode] = useState(false); // default to view mode
-  const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
-  
-  // Modal states
-  const [exitConfirmation, setExitConfirmation] = useState(false);
-  const [clearAllConfirmation, setClearAllConfirmation] = useState(false);
-  const [zoneDeleteConfirmation, setZoneDeleteConfirmation] = useState(null);
-  const [alertModal, setAlertModal] = useState(null);
+  const [loading, setLoading] = useState(true);
 
   // Check for mobile on mount
   useEffect(() => {
     const checkMobile = () => {
-      setIsMobile(window.innerWidth < 1024); // Less than lg breakpoint
+      setIsMobile(window.innerWidth < 1024);
     };
     checkMobile();
     window.addEventListener('resize', checkMobile);
@@ -50,8 +41,10 @@ const Floorplan = () => {
     if (!venueId || isMobile) return;
 
     const load = async () => {
+      setLoading(true);
       await loadZones(venueId);
       await loadTables(venueId);
+      setLoading(false);
     };
 
     load();
@@ -75,7 +68,20 @@ const Floorplan = () => {
       .eq('venue_id', venueId);
 
     const container = layoutRef.current;
-    if (!container) return;
+    if (!container) {
+      // Set tables without pixel conversion if container not ready
+      setTables(
+        (data || []).map((t) => ({
+          ...t,
+          x_px: 0,
+          y_px: 0,
+          width: t.width || 56,
+          height: t.height || 56,
+        }))
+      );
+      return;
+    }
+
     const { width, height } = container.getBoundingClientRect();
 
     setTables(
@@ -83,186 +89,18 @@ const Floorplan = () => {
         ...t,
         x_px: (t.x_percent / 100) * width,
         y_px: (t.y_percent / 100) * height,
-        width: t.width || 56,  // Default width if not set
-        height: t.height || 56, // Default height if not set
+        width: t.width || 56,
+        height: t.height || 56,
       }))
     );
   };
 
-  // Event handlers
-  const handleToggleEdit = () => {
-    if (editMode && hasUnsavedChanges) {
-      setExitConfirmation(true);
-      return;
-    }
-    setEditMode(!editMode);
-    setHasUnsavedChanges(false);
-  };
-
-  const confirmExitEdit = () => {
-    setEditMode(false);
-    setHasUnsavedChanges(false);
-    setExitConfirmation(false);
-  };
-
-  const handleAddTable = (tableNumber, shape) => {
-    const container = layoutRef.current;
-    if (!container) return;
-
-    const { width, height } = container.getBoundingClientRect();
-    
-    // Set default dimensions based on shape
-    const defaultDimensions = {
-      square: { width: 56, height: 56 },
-      circle: { width: 56, height: 56 },
-      long: { width: 112, height: 40 }
-    };
-    
-    const dims = defaultDimensions[shape] || defaultDimensions.square;
-    
-    setTables((prev) => [
-      ...prev,
-      {
-        id: `temp-${Date.now()}`,
-        table_number: tableNumber,
-        x_px: Math.round(width / 2),
-        y_px: Math.round(height / 2),
-        shape,
-        width: dims.width,
-        height: dims.height,
-        venue_id: venueId,
-        zone_id: selectedZoneId,
-      },
-    ]);
-    setHasUnsavedChanges(true);
-  };
-
-  const handleTableDrag = (tableId, x, y) => {
-    setTables((prev) => prev.map((tab) => (tab.id === tableId ? { ...tab, x_px: x, y_px: y } : tab)));
-    setHasUnsavedChanges(true);
-  };
-
-  const handleTableResize = (tableId, width, height) => {
-    setTables((prev) => 
-      prev.map((tab) => 
-        tab.id === tableId 
-          ? { ...tab, width, height } 
-          : tab
-      )
-    );
-    setHasUnsavedChanges(true);
-  };
-
-  const handleRemoveTable = async (id) => {
-    const table = tables.find((t) => t.id === id);
-    if (!table) return;
-
-    setTables((prev) => prev.filter((t) => t.id !== id));
-
-    const isTemp = id.startsWith('temp-');
-    if (!isTemp) {
-      await supabase.from('table_positions').delete().match({
-        venue_id: venueId,
-        table_number: table.table_number,
-      });
-    }
-
-    setHasUnsavedChanges(true);
-  };
-
-  const handleSaveLayout = async () => {
-    if (!venueId || !layoutRef.current) return;
-    setSaving(true);
-
-    const { width, height } = layoutRef.current.getBoundingClientRect();
-
-    const payload = tables.map((t) => ({
-      id: t.id.startsWith('temp-') ? uuidv4() : t.id,
-      venue_id: t.venue_id,
-      table_number: t.table_number,
-      x_percent: (t.x_px / width) * 100,
-      y_percent: (t.y_px / height) * 100,
-      shape: t.shape,
-      width: t.width || 56,
-      height: t.height || 56,
-      zone_id: t.zone_id ?? null,
-    }));
-
-    const { data: existing } = await supabase
-      .from('table_positions')
-      .select('id')
-      .eq('venue_id', venueId);
-
-    const existingIds = new Set((existing || []).map((t) => t.id));
-    const currentIds = new Set(payload.filter((t) => typeof t.id === 'string' && !t.id.startsWith('temp-')).map((t) => t.id));
-    const idsToDelete = [...existingIds].filter((id) => !currentIds.has(id));
-
-    if (idsToDelete.length > 0) {
-      await supabase.from('table_positions').delete().in('id', idsToDelete);
-    }
-
-    const { error } = await supabase.from('table_positions').upsert(payload, { onConflict: 'id' });
-
-    if (error) {
-      setAlertModal({
-        type: 'error',
-        title: 'Save Error',
-        message: 'Error saving layout. Please check the console for details.'
-      });
-      console.error(error);
-    } else {
-      setEditMode(false); // return to view mode after saving
-      setHasUnsavedChanges(false);
-      await loadTables(venueId); // Reload to get persisted IDs/positions
-    }
-
-    setSaving(false);
-  };
-
-  const handleClearAllTables = async () => {
-    if (!venueId) return;
-    setClearAllConfirmation(true);
-  };
-
-  const confirmClearAllTables = async () => {
-    await supabase.from('table_positions').delete().eq('venue_id', venueId);
-    setTables([]);
-    setHasUnsavedChanges(false);
-    setClearAllConfirmation(false);
-  };
-
-  // Zone handlers
+  // Zone handlers (read-only)
   const handleZoneSelect = (zoneId) => setSelectedZoneId(zoneId);
 
-  const handleZoneRename = async (zoneId, newName) => {
-    await supabase.from('zones').update({ name: newName }).eq('id', zoneId);
-    setZones((prev) => prev.map((zone) => (zone.id === zoneId ? { ...zone, name: newName } : zone)));
-  };
-
-  const handleZoneDelete = async (zoneId) => {
-    const count = tables.filter((t) => t.zone_id === zoneId).length;
-    setZoneDeleteConfirmation({ zoneId, count });
-  };
-
-  const confirmZoneDelete = async (zoneId) => {
-    await supabase.from('table_positions').delete().eq('zone_id', zoneId);
-    await supabase.from('zones').delete().eq('id', zoneId);
-    await loadZones(venueId);
-    await loadTables(venueId);
-    setZoneDeleteConfirmation(null);
-  };
-
-  const handleCreateZone = async () => {
-    const { data } = await supabase
-      .from('zones')
-      .insert({ name: 'New Zone', venue_id: venueId, order: zones.length + 1 })
-      .select('*')
-      .single();
-
-    if (data) {
-      await loadZones(venueId);
-      setSelectedZoneId(data.id);
-    }
+  // Navigate to editor
+  const handleEditFloorPlan = () => {
+    navigate('/floorplan/edit');
   };
 
   // Show mobile notice on small screens
@@ -270,111 +108,91 @@ const Floorplan = () => {
     return <MobileNotice />;
   }
 
+  // Calculate stats
+  const totalTables = tables.length;
+  const tablesInCurrentZone = tables.filter(t => t.zone_id === selectedZoneId).length;
+
   return (
     <div className="space-y-6">
       {/* Page Header */}
       <div className="mb-2 flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-semibold text-gray-900 dark:text-white">Floor Plan</h1>
-          <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">Manage your venue layout and table arrangements</p>
+          <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">View your venue layout and table arrangements</p>
         </div>
-        {!editMode && (
-          <button
-            onClick={handleToggleEdit}
-            className="px-4 py-2 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition-colors"
-          >
-            Edit Layout
-          </button>
-        )}
+        <button
+          onClick={handleEditFloorPlan}
+          className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition-colors"
+        >
+          <Pencil className="w-4 h-4" />
+          Edit Floor Plan
+        </button>
       </div>
 
-      <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl overflow-hidden p-6">
-        <div className="space-y-6">
-          <EditControls
-            editMode={editMode}
-            hasUnsavedChanges={hasUnsavedChanges}
-            saving={saving}
-            tables={tables}
-            onToggleEdit={handleToggleEdit}
-            onAddTable={handleAddTable}
-            onSaveLayout={handleSaveLayout}
-            onClearAllTables={handleClearAllTables}
-            onShowAlert={setAlertModal}
-          />
-          
+      {/* Stats Cards */}
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-4">
+          <div className="flex items-center gap-3">
+            <div className="p-2 bg-blue-50 dark:bg-blue-900/30 rounded-lg">
+              <Grid3X3 className="w-5 h-5 text-blue-600 dark:text-blue-400" />
+            </div>
+            <div>
+              <p className="text-sm text-gray-500 dark:text-gray-400">Total Tables</p>
+              <p className="text-xl font-semibold text-gray-900 dark:text-white">{totalTables}</p>
+            </div>
+          </div>
+        </div>
+        <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-4">
+          <div className="flex items-center gap-3">
+            <div className="p-2 bg-purple-50 dark:bg-purple-900/30 rounded-lg">
+              <Layers className="w-5 h-5 text-purple-600 dark:text-purple-400" />
+            </div>
+            <div>
+              <p className="text-sm text-gray-500 dark:text-gray-400">Zones</p>
+              <p className="text-xl font-semibold text-gray-900 dark:text-white">{zones.length}</p>
+            </div>
+          </div>
+        </div>
+        <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-4">
+          <div className="flex items-center gap-3">
+            <div className="p-2 bg-green-50 dark:bg-green-900/30 rounded-lg">
+              <Grid3X3 className="w-5 h-5 text-green-600 dark:text-green-400" />
+            </div>
+            <div>
+              <p className="text-sm text-gray-500 dark:text-gray-400">Tables in Zone</p>
+              <p className="text-xl font-semibold text-gray-900 dark:text-white">{tablesInCurrentZone}</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Floor Plan Preview */}
+      <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl overflow-hidden">
+        <div className="px-4 py-3 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between">
           <ZoneSelector
             zones={zones}
             selectedZoneId={selectedZoneId}
-            editMode={editMode}
+            editMode={false}
             onZoneSelect={handleZoneSelect}
-            onZoneRename={handleZoneRename}
-            onZoneDelete={handleZoneDelete}
-            onCreateZone={handleCreateZone}
+            onZoneRename={() => {}}
+            onZoneDelete={() => {}}
+            onCreateZone={() => {}}
           />
+        </div>
 
+        <div className="p-4">
           <FloorPlanCanvas
             ref={layoutRef}
             tables={tables}
             selectedZoneId={selectedZoneId}
-            editMode={editMode}
-            onTableDrag={handleTableDrag}
-            onRemoveTable={handleRemoveTable}
-            onTableResize={handleTableResize}
+            editMode={false}
+            previewMode={true}
+            onTableDrag={() => {}}
+            onRemoveTable={() => {}}
+            onTableResize={() => {}}
           />
         </div>
       </div>
-
-      {/* Exit Edit Confirmation Modal */}
-      <ConfirmationModal
-        isOpen={exitConfirmation}
-        onConfirm={confirmExitEdit}
-        onCancel={() => setExitConfirmation(false)}
-        title="Exit Edit Mode"
-        message="You have unsaved changes. Are you sure you want to exit without saving?"
-        confirmText="Exit Without Saving"
-        cancelText="Stay in Edit Mode"
-        confirmButtonStyle="warning"
-        icon="warning"
-      />
-
-      {/* Clear All Tables Confirmation Modal */}
-      <ConfirmationModal
-        isOpen={clearAllConfirmation}
-        onConfirm={confirmClearAllTables}
-        onCancel={() => setClearAllConfirmation(false)}
-        title="Clear All Tables"
-        message="Are you sure you want to delete all tables in this venue? This action cannot be undone."
-        confirmText="Delete All Tables"
-        cancelText="Cancel"
-        confirmButtonStyle="danger"
-        icon="danger"
-      />
-
-      {/* Zone Delete Confirmation Modal */}
-      <ConfirmationModal
-        isOpen={!!zoneDeleteConfirmation}
-        onConfirm={() => confirmZoneDelete(zoneDeleteConfirmation?.zoneId)}
-        onCancel={() => setZoneDeleteConfirmation(null)}
-        title="Delete Zone"
-        message={
-          zoneDeleteConfirmation?.count > 0
-            ? `This zone contains ${zoneDeleteConfirmation.count} table${zoneDeleteConfirmation.count !== 1 ? 's' : ''}. Deleting the zone will permanently remove ${zoneDeleteConfirmation.count === 1 ? 'it' : 'them'}. This action cannot be undone.`
-            : "Are you sure you want to delete this zone? This action cannot be undone."
-        }
-        confirmText="Delete Zone"
-        cancelText="Cancel"
-        confirmButtonStyle="danger"
-        icon="danger"
-      />
-
-      {/* Alert Modal */}
-      <AlertModal
-        isOpen={!!alertModal}
-        onClose={() => setAlertModal(null)}
-        title={alertModal?.title}
-        message={alertModal?.message}
-        type={alertModal?.type}
-      />
     </div>
   );
 };

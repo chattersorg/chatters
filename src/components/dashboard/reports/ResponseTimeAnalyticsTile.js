@@ -46,7 +46,7 @@ function rangeISO(preset, fromStr, toStr) {
   }
 }
 
-const ResponseTimeAnalyticsTile = ({ venueId, timeframe = 'all' }) => {
+const ResponseTimeAnalyticsTile = ({ venueId, timeframe = 'all', fromDate, toDate }) => {
   const [responseData, setResponseData] = useState([]);
   const [averageTime, setAverageTime] = useState(0);
   const [medianTime, setMedianTime] = useState(0);
@@ -58,30 +58,30 @@ const ResponseTimeAnalyticsTile = ({ venueId, timeframe = 'all' }) => {
     if (!venueId) return;
     fetchResponseTimeData();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [venueId, timeframe]);
+  }, [venueId, timeframe, fromDate, toDate]);
 
   const fetchResponseTimeData = async () => {
     setLoading(true);
-    
-    const { start, end } = rangeISO(timeframe);
-    
-    // Fetch resolved feedback sessions (same as AverageResolutionTimeTile)
+
+    const { start, end } = rangeISO(timeframe, fromDate, toDate);
+
+    // Fetch feedback sessions CREATED in this period that have been resolved
     const { data: feedbackData, error: feedbackError } = await supabase
       .from('feedback')
       .select('session_id, created_at, resolved_at')
       .eq('venue_id', venueId)
       .not('resolved_at', 'is', null)
-      .gte('resolved_at', start)
-      .lte('resolved_at', end);
+      .gte('created_at', start)
+      .lte('created_at', end);
 
-    // Fetch resolved assistance requests (same as AverageResolutionTimeTile)
+    // Fetch assistance requests CREATED in this period that have been resolved
     const { data: assistanceData, error: assistanceError } = await supabase
       .from('assistance_requests')
       .select('created_at, resolved_at')
       .eq('venue_id', venueId)
       .not('resolved_at', 'is', null)
-      .gte('resolved_at', start)
-      .lte('resolved_at', end);
+      .gte('created_at', start)
+      .lte('created_at', end);
 
     if (feedbackError || assistanceError) {
       console.error('Error fetching response time data:', feedbackError || assistanceError);

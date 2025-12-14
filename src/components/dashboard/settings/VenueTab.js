@@ -20,25 +20,61 @@ const VenueTab = ({
   const [links, setLinks] = useState([]);
   const [savingLinks, setSavingLinks] = useState(false);
   const [linksMessage, setLinksMessage] = useState({ type: '', text: '' });
+  const [showAddMenu, setShowAddMenu] = useState(false);
 
   // Menu settings state
   const [menuExpanded, setMenuExpanded] = useState(false);
   const [menuType, setMenuType] = useState('none');
   const [menuUrl, setMenuUrl] = useState('');
   const [menuPdfUrl, setMenuPdfUrl] = useState('');
+  const [menuCurrency, setMenuCurrency] = useState('GBP');
   const [uploadingPdf, setUploadingPdf] = useState(false);
   const navigate = useNavigate();
 
-  const getDefaultLinks = () => [
-    { id: 'order', label: 'Order Food', url: '', enabled: false, order: 1 },
-    { id: 'pay', label: 'Pay Your Bill', url: '', enabled: false, order: 2 },
-    { id: 'book', label: 'Book a Table', url: '', enabled: false, order: 3 }
+  const CURRENCY_OPTIONS = [
+    { code: 'GBP', symbol: '£', name: 'British Pound' },
+    { code: 'EUR', symbol: '€', name: 'Euro' },
+    { code: 'USD', symbol: '$', name: 'US Dollar' },
+    { code: 'AUD', symbol: 'A$', name: 'Australian Dollar' },
+    { code: 'CAD', symbol: 'C$', name: 'Canadian Dollar' },
+    { code: 'CHF', symbol: 'CHF', name: 'Swiss Franc' },
+    { code: 'NZD', symbol: 'NZ$', name: 'New Zealand Dollar' },
+    { code: 'SEK', symbol: 'kr', name: 'Swedish Krona' },
+    { code: 'NOK', symbol: 'kr', name: 'Norwegian Krone' },
+    { code: 'DKK', symbol: 'kr', name: 'Danish Krone' },
+    { code: 'RON', symbol: 'lei', name: 'Romanian Leu' },
   ];
+
+  const defaultLinkTemplates = [
+    { id: 'order', label: 'Order Food', url: '', enabled: false },
+    { id: 'pay', label: 'Pay Your Bill', url: '', enabled: false },
+    { id: 'book', label: 'Book a Table', url: '', enabled: false }
+  ];
+
+  const getDefaultLinks = () => defaultLinkTemplates.map((link, index) => ({
+    ...link,
+    order: index + 1
+  }));
+
+  // Get default links that are not already in the list
+  const getAvailableDefaultLinks = () => {
+    const existingIds = links.map(l => l.id);
+    return defaultLinkTemplates.filter(link => !existingIds.includes(link.id));
+  };
+
+  const addDefaultLink = (linkTemplate) => {
+    const newLink = {
+      ...linkTemplate,
+      order: links.length + 1
+    };
+    setLinks([...links, newLink]);
+    setShowAddMenu(false);
+  };
 
   const loadVenueData = useCallback(async () => {
     const { data, error } = await supabase
       .from('venues')
-      .select('custom_links, menu_type, menu_url, menu_pdf_url')
+      .select('custom_links, menu_type, menu_url, menu_pdf_url, menu_currency')
       .eq('id', venueId)
       .single();
 
@@ -49,12 +85,14 @@ const VenueTab = ({
 
     // Load custom links (excluding the old 'menu' link which we now handle separately)
     const customLinks = (data?.custom_links || []).filter(link => link.id !== 'menu');
-    setLinks(customLinks.length > 0 ? customLinks : getDefaultLinks());
+    // If no custom_links field exists (null), use defaults. If empty array, keep empty (user deleted all)
+    setLinks(data?.custom_links === null || data?.custom_links === undefined ? getDefaultLinks() : customLinks);
 
     // Load menu settings
     setMenuType(data?.menu_type || 'none');
     setMenuUrl(data?.menu_url || '');
     setMenuPdfUrl(data?.menu_pdf_url || '');
+    setMenuCurrency(data?.menu_currency || 'GBP');
   }, [venueId]);
 
   useEffect(() => {
@@ -175,7 +213,8 @@ const VenueTab = ({
         custom_links: links,
         menu_type: menuType,
         menu_url: menuType === 'link' ? menuUrl : null,
-        menu_pdf_url: menuType === 'pdf' ? menuPdfUrl : null
+        menu_pdf_url: menuType === 'pdf' ? menuPdfUrl : null,
+        menu_currency: menuCurrency
       })
       .eq('id', venueId);
 
@@ -516,6 +555,29 @@ const VenueTab = ({
                         )}
                       </div>
                     </label>
+
+                    {/* Currency Selection - only show when menu is enabled */}
+                    {menuType !== 'none' && (
+                      <div className="pt-4 mt-4 border-t border-gray-200 dark:border-gray-700">
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                          Menu Currency
+                        </label>
+                        <select
+                          value={menuCurrency}
+                          onChange={(e) => setMenuCurrency(e.target.value)}
+                          className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
+                        >
+                          {CURRENCY_OPTIONS.map(currency => (
+                            <option key={currency.code} value={currency.code}>
+                              {currency.symbol} - {currency.name} ({currency.code})
+                            </option>
+                          ))}
+                        </select>
+                        <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                          Currency symbol shown on your menu prices
+                        </p>
+                      </div>
+                    )}
                   </div>
                 </div>
               )}
@@ -524,13 +586,47 @@ const VenueTab = ({
             {/* Other Action Links Header */}
             <div className="flex items-center justify-between pt-2">
               <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300">Other Action Links</h4>
-              <button
-                onClick={addCustomLink}
-                className="flex items-center gap-2 px-3 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-md hover:bg-gray-50 dark:hover:bg-gray-700"
-              >
-                <Plus className="w-4 h-4" />
-                Add Custom Link
-              </button>
+              <div className="relative">
+                <button
+                  onClick={() => setShowAddMenu(!showAddMenu)}
+                  className="flex items-center gap-2 px-3 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-md hover:bg-gray-50 dark:hover:bg-gray-700"
+                >
+                  <Plus className="w-4 h-4" />
+                  Add Link
+                  <ChevronDown className="w-4 h-4" />
+                </button>
+                {showAddMenu && (
+                  <>
+                    <div
+                      className="fixed inset-0 z-10"
+                      onClick={() => setShowAddMenu(false)}
+                    />
+                    <div className="absolute right-0 mt-2 w-48 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg z-20 py-1">
+                      {getAvailableDefaultLinks().map((link) => (
+                        <button
+                          key={link.id}
+                          onClick={() => addDefaultLink(link)}
+                          className="w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
+                        >
+                          {link.label}
+                        </button>
+                      ))}
+                      {getAvailableDefaultLinks().length > 0 && (
+                        <div className="border-t border-gray-100 dark:border-gray-700 my-1" />
+                      )}
+                      <button
+                        onClick={() => {
+                          addCustomLink();
+                          setShowAddMenu(false);
+                        }}
+                        className="w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
+                      >
+                        Custom Link
+                      </button>
+                    </div>
+                  </>
+                )}
+              </div>
             </div>
 
             {/* Draggable Links List */}
@@ -580,15 +676,13 @@ const VenueTab = ({
                                   >
                                     {link.enabled ? <Eye className="w-4 h-4" /> : <EyeOff className="w-4 h-4" />}
                                   </button>
-                                  {link.id.startsWith('custom-') && (
-                                    <button
-                                      onClick={() => deleteLink(link.id)}
-                                      className="p-2 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-md"
-                                      title="Delete"
-                                    >
-                                      <Trash2 className="w-4 h-4" />
-                                    </button>
-                                  )}
+                                  <button
+                                    onClick={() => deleteLink(link.id)}
+                                    className="p-2 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-md"
+                                    title="Remove link"
+                                  >
+                                    <Trash2 className="w-4 h-4" />
+                                  </button>
                                 </div>
 
                                 <div className="flex items-center gap-2">
@@ -618,6 +712,13 @@ const VenueTab = ({
                       </Draggable>
                     ))}
                     {provided.placeholder}
+                    {links.length === 0 && (
+                      <div className="text-center py-8 text-gray-500 dark:text-gray-400">
+                        <Link className="w-8 h-8 mx-auto mb-2 text-gray-300 dark:text-gray-600" />
+                        <p className="text-sm">No action links configured</p>
+                        <p className="text-xs mt-1">Click "Add Link" to add links for ordering, payments, bookings, or custom actions</p>
+                      </div>
+                    )}
                   </div>
                 )}
               </Droppable>

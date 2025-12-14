@@ -18,6 +18,7 @@ const FloorPlanCanvas = forwardRef(
       onTableDrag,
       onRemoveTable,
       onTableResize,
+      previewMode = false, // Static view - no zoom, pan, or interaction
     },
     ref
   ) => {
@@ -56,18 +57,28 @@ const FloorPlanCanvas = forwardRef(
       };
     }, [containerRef]);
 
-    // Process tables - use pixel coordinates directly for now
+    // Process tables - convert from percent if pixel values are not set or are 0
     const processedTables = useMemo(() => {
       return filteredTables.map(t => {
-        // Use pixel coordinates directly since that's what the floorplan editor uses
-        const worldX = t.x_px ?? 0;
-        const worldY = t.y_px ?? 0;
+        let worldX, worldY;
+
+        // Prefer percent-based conversion if we have container size and percent values
+        // This ensures consistent positioning regardless of when tables were loaded
+        if (t.x_percent !== undefined && t.y_percent !== undefined && containerSize.width > 0 && containerSize.height > 0) {
+          worldX = (t.x_percent / 100) * containerSize.width;
+          worldY = (t.y_percent / 100) * containerSize.height;
+        } else {
+          // Fall back to pixel values if available
+          worldX = t.x_px ?? 0;
+          worldY = t.y_px ?? 0;
+        }
+
         const w = t.width || 56;
         const h = t.height || 56;
-        
+
         return { ...t, worldX, worldY, w, h };
       });
-    }, [filteredTables]);
+    }, [filteredTables, containerSize]);
 
     // Fit to screen function
     const fitToScreen = useCallback(() => {
@@ -114,14 +125,17 @@ const FloorPlanCanvas = forwardRef(
     // Auto-fit when zone changes or initial load
     useEffect(() => {
       if (processedTables.length > 0 && containerSize.width > 0) {
-        setTimeout(fitToScreen, 100);
+        // Use requestAnimationFrame instead of setTimeout for smoother transition
+        requestAnimationFrame(() => {
+          fitToScreen();
+        });
       }
     }, [selectedZoneId, fitToScreen]); // Only when zone changes, not when tables change
 
     // Zoom controls
     const handleZoomIn = () => setZoom(prev => Math.min(prev + ZOOM_STEP, MAX_ZOOM));
     const handleZoomOut = () => setZoom(prev => Math.max(prev - ZOOM_STEP, MIN_ZOOM));
-    
+
     // Mouse wheel zoom with improved trackpad handling
     const handleWheel = useCallback((e) => {
       // Always prevent default to stop browser zoom
@@ -161,9 +175,19 @@ const FloorPlanCanvas = forwardRef(
       }
     }, [zoom, panOffset]);
 
+    // Attach wheel event listener with passive: false to allow preventDefault (not in preview mode)
+    useEffect(() => {
+      if (previewMode) return;
+      const el = containerRef.current;
+      if (!el) return;
+
+      el.addEventListener('wheel', handleWheel, { passive: false });
+      return () => el.removeEventListener('wheel', handleWheel);
+    }, [handleWheel, previewMode]);
+
     // Pan controls
     const startPan = (e) => {
-      if (editMode) return; // Don't pan in edit mode
+      if (editMode || previewMode) return; // Don't pan in edit mode or preview mode
       setIsDragging(true);
       setDragStart({ x: e.clientX, y: e.clientY });
       setPanStart({ x: panOffset.x, y: panOffset.y });
@@ -268,50 +292,51 @@ const FloorPlanCanvas = forwardRef(
     };
 
     return (
-      <div className="relative">
-        {/* Zoom Controls */}
-        <div className="absolute top-2 right-2 z-20 flex flex-col gap-1 bg-white dark:bg-gray-800 rounded-lg border border-gray-300 dark:border-gray-600 shadow-lg">
-          <button
-            onClick={handleZoomIn}
-            disabled={zoom >= MAX_ZOOM}
-            className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed border-b border-gray-200 dark:border-gray-600 text-gray-700 dark:text-gray-200"
-            title="Zoom In"
-          >
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-            </svg>
-          </button>
-          <button
-            onClick={handleZoomOut}
-            disabled={zoom <= MIN_ZOOM}
-            className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed border-b border-gray-200 dark:border-gray-600 text-gray-700 dark:text-gray-200"
-            title="Zoom Out"
-          >
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18 12H6" />
-            </svg>
-          </button>
-          <button
-            onClick={fitToScreen}
-            className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-200"
-            title="Fit to Screen"
-          >
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5v-4m0 4h-4m4 0l-5-5" />
-            </svg>
-          </button>
-          <div className="px-2 py-1 text-xs text-gray-500 dark:text-gray-400 border-t border-gray-200 dark:border-gray-600">
-            {Math.round(zoom * 100)}%
+      <div className="relative h-full">
+        {/* Zoom Controls - hidden in preview mode */}
+        {!previewMode && (
+          <div className="absolute top-2 right-2 z-20 flex flex-col gap-1 bg-white dark:bg-gray-800 rounded-lg border border-gray-300 dark:border-gray-600 shadow-lg">
+            <button
+              onClick={handleZoomIn}
+              disabled={zoom >= MAX_ZOOM}
+              className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed border-b border-gray-200 dark:border-gray-600 text-gray-700 dark:text-gray-200"
+              title="Zoom In"
+            >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+              </svg>
+            </button>
+            <button
+              onClick={handleZoomOut}
+              disabled={zoom <= MIN_ZOOM}
+              className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed border-b border-gray-200 dark:border-gray-600 text-gray-700 dark:text-gray-200"
+              title="Zoom Out"
+            >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18 12H6" />
+              </svg>
+            </button>
+            <button
+              onClick={fitToScreen}
+              className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-200"
+              title="Fit to Screen"
+            >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5v-4m0 4h-4m4 0l-5-5" />
+              </svg>
+            </button>
+            <div className="px-2 py-1 text-xs text-gray-500 dark:text-gray-400 border-t border-gray-200 dark:border-gray-600">
+              {Math.round(zoom * 100)}%
+            </div>
           </div>
-        </div>
+        )}
 
         <div
           ref={containerRef}
-          className="relative w-full h-[600px] bg-gray-50 dark:bg-gray-900 border-2 border-dashed border-gray-200 dark:border-gray-600 rounded-lg overflow-hidden"
-          onMouseDown={startPan}
-          onWheel={handleWheel}
+          className={`relative w-full bg-gray-50 dark:bg-gray-900 overflow-hidden ${previewMode ? 'h-[600px] border-2 border-dashed border-gray-200 dark:border-gray-600 rounded-lg' : 'h-full'}`}
+          onMouseDown={previewMode ? undefined : startPan}
           style={{
-            cursor: isDragging ? 'grabbing' : (editMode ? 'default' : 'grab')
+            cursor: previewMode ? 'default' : (isDragging ? 'grabbing' : (editMode ? 'default' : 'grab'))
           }}
         >
           {/* Subtle grid pattern for visual reference */}
@@ -389,9 +414,9 @@ const FloorPlanCanvas = forwardRef(
             ) : (
               <div
                 key={table.id}
-                className="absolute"
-                style={{ 
-                  left: screenX, 
+                className="absolute transition-all duration-150 ease-out"
+                style={{
+                  left: screenX,
                   top: screenY,
                   width: screenWidth,
                   height: screenHeight

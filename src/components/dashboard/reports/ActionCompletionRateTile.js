@@ -48,9 +48,50 @@ function rangeISO(preset, fromStr, toStr) {
   }
 }
 
+// Get the previous period range for comparison
+function getPreviousPeriodRange(preset) {
+  const now = new Date();
+  switch (preset) {
+    case 'today': {
+      const y = new Date(now); y.setDate(now.getDate() - 1);
+      return { start: toISO(startOfDay(y)), end: toISO(endOfDay(y)) };
+    }
+    case 'yesterday': {
+      const d = new Date(now); d.setDate(now.getDate() - 2);
+      return { start: toISO(startOfDay(d)), end: toISO(endOfDay(d)) };
+    }
+    case 'thisWeek': {
+      const endOfLastWeek = new Date(now);
+      endOfLastWeek.setDate(now.getDate() - now.getDay() - 1);
+      const startOfLastWeek = new Date(endOfLastWeek);
+      startOfLastWeek.setDate(endOfLastWeek.getDate() - 6);
+      return { start: toISO(startOfDay(startOfLastWeek)), end: toISO(endOfDay(endOfLastWeek)) };
+    }
+    case 'last7': {
+      const e = new Date(now); e.setDate(now.getDate() - 7);
+      const s = new Date(now); s.setDate(now.getDate() - 13);
+      return { start: toISO(startOfDay(s)), end: toISO(endOfDay(e)) };
+    }
+    case 'last14': {
+      const e = new Date(now); e.setDate(now.getDate() - 14);
+      const s = new Date(now); s.setDate(now.getDate() - 27);
+      return { start: toISO(startOfDay(s)), end: toISO(endOfDay(e)) };
+    }
+    case 'last30': {
+      const e = new Date(now); e.setDate(now.getDate() - 30);
+      const s = new Date(now); s.setDate(now.getDate() - 59);
+      return { start: toISO(startOfDay(s)), end: toISO(endOfDay(e)) };
+    }
+    default:
+      return null;
+  }
+}
+
 export default function ActionCompletionRateTile({
   venueId,
   timeframe = 'today',
+  fromDate,
+  toDate,
   actionedCount: propActionedCount,
   totalCount: propTotalCount,
 }) {
@@ -58,9 +99,10 @@ export default function ActionCompletionRateTile({
 
   // data
   const [actionedCount, setActionedCount] = useState(propActionedCount ?? 0);
+  const [dismissedCount, setDismissedCount] = useState(0);
   const [totalCount, setTotalCount] = useState(propTotalCount ?? 0);
-  const [yesterdayActionedCount, setYesterdayActionedCount] = useState(0);
-  const [yesterdayTotalCount, setYesterdayTotalCount] = useState(0);
+  const [prevActionedCount, setPrevActionedCount] = useState(0);
+  const [prevTotalCount, setPrevTotalCount] = useState(0);
   const [loading, setLoading] = useState(!(propActionedCount || propTotalCount));
 
   useEffect(() => {
@@ -76,28 +118,31 @@ export default function ActionCompletionRateTile({
     const run = async () => {
       setLoading(true);
       try {
-        const { start, end } = rangeISO(preset);
+        const { start, end } = rangeISO(preset, fromDate, toDate);
 
-        // Fetch feedback sessions
+        // Fetch ALL feedback sessions CREATED in this period
         const { data: feedbackData, error: feedbackError } = await supabase
           .from('feedback')
-          .select('session_id, is_actioned, dismissed, created_at, resolved_at')
+          .select('session_id, is_actioned, dismissed, resolution_type, created_at, resolved_at')
           .eq('venue_id', venueId)
-          .or(`and(resolved_at.gte.${start},resolved_at.lte.${end}),and(resolved_at.is.null,created_at.gte.${start},created_at.lte.${end})`);
+          .gte('created_at', start)
+          .lte('created_at', end);
 
-        // Fetch assistance requests
+        // Fetch ALL assistance requests CREATED in this period
         const { data: assistanceData, error: assistanceError } = await supabase
           .from('assistance_requests')
           .select('id, status, created_at, resolved_at')
           .eq('venue_id', venueId)
-          .or(`and(resolved_at.gte.${start},resolved_at.lte.${end}),and(resolved_at.is.null,created_at.gte.${start},created_at.lte.${end})`);
+          .gte('created_at', start)
+          .lte('created_at', end);
 
         if (feedbackError || assistanceError) throw feedbackError || assistanceError;
 
         let total = 0;
         let resolved = 0;
+        let dismissed = 0;
 
-        // Process feedback sessions
+        // Process feedback sessions - group by session_id
         if (feedbackData?.length) {
           const sessions = new Map();
           for (const row of feedbackData) {
@@ -106,116 +151,96 @@ export default function ActionCompletionRateTile({
           }
 
           for (const rows of sessions.values()) {
-            // effective timestamp
-            let latestTs = 0;
-            for (const r of rows) {
-              const ts = new Date(r.resolved_at ?? r.created_at).getTime();
-              if (ts > latestTs) latestTs = ts;
-            }
-
-            // Make sure the session actually falls in range
-            const { start: sISO, end: eISO } = rangeISO(preset);
-            const sMs = new Date(sISO).getTime();
-            const eMs = new Date(eISO).getTime();
-            if (latestTs < sMs || latestTs > eMs) continue;
-
             total += 1;
 
-            const allActioned = rows.every(x => x.is_actioned === true);
-            const allDismissed = rows.every(x => x.dismissed === true);
-            if (allActioned || allDismissed) resolved += 1;
+            // Check if session is resolved (has resolved_at on any item)
+            const hasResolvedAt = rows.some(x => x.resolved_at !== null);
+            // Check if all items in session are dismissed
+            const allDismissed = rows.every(x => x.dismissed === true || x.resolution_type === 'dismissed');
+
+            if (hasResolvedAt) {
+              if (allDismissed) {
+                dismissed += 1;
+              } else {
+                resolved += 1;
+              }
+            }
           }
         }
 
         // Process assistance requests
         if (assistanceData?.length) {
           for (const request of assistanceData) {
-            const ts = new Date(request.resolved_at ?? request.created_at).getTime();
-
-            // Make sure the request falls in range
-            const { start: sISO, end: eISO } = rangeISO(preset);
-            const sMs = new Date(sISO).getTime();
-            const eMs = new Date(eISO).getTime();
-            if (ts < sMs || ts > eMs) continue;
-
             total += 1;
 
-            if (request.status === 'resolved' || request.resolved_at !== null) {
+            if (request.resolved_at !== null) {
               resolved += 1;
             }
           }
         }
 
         setActionedCount(resolved);
+        setDismissedCount(dismissed);
         setTotalCount(total);
 
-        // Fetch yesterday's data only if timeframe is 'today'
-        if (preset === 'today') {
-          const { start: yStart, end: yEnd } = rangeISO('yesterday');
+        // Fetch previous period data for comparison (only for preset timeframes)
+        const prevPeriod = preset !== 'custom' ? getPreviousPeriodRange(preset) : null;
+        if (prevPeriod) {
+          const { start: pStart, end: pEnd } = prevPeriod;
 
-          // Fetch YESTERDAY's feedback sessions
-          const { data: yesterdayFeedbackData } = await supabase
+          // Fetch previous period's feedback sessions CREATED in that period
+          const { data: prevFeedbackData } = await supabase
             .from('feedback')
-            .select('session_id, is_actioned, dismissed, created_at, resolved_at')
+            .select('session_id, dismissed, resolution_type, resolved_at')
             .eq('venue_id', venueId)
-            .or(`and(resolved_at.gte.${yStart},resolved_at.lte.${yEnd}),and(resolved_at.is.null,created_at.gte.${yStart},created_at.lte.${yEnd})`);
+            .gte('created_at', pStart)
+            .lte('created_at', pEnd);
 
-          // Fetch YESTERDAY's assistance requests
-          const { data: yesterdayAssistanceData } = await supabase
+          // Fetch previous period's assistance requests CREATED in that period
+          const { data: prevAssistanceData } = await supabase
             .from('assistance_requests')
-            .select('id, status, created_at, resolved_at')
+            .select('id, resolved_at')
             .eq('venue_id', venueId)
-            .or(`and(resolved_at.gte.${yStart},resolved_at.lte.${yEnd}),and(resolved_at.is.null,created_at.gte.${yStart},created_at.lte.${yEnd})`);
+            .gte('created_at', pStart)
+            .lte('created_at', pEnd);
 
-          let yesterdayTotal = 0;
-          let yesterdayResolved = 0;
+          let prevTotal = 0;
+          let prevResolved = 0;
 
-          // Process YESTERDAY's feedback sessions
-          if (yesterdayFeedbackData?.length) {
-            const yesterdaySessions = new Map();
-            for (const row of yesterdayFeedbackData) {
-              if (!yesterdaySessions.has(row.session_id)) yesterdaySessions.set(row.session_id, []);
-              yesterdaySessions.get(row.session_id).push(row);
+          // Process previous period's feedback sessions
+          if (prevFeedbackData?.length) {
+            const prevSessions = new Map();
+            for (const row of prevFeedbackData) {
+              if (!prevSessions.has(row.session_id)) prevSessions.set(row.session_id, []);
+              prevSessions.get(row.session_id).push(row);
             }
 
-            for (const rows of yesterdaySessions.values()) {
-              let latestTs = 0;
-              for (const r of rows) {
-                const ts = new Date(r.resolved_at ?? r.created_at).getTime();
-                if (ts > latestTs) latestTs = ts;
-              }
+            for (const rows of prevSessions.values()) {
+              prevTotal += 1;
 
-              const yStartMs = new Date(yStart).getTime();
-              const yEndMs = new Date(yEnd).getTime();
-              if (latestTs < yStartMs || latestTs > yEndMs) continue;
-
-              yesterdayTotal += 1;
-
-              const allActioned = rows.every(x => x.is_actioned === true);
-              const allDismissed = rows.every(x => x.dismissed === true);
-              if (allActioned || allDismissed) yesterdayResolved += 1;
-            }
-          }
-
-          // Process YESTERDAY's assistance requests
-          if (yesterdayAssistanceData?.length) {
-            for (const request of yesterdayAssistanceData) {
-              const ts = new Date(request.resolved_at ?? request.created_at).getTime();
-
-              const yStartMs = new Date(yStart).getTime();
-              const yEndMs = new Date(yEnd).getTime();
-              if (ts < yStartMs || ts > yEndMs) continue;
-
-              yesterdayTotal += 1;
-
-              if (request.status === 'resolved' || request.resolved_at !== null) {
-                yesterdayResolved += 1;
+              const hasResolvedAt = rows.some(x => x.resolved_at !== null);
+              if (hasResolvedAt) {
+                prevResolved += 1;
               }
             }
           }
 
-          setYesterdayActionedCount(yesterdayResolved);
-          setYesterdayTotalCount(yesterdayTotal);
+          // Process previous period's assistance requests
+          if (prevAssistanceData?.length) {
+            for (const request of prevAssistanceData) {
+              prevTotal += 1;
+
+              if (request.resolved_at !== null) {
+                prevResolved += 1;
+              }
+            }
+          }
+
+          setPrevActionedCount(prevResolved);
+          setPrevTotalCount(prevTotal);
+        } else {
+          setPrevActionedCount(0);
+          setPrevTotalCount(0);
         }
       } catch (e) {
         console.error('ActionCompletionRateTile fetch error:', e);
@@ -227,30 +252,42 @@ export default function ActionCompletionRateTile({
     };
 
     run();
-  }, [venueId, timeframe, propActionedCount, propTotalCount]);
+  }, [venueId, timeframe, fromDate, toDate, propActionedCount, propTotalCount]);
 
   const rate = useMemo(() => {
     if (!totalCount) return 0;
     return (actionedCount / totalCount) * 100;
   }, [actionedCount, totalCount]);
 
-  const yesterdayRate = useMemo(() => {
-    if (!yesterdayTotalCount) return 0;
-    return (yesterdayActionedCount / yesterdayTotalCount) * 100;
-  }, [yesterdayActionedCount, yesterdayTotalCount]);
+  const prevRate = useMemo(() => {
+    if (!prevTotalCount) return 0;
+    return (prevActionedCount / prevTotalCount) * 100;
+  }, [prevActionedCount, prevTotalCount]);
 
   const calculateTrend = () => {
-    // Only show trend if we're on 'today' timeframe and have yesterday data
-    if (preset !== 'today' || yesterdayTotalCount === 0) return null;
+    // Only show trend if we have previous period data
+    if (prevTotalCount === 0) return null;
 
-    const difference = rate - yesterdayRate;
+    // If current period has no data but previous did, show the full drop
+    // rate is 0, prevRate was e.g. 98.1%, so difference is 0 - 98.1 = -98.1%
+    if (totalCount === 0 && prevTotalCount > 0) {
+      const difference = 0 - prevRate; // rate is 0 when totalCount is 0
+      return {
+        direction: "down",
+        positive: false, // Lower completion rate is bad
+        value: `${difference.toFixed(1)}%`,
+        text: "vs previous period"
+      };
+    }
+
+    const difference = rate - prevRate;
 
     if (Math.abs(difference) < 0.5) {
       return {
         direction: "neutral",
         positive: true,
         value: "0%",
-        text: "vs yesterday"
+        text: "vs previous period"
       };
     }
 
@@ -258,15 +295,29 @@ export default function ActionCompletionRateTile({
       direction: difference > 0 ? "up" : "down",
       positive: difference > 0, // Higher completion rate is positive
       value: `${difference > 0 ? '+' : ''}${difference.toFixed(1)}%`,
-      text: "vs yesterday"
+      text: "vs previous period"
     };
   };
+
+  const description = useMemo(() => {
+    const unresolved = totalCount - actionedCount - dismissedCount;
+    if (dismissedCount > 0 && unresolved > 0) {
+      return `${actionedCount} resolved, ${dismissedCount} dismissed, ${unresolved} pending`;
+    }
+    if (dismissedCount > 0) {
+      return `${actionedCount} resolved, ${dismissedCount} dismissed of ${totalCount}`;
+    }
+    if (unresolved > 0) {
+      return `${actionedCount} resolved, ${unresolved} pending of ${totalCount}`;
+    }
+    return `${actionedCount}/${totalCount} items resolved`;
+  }, [actionedCount, dismissedCount, totalCount]);
 
   return (
     <MetricCard
       title="Completion Rate"
       value={loading ? '—' : `${rate.toFixed(1)}%`}
-      description={`${actionedCount}/${totalCount} items resolved`}
+      description={description}
       icon={CheckCircle}
       variant={rate >= 80 ? "success" : rate >= 60 ? "neutral" : "warning"}
       loading={loading}

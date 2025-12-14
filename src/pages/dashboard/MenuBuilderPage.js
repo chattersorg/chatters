@@ -25,6 +25,20 @@ const DIETARY_TAGS = [
   { code: 'N', label: 'Contains Nuts', color: 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400' }
 ];
 
+const CURRENCY_SYMBOLS = {
+  GBP: '£',
+  EUR: '€',
+  USD: '$',
+  AUD: 'A$',
+  CAD: 'C$',
+  CHF: 'CHF',
+  NZD: 'NZ$',
+  SEK: 'kr',
+  NOK: 'kr',
+  DKK: 'kr',
+  RON: 'lei',
+};
+
 const MenuBuilderPage = () => {
   const navigate = useNavigate();
   const { venueId } = useVenue();
@@ -34,6 +48,7 @@ const MenuBuilderPage = () => {
   const [message, setMessage] = useState({ type: '', text: '' });
   const [editingCategoryId, setEditingCategoryId] = useState(null);
   const [editingCategoryName, setEditingCategoryName] = useState('');
+  const [currencySymbol, setCurrencySymbol] = useState('£');
 
   useEffect(() => {
     if (venueId) {
@@ -43,6 +58,17 @@ const MenuBuilderPage = () => {
 
   const loadMenu = async () => {
     setLoading(true);
+
+    // Load venue currency setting
+    const { data: venueData } = await supabase
+      .from('venues')
+      .select('menu_currency')
+      .eq('id', venueId)
+      .single();
+
+    if (venueData?.menu_currency) {
+      setCurrencySymbol(CURRENCY_SYMBOLS[venueData.menu_currency] || '£');
+    }
 
     const { data: categoriesData, error: categoriesError } = await supabase
       .from('menu_categories')
@@ -524,7 +550,7 @@ const MenuBuilderPage = () => {
                                       placeholder="Item name"
                                     />
                                     <div className="flex items-center gap-1">
-                                      <span className="text-gray-500 dark:text-gray-400 text-sm">£</span>
+                                      <span className="text-gray-500 dark:text-gray-400 text-sm">{currencySymbol}</span>
                                       <input
                                         type="number"
                                         step="0.01"

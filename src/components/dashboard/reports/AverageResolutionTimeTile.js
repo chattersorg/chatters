@@ -51,23 +51,23 @@ function rangeISO(preset, fromStr, toStr) {
 }
 
 async function fetchAvgResolutionMinutes(venueId, startISO, endISO) {
-  // Fetch resolved feedback sessions
+  // Fetch feedback sessions CREATED in this period that have been resolved
   const { data: feedbackData, error: feedbackError } = await supabase
     .from('feedback')
     .select('session_id, created_at, resolved_at')
     .eq('venue_id', venueId)
     .not('resolved_at', 'is', null)
-    .gte('resolved_at', startISO)
-    .lte('resolved_at', endISO);
+    .gte('created_at', startISO)
+    .lte('created_at', endISO);
 
-  // Fetch resolved assistance requests
+  // Fetch assistance requests CREATED in this period that have been resolved
   const { data: assistanceData, error: assistanceError } = await supabase
     .from('assistance_requests')
     .select('created_at, resolved_at')
     .eq('venue_id', venueId)
     .not('resolved_at', 'is', null)
-    .gte('resolved_at', startISO)
-    .lte('resolved_at', endISO);
+    .gte('created_at', startISO)
+    .lte('created_at', endISO);
 
   if (feedbackError || assistanceError) {
     console.error('Error fetching resolution times:', feedbackError || assistanceError);
@@ -114,7 +114,7 @@ function formatTime(minutes) {
   return h ? `${d}d ${h}h` : `${d}d`;
 }
 
-export default function AverageResolutionTimeTile({ venueId, timeframe = 'last7' }) {
+export default function AverageResolutionTimeTile({ venueId, timeframe = 'last7', fromDate, toDate }) {
   const preset = timeframe;
 
   const [avg, setAvg] = useState(0);
@@ -163,7 +163,7 @@ export default function AverageResolutionTimeTile({ venueId, timeframe = 'last7'
 
     const run = async () => {
       setLoading(true);
-      const { start, end } = rangeISO(preset);
+      const { start, end } = rangeISO(preset, fromDate, toDate);
       const base = baselineRange();
 
       const [main, baseData] = await Promise.all([
@@ -178,7 +178,7 @@ export default function AverageResolutionTimeTile({ venueId, timeframe = 'last7'
     };
 
     run();
-  }, [venueId, timeframe]);
+  }, [venueId, timeframe, fromDate, toDate]);
 
   const progress = useMemo(() => {
     if (avg === 0) return 100;
@@ -187,7 +187,19 @@ export default function AverageResolutionTimeTile({ venueId, timeframe = 'last7'
   }, [avg]);
 
   const calculateTrend = () => {
+    // No previous data to compare
     if (!baselineAvg || baselineAvg === 0) return null;
+
+    // Current period has no resolved items but previous did
+    // Show as red down - having no items resolved is bad
+    if (count === 0 && baselineAvg > 0) {
+      return {
+        direction: "down",
+        positive: false,
+        value: "-100%",
+        text: "vs previous period"
+      };
+    }
 
     const delta = ((avg - baselineAvg) / baselineAvg) * 100;
 

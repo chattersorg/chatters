@@ -110,7 +110,7 @@ function buildMonthBuckets(startISO, endISO) {
   return buckets;
 }
 
-export default function SatisfactionTrendTile({ venueId, timeframe = 'last7' }) {
+export default function SatisfactionTrendTile({ venueId, timeframe = 'last7', fromDate, toDate }) {
   const preset = timeframe;
   const [loading, setLoading] = useState(true);
   const [series, setSeries] = useState([]); // [{labelTs:number, average:number|null, hour?:number}]
@@ -119,26 +119,44 @@ export default function SatisfactionTrendTile({ venueId, timeframe = 'last7' }) 
   async function fetchData() {
     if (!venueId) return;
 
-    const { startISO, endISO, hourly, monthly, baseDate } = getRange(preset);
+    const { startISO, endISO, hourly, monthly, baseDate } = getRange(preset, fromDate, toDate);
     setLoading(true);
 
-    const { data, error } = await supabase
-      .from('feedback')
-      .select('created_at, rating')
-      .eq('venue_id', venueId)
-      .gte('created_at', startISO)
-      .lte('created_at', endISO)
-      .not('rating', 'is', null)
-      .order('created_at');
+    // Fetch all feedback in the range - need to handle Supabase's 1000 row default limit
+    // For venues with high volume, we need to paginate or set a higher limit
+    let allRows = [];
+    let offset = 0;
+    const pageSize = 1000;
+    let hasMore = true;
 
-    if (error) {
-      console.error('SatisfactionTrend fetch error:', error);
-      setSeries([]);
-      setLoading(false);
-      return;
+    while (hasMore) {
+      const { data, error: fetchError } = await supabase
+        .from('feedback')
+        .select('created_at, rating')
+        .eq('venue_id', venueId)
+        .gte('created_at', startISO)
+        .lte('created_at', endISO)
+        .not('rating', 'is', null)
+        .order('created_at')
+        .range(offset, offset + pageSize - 1);
+
+      if (fetchError) {
+        console.error('SatisfactionTrend fetch error:', fetchError);
+        setSeries([]);
+        setLoading(false);
+        return;
+      }
+
+      allRows = allRows.concat(data || []);
+
+      if (!data || data.length < pageSize) {
+        hasMore = false;
+      } else {
+        offset += pageSize;
+      }
     }
 
-    const rows = data || [];
+    const rows = allRows;
 
     if (hourly) {
       const buckets = buildHourBuckets(baseDate);
@@ -178,7 +196,10 @@ export default function SatisfactionTrendTile({ venueId, timeframe = 'last7' }) 
         return { labelTs: b.labelTs, average: cur ? +(cur.sum / cur.count).toFixed(2) : null };
       });
 
-      setSeries(built);
+      // Trim leading empty buckets (no data before first feedback)
+      const firstDataIndex = built.findIndex(b => b.average !== null);
+      const trimmed = firstDataIndex > 0 ? built.slice(firstDataIndex) : built;
+      setSeries(trimmed);
     } else {
       const buckets = buildDayBuckets(startISO, endISO);
       const index = new Map(); // 'YYYY-MM-DD' -> {sum,count}
@@ -199,7 +220,10 @@ export default function SatisfactionTrendTile({ venueId, timeframe = 'last7' }) 
         return { labelTs: b.labelTs, average: cur ? +(cur.sum / cur.count).toFixed(2) : null };
       });
 
-      setSeries(built);
+      // Trim leading empty buckets (no data before first feedback)
+      const firstDataIndex = built.findIndex(b => b.average !== null);
+      const trimmed = firstDataIndex > 0 ? built.slice(firstDataIndex) : built;
+      setSeries(trimmed);
     }
 
     setLoading(false);
@@ -209,9 +233,29 @@ export default function SatisfactionTrendTile({ venueId, timeframe = 'last7' }) 
   useEffect(() => {
     fetchData();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [venueId, timeframe]);
+  }, [venueId, timeframe, fromDate, toDate]);
 
-  const { hourly: isHourly, monthly: isMonthly } = getRange(preset);
+  const { hourly: isHourly, monthly: isMonthly } = getRange(preset, fromDate, toDate);
+
+  // Calculate dynamic Y-axis domain based on actual data range
+  const yAxisDomain = useMemo(() => {
+    const values = series.filter(d => d.average != null).map(d => d.average);
+    if (values.length === 0) return [0, 5];
+
+    const min = Math.min(...values);
+    const max = Math.max(...values);
+
+    // Add padding of 0.5 on each side, but clamp to valid rating range (1-5)
+    const paddedMin = Math.max(1, Math.floor(min - 0.5));
+    const paddedMax = Math.min(5, Math.ceil(max + 0.5));
+
+    // Ensure we have at least 1 point of range for readability
+    if (paddedMax - paddedMin < 1) {
+      return [Math.max(1, paddedMin - 0.5), Math.min(5, paddedMax + 0.5)];
+    }
+
+    return [paddedMin, paddedMax];
+  }, [series]);
 
   return (
     <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-lg p-6">
@@ -257,15 +301,17 @@ export default function SatisfactionTrendTile({ venueId, timeframe = 'last7' }) 
               />
 
               <YAxis
-                domain={[0, 5]}   // 👈 start from 0
+                domain={yAxisDomain}
                 stroke="#64748B"
                 fontSize={12}
                 tick={{ fill: '#64748B' }}
-                allowDecimals={false}
+                allowDecimals
                 width={32}
+                tickCount={5}
               />
 
               <Tooltip
+                cursor={false}
                 contentStyle={{
                   backgroundColor: '#1F2937',
                   border: '1px solid #374151',
