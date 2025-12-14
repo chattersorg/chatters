@@ -324,7 +324,7 @@ const TrialExpired = () => {
                       <div className="text-sm text-gray-500">
                         Total for {venueCount} venue{venueCount !== 1 ? 's' : ''}
                       </div>
-                      <span className="text-2xl font-bold text-gray-800">£{monthlyTotal.toLocaleString()}</span>
+                      <span className="text-2xl font-bold text-gray-800">£{monthlySubtotal.toLocaleString()}</span>
                       <span className="text-gray-600">/mo</span>
                     </div>
                     <input
@@ -354,7 +354,7 @@ const TrialExpired = () => {
                       <div className="text-sm text-gray-500">
                         Total for {venueCount} venue{venueCount !== 1 ? 's' : ''}
                       </div>
-                      <span className="text-2xl font-bold text-gray-800">£{yearlyTotal.toLocaleString()}</span>
+                      <span className="text-2xl font-bold text-gray-800">£{yearlySubtotal.toLocaleString()}</span>
                       <span className="text-gray-600">/yr</span>
                       <p className="text-xs text-green-600 font-medium mt-1">
                         £{yearlyMonthlyEquivalent.toFixed(2)}/mo equivalent
@@ -369,6 +369,11 @@ const TrialExpired = () => {
                     />
                   </div>
                 </label>
+
+                {/* VAT note */}
+                <p className="text-xs text-gray-500 text-center">
+                  {venueCount} venue{venueCount !== 1 ? 's' : ''} · Prices exclude VAT · Secured by Stripe
+                </p>
               </div>
 
               {/* CTA */}
@@ -386,7 +391,7 @@ const TrialExpired = () => {
                   ) : (
                     <>
                       <CreditCard className="w-5 h-5" />
-                      Subscribe Now - £{subscriptionType === 'monthly' ? monthlyTotal.toLocaleString() : yearlyTotal.toLocaleString()}{subscriptionType === 'monthly' ? '/mo' : '/yr'}
+                      Subscribe - £{subscriptionType === 'monthly' ? monthlySubtotal.toLocaleString() : yearlySubtotal.toLocaleString()}{subscriptionType === 'monthly' ? '/mo' : '/yr'} + VAT
                     </>
                   )}
                 </button>

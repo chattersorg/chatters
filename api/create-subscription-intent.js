@@ -120,6 +120,23 @@ export default async function handler(req, res) {
 
     const paymentIntent = subscription.latest_invoice.payment_intent;
 
+    // Send Slack notification for checkout initiated
+    if (process.env.SLACK_WEBHOOK_URL) {
+      try {
+        const planType = priceId === process.env.REACT_APP_STRIPE_PRICE_MONTHLY ? 'Monthly' : 'Annual';
+        await fetch(process.env.SLACK_WEBHOOK_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            text: `💳 *Checkout Started*\n• Email: ${user.email}\n• Plan: ${planType}\n• Venues: ${quantity}\n\n_Awaiting card details..._`
+          })
+        });
+      } catch (slackError) {
+        // Don't fail the checkout if Slack notification fails
+        console.error('Slack notification failed:', slackError);
+      }
+    }
+
     return res.status(200).json({
       subscriptionId: subscription.id,
       clientSecret: paymentIntent.client_secret,
