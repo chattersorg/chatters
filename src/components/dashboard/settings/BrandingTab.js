@@ -28,8 +28,7 @@ const HighlightedInput = ({ value, onChange, placeholder, rows, className }) => 
     return (
       <div className="relative">
         <div
-          className={`${className} absolute inset-0 pointer-events-none whitespace-pre-wrap break-words overflow-hidden`}
-          style={{ color: '#111827' }}
+          className="absolute inset-0 pointer-events-none whitespace-pre-wrap break-words overflow-hidden px-3 py-2 text-sm text-gray-900 dark:text-white"
         >
           {renderHighlightedText(value || '')}
         </div>
@@ -38,8 +37,8 @@ const HighlightedInput = ({ value, onChange, placeholder, rows, className }) => 
           onChange={onChange}
           placeholder={placeholder}
           rows={rows}
-          className={`${className} relative`}
-          style={{ color: 'transparent', caretColor: 'black', backgroundColor: 'transparent' }}
+          className={`${className} relative bg-transparent`}
+          style={{ color: 'transparent', caretColor: 'black' }}
         />
       </div>
     );
@@ -47,8 +46,7 @@ const HighlightedInput = ({ value, onChange, placeholder, rows, className }) => 
     return (
       <div className="relative">
         <div
-          className={`${className} absolute inset-0 pointer-events-none whitespace-pre overflow-hidden`}
-          style={{ color: '#111827' }}
+          className="absolute inset-0 pointer-events-none whitespace-pre overflow-hidden px-3 py-2 text-sm text-gray-900 dark:text-white flex items-center"
         >
           {renderHighlightedText(value || '')}
         </div>
@@ -57,8 +55,8 @@ const HighlightedInput = ({ value, onChange, placeholder, rows, className }) => 
           value={value}
           onChange={onChange}
           placeholder={placeholder}
-          className={`${className} relative`}
-          style={{ color: 'transparent', caretColor: 'black', backgroundColor: 'transparent' }}
+          className={`${className} relative bg-transparent`}
+          style={{ color: 'transparent', caretColor: 'black' }}
         />
       </div>
     );
@@ -341,75 +339,113 @@ const BrandingTab = ({
 
   return (
     <div className="space-y-6">
-      {/* Logo Upload */}
-      <SettingsCard
-        title="Logo"
-        description="Upload your venue's logo for branding"
-        onSave={() => {}}
-        loading={logoLoading}
-        message={logoMessage}
-      >
-        <div className="flex items-center space-x-4">
-          {logo && (
-            <div className="flex-shrink-0">
-              <img
-                src={logo}
-                alt="Logo"
-                className="w-20 h-20 object-cover rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm"
-              />
-            </div>
-          )}
-          <div className="flex-1">
-            <PermissionGate permission="venue.branding">
-              <input
-                type="file"
-                accept="image/*"
-                onChange={handleLogoUpload}
-                disabled={logoLoading}
-                className="w-full text-sm text-gray-600 dark:text-gray-400 file:mr-3 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-medium file:bg-[#2548CC] file:text-white hover:file:bg-[#1e3ba8] cursor-pointer disabled:opacity-50"
-              />
-            </PermissionGate>
-            <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">
-              Square image, minimum 100x100px recommended
-            </p>
-          </div>
+      {/* Logo & Background Image - 2 Column Layout */}
+      <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl overflow-hidden">
+        <div className="px-6 py-4 border-b border-gray-100 dark:border-gray-800">
+          <h3 className="text-base font-semibold text-gray-900 dark:text-white">Branding Assets</h3>
+          <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">Upload your venue's logo and splash page background</p>
         </div>
-      </SettingsCard>
+        <div className="p-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {/* Logo Column */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">Logo</label>
+              <div className="flex flex-col items-center p-4 border border-gray-200 dark:border-gray-700 rounded-lg bg-gray-50 dark:bg-gray-800/50">
+                {logo ? (
+                  <img
+                    src={logo}
+                    alt="Logo"
+                    className="w-24 h-24 object-contain rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 shadow-sm mb-3"
+                  />
+                ) : (
+                  <div className="w-24 h-24 rounded-lg border-2 border-dashed border-gray-300 dark:border-gray-600 flex items-center justify-center mb-3">
+                    <span className="text-gray-400 dark:text-gray-500 text-xs text-center px-2">No logo</span>
+                  </div>
+                )}
+                <PermissionGate permission="venue.branding">
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={handleLogoUpload}
+                    disabled={logoLoading}
+                    id="logo-upload"
+                    className="hidden"
+                  />
+                  <label
+                    htmlFor="logo-upload"
+                    className={`inline-flex items-center px-3 py-1.5 text-sm font-medium rounded-lg cursor-pointer transition-colors ${
+                      logoLoading
+                        ? 'bg-gray-200 dark:bg-gray-700 text-gray-400 cursor-not-allowed'
+                        : 'bg-[#2548CC] text-white hover:bg-[#1e3ba8]'
+                    }`}
+                  >
+                    {logoLoading ? 'Uploading...' : 'Upload Logo'}
+                  </label>
+                </PermissionGate>
+                <p className="text-xs text-gray-500 dark:text-gray-400 mt-2 text-center">
+                  Square image, min 100x100px
+                </p>
+                {logoMessage && (
+                  <p className={`text-xs mt-2 ${logoMessage.includes('success') ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>
+                    {logoMessage}
+                  </p>
+                )}
+              </div>
+            </div>
 
-      {/* Background Image */}
-      <SettingsCard
-        title="Splash Page Background Image"
-        description="Upload a background image for your feedback splash page (optional)"
-        onSave={() => {}}
-        loading={backgroundImageLoading}
-        message={backgroundImageMessage}
-      >
-        <div className="flex items-center space-x-4">
-          {backgroundImage && (
-            <div className="flex-shrink-0">
-              <img
-                src={backgroundImage}
-                alt="Background"
-                className="w-32 h-20 object-cover rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm"
-              />
+            {/* Background Image Column */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">Splash Page Background</label>
+              <div className="flex flex-col items-center p-4 border border-gray-200 dark:border-gray-700 rounded-lg bg-gray-50 dark:bg-gray-800/50">
+                {backgroundImage ? (
+                  <img
+                    src={backgroundImage}
+                    alt="Background"
+                    className="w-full h-24 object-cover rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm mb-3"
+                  />
+                ) : (
+                  <div className="w-full h-24 rounded-lg border-2 border-dashed border-gray-300 dark:border-gray-600 flex items-center justify-center mb-3">
+                    <span className="text-gray-400 dark:text-gray-500 text-xs text-center px-2">No background image</span>
+                  </div>
+                )}
+                <PermissionGate permission="venue.branding">
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={handleBackgroundImageUpload}
+                    disabled={backgroundImageLoading}
+                    id="background-upload"
+                    className="hidden"
+                  />
+                  <label
+                    htmlFor="background-upload"
+                    className={`inline-flex items-center px-3 py-1.5 text-sm font-medium rounded-lg cursor-pointer transition-colors ${
+                      backgroundImageLoading
+                        ? 'bg-gray-200 dark:bg-gray-700 text-gray-400 cursor-not-allowed'
+                        : 'bg-[#2548CC] text-white hover:bg-[#1e3ba8]'
+                    }`}
+                  >
+                    {backgroundImageLoading ? 'Uploading...' : 'Upload Background'}
+                  </label>
+                </PermissionGate>
+                <p className="text-xs text-gray-500 dark:text-gray-400 mt-2 text-center">
+                  Landscape image, 1920x1080px recommended
+                </p>
+                {backgroundImageMessage && (
+                  <p className={`text-xs mt-2 ${backgroundImageMessage.includes('success') ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>
+                    {backgroundImageMessage}
+                  </p>
+                )}
+              </div>
             </div>
-          )}
-          <div className="flex-1">
-            <PermissionGate permission="venue.branding">
-              <input
-                type="file"
-                accept="image/*"
-                onChange={handleBackgroundImageUpload}
-                disabled={backgroundImageLoading}
-                className="w-full text-sm text-gray-600 dark:text-gray-400 file:mr-3 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-medium file:bg-[#2548CC] file:text-white hover:file:bg-[#1e3ba8] cursor-pointer disabled:opacity-50"
-              />
-            </PermissionGate>
-            <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">
-              Landscape image, 1920x1080px or larger recommended. Leave empty to use solid background color.
-            </p>
           </div>
         </div>
-      </SettingsCard>
+        <div className="px-6 py-4 border-t border-gray-100 dark:border-gray-800">
+          <div className="text-xs text-gray-500 dark:text-gray-400">
+            Images are saved automatically when uploaded
+          </div>
+        </div>
+      </div>
 
       {/* Brand Colors */}
       <SettingsCard
@@ -419,106 +455,104 @@ const BrandingTab = ({
         loading={colorsLoading}
         message={colorsMessage}
       >
-        <div className="space-y-4">
-          <div className="grid grid-cols-2 gap-4">
-            {/* Primary Color */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Primary</label>
-              <div className="flex items-center space-x-2">
-                <input
-                  type="color"
-                  value={primaryColor}
-                  onChange={(e) => setPrimaryColor(e.target.value)}
-                  className="w-10 h-10 border border-gray-300 dark:border-gray-700 rounded-lg cursor-pointer flex-shrink-0"
-                />
-                <input
-                  type="text"
-                  value={primaryColor}
-                  onChange={(e) => setPrimaryColor(e.target.value)}
-                  className="flex-1 px-3 py-2 border border-gray-300 dark:border-gray-700 dark:bg-gray-800 dark:text-white dark:placeholder-gray-400 rounded-lg text-sm font-mono focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  placeholder="#000000"
-                />
+        <div className="flex flex-col md:flex-row gap-6">
+          {/* Color Pickers - Narrow Column */}
+          <div className="md:w-1/3 flex-shrink-0">
+            <div className="space-y-3">
+              {/* Primary Color */}
+              <div>
+                <label className="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1.5">Primary</label>
+                <div className="flex items-center gap-2">
+                  <input
+                    type="color"
+                    value={primaryColor}
+                    onChange={(e) => setPrimaryColor(e.target.value)}
+                    className="w-8 h-8 border border-gray-300 dark:border-gray-700 rounded cursor-pointer flex-shrink-0"
+                  />
+                  <input
+                    type="text"
+                    value={primaryColor}
+                    onChange={(e) => setPrimaryColor(e.target.value)}
+                    className="flex-1 px-2 py-1.5 border border-gray-300 dark:border-gray-700 dark:bg-gray-800 dark:text-white rounded text-xs font-mono focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  />
+                </div>
               </div>
-            </div>
 
-            {/* Background Color */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Background</label>
-              <div className="flex items-center space-x-2">
-                <input
-                  type="color"
-                  value={backgroundColor}
-                  onChange={(e) => setBackgroundColor(e.target.value)}
-                  className="w-10 h-10 border border-gray-300 dark:border-gray-700 rounded-lg cursor-pointer flex-shrink-0"
-                />
-                <input
-                  type="text"
-                  value={backgroundColor}
-                  onChange={(e) => setBackgroundColor(e.target.value)}
-                  className="flex-1 px-3 py-2 border border-gray-300 dark:border-gray-700 dark:bg-gray-800 dark:text-white dark:placeholder-gray-400 rounded-lg text-sm font-mono focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  placeholder="#ffffff"
-                />
+              {/* Background Color */}
+              <div>
+                <label className="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1.5">Background</label>
+                <div className="flex items-center gap-2">
+                  <input
+                    type="color"
+                    value={backgroundColor}
+                    onChange={(e) => setBackgroundColor(e.target.value)}
+                    className="w-8 h-8 border border-gray-300 dark:border-gray-700 rounded cursor-pointer flex-shrink-0"
+                  />
+                  <input
+                    type="text"
+                    value={backgroundColor}
+                    onChange={(e) => setBackgroundColor(e.target.value)}
+                    className="flex-1 px-2 py-1.5 border border-gray-300 dark:border-gray-700 dark:bg-gray-800 dark:text-white rounded text-xs font-mono focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  />
+                </div>
               </div>
-            </div>
 
-            {/* Text Color */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Text</label>
-              <div className="flex items-center space-x-2">
-                <input
-                  type="color"
-                  value={textColor}
-                  onChange={(e) => setTextColor(e.target.value)}
-                  className="w-10 h-10 border border-gray-300 dark:border-gray-700 rounded-lg cursor-pointer flex-shrink-0"
-                />
-                <input
-                  type="text"
-                  value={textColor}
-                  onChange={(e) => setTextColor(e.target.value)}
-                  className="flex-1 px-3 py-2 border border-gray-300 dark:border-gray-700 dark:bg-gray-800 dark:text-white dark:placeholder-gray-400 rounded-lg text-sm font-mono focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  placeholder="#111827"
-                />
+              {/* Text Color */}
+              <div>
+                <label className="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1.5">Text</label>
+                <div className="flex items-center gap-2">
+                  <input
+                    type="color"
+                    value={textColor}
+                    onChange={(e) => setTextColor(e.target.value)}
+                    className="w-8 h-8 border border-gray-300 dark:border-gray-700 rounded cursor-pointer flex-shrink-0"
+                  />
+                  <input
+                    type="text"
+                    value={textColor}
+                    onChange={(e) => setTextColor(e.target.value)}
+                    className="flex-1 px-2 py-1.5 border border-gray-300 dark:border-gray-700 dark:bg-gray-800 dark:text-white rounded text-xs font-mono focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  />
+                </div>
               </div>
-            </div>
 
-            {/* Button Text Color */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Button Text</label>
-              <div className="flex items-center space-x-2">
-                <input
-                  type="color"
-                  value={buttonTextColor}
-                  onChange={(e) => setButtonTextColor(e.target.value)}
-                  className="w-10 h-10 border border-gray-300 dark:border-gray-700 rounded-lg cursor-pointer flex-shrink-0"
-                />
-                <input
-                  type="text"
-                  value={buttonTextColor}
-                  onChange={(e) => setButtonTextColor(e.target.value)}
-                  className="flex-1 px-3 py-2 border border-gray-300 dark:border-gray-700 dark:bg-gray-800 dark:text-white dark:placeholder-gray-400 rounded-lg text-sm font-mono focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  placeholder="#ffffff"
-                />
+              {/* Button Text Color */}
+              <div>
+                <label className="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1.5">Button Text</label>
+                <div className="flex items-center gap-2">
+                  <input
+                    type="color"
+                    value={buttonTextColor}
+                    onChange={(e) => setButtonTextColor(e.target.value)}
+                    className="w-8 h-8 border border-gray-300 dark:border-gray-700 rounded cursor-pointer flex-shrink-0"
+                  />
+                  <input
+                    type="text"
+                    value={buttonTextColor}
+                    onChange={(e) => setButtonTextColor(e.target.value)}
+                    className="flex-1 px-2 py-1.5 border border-gray-300 dark:border-gray-700 dark:bg-gray-800 dark:text-white rounded text-xs font-mono focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  />
+                </div>
               </div>
             </div>
           </div>
 
-          {/* Preview */}
-          <div className="mt-4">
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Preview</label>
+          {/* Preview - Takes up remaining 2/3 */}
+          <div className="flex-1">
+            <label className="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1.5">Preview</label>
             <div
-              className="p-8 rounded-lg border border-gray-200 dark:border-gray-700 flex items-center justify-center min-h-[200px]"
+              className="rounded-lg border border-gray-200 dark:border-gray-700 flex items-center justify-center p-6 h-full min-h-[180px]"
               style={
                 backgroundImage
                   ? {
                       backgroundImage: `url(${backgroundImage})`,
                       backgroundSize: 'cover',
-                      backgroundPosition: 'center',
-                      backgroundRepeat: 'no-repeat'
+                      backgroundPosition: 'center'
                     }
                   : { backgroundColor: backgroundColor }
               }
             >
-              <div className="bg-white rounded-xl shadow-lg p-6 max-w-xs w-full">
+              <div className="bg-white rounded-xl shadow-lg p-5 max-w-xs w-full">
                 <p className="text-sm font-medium mb-3" style={{ color: textColor }}>
                   Feedback Page Preview
                 </p>
@@ -534,213 +568,198 @@ const BrandingTab = ({
         </div>
       </SettingsCard>
 
-      {/* Assistance Request Message */}
-      <SettingsCard
-        title="Assistance Request Message"
-        description="Customize the message customers see after requesting assistance"
-        onSave={saveAssistanceSettings}
-        loading={assistanceLoading}
-        message={assistanceUpdateMessage}
-      >
-        <div className="space-y-6">
-          {/* Emoji Selection */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">Emoji</label>
-            <div className="grid grid-cols-4 gap-3">
-              {emojiOptions.map((option) => (
-                <button
-                  key={option.value}
-                  onClick={() => setAssistanceIcon(option.value)}
-                  className={`flex flex-col items-center justify-center p-3 rounded-lg border-2 transition-all ${
-                    assistanceIcon === option.value
-                      ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/30'
-                      : 'border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-800'
-                  }`}
-                >
-                  <div className="text-3xl mb-1">{option.value}</div>
-                  <span className="text-xs font-medium text-gray-700 dark:text-gray-300">{option.label}</span>
-                </button>
-              ))}
+      {/* Confirmation Messages - Combined Assistance & Thank You */}
+      <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl overflow-hidden">
+        <div className="px-6 py-4 border-b border-gray-100 dark:border-gray-800">
+          <h3 className="text-base font-semibold text-gray-900 dark:text-white">Confirmation Messages</h3>
+          <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">Customize the messages customers see after actions</p>
+        </div>
+        <div className="p-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {/* Assistance Message Column */}
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <h4 className="text-sm font-semibold text-gray-900 dark:text-white">Assistance Request</h4>
+                <PermissionGate permission="venue.branding">
+                  <Button
+                    variant="primary"
+                    size="sm"
+                    onClick={saveAssistanceSettings}
+                    loading={assistanceLoading}
+                    className="text-xs px-2 py-1"
+                  >
+                    {assistanceLoading ? 'Saving...' : 'Save'}
+                  </Button>
+                </PermissionGate>
+              </div>
+
+              {/* Emoji Selection - Compact */}
+              <div>
+                <label className="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-2">Emoji</label>
+                <div className="grid grid-cols-4 gap-1.5">
+                  {emojiOptions.map((option) => (
+                    <button
+                      key={option.value}
+                      onClick={() => setAssistanceIcon(option.value)}
+                      className={`flex items-center justify-center p-2 rounded-lg border transition-all ${
+                        assistanceIcon === option.value
+                          ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/30'
+                          : 'border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600'
+                      }`}
+                      title={option.label}
+                    >
+                      <span className="text-xl">{option.value}</span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Title & Message */}
+              <div>
+                <label className="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1.5">Title</label>
+                <HighlightedInput
+                  value={assistanceTitle}
+                  onChange={(e) => setAssistanceTitle(e.target.value)}
+                  placeholder="Help is on the way!"
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 dark:bg-gray-800 dark:text-white rounded-lg text-sm focus:ring-2 focus:ring-blue-500"
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1.5">Message</label>
+                <HighlightedInput
+                  value={assistanceMessage}
+                  onChange={(e) => setAssistanceMessage(e.target.value)}
+                  placeholder="We've notified our team..."
+                  rows={2}
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 dark:bg-gray-800 dark:text-white rounded-lg text-sm focus:ring-2 focus:ring-blue-500 resize-none"
+                />
+                <p className="text-xs text-gray-400 mt-1">Use {'{table}'} for table number</p>
+              </div>
+
+              {assistanceUpdateMessage && (
+                <p className={`text-xs ${assistanceUpdateMessage.includes('success') ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>
+                  {assistanceUpdateMessage}
+                </p>
+              )}
+            </div>
+
+            {/* Thank You Message Column */}
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <h4 className="text-sm font-semibold text-gray-900 dark:text-white">Thank You</h4>
+                <PermissionGate permission="venue.branding">
+                  <Button
+                    variant="primary"
+                    size="sm"
+                    onClick={saveThankYouSettings}
+                    loading={thankYouLoading}
+                    className="text-xs px-2 py-1"
+                  >
+                    {thankYouLoading ? 'Saving...' : 'Save'}
+                  </Button>
+                </PermissionGate>
+              </div>
+
+              {/* Emoji Selection - Compact */}
+              <div>
+                <label className="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-2">Emoji</label>
+                <div className="grid grid-cols-4 gap-1.5">
+                  {thankYouEmojiOptions.map((option) => (
+                    <button
+                      key={option.value}
+                      onClick={() => setThankYouIcon(option.value)}
+                      className={`flex items-center justify-center p-2 rounded-lg border transition-all ${
+                        thankYouIcon === option.value
+                          ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/30'
+                          : 'border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600'
+                      }`}
+                      title={option.label}
+                    >
+                      <span className="text-xl">{option.value}</span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Title & Message */}
+              <div>
+                <label className="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1.5">Title</label>
+                <input
+                  type="text"
+                  value={thankYouTitle}
+                  onChange={(e) => setThankYouTitle(e.target.value)}
+                  placeholder="Thanks for your feedback!"
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 dark:bg-gray-800 dark:text-white rounded-lg text-sm focus:ring-2 focus:ring-blue-500"
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1.5">Message</label>
+                <textarea
+                  value={thankYouMessage}
+                  onChange={(e) => setThankYouMessage(e.target.value)}
+                  placeholder="Your response has been submitted..."
+                  rows={2}
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 dark:bg-gray-800 dark:text-white rounded-lg text-sm focus:ring-2 focus:ring-blue-500 resize-none"
+                />
+              </div>
+
+              {thankYouUpdateMessage && (
+                <p className={`text-xs ${thankYouUpdateMessage.includes('success') ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>
+                  {thankYouUpdateMessage}
+                </p>
+              )}
             </div>
           </div>
 
-          {/* Title Input */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Title</label>
-            <HighlightedInput
-              value={assistanceTitle}
-              onChange={(e) => setAssistanceTitle(e.target.value)}
-              placeholder="Help is on the way!"
-              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 dark:bg-gray-800 dark:text-white dark:placeholder-gray-400 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-            />
-          </div>
-
-          {/* Message Input */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Message</label>
-            <HighlightedInput
-              value={assistanceMessage}
-              onChange={(e) => setAssistanceMessage(e.target.value)}
-              placeholder="We've notified our team that you need assistance. Someone will be with you shortly."
-              rows={3}
-              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 dark:bg-gray-800 dark:text-white dark:placeholder-gray-400 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 resize-none"
-            />
-            <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-              Use {'{table}'} as a placeholder for the table number
-            </p>
-          </div>
-
-          {/* Preview */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Preview</label>
+          {/* Shared Preview Section */}
+          <div className="mt-6 pt-6 border-t border-gray-100 dark:border-gray-800">
+            <label className="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-2">Preview</label>
             <div
-              className="rounded-lg p-8 border border-gray-200 dark:border-gray-700 flex items-center justify-center min-h-[250px]"
+              className="rounded-lg border border-gray-200 dark:border-gray-700 p-6 flex items-center justify-center gap-6"
               style={
                 backgroundImage
                   ? {
                       backgroundImage: `url(${backgroundImage})`,
                       backgroundSize: 'cover',
-                      backgroundPosition: 'center',
-                      backgroundRepeat: 'no-repeat'
+                      backgroundPosition: 'center'
                     }
                   : { backgroundColor: backgroundColor }
               }
             >
-              <div className="bg-white rounded-xl shadow-lg p-6 max-w-xs w-full">
+              {/* Assistance Preview */}
+              <div className="bg-white rounded-xl shadow-lg p-4 w-44 flex-shrink-0">
                 <div className="flex flex-col items-center text-center">
-                  <div className="text-5xl mb-4">
-                    {assistanceIcon || '🙋'}
-                  </div>
-                  <h2 className="text-lg font-bold mb-2" style={{ color: textColor }}>
-                    {(assistanceTitle || 'Help is on the way!')
-                      .split(/(\{table\})/g)
-                      .map((part, index) =>
-                        part === '{table}' ? (
-                          <span
-                            key={index}
-                            style={{
-                              color: '#2F5CFF',
-                              fontWeight: '700'
-                            }}
-                          >
-                            14
-                          </span>
-                        ) : part
-                      )
-                    }
+                  <div className="text-3xl mb-2">{assistanceIcon || '🙋'}</div>
+                  <h2 className="text-xs font-bold mb-1" style={{ color: textColor }}>
+                    {(assistanceTitle || 'Help is on the way!').substring(0, 25)}{(assistanceTitle || '').length > 25 ? '...' : ''}
                   </h2>
-                  <p className="text-sm" style={{ color: textColor, opacity: 0.8 }}>
-                    {(assistanceMessage || 'We\'ve notified our team that you need assistance. Someone will be with you shortly.')
-                      .split(/(\{table\})/g)
-                      .map((part, index) =>
-                        part === '{table}' ? (
-                          <span
-                            key={index}
-                            style={{
-                              color: '#2F5CFF',
-                              fontWeight: '700'
-                            }}
-                          >
-                            14
-                          </span>
-                        ) : part
-                      )
-                    }
+                  <p className="text-xs leading-tight" style={{ color: textColor, opacity: 0.7 }}>
+                    {(assistanceMessage || 'We\'ve notified our team...').substring(0, 40)}...
+                  </p>
+                </div>
+              </div>
+
+              {/* Thank You Preview */}
+              <div className="bg-white rounded-xl shadow-lg p-4 w-44 flex-shrink-0">
+                <div className="flex flex-col items-center text-center">
+                  <div className="text-3xl mb-2">{thankYouIcon || '✅'}</div>
+                  <h2 className="text-xs font-bold mb-1" style={{ color: textColor }}>
+                    {(thankYouTitle || 'Thanks for your feedback!').substring(0, 25)}{(thankYouTitle || '').length > 25 ? '...' : ''}
+                  </h2>
+                  <p className="text-xs leading-tight" style={{ color: textColor, opacity: 0.7 }}>
+                    {(thankYouMessage || 'Your response has been submitted.').substring(0, 40)}...
                   </p>
                 </div>
               </div>
             </div>
           </div>
         </div>
-      </SettingsCard>
-
-      {/* Thank You Message */}
-      <SettingsCard
-        title="Thank You Message"
-        description="Customize the message customers see after submitting feedback"
-        onSave={saveThankYouSettings}
-        loading={thankYouLoading}
-        message={thankYouUpdateMessage}
-      >
-        <div className="space-y-6">
-          {/* Emoji Selection */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">Emoji</label>
-            <div className="grid grid-cols-4 gap-3">
-              {thankYouEmojiOptions.map((option) => (
-                <button
-                  key={option.value}
-                  onClick={() => setThankYouIcon(option.value)}
-                  className={`flex flex-col items-center justify-center p-3 rounded-lg border-2 transition-all ${
-                    thankYouIcon === option.value
-                      ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/30'
-                      : 'border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-800'
-                  }`}
-                >
-                  <div className="text-3xl mb-1">{option.value}</div>
-                  <span className="text-xs font-medium text-gray-700 dark:text-gray-300">{option.label}</span>
-                </button>
-              ))}
-            </div>
-          </div>
-
-          {/* Title Input */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Title</label>
-            <input
-              type="text"
-              value={thankYouTitle}
-              onChange={(e) => setThankYouTitle(e.target.value)}
-              placeholder="Thanks for your feedback!"
-              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 dark:bg-gray-800 dark:text-white dark:placeholder-gray-400 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-            />
-          </div>
-
-          {/* Message Input */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Message</label>
-            <textarea
-              value={thankYouMessage}
-              onChange={(e) => setThankYouMessage(e.target.value)}
-              placeholder="Your response has been submitted successfully."
-              rows={3}
-              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 dark:bg-gray-800 dark:text-white dark:placeholder-gray-400 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 resize-none"
-            />
-          </div>
-
-          {/* Preview */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Preview</label>
-            <div
-              className="rounded-lg p-8 border border-gray-200 dark:border-gray-700 flex items-center justify-center min-h-[250px]"
-              style={
-                backgroundImage
-                  ? {
-                      backgroundImage: `url(${backgroundImage})`,
-                      backgroundSize: 'cover',
-                      backgroundPosition: 'center',
-                      backgroundRepeat: 'no-repeat'
-                    }
-                  : { backgroundColor: backgroundColor }
-              }
-            >
-              <div className="bg-white rounded-xl shadow-lg p-6 max-w-xs w-full">
-                <div className="flex flex-col items-center text-center">
-                  <div className="text-5xl mb-4">
-                    {thankYouIcon || '✅'}
-                  </div>
-                  <h2 className="text-xl font-bold mb-2" style={{ color: textColor }}>
-                    {thankYouTitle || 'Thanks for your feedback!'}
-                  </h2>
-                  <p className="text-sm" style={{ color: textColor, opacity: 0.7 }}>
-                    {thankYouMessage || 'Your response has been submitted successfully.'}
-                  </p>
-                </div>
-              </div>
-            </div>
+        <div className="px-6 py-4 border-t border-gray-100 dark:border-gray-800">
+          <div className="text-xs text-gray-500 dark:text-gray-400">
+            Each message type saves independently
           </div>
         </div>
-      </SettingsCard>
+      </div>
     </div>
   );
 };

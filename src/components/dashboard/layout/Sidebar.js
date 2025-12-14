@@ -40,7 +40,6 @@ import {
   List,
   LayoutDashboard,
   Sparkles,
-  Shield,
   Key
 } from 'lucide-react';
 
@@ -189,15 +188,11 @@ const multiVenueNavItems = [
 // Administration Section - Master-only for account-wide management
 const adminNavItems = [
   {
-    id: 'permissions',
-    label: 'Permissions',
-    icon: Shield,
-    path: '/admin/permissions',
-    color: 'text-rose-600',
-    subItems: [
-      { label: 'Manager Access', path: '/admin/permissions/managers', icon: Users },
-      { label: 'Role Templates', path: '/admin/permissions/templates', icon: Key }
-    ]
+    id: 'permission-templates',
+    label: 'Permission Templates',
+    icon: Key,
+    path: '/admin/permissions/templates',
+    color: 'text-rose-600'
   }
 ];
 
