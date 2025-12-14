@@ -43,7 +43,7 @@ module.exports = async function handler(req, res) {
       // Test mode: only fetch the specific user
       const { data: userData, error: userError } = await supabaseAdmin
         .from('users')
-        .select('id, email, first_name, last_name')
+        .select('id, email, first_name, last_name, role, account_id')
         .eq('id', testUserId)
         .single();
 
@@ -52,12 +52,12 @@ module.exports = async function handler(req, res) {
       }
 
       users = userData ? [userData] : [];
-      console.log(`🧪 Test mode: Sending to ${userData?.email}`);
+      console.log(`🧪 Test mode: Sending to ${userData?.email} (role: ${userData?.role})`);
     } else {
       // Production: Get all users who have opted in to weekly reports
       const { data: usersData, error: usersError } = await supabaseAdmin
         .from('users')
-        .select('id, email, first_name, last_name')
+        .select('id, email, first_name, last_name, role, account_id')
         .eq('weekly_report_enabled', true)
         .is('deleted_at', null);
 
@@ -98,31 +98,52 @@ module.exports = async function handler(req, res) {
     // Process each user
     for (const user of users) {
       try {
-        // Get venues this user has access to via staff table
-        const { data: staffRecords, error: staffError } = await supabaseAdmin
-          .from('staff')
-          .select('venue_id')
-          .eq('user_id', user.id);
+        let venues = [];
 
-        if (staffError) {
-          throw new Error(`Failed to fetch staff records: ${staffError.message}`);
+        // Master users get venues via account_id, managers via staff table
+        if (user.role === 'master' && user.account_id) {
+          // Master user: get venues by account_id
+          const { data: accountVenues, error: venuesError } = await supabaseAdmin
+            .from('venues')
+            .select('id, name, logo, primary_color, nps_enabled')
+            .eq('account_id', user.account_id);
+
+          if (venuesError) {
+            throw new Error(`Failed to fetch venues for master: ${venuesError.message}`);
+          }
+
+          venues = accountVenues || [];
+          console.log(`👤 Master user ${user.email}: found ${venues.length} venues via account`);
+        } else {
+          // Manager or other: get venues via staff table
+          const { data: staffRecords, error: staffError } = await supabaseAdmin
+            .from('staff')
+            .select('venue_id')
+            .eq('user_id', user.id);
+
+          if (staffError) {
+            throw new Error(`Failed to fetch staff records: ${staffError.message}`);
+          }
+
+          if (staffRecords && staffRecords.length > 0) {
+            const venueIds = staffRecords.map(s => s.venue_id);
+
+            const { data: staffVenues, error: venuesError } = await supabaseAdmin
+              .from('venues')
+              .select('id, name, logo, primary_color, nps_enabled')
+              .in('id', venueIds);
+
+            if (venuesError) {
+              throw new Error(`Failed to fetch venues: ${venuesError.message}`);
+            }
+
+            venues = staffVenues || [];
+          }
+          console.log(`👤 Manager user ${user.email}: found ${venues.length} venues via staff`);
         }
 
-        if (!staffRecords || staffRecords.length === 0) {
+        if (venues.length === 0) {
           console.log(`⏭️ User ${user.email} has no venue access, skipping`);
-          continue;
-        }
-
-        const venueIds = staffRecords.map(s => s.venue_id);
-
-        // Get venue details
-        const { data: venues, error: venuesError } = await supabaseAdmin
-          .from('venues')
-          .select('id, name, logo, primary_color, nps_enabled')
-          .in('id', venueIds);
-
-        if (venuesError || !venues || venues.length === 0) {
-          console.log(`⏭️ No venues found for user ${user.email}, skipping`);
           continue;
         }
 
