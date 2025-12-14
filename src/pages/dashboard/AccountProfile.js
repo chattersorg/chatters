@@ -12,6 +12,7 @@ const AccountProfilePage = () => {
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
   const [email, setEmail] = useState('');
+  const [weeklyReportEnabled, setWeeklyReportEnabled] = useState(false);
 
   // Fetch profile data
   useEffect(() => {
@@ -22,7 +23,7 @@ const AccountProfilePage = () => {
 
         const { data: userData } = await supabase
           .from('users')
-          .select('first_name, last_name, email')
+          .select('first_name, last_name, email, weekly_report_enabled')
           .eq('id', auth.user.id)
           .single();
 
@@ -30,6 +31,7 @@ const AccountProfilePage = () => {
           setFirstName(userData.first_name || '');
           setLastName(userData.last_name || '');
           setEmail(userData.email || auth.user.email || '');
+          setWeeklyReportEnabled(userData.weekly_report_enabled || false);
         } else {
           // Fallback to auth data
           setFirstName('');
@@ -60,6 +62,8 @@ const AccountProfilePage = () => {
         email={email}
         setEmail={setEmail}
         venueId={venueId}
+        weeklyReportEnabled={weeklyReportEnabled}
+        setWeeklyReportEnabled={setWeeklyReportEnabled}
       />
     </div>
   );

@@ -2,13 +2,15 @@ import React, { useState } from 'react';
 import { supabase } from '../../../utils/supabase';
 import { Button } from '../../ui/button';
 import { useDarkMode } from '../../../context/DarkModeContext';
-import { Moon, Sun } from 'lucide-react';
+import { Moon, Sun, Mail } from 'lucide-react';
 
 const ProfileTab = ({
   firstName, setFirstName,
   lastName, setLastName,
   email, setEmail,
-  venueId
+  venueId,
+  weeklyReportEnabled,
+  setWeeklyReportEnabled
 }) => {
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState('');
@@ -20,6 +22,68 @@ const ProfileTab = ({
   const [showEmailChange, setShowEmailChange] = useState(false);
 
   const { isDarkMode, toggleDarkMode } = useDarkMode();
+  const [weeklyReportSaving, setWeeklyReportSaving] = useState(false);
+  const [testEmailSending, setTestEmailSending] = useState(false);
+  const [testEmailMessage, setTestEmailMessage] = useState('');
+
+  const toggleWeeklyReport = async () => {
+    const newValue = !weeklyReportEnabled;
+    setWeeklyReportSaving(true);
+
+    try {
+      const { data: auth } = await supabase.auth.getUser();
+      const userId = auth?.user?.id;
+
+      if (!userId) {
+        throw new Error('User not authenticated');
+      }
+
+      const { error } = await supabase
+        .from('users')
+        .update({ weekly_report_enabled: newValue })
+        .eq('id', userId);
+
+      if (error) throw error;
+
+      setWeeklyReportEnabled(newValue);
+    } catch (error) {
+      console.error('Error updating weekly report preference:', error);
+    } finally {
+      setWeeklyReportSaving(false);
+    }
+  };
+
+  const sendTestEmail = async () => {
+    setTestEmailSending(true);
+    setTestEmailMessage('');
+
+    try {
+      // Get current user ID
+      const { data: auth } = await supabase.auth.getUser();
+      const userId = auth?.user?.id;
+
+      if (!userId) {
+        throw new Error('User not authenticated');
+      }
+
+      const response = await fetch(`/api/cron/send-weekly-reports?test=true&userId=${userId}`, {
+        method: 'GET'
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        setTestEmailMessage(`Test email sent successfully! Check your inbox.`);
+      } else {
+        throw new Error(data.error || 'Failed to send test email');
+      }
+    } catch (error) {
+      console.error('Error sending test email:', error);
+      setTestEmailMessage(`Error: ${error.message}`);
+    } finally {
+      setTestEmailSending(false);
+    }
+  };
 
   const saveSettings = async () => {
     if (!venueId) return;
@@ -311,19 +375,19 @@ const ProfileTab = ({
 
       {/* Password & Security Card */}
       <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl overflow-hidden">
-        <div className="px-6 py-4 border-b border-gray-100">
-          <h3 className="text-base font-semibold text-gray-900">Password & Security</h3>
-          <p className="text-sm text-gray-500 mt-1">Manage your password and security settings</p>
+        <div className="px-6 py-4 border-b border-gray-100 dark:border-gray-800">
+          <h3 className="text-base font-semibold text-gray-900 dark:text-white">Password & Security</h3>
+          <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">Manage your password and security settings</p>
         </div>
 
         <div className="p-6">
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 items-start">
             <div className="lg:col-span-1">
-              <label className="block text-sm font-medium text-gray-700 mb-1">Password</label>
-              <p className="text-xs text-gray-500">Reset your account password</p>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Password</label>
+              <p className="text-xs text-gray-500 dark:text-gray-400">Reset your account password</p>
             </div>
             <div className="lg:col-span-2">
-              <p className="text-sm text-gray-600 mb-3">
+              <p className="text-sm text-gray-600 dark:text-gray-400 mb-3">
                 For security reasons, we'll send you an email with a link to reset your password.
               </p>
               <Button
@@ -337,12 +401,77 @@ const ProfileTab = ({
               {passwordResetMessage && (
                 <div className={`text-xs mt-3 p-3 rounded-lg ${
                   passwordResetMessage.includes('sent')
-                    ? 'text-green-700 bg-green-50 border border-green-200'
-                    : 'text-red-700 bg-red-50 border border-red-200'
+                    ? 'text-green-700 dark:text-green-400 bg-green-50 dark:bg-green-900/30 border border-green-200 dark:border-green-800'
+                    : 'text-red-700 dark:text-red-400 bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-800'
                 }`}>
                   {passwordResetMessage}
                 </div>
               )}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Email Preferences Card */}
+      <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl overflow-hidden">
+        <div className="px-6 py-4 border-b border-gray-100 dark:border-gray-800">
+          <h3 className="text-base font-semibold text-gray-900 dark:text-white">Email Preferences</h3>
+          <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">Manage your email notification settings</p>
+        </div>
+
+        <div className="p-6">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 items-start">
+            <div className="lg:col-span-1">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Weekly Performance Reports</label>
+              <p className="text-xs text-gray-500 dark:text-gray-400">Receive a summary of your venue's performance</p>
+            </div>
+            <div className="lg:col-span-2">
+              <button
+                onClick={toggleWeeklyReport}
+                disabled={weeklyReportSaving}
+                className="flex items-center justify-between w-full sm:w-auto px-4 py-3 bg-gray-50 dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors disabled:opacity-50"
+              >
+                <div className="flex items-center gap-3">
+                  <Mail className={`w-5 h-5 ${weeklyReportEnabled ? 'text-blue-600 dark:text-blue-400' : 'text-gray-400 dark:text-gray-500'}`} />
+                  <span className="text-sm font-medium text-gray-900 dark:text-white">
+                    {weeklyReportEnabled ? 'Enabled' : 'Disabled'}
+                  </span>
+                </div>
+                <div className={`ml-8 w-11 h-6 rounded-full transition-colors ${
+                  weeklyReportEnabled ? 'bg-blue-600' : 'bg-gray-300 dark:bg-gray-600'
+                }`}>
+                  <div className={`w-5 h-5 bg-white rounded-full shadow-md transform transition-transform ${
+                    weeklyReportEnabled ? 'translate-x-6' : 'translate-x-0.5'
+                  } mt-0.5`} />
+                </div>
+              </button>
+              <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">
+                {weeklyReportEnabled
+                  ? 'You will receive a performance summary email every Sunday morning'
+                  : 'Enable to receive weekly performance summaries for your venues'}
+              </p>
+
+              {/* Test Email Button - Remove after testing */}
+              <div className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
+                <Button
+                  variant="secondary"
+                  onClick={sendTestEmail}
+                  loading={testEmailSending}
+                  className="text-sm"
+                >
+                  {testEmailSending ? 'Sending...' : 'Send Test Email'}
+                </Button>
+                <p className="text-xs text-gray-400 mt-1">For testing only - sends email to your address</p>
+                {testEmailMessage && (
+                  <div className={`text-xs mt-2 p-3 rounded-lg ${
+                    testEmailMessage.includes('successfully')
+                      ? 'text-green-700 dark:text-green-400 bg-green-50 dark:bg-green-900/30 border border-green-200 dark:border-green-800'
+                      : 'text-red-700 dark:text-red-400 bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-800'
+                  }`}>
+                    {testEmailMessage}
+                  </div>
+                )}
+              </div>
             </div>
           </div>
         </div>
