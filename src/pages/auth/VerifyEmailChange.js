@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { supabase } from '../../utils/supabase';
-import { CheckCircle, XCircle, Loader } from 'lucide-react';
+import { getMarketingUrl } from '../../utils/domainUtils';
+import { CheckCircle, XCircle, Loader2, ArrowRight } from 'lucide-react';
 
 const VerifyEmailChange = () => {
   const [searchParams] = useSearchParams();
@@ -123,221 +124,106 @@ const VerifyEmailChange = () => {
   };
 
   return (
-    <div className="min-h-screen flex">
-      {/* Mobile Layout */}
-      <div className="lg:hidden w-full bg-gray-900 flex flex-col min-h-screen">
-        <div className="flex justify-center pt-12 mb-8">
-          <img
-            src="/img/Logo.svg"
-            alt="Chatters Logo"
-            className="h-8 w-auto filter invert brightness-0 invert"
-          />
-        </div>
-
-        <div className="flex-1 flex items-center justify-center px-6 pb-8">
-          <div className="w-full max-w-sm">
-            <div className="text-center">
-              {/* Status Icon */}
-              <div className="mb-6">
-                {status === 'verifying' && (
-                  <Loader className="w-16 h-16 text-white mx-auto animate-spin" />
-                )}
-                {status === 'success' && (
-                  <CheckCircle className="w-16 h-16 text-green-500 mx-auto" />
-                )}
-                {(status === 'error' || status === 'expired') && (
-                  <XCircle className="w-16 h-16 text-red-500 mx-auto" />
-                )}
-              </div>
-
-              {/* Title */}
-              <h1 className="text-2xl font-bold text-white mb-4">
-                {status === 'verifying' && 'Verifying Email...'}
-                {status === 'success' && 'Email Verified!'}
-                {status === 'error' && 'Verification Failed'}
-                {status === 'expired' && 'Link Expired'}
-              </h1>
-
-              {/* Message */}
-              <p className="text-gray-300 mb-6">
-                {message}
-              </p>
-
-              {status === 'success' && newEmail && (
-                <div className="bg-green-900/20 border border-green-500/30 rounded-lg p-4 mb-6">
-                  <p className="text-sm text-green-400">
-                    Your new email address is now:
-                  </p>
-                  <p className="text-green-300 font-semibold mt-1">
-                    {newEmail}
-                  </p>
-                </div>
-              )}
-
-              {/* Action Buttons */}
-              <div className="space-y-3">
-                {status === 'success' && (
-                  <>
-                    <p className="text-sm text-gray-400">
-                      Redirecting you to your account profile in a few seconds...
-                    </p>
-                    <button
-                      onClick={() => navigate('/account/profile')}
-                      className="w-full bg-white text-gray-900 px-6 py-3 rounded-lg font-semibold hover:bg-gray-100 transition-colors"
-                    >
-                      Go to Account Profile
-                    </button>
-                  </>
-                )}
-
-                {(status === 'error' || status === 'expired') && (
-                  <>
-                    <button
-                      onClick={() => navigate('/account/profile')}
-                      className="w-full bg-white text-gray-900 px-6 py-3 rounded-lg font-semibold hover:bg-gray-100 transition-colors"
-                    >
-                      Back to Account Settings
-                    </button>
-                    <button
-                      onClick={() => navigate('/dashboard')}
-                      className="w-full bg-gray-700 text-white px-6 py-3 rounded-lg font-semibold hover:bg-gray-600 transition-colors"
-                    >
-                      Go to Dashboard
-                    </button>
-                  </>
-                )}
-
-                {status === 'verifying' && (
-                  <p className="text-sm text-gray-400">
-                    Please wait while we verify your email address...
-                  </p>
-                )}
-              </div>
-            </div>
-          </div>
-        </div>
+    <div className="min-h-screen bg-white flex flex-col">
+      {/* Back to website link */}
+      <div className="p-6">
+        <a
+          href={getMarketingUrl()}
+          className="text-gray-500 hover:text-gray-700 flex items-center transition-colors text-sm font-medium"
+        >
+          <ArrowRight className="h-4 w-4 rotate-180 mr-2" />
+          Back to website
+        </a>
       </div>
 
-      {/* Desktop Layout - Full screen split */}
-      <div className="hidden lg:flex w-full min-h-screen">
-        {/* Left Panel - Brand with gradient background */}
-        <div className="w-1/2 bg-gradient-to-br from-blue-100 via-green-100 via-orange-100 to-purple-100 p-12 flex flex-col justify-center">
-          <div className="max-w-xl">
-            <div className="mb-8">
-              <img
-                src="/img/Logo.svg"
-                alt="Chatters Logo"
-                className="h-8 w-auto mb-12"
-              />
-            </div>
-
-            <div>
-              <h1 className="text-5xl font-bold text-gray-900 mb-6 leading-tight">
-                Email Verification
-              </h1>
-              <p className="text-gray-700 text-lg leading-relaxed mb-8">
-                We're verifying your new email address to keep your account secure.
-              </p>
-            </div>
-
-            <div className="space-y-4">
-              <div className="flex items-center text-gray-700">
-                <div className="w-2 h-2 bg-green-500 rounded-full mr-3 flex-shrink-0"></div>
-                <span>Secure email verification</span>
-              </div>
-              <div className="flex items-center text-gray-700">
-                <div className="w-2 h-2 bg-green-500 rounded-full mr-3 flex-shrink-0"></div>
-                <span>Encrypted data protection</span>
-              </div>
-              <div className="flex items-center text-gray-700">
-                <div className="w-2 h-2 bg-green-500 rounded-full mr-3 flex-shrink-0"></div>
-                <span>Instant account updates</span>
-              </div>
-            </div>
+      {/* Centered content */}
+      <div className="flex-1 flex items-center justify-center px-6 pb-12">
+        <div className="w-full max-w-sm">
+          {/* Logo */}
+          <div className="flex justify-center mb-8">
+            <img
+              src={getMarketingUrl('/img/logo/chatters-logo-2025.svg')}
+              alt="Chatters"
+              className="h-8 w-auto"
+            />
           </div>
-        </div>
 
-        {/* Right Panel - Black background with verification status */}
-        <div className="w-1/2 bg-black p-12 flex flex-col justify-center">
-          <div className="max-w-md mx-auto w-full">
-            <div className="text-center">
-              {/* Status Icon */}
-              <div className="mb-8">
-                {status === 'verifying' && (
-                  <Loader className="w-20 h-20 text-white mx-auto animate-spin" />
-                )}
-                {status === 'success' && (
-                  <CheckCircle className="w-20 h-20 text-green-500 mx-auto" />
-                )}
-                {(status === 'error' || status === 'expired') && (
-                  <XCircle className="w-20 h-20 text-red-500 mx-auto" />
-                )}
-              </div>
+          {/* Status Icon */}
+          <div className="flex justify-center mb-6">
+            {status === 'verifying' && (
+              <Loader2 className="w-16 h-16 text-[#4E74FF] animate-spin" />
+            )}
+            {status === 'success' && (
+              <CheckCircle className="w-16 h-16 text-green-500" />
+            )}
+            {(status === 'error' || status === 'expired') && (
+              <XCircle className="w-16 h-16 text-red-500" />
+            )}
+          </div>
 
-              {/* Title */}
-              <h2 className="text-3xl font-bold text-white mb-4">
-                {status === 'verifying' && 'Verifying Email...'}
-                {status === 'success' && 'Email Verified!'}
-                {status === 'error' && 'Verification Failed'}
-                {status === 'expired' && 'Link Expired'}
-              </h2>
+          {/* Header */}
+          <div className="text-center mb-8">
+            <h1 className="text-2xl font-bold text-gray-900 mb-2">
+              {status === 'verifying' && 'Verifying Email...'}
+              {status === 'success' && 'Email Verified!'}
+              {status === 'error' && 'Verification Failed'}
+              {status === 'expired' && 'Link Expired'}
+            </h1>
+            <p className="text-gray-500">
+              {message}
+            </p>
+          </div>
 
-              {/* Message */}
-              <p className="text-gray-300 mb-8">
-                {message}
+          {/* Success message with new email */}
+          {status === 'success' && newEmail && (
+            <div className="mb-6 p-4 bg-green-50 border border-green-200 rounded-lg">
+              <p className="text-sm text-green-600 text-center">
+                Your new email address is now:
               </p>
-
-              {status === 'success' && newEmail && (
-                <div className="bg-green-900/20 border border-green-500/30 rounded-lg p-4 mb-8">
-                  <p className="text-sm text-green-400">
-                    Your new email address is now:
-                  </p>
-                  <p className="text-green-300 font-semibold mt-1">
-                    {newEmail}
-                  </p>
-                </div>
-              )}
-
-              {/* Action Buttons */}
-              <div className="space-y-4">
-                {status === 'success' && (
-                  <>
-                    <p className="text-sm text-gray-400 mb-6">
-                      Redirecting you to your account profile in a few seconds...
-                    </p>
-                    <button
-                      onClick={() => navigate('/account/profile')}
-                      className="w-full bg-white text-gray-900 px-6 py-3 rounded-lg font-semibold hover:bg-gray-100 transition-colors"
-                    >
-                      Go to Account Profile
-                    </button>
-                  </>
-                )}
-
-                {(status === 'error' || status === 'expired') && (
-                  <>
-                    <button
-                      onClick={() => navigate('/account/profile')}
-                      className="w-full bg-white text-gray-900 px-6 py-3 rounded-lg font-semibold hover:bg-gray-100 transition-colors"
-                    >
-                      Back to Account Settings
-                    </button>
-                    <button
-                      onClick={() => navigate('/dashboard')}
-                      className="w-full bg-gray-700 text-white px-6 py-3 rounded-lg font-semibold hover:bg-gray-600 transition-colors"
-                    >
-                      Go to Dashboard
-                    </button>
-                  </>
-                )}
-
-                {status === 'verifying' && (
-                  <p className="text-sm text-gray-400">
-                    Please wait while we verify your email address...
-                  </p>
-                )}
-              </div>
+              <p className="text-green-700 font-semibold text-center mt-1">
+                {newEmail}
+              </p>
             </div>
+          )}
+
+          {/* Action Buttons */}
+          <div className="space-y-3">
+            {status === 'success' && (
+              <>
+                <p className="text-sm text-gray-500 text-center mb-4">
+                  Redirecting you to your account profile in a few seconds...
+                </p>
+                <button
+                  onClick={() => navigate('/account/profile')}
+                  className="w-full bg-[#4E74FF] text-white py-3 px-4 rounded-lg font-semibold hover:bg-[#2F5CFF] focus:outline-none focus:ring-2 focus:ring-[#4E74FF] focus:ring-offset-2 transition-colors"
+                >
+                  Go to Account Profile
+                </button>
+              </>
+            )}
+
+            {(status === 'error' || status === 'expired') && (
+              <>
+                <button
+                  onClick={() => navigate('/account/profile')}
+                  className="w-full bg-[#4E74FF] text-white py-3 px-4 rounded-lg font-semibold hover:bg-[#2F5CFF] focus:outline-none focus:ring-2 focus:ring-[#4E74FF] focus:ring-offset-2 transition-colors"
+                >
+                  Back to Account Settings
+                </button>
+                <button
+                  onClick={() => navigate('/dashboard')}
+                  className="w-full bg-white text-gray-700 py-3 px-4 rounded-lg font-semibold border border-gray-300 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-[#4E74FF] focus:ring-offset-2 transition-colors"
+                >
+                  Go to Dashboard
+                </button>
+              </>
+            )}
+
+            {status === 'verifying' && (
+              <p className="text-sm text-gray-500 text-center">
+                Please wait while we verify your email address...
+              </p>
+            )}
           </div>
         </div>
       </div>

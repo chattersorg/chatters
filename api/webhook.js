@@ -254,6 +254,26 @@ export default async function handler(req, res) {
         // Get current account state
         const { account } = await findAccountByCustomer(customerId);
 
+        // Get account details for notification
+        let accountName = 'Unknown';
+        let accountEmail = '';
+        if (account) {
+          const { data: accountData } = await supabase
+            .from('accounts')
+            .select('name')
+            .eq('id', account.id)
+            .single();
+          accountName = accountData?.name || 'Unknown';
+
+          const { data: userData } = await supabase
+            .from('users')
+            .select('email')
+            .eq('account_id', account.id)
+            .eq('role', 'master')
+            .single();
+          accountEmail = userData?.email || '';
+        }
+
         // Update account to reflect payment failure with dunning tracking
         const { error: updateError } = await supabase
           .from('accounts')
@@ -269,6 +289,23 @@ export default async function handler(req, res) {
           console.error('Error updating account for payment failure:', updateError);
         }
 
+        // Send Slack notification for payment failure
+        if (process.env.SLACK_WEBHOOK_URL) {
+          try {
+            const amount = (invoice.amount_due / 100).toLocaleString();
+            const errorMessage = invoice.last_payment_error?.message || 'Payment failed';
+            await fetch(process.env.SLACK_WEBHOOK_URL, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                text: `Payment failed for: *${accountName}*\nEmail: *${accountEmail}*\nAmount: *£${amount}*\nAttempt: *${attemptCount}*\nError: ${errorMessage}`
+              })
+            });
+          } catch (slackError) {
+            console.error('Slack notification failed:', slackError);
+          }
+        }
+
         // Log for manual dunning follow-up (could integrate email service here)
         console.log('Payment failed for customer:', customerId, 'Attempt:', attemptCount);
         break;
@@ -278,6 +315,34 @@ export default async function handler(req, res) {
         const invoice = event.data.object;
         const customerId = invoice.customer;
         const subscriptionId = invoice.subscription;
+
+        // Get account details for notification
+        const { account } = await findAccountByCustomer(customerId);
+        let accountName = 'Unknown';
+        let accountEmail = '';
+        let venueCount = 0;
+        if (account) {
+          const { data: accountData } = await supabase
+            .from('accounts')
+            .select('name')
+            .eq('id', account.id)
+            .single();
+          accountName = accountData?.name || 'Unknown';
+
+          const { data: userData } = await supabase
+            .from('users')
+            .select('email')
+            .eq('account_id', account.id)
+            .eq('role', 'master')
+            .single();
+          accountEmail = userData?.email || '';
+
+          const { count } = await supabase
+            .from('venues')
+            .select('id', { count: 'exact', head: true })
+            .eq('account_id', account.id);
+          venueCount = count || 0;
+        }
 
         // Update account with payment success and clear dunning state
         const updateData = {
@@ -300,6 +365,28 @@ export default async function handler(req, res) {
           .eq('stripe_customer_id', customerId);
 
         if (updateError) throw updateError;
+
+        // Send Slack notification for payment success
+        if (process.env.SLACK_WEBHOOK_URL) {
+          try {
+            const subtotal = (invoice.subtotal / 100);
+            const tax = (invoice.tax / 100) || 0;
+            const total = (invoice.total / 100);
+            const isMonthly = invoice.lines?.data?.[0]?.price?.recurring?.interval === 'month';
+            const period = isMonthly ? 'mo' : 'yr';
+
+            await fetch(process.env.SLACK_WEBHOOK_URL, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                text: `Payment successful for: *${accountName}*\nEmail: *${accountEmail}*\nPlan: *${isMonthly ? 'Monthly' : 'Annual'}*\nVenues: *${venueCount}*\nSubtotal: *£${subtotal.toLocaleString()}/${period}*\nVAT: *£${tax.toLocaleString()}*\nTotal: *£${total.toLocaleString()}/${period}*`
+              })
+            });
+          } catch (slackError) {
+            console.error('Slack notification failed:', slackError);
+          }
+        }
+
         console.log('Payment succeeded for customer:', customerId);
         break;
       }
