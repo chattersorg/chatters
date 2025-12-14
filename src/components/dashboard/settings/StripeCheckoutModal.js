@@ -15,7 +15,7 @@ const stripePromise = loadStripe(process.env.REACT_APP_STRIPE_PUBLISHABLE_KEY).c
   return null;
 });
 
-const CheckoutForm = ({ onSuccess, onCancel, subtotal, vat, total, billingPeriod, venueCount, isSetupMode }) => {
+const CheckoutForm = ({ onSuccess, onCancel, subtotal = 0, vat = 0, total = 0, billingPeriod, venueCount = 1, isSetupMode }) => {
   const stripe = useStripe();
   const elements = useElements();
   const [isProcessing, setIsProcessing] = useState(false);
@@ -212,7 +212,7 @@ const CheckoutForm = ({ onSuccess, onCancel, subtotal, vat, total, billingPeriod
   );
 };
 
-const StripeCheckoutModal = ({ isOpen, onClose, onSuccess, clientSecret, subtotal, vat, total, billingPeriod, venueCount, isSetupMode = false }) => {
+const StripeCheckoutModal = ({ isOpen, onClose, onSuccess, clientSecret, subtotal = 0, vat = 0, total = 0, billingPeriod, venueCount = 1, isSetupMode = false }) => {
   useEffect(() => {
     // Prevent body scroll when modal is open
     if (isOpen) {
