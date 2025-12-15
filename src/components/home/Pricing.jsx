@@ -47,14 +47,14 @@ const Pricing = () => {
           <div className="relative">
             <div className="absolute -inset-1 rounded-3xl bg-gradient-to-r from-indigo-400/40 via-sky-400/30 to-emerald-300/40 blur-2xl" aria-hidden="true" />
             <div className="relative bg-white text-slate-900 rounded-2xl shadow-2xl p-8 sm:p-10 lg:p-12 border border-white/60">
-              <div className="flex items-center justify-between gap-3">
-                <div>
+              <div className="space-y-3">
+                <div className="flex items-center justify-between gap-4">
                   <p className="text-sm font-semibold text-indigo-600">All-inclusive platform</p>
-                  <p className="text-2xl sm:text-3xl font-bold text-slate-900">One fair rate, tailored to you</p>
+                  <span className="inline-flex items-center rounded-full bg-indigo-50 px-3 py-1.5 text-xs font-semibold text-indigo-700 ring-1 ring-indigo-100 whitespace-nowrap">
+                    No surprises
+                  </span>
                 </div>
-                <span className="inline-flex items-center rounded-full bg-indigo-50 px-3 py-1 text-xs font-semibold text-indigo-700 ring-1 ring-indigo-100">
-                  No surprises
-                </span>
+                <p className="text-2xl sm:text-3xl font-bold text-slate-900">One fair rate, tailored to you</p>
               </div>
 
               <div className="mt-8 space-y-4 text-left">

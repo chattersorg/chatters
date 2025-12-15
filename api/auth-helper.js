@@ -1,12 +1,12 @@
 // /api/auth-helper.js
-import { createClient } from '@supabase/supabase-js';
+const { createClient } = require('@supabase/supabase-js');
 
 const supabaseClient = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.REACT_APP_SUPABASE_URL,
   process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || process.env.REACT_APP_SUPABASE_ANON_KEY
 );
 
-export async function authenticateAdmin(req) {
+async function authenticateAdmin(req) {
   // Extract JWT token from Authorization header
   const authHeader = req.headers.authorization;
   if (!authHeader || !authHeader.startsWith('Bearer ')) {
@@ -35,7 +35,7 @@ export async function authenticateAdmin(req) {
   return userData;
 }
 
-export async function requireMasterRole(req) {
+async function requireMasterRole(req) {
   const userData = await authenticateAdmin(req);
   
   if (userData.role !== 'master') {
@@ -45,7 +45,7 @@ export async function requireMasterRole(req) {
   return userData;
 }
 
-export async function requireAdminRole(req) {
+async function requireAdminRole(req) {
   const userData = await authenticateAdmin(req);
   
   if (!['admin', 'master'].includes(userData.role)) {
@@ -55,7 +55,7 @@ export async function requireAdminRole(req) {
   return userData;
 }
 
-export async function authenticateVenueAccess(req, venueId) {
+async function authenticateVenueAccess(req, venueId) {
   const userData = await authenticateAdmin(req);
   
   // Admin users have access to all venues
@@ -100,3 +100,10 @@ export async function authenticateVenueAccess(req, venueId) {
 
   throw new Error('Insufficient permissions');
 }
+
+module.exports = {
+  authenticateAdmin,
+  requireMasterRole,
+  requireAdminRole,
+  authenticateVenueAccess
+};
