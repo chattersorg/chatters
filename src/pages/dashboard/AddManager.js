@@ -5,7 +5,6 @@ import { useVenue } from '../../context/VenueContext';
 import usePageTitle from '../../hooks/usePageTitle';
 import { ChartCard } from '../../components/dashboard/layout/ModernCard';
 import { Button } from '../../components/ui/button';
-import DatePicker from '../../components/dashboard/inputs/DatePicker';
 import {
   ArrowLeft,
   User,
@@ -303,10 +302,12 @@ const AddManager = () => {
                 <Calendar className="w-4 h-4 inline mr-2" />
                 Date of Birth
               </label>
-              <DatePicker
+              <input
+                type="date"
                 value={formData.dateOfBirth}
                 onChange={(e) => handleChange('dateOfBirth', e.target.value)}
                 max={new Date().toISOString().split('T')[0]}
+                className="w-full px-4 py-2.5 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
               />
             </div>
           </div>
