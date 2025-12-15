@@ -105,12 +105,14 @@ const useOverviewStats = (venueId) => {
       );
       const sevenDayAssistance = sevenDayAssistanceResult.data;
 
-      // Calculate stats - count unique sessions
+      // Calculate stats - count unique feedback sessions + assistance requests
       const todaySessionIds = new Set(todayFeedback?.map(f => f.session_id) || []);
-      const todaySessions = todaySessionIds.size;
+      const todayAssistanceCount = todayAssistance?.length || 0;
+      const todaySessions = todaySessionIds.size + todayAssistanceCount;
 
       const yesterdaySessionIds = new Set(yesterdayFeedback?.map(f => f.session_id) || []);
-      const yesterdaySessions = yesterdaySessionIds.size;
+      const yesterdayAssistanceCount = yesterdayAssistance?.length || 0;
+      const yesterdaySessions = yesterdaySessionIds.size + yesterdayAssistanceCount;
       
       // Average satisfaction
       const todayRatings = todayFeedback?.filter(f => f.rating).map(f => f.rating) || [];
@@ -167,14 +169,17 @@ const useOverviewStats = (venueId) => {
 
       // Active alerts (unresolved assistance requests)
       const activeAlerts = todayAssistance?.filter(a => !a.resolved_at).length || 0;
+      const yesterdayActiveAlerts = yesterdayAssistance?.filter(a => !a.resolved_at).length || 0;
 
       // Peak hour analysis
       const peakHour = calculatePeakHour(todayFeedback || []);
+      const yesterdayPeakHour = calculatePeakHour(yesterdayFeedback || []);
 
       // Activity level
       const currentActivity = calculateActivityLevel(todaySessions);
+      const yesterdayActivity = calculateActivityLevel(yesterdaySessions);
 
-      // Calculate trends
+      // Calculate trends - all compared to yesterday
       const sessionsTrend = calculateTrend(todaySessions, yesterdaySessions);
       const satisfactionTrend = avgSatisfaction && yesterdayAvgSatisfaction
         ? calculateTrend(parseFloat(avgSatisfaction), yesterdayAvgSatisfaction, true)
@@ -186,29 +191,49 @@ const useOverviewStats = (venueId) => {
         ? calculateTrend(completionRate, yesterdayCompletionRate, true)
         : null;
 
-      // Calculate 7-day sparkline data
-      const sessionsSparkline = calculate7DaySparkline(sevenDayFeedback, sevenDayAssistance, 'sessions');
-      const satisfactionSparkline = calculate7DaySparkline(sevenDayFeedback, sevenDayAssistance, 'satisfaction');
-      const responseTimeSparkline = calculate7DaySparkline(sevenDayFeedback, sevenDayAssistance, 'responseTime');
-      const completionRateSparkline = calculate7DaySparkline(sevenDayFeedback, sevenDayAssistance, 'completionRate');
+      // Additional trends for MetricCard stats
+      const alertsTrend = calculateTrend(activeAlerts, yesterdayActiveAlerts, false, true); // Lower is better
+      const resolvedTrend = calculateTrend(completedToday, completedYesterday, true);
+
+      // Calculate hourly sparkline data for today (more dramatic visualization)
+      const sessionsSparkline = calculateHourlySparkline(todayFeedback, todayAssistance, 'sessions');
+      const satisfactionSparkline = calculateHourlySparkline(todayFeedback, todayAssistance, 'satisfaction');
+      const responseTimeSparkline = calculateHourlySparkline(todayFeedback, todayAssistance, 'responseTime');
+      const completionRateSparkline = calculateHourlySparkline(todayFeedback, todayAssistance, 'completionRate');
 
       setStats({
         todaySessions,
+        yesterdaySessions,
         avgSatisfaction,
         avgResponseTime,
         completionRate,
         activeAlerts,
+        yesterdayActiveAlerts,
         resolvedToday: completedToday,
+        yesterdayResolved: completedYesterday,
         currentActivity,
+        yesterdayActivity,
         peakHour,
+        yesterdayPeakHour,
+        // Session trends
         sessionsTrend: sessionsTrend?.value,
         sessionsTrendDirection: sessionsTrend?.direction,
+        // Satisfaction trends
         satisfactionTrend: satisfactionTrend?.value,
         satisfactionTrendDirection: satisfactionTrend?.direction,
+        // Response time trends
         responseTimeTrend: responseTimeTrend?.value,
         responseTimeTrendDirection: responseTimeTrend?.direction,
+        // Completion rate trends
         completionTrend: completionTrend?.value,
         completionTrendDirection: completionTrend?.direction,
+        // Alert trends
+        alertsTrend: alertsTrend?.value,
+        alertsTrendDirection: alertsTrend?.direction,
+        // Resolved trends
+        resolvedTrend: resolvedTrend?.value,
+        resolvedTrendDirection: resolvedTrend?.direction,
+        // Sparklines
         sessionsSparkline,
         satisfactionSparkline,
         responseTimeSparkline,
@@ -277,7 +302,19 @@ const useOverviewStats = (venueId) => {
   };
 
   const calculateTrend = (current, previous, higherIsBetter = true, lowerIsBetter = false) => {
-    if (current === null || previous === null || previous === 0) return null;
+    if (current === null || previous === null) return null;
+
+    // Handle case where previous is 0
+    if (previous === 0) {
+      if (current === 0) {
+        return { value: '~0%', direction: 'neutral' };
+      }
+      // Can't calculate percentage from 0, but we can show the direction
+      const direction = lowerIsBetter
+        ? (current > 0 ? 'down' : 'up')
+        : (current > 0 ? 'up' : 'down');
+      return { value: `+${current}`, direction };
+    }
 
     const percentChange = ((current - previous) / previous) * 100;
     const absChange = Math.abs(percentChange);
@@ -294,6 +331,79 @@ const useOverviewStats = (venueId) => {
     }
 
     return { value, direction };
+  };
+
+  const calculateHourlySparkline = (feedback, assistance, metric) => {
+    const now = new Date();
+    const currentHour = now.getHours();
+    const sparklineData = [];
+
+    // Generate data for each hour from midnight to current hour
+    for (let hour = 0; hour <= currentHour; hour++) {
+      const hourStart = new Date(now.getFullYear(), now.getMonth(), now.getDate(), hour, 0, 0);
+      const hourEnd = new Date(now.getFullYear(), now.getMonth(), now.getDate(), hour, 59, 59, 999);
+
+      const hourFeedback = feedback?.filter(f => {
+        const createdAt = new Date(f.created_at);
+        return createdAt >= hourStart && createdAt <= hourEnd;
+      }) || [];
+
+      const hourAssistance = assistance?.filter(a => {
+        const createdAt = new Date(a.created_at);
+        return createdAt >= hourStart && createdAt <= hourEnd;
+      }) || [];
+
+      let value = 0;
+
+      switch (metric) {
+        case 'sessions':
+          const sessionIds = new Set(hourFeedback.map(f => f.session_id));
+          value = sessionIds.size + hourAssistance.length;
+          break;
+
+        case 'satisfaction':
+          const ratings = hourFeedback.filter(f => f.rating).map(f => f.rating);
+          value = ratings.length > 0
+            ? ratings.reduce((a, b) => a + b, 0) / ratings.length
+            : 0;
+          break;
+
+        case 'responseTime':
+          const resolvedAssistance = hourAssistance.filter(a => a.resolved_at);
+          const resolvedFeedback = hourFeedback.filter(f => f.resolved_at && f.is_actioned);
+          const allResolved = [...resolvedAssistance, ...resolvedFeedback];
+
+          if (allResolved.length > 0) {
+            const totalMs = allResolved.reduce((sum, request) => {
+              const created = new Date(request.created_at);
+              const resolved = new Date(request.resolved_at);
+              return sum + (resolved - created);
+            }, 0);
+            value = totalMs / allResolved.length / 60000; // Convert to minutes
+          }
+          break;
+
+        case 'completionRate':
+          const totalFeedbackSessions = new Set(hourFeedback.map(f => f.session_id)).size;
+          const resolvedFeedbackSessions = new Set(
+            hourFeedback.filter(f => f.resolved_at && f.is_actioned).map(f => f.session_id)
+          ).size;
+          const totalAssistance = hourAssistance.length;
+          const resolvedAssistanceCount = hourAssistance.filter(a => a.resolved_at).length;
+
+          const total = totalFeedbackSessions + totalAssistance;
+          const completed = resolvedFeedbackSessions + resolvedAssistanceCount;
+          value = total > 0 ? (completed / total) * 100 : 0;
+          break;
+
+        default:
+          value = 0;
+      }
+
+      sparklineData.push(value);
+    }
+
+    return sparklineData;
   };
 
   const calculate7DaySparkline = (feedback, assistance, metric) => {
@@ -323,7 +433,7 @@ const useOverviewStats = (venueId) => {
       switch (metric) {
         case 'sessions':
           const sessionIds = new Set(dayFeedback.map(f => f.session_id));
-          value = sessionIds.size;
+          value = sessionIds.size + dayAssistance.length;
           break;
 
         case 'satisfaction':
