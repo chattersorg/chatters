@@ -25,9 +25,9 @@ module.exports = async function handler(req, res) {
 
   try {
     const userData = await requireMasterRole(req);
-    const { email, venueIds, firstName, lastName } = req.body;
+    const { email, venueIds, firstName, lastName, phone, dateOfBirth, permissionTemplateId } = req.body;
 
-    console.log('Invite manager request:', { email, firstName, lastName, venueIds, accountId: userData.account_id });
+    console.log('Invite manager request:', { email, firstName, lastName, phone, dateOfBirth, venueIds, permissionTemplateId, accountId: userData.account_id });
 
     if (!email || !venueIds || venueIds.length === 0) {
       return res.status(400).json({ error: 'Email and venue IDs required' });
@@ -80,7 +80,10 @@ module.exports = async function handler(req, res) {
         expires_at: expiresAt.toISOString(),
         status: 'pending',
         first_name: firstName,
-        last_name: lastName
+        last_name: lastName,
+        phone: phone || null,
+        date_of_birth: dateOfBirth || null,
+        permission_template_id: permissionTemplateId || null
       })
       .select()
       .single();

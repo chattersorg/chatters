@@ -45,6 +45,7 @@ import NPSSettingsPage from './pages/dashboard/NPSSettings';
 import StaffListPage from './pages/dashboard/StaffList';
 import EmployeeDetail from './pages/dashboard/EmployeeDetail';
 import ManagerDetail from './pages/dashboard/ManagerDetail';
+import AddManager from './pages/dashboard/AddManager';
 import SettingsBrandingPage from './pages/dashboard/SettingsBranding';
 import AccountProfilePage from './pages/dashboard/AccountProfile';
 import AccountBillingPage from './pages/dashboard/AccountBilling';
@@ -349,6 +350,11 @@ const DashboardRoutes = () => {
         <Route path="/staff/managers/:managerId" element={
           <ProtectedRoute permission="managers.view">
             <ManagerDetail />
+          </ProtectedRoute>
+        } />
+        <Route path="/staff/managers/add" element={
+          <ProtectedRoute permission="managers.invite">
+            <AddManager />
           </ProtectedRoute>
         } />
         <Route path="/staff/roles" element={

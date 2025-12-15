@@ -40,15 +40,7 @@ const StaffListPage = () => {
   const [employeeToDelete, setEmployeeToDelete] = useState(null);
   const [deleteLoading, setDeleteLoading] = useState(false);
 
-  // Manager modals
-  const [showAddManagerForm, setShowAddManagerForm] = useState(false);
-  const [addManagerLoading, setAddManagerLoading] = useState(false);
-  const [newManager, setNewManager] = useState({
-    firstName: '',
-    lastName: '',
-    email: '',
-    venueIds: []
-  });
+  // Manager state
   const [managerToDelete, setManagerToDelete] = useState(null);
   const [deleteManagerLoading, setDeleteManagerLoading] = useState(false);
   const [resendingEmail, setResendingEmail] = useState(null);
@@ -447,64 +439,6 @@ const StaffListPage = () => {
   };
 
   // Manager handlers
-  const handleVenueToggle = (venueIdToToggle) => {
-    setNewManager(prev => ({
-      ...prev,
-      venueIds: prev.venueIds.includes(venueIdToToggle)
-        ? prev.venueIds.filter(id => id !== venueIdToToggle)
-        : [...prev.venueIds, venueIdToToggle]
-    }));
-  };
-
-  const handleAddManager = async (e) => {
-    e.preventDefault();
-    if (!newManager.firstName || !newManager.lastName || !newManager.email || newManager.venueIds.length === 0) {
-      setMessage('Please fill in all fields and select at least one venue');
-      return;
-    }
-
-    setAddManagerLoading(true);
-    try {
-      const { data: authUser } = await supabase.auth.getUser();
-      const { data: userData } = await supabase
-        .from('users')
-        .select('account_id')
-        .eq('id', authUser.user.id)
-        .single();
-
-      const payload = {
-        email: newManager.email,
-        firstName: newManager.firstName,
-        lastName: newManager.lastName,
-        venueIds: newManager.venueIds,
-        accountId: userData.account_id
-      };
-
-      const { data: { session } } = await supabase.auth.getSession();
-      const res = await fetch('/api/admin/invite-manager', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${session?.access_token}`
-        },
-        body: JSON.stringify(payload),
-      });
-
-      const result = await res.json();
-      if (!res.ok) throw new Error(result.error || 'Failed to invite manager');
-
-      setMessage(`Manager invited successfully! An invitation email has been sent to ${newManager.email}.`);
-      setNewManager({ firstName: '', lastName: '', email: '', venueIds: [] });
-      setShowAddManagerForm(false);
-      await fetchStaffData();
-      await fetchPendingInvitations();
-    } catch (error) {
-      setMessage('Failed to invite manager: ' + error.message);
-    } finally {
-      setAddManagerLoading(false);
-    }
-  };
-
   const handleDeleteManager = async () => {
     if (!managerToDelete) return;
     setDeleteManagerLoading(true);
@@ -650,7 +584,7 @@ const StaffListPage = () => {
                   <Button
                     variant="primary"
                     size="sm"
-                    onClick={() => setShowAddManagerForm(true)}
+                    onClick={() => navigate('/staff/managers/add')}
                   >
                     <UserCheck className="w-4 h-4 mr-2" />
                     Add Manager
@@ -1066,93 +1000,6 @@ const StaffListPage = () => {
         icon="warning"
         loading={uploading}
       />
-
-      {/* Add Manager Modal */}
-      {showAddManagerForm && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 dark:bg-opacity-70 flex items-center justify-center z-50 p-4">
-          <div className="bg-white dark:bg-gray-900 rounded-lg w-full max-w-lg max-h-[90vh] overflow-y-auto">
-            <div className="p-4 lg:p-6">
-              <h3 className="text-lg lg:text-xl font-medium text-gray-900 dark:text-white mb-4 lg:mb-6">Add New Manager</h3>
-
-              <form onSubmit={handleAddManager} className="space-y-4 lg:space-y-6">
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">First Name</label>
-                    <input
-                      type="text"
-                      value={newManager.firstName}
-                      onChange={(e) => setNewManager(prev => ({ ...prev, firstName: e.target.value }))}
-                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
-                      required
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Last Name</label>
-                    <input
-                      type="text"
-                      value={newManager.lastName}
-                      onChange={(e) => setNewManager(prev => ({ ...prev, lastName: e.target.value }))}
-                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
-                      required
-                    />
-                  </div>
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Email</label>
-                  <input
-                    type="email"
-                    value={newManager.email}
-                    onChange={(e) => setNewManager(prev => ({ ...prev, email: e.target.value }))}
-                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
-                    required
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">Assign to Venues</label>
-                  <div className="border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 rounded-lg p-3 max-h-48 overflow-y-auto">
-                    <div className="space-y-2">
-                      {allVenues.map(venue => (
-                        <label key={venue.id} className="flex items-center space-x-3 p-2 hover:bg-gray-50 dark:hover:bg-gray-700 rounded cursor-pointer">
-                          <input
-                            type="checkbox"
-                            checked={newManager.venueIds.includes(venue.id)}
-                            onChange={() => handleVenueToggle(venue.id)}
-                            className="rounded border-gray-300 dark:border-gray-600 text-blue-600 focus:ring-blue-500 h-4 w-4"
-                          />
-                          <span className="text-sm text-gray-700 dark:text-gray-300 flex-1">{venue.name}</span>
-                        </label>
-                      ))}
-                    </div>
-                  </div>
-                  <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">Select at least one venue for this manager</p>
-                </div>
-
-                <div className="flex flex-col sm:flex-row justify-end space-y-3 sm:space-y-0 sm:space-x-3 pt-4 border-t border-gray-200 dark:border-gray-700">
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setShowAddManagerForm(false);
-                      setNewManager({ firstName: '', lastName: '', email: '', venueIds: [] });
-                    }}
-                    className="w-full sm:w-auto px-6 py-2 text-gray-600 dark:text-gray-300 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 text-sm font-medium"
-                  >
-                    Cancel
-                  </button>
-                  <button
-                    type="submit"
-                    disabled={addManagerLoading}
-                    className="w-full sm:w-auto px-6 py-2 bg-black text-white rounded-lg hover:bg-gray-800 disabled:opacity-50 disabled:cursor-not-allowed text-sm font-medium"
-                  >
-                    {addManagerLoading ? 'Inviting...' : 'Invite Manager'}
-                  </button>
-                </div>
-              </form>
-            </div>
-          </div>
-        </div>
-      )}
 
       {/* Delete Manager Confirmation Modal */}
       {managerToDelete && (
