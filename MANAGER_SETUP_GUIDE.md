@@ -2,25 +2,11 @@
 
 ## Current Situation
 
-You have **7 orphaned manager accounts** that were created outside the proper invitation flow. They exist in the `users` table with `role: 'manager'` but have no entries in the `staff` table, which means:
+You have **7 orphaned manager accounts** that were created outside the proper invitation flow. They exist in the `users` table with `role: 'manager'` but have no entries in the `staff` table, which means: - They can't access any venues - They don't appear in the Managers UI - They can't log in successfully to the dashboard
 
-- They can't access any venues
-- They don't appear in the Managers UI
-- They can't log in successfully to the dashboard
+### Orphaned Managers - mattjj6@gmail.com - Matthewjjackson@me.com - luke-vb1@gmail.com - bon.mar69@pornhub.com - hh@gg.com - will.smith738@yahoo.com - luke_vb1@outlook.com
 
-### Orphaned Managers
-- mattjj6@gmail.com
-- Matthewjjackson@me.com
-- luke-vb1@gmail.com
-- bon.mar69@pornhub.com
-- hh@gg.com
-- will.smith738@yahoo.com
-- luke_vb1@outlook.com
-
-### Your Venues
-- The Dunn Inn
-- The Fox
-- The Lions Head Pub
+### Your Venues - The Dunn Inn - The Fox - The Lions Head Pub
 
 ## Proper Manager Setup Flow
 
@@ -28,26 +14,15 @@ You have **7 orphaned manager accounts** that were created outside the proper in
 
 1. **Master user** goes to Staff > Managers
 2. Clicks "Add Manager" button
-3. Fills in:
-   - First Name
-   - Last Name
-   - Email
-   - Selects one or more venues
-4. System creates:
-   - Entry in `manager_invitations` table
-   - Sends invitation email to manager
+3. Fills in: - First Name - Last Name - Email - Selects one or more venues
+4. System creates: - Entry in `manager_invitations` table - Sends invitation email to manager
 5. **Manager** receives email and clicks invitation link
 6. Manager sets their password
-7. System creates:
-   - User record in `users` table with `role: 'manager'`
-   - Staff records in `staff` table linking them to selected venues
+7. System creates: - User record in `users` table with `role: 'manager'` - Staff records in `staff` table linking them to selected venues
 
 ### What Makes a Manager "Properly Set Up"
 
-A properly set up manager has:
-- ✅ User record in `users` table
-- ✅ One or more records in `staff` table linking them to venues
-- ✅ Password set (can log in)
+A properly set up manager has: - ✅ User record in `users` table - ✅ One or more records in `staff` table linking them to venues - ✅ Password set (can log in)
 
 ## Cleanup Options
 
@@ -57,21 +32,14 @@ Delete all orphaned managers and start fresh with proper invitations.
 
 **Steps:**
 
-1. Get your Supabase service role key:
-   - Go to Supabase Dashboard
-   - Settings > API > Project API Keys
-   - Copy the `service_role` key (NOT the anon key)
+1. Get your Supabase service role key: - Go to Supabase Dashboard - Settings > API > Project API Keys - Copy the `service_role` key (NOT the anon key)
 
 2. Run the deletion script:
    ```bash
    SUPABASE_SERVICE_ROLE_KEY=your_service_role_key_here node scripts/delete-orphaned-managers.js
    ```
 
-3. Add managers properly through the dashboard:
-   - Go to my.getchatters.com/staff/managers
-   - Click "Add Manager"
-   - Fill in details and select venues
-   - Manager will receive an invitation email
+3. Add managers properly through the dashboard: - Go to my.getchatters.com/staff/managers - Click "Add Manager" - Fill in details and select venues - Manager will receive an invitation email
 
 ### Option 2: Manual Deletion via UI
 
@@ -97,14 +65,9 @@ node scripts/cleanup-orphaned-managers.js
 
 ## Adding New Managers Going Forward
 
-Always use the "Add Manager" button in the dashboard at:
-- my.getchatters.com/staff/managers
+Always use the "Add Manager" button in the dashboard at: - my.getchatters.com/staff/managers
 
-This ensures:
-- Proper invitation flow
-- Staff records are created
-- Managers get invitation emails
-- Everything is set up correctly
+This ensures: - Proper invitation flow - Staff records are created - Managers get invitation emails - Everything is set up correctly
 
 ## Technical Details
 
@@ -157,7 +120,4 @@ This is why orphaned managers (who have no `staff` records) don't show up!
 
 ## Questions?
 
-If you need help, check:
-- `src/pages/dashboard/StaffManagers.js` - Managers page logic
-- `src/components/dashboard/staff/ManagersTab.js` - Manager UI components
-- `api/admin/invite-manager.js` - Manager invitation API
+If you need help, check: - `src/pages/dashboard/StaffManagers.js` - Managers page logic - `src/components/dashboard/staff/ManagersTab.js` - Manager UI components - `api/admin/invite-manager.js` - Manager invitation API

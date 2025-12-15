@@ -21,7 +21,7 @@ import Navbar from '../../../components/marketing/layout/Navbar';
 import Footer from '../../../components/marketing/layout/Footer';
 
 // ─────────────────────────────────────────────────────────────
-// SECTION 1 — HERO
+// SECTION 1 - HERO
 // ─────────────────────────────────────────────────────────────
 const Hero = () => (
   <section className="relative pt-32 pb-20 bg-gradient-to-b from-white to-slate-50 overflow-hidden">
@@ -33,7 +33,7 @@ const Hero = () => (
             Events
           </p>
           <h1 className="text-4xl sm:text-5xl font-bold text-gray-900 leading-tight mb-6">
-            Improve Guest Experience Across Your Entire Event —{' '}
+            Improve Guest Experience Across Your Entire Event  - {' '}
             <span className="text-[#4E74FF]">In Real Time</span>
           </h1>
           <p className="text-xl text-gray-600 mb-8 leading-relaxed">
@@ -84,7 +84,7 @@ const Hero = () => (
 );
 
 // ─────────────────────────────────────────────────────────────
-// SECTION 2 — THE PROBLEM
+// SECTION 2 - THE PROBLEM
 // ─────────────────────────────────────────────────────────────
 const Problem = () => (
   <section className="py-20 bg-slate-900">
@@ -128,7 +128,7 @@ const Problem = () => (
 );
 
 // ─────────────────────────────────────────────────────────────
-// SECTION 3 — WHAT CHATTERS DOES FOR EVENTS
+// SECTION 3 - WHAT CHATTERS DOES FOR EVENTS
 // ─────────────────────────────────────────────────────────────
 const WhatChattersDoesSection = () => {
   const features = [
@@ -150,7 +150,7 @@ const WhatChattersDoesSection = () => {
     },
     {
       title: 'Improve vendor management',
-      description: "See which partners deliver — and which don't.",
+      description: "See which partners deliver - and which don't.",
     },
   ];
 
@@ -187,7 +187,7 @@ const WhatChattersDoesSection = () => {
 };
 
 // ─────────────────────────────────────────────────────────────
-// SECTION 4 — EVENT SCENARIOS
+// SECTION 4 - EVENT SCENARIOS
 // ─────────────────────────────────────────────────────────────
 const Scenarios = () => {
   const scenarios = [
@@ -254,7 +254,7 @@ const Scenarios = () => {
 };
 
 // ─────────────────────────────────────────────────────────────
-// SECTION 5 — WHY EVENT ORGANISERS DEPEND ON CHATTERS
+// SECTION 5 - WHY EVENT ORGANISERS DEPEND ON CHATTERS
 // ─────────────────────────────────────────────────────────────
 const WhyEvents = () => {
   const benefits = [
@@ -316,7 +316,7 @@ const WhyEvents = () => {
 };
 
 // ─────────────────────────────────────────────────────────────
-// SECTION 6 — AN EVENT STORY IN ACTION
+// SECTION 6 - AN EVENT STORY IN ACTION
 // ─────────────────────────────────────────────────────────────
 const StoryInAction = () => (
   <section className="py-20 bg-slate-50">
@@ -374,13 +374,13 @@ const StoryInAction = () => (
 );
 
 // ─────────────────────────────────────────────────────────────
-// SECTION 7 — FINAL CTA
+// SECTION 7 - FINAL CTA
 // ─────────────────────────────────────────────────────────────
 const FinalCTA = () => (
   <section className="py-20 bg-slate-900">
     <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
       <h2 className="text-3xl sm:text-4xl font-bold text-white mb-8">
-        Deliver exceptional events — powered by real-time guest insight.
+        Deliver exceptional events - powered by real-time guest insight.
       </h2>
       <div className="flex flex-col sm:flex-row gap-4 justify-center">
         <Link
@@ -420,7 +420,7 @@ const EventsPage = () => {
         <meta property="og:title" content="Events | Chatters" />
         <meta
           property="og:description"
-          content="Improve guest experience across your entire event — in real time."
+          content="Improve guest experience across your entire event - in real time."
         />
         <meta property="og:type" content="website" />
         <link rel="canonical" href="https://getchatters.com/industries/events" />

@@ -233,7 +233,7 @@ const NPSReportDetail = () => {
               <div className={`text-2xl font-bold mb-1 ${
                 npsData.npsScore !== null ? getNPSColor(npsData.npsScore) : 'text-gray-400'
               }`}>
-                {npsData.npsScore !== null ? npsData.npsScore : '—'}
+                {npsData.npsScore !== null ? npsData.npsScore : ' - '}
               </div>
               <div className="text-sm text-gray-600">
                 NPS Score

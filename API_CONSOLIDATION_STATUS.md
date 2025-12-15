@@ -26,9 +26,7 @@ Current state of Vercel Edge Functions and recommendations for splitting large c
 
 ## 🔴 URGENT: reviews.js (1267 lines)
 
-**Current Structure:**
-- Query params: `?platform={google|tripadvisor|unified}&action={action}`
-- Contains 9 different handlers across 3 platforms
+**Current Structure:** - Query params: `?platform={google|tripadvisor|unified}&action={action}` - Contains 9 different handlers across 3 platforms
 
 ### Handlers:
 
@@ -75,19 +73,13 @@ const response = await fetch('/api/reviews?platform=google&action=ratings&venueI
 const response = await fetch('/api/reviews/google/ratings?venueId=123');
 ```
 
-**Estimated Impact:**
-- Each file: ~100-150 lines (down from 1267)
-- Cold start: 3-5x faster
-- Debugging: Much easier per endpoint
-- Vercel limits: No longer an issue
+**Estimated Impact:** - Each file: ~100-150 lines (down from 1267) - Cold start: 3-5x faster - Debugging: Much easier per endpoint - Vercel limits: No longer an issue
 
 ---
 
 ## 🟡 MEDIUM: google-reviews.js (313 lines)
 
-**Current Structure:**
-- Query params: `?action={list|sync|reply}`
-- Contains 3 different handlers
+**Current Structure:** - Query params: `?action={list|sync|reply}` - Contains 3 different handlers
 
 ### Handlers:
 
@@ -118,9 +110,7 @@ const response = await fetch('/api/google-reviews/list?venueId=123');
 
 ## 🟡 MEDIUM: google.js (285 lines)
 
-**Current Structure:**
-- Query params: `?action={auth-init|auth-callback|disconnect|status|locations}`
-- Contains 5 different handlers for Google OAuth
+**Current Structure:** - Query params: `?action={auth-init|auth-callback|disconnect|status|locations}` - Contains 5 different handlers for Google OAuth
 
 ### Handlers:
 
@@ -157,12 +147,7 @@ const response = await fetch('/api/google/status?venueId=123');
 
 **Status:** Already split into 5 individual files in `/api/admin/`
 
-### Split Files:
-- ✅ `/api/admin/create-user.js`
-- ✅ `/api/admin/invite-manager.js`
-- ✅ `/api/admin/resend-invitation.js`
-- ✅ `/api/admin/revoke-invitation.js`
-- ✅ `/api/admin/get-pending-invitations.js`
+### Split Files: - ✅ `/api/admin/create-user.js` - ✅ `/api/admin/invite-manager.js` - ✅ `/api/admin/resend-invitation.js` - ✅ `/api/admin/revoke-invitation.js` - ✅ `/api/admin/get-pending-invitations.js`
 
 **Note:** Original `/api/admin.js` kept for backwards compatibility
 
@@ -170,10 +155,7 @@ const response = await fetch('/api/google/status?venueId=123');
 
 ## 🟢 GOOD: Files That Don't Need Splitting
 
-These files are either:
-- Single-purpose endpoints
-- Cron jobs
-- Shared utilities
+These files are either: - Single-purpose endpoints - Cron jobs - Shared utilities
 
 | File | Lines | Reason |
 |------|-------|--------|
@@ -190,18 +172,11 @@ These files are either:
 ## 📋 Implementation Priority
 
 ### Phase 1: Urgent (Do Now)
-1. **Split `reviews.js`** (1267 lines → 9 files of ~140 lines each)
-   - Highest impact
-   - Prevents function size limit issues
-   - Improves performance significantly
+1. **Split `reviews.js`** (1267 lines → 9 files of ~140 lines each) - Highest impact - Prevents function size limit issues - Improves performance significantly
 
 ### Phase 2: Important (Do Soon)
-2. **Split `google-reviews.js`** (313 lines → 3 files of ~100 lines each)
-   - Growing feature
-   - Frequently updated
-3. **Split `google.js`** (285 lines → 5 files of ~50 lines each)
-   - OAuth flow benefits from clear separation
-   - Easier debugging
+2. **Split `google-reviews.js`** (313 lines → 3 files of ~100 lines each) - Growing feature - Frequently updated
+3. **Split `google.js`** (285 lines → 5 files of ~50 lines each) - OAuth flow benefits from clear separation - Easier debugging
 
 ### Phase 3: Optional (Future)
 4. **Monitor cron jobs** - If they exceed 500 lines, consider splitting
@@ -279,30 +254,15 @@ export function getReviewsEndpoint(platform, action) {
 
 ## 🚦 Action Items
 
-### Immediate (This Week)
-- [ ] Split `reviews.js` into 9 files
-- [ ] Update frontend to use new review endpoints
-- [ ] Test all review platform integrations
+### Immediate (This Week) - [ ] Split `reviews.js` into 9 files - [ ] Update frontend to use new review endpoints - [ ] Test all review platform integrations
 
-### Short Term (Next 2 Weeks)
-- [ ] Split `google-reviews.js` into 3 files
-- [ ] Split `google.js` into 5 files
-- [ ] Update frontend for Google endpoints
-- [ ] Remove old consolidated files
+### Short Term (Next 2 Weeks) - [ ] Split `google-reviews.js` into 3 files - [ ] Split `google.js` into 5 files - [ ] Update frontend for Google endpoints - [ ] Remove old consolidated files
 
-### Ongoing
-- [ ] Monitor function sizes monthly
-- [ ] Set up alerts for files >300 lines
-- [ ] Document new endpoints in API docs
-- [ ] Update Postman/Thunder collections
+### Ongoing - [ ] Monitor function sizes monthly - [ ] Set up alerts for files >300 lines - [ ] Document new endpoints in API docs - [ ] Update Postman/Thunder collections
 
 ---
 
-## 🔗 Related Documentation
-
-- [API_SPLIT_MIGRATION.md](./API_SPLIT_MIGRATION.md) - Admin split details
-- [Vercel Function Limits](https://vercel.com/docs/functions/limitations)
-- [Edge Function Best Practices](https://vercel.com/docs/functions/edge-functions)
+## 🔗 Related Documentation - [API_SPLIT_MIGRATION.md](./API_SPLIT_MIGRATION.md) - Admin split details - [Vercel Function Limits](https://vercel.com/docs/functions/limitations) - [Edge Function Best Practices](https://vercel.com/docs/functions/edge-functions)
 
 ---
 

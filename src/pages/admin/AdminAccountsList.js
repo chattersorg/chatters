@@ -468,7 +468,7 @@ const AdminAccountsList = () => {
                               </div>
                             </>
                           ) : (
-                            <span className="text-gray-400">—</span>
+                            <span className="text-gray-400"> - </span>
                           )}
                         </div>
                       </td>
@@ -494,7 +494,7 @@ const AdminAccountsList = () => {
                         ) : account.trial_ends_at ? (
                           formatDate(account.trial_ends_at)
                         ) : (
-                          <span className="text-gray-400">—</span>
+                          <span className="text-gray-400"> - </span>
                         )}
                       </td>
                       <td className="px-4 py-3 whitespace-nowrap text-right">
@@ -505,7 +505,7 @@ const AdminAccountsList = () => {
                             £{mrrData.mrrByAccount[account.id].toLocaleString()}
                           </span>
                         ) : (
-                          <span className="text-xs text-gray-400">—</span>
+                          <span className="text-xs text-gray-400"> - </span>
                         )}
                       </td>
                       <td className="px-4 py-3 whitespace-nowrap text-xs text-gray-500">
@@ -523,7 +523,7 @@ const AdminAccountsList = () => {
                             <ExternalLink className="w-3 h-3" />
                           </a>
                         ) : (
-                          <span className="text-xs text-gray-300">—</span>
+                          <span className="text-xs text-gray-300"> - </span>
                         )}
                       </td>
                       <td className="px-4 py-3 whitespace-nowrap text-right text-sm font-medium">

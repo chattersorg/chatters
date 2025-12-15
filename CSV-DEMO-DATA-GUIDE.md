@@ -14,9 +14,7 @@ node scripts/generate-venue-demo-csv.js <venueId> [days]
 node scripts/generate-venue-demo-csv.js abc-123 60
 ```
 
-**Output:**
-- Single CSV file: `demo-data-csv/venue-abc-123-demo-data.csv`
-- Contains ALL data: feedback, NPS, and ratings in one file
+**Output:** - Single CSV file: `demo-data-csv/venue-abc-123-demo-data.csv` - Contains ALL data: feedback, NPS, and ratings in one file
 
 ### Step 2: Import the CSV
 
@@ -71,28 +69,13 @@ Done! Your venue now has 60 days of demo data.
 
 ---
 
-## What Gets Created (per day per venue)
+## What Gets Created (per day per venue) - ✅ 5 feedback sessions (~13 feedback items) - ✅ 5 NPS submissions - ✅ 2 rating scores (Google + TripAdvisor) - ✅ 2 historical rating snapshots - ✅ 60% of feedback automatically resolved by staff
 
-- ✅ 5 feedback sessions (~13 feedback items)
-- ✅ 5 NPS submissions
-- ✅ 2 rating scores (Google + TripAdvisor)
-- ✅ 2 historical rating snapshots
-- ✅ 60% of feedback automatically resolved by staff
-
-**Total for 60 days:**
-- ~300 sessions
-- ~780 feedback items
-- ~300 NPS submissions
-- ~240 rating snapshots
+**Total for 60 days:** - ~300 sessions - ~780 feedback items - ~300 NPS submissions - ~240 rating snapshots
 
 ---
 
-## Files
-
-- `scripts/generate-venue-demo-csv.js` - Generate CSV
-- `scripts/import-demo-csv.js` - Import CSV to database
-- `api/admin/upload-venue-demo-csv.js` - API endpoint (future use)
-- `demo-data-csv/` - Output directory for CSV files
+## Files - `scripts/generate-venue-demo-csv.js` - Generate CSV - `scripts/import-demo-csv.js` - Import CSV to database - `api/admin/upload-venue-demo-csv.js` - API endpoint (future use) - `demo-data-csv/` - Output directory for CSV files
 
 ---
 

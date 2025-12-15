@@ -1,4 +1,4 @@
-// QuickMetricsTab.js — At-a-glance summary metrics
+// QuickMetricsTab.js - At-a-glance summary metrics
 
 import React from 'react';
 import {

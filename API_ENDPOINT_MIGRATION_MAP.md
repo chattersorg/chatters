@@ -211,46 +211,15 @@ const response = await fetch(`${endpoint}?venueId=123`);
 
 ## 📝 Migration Checklist
 
-### Phase 1: Reviews API (Highest Priority)
-- [ ] Update Google ratings calls
-- [ ] Update Google places search calls
-- [ ] Update Google place details calls
-- [ ] Update Google venue update calls
-- [ ] Update TripAdvisor ratings calls
-- [ ] Update TripAdvisor location search calls
-- [ ] Update TripAdvisor location details calls
-- [ ] Update TripAdvisor venue update calls
-- [ ] Update unified search calls
-- [ ] Test all review integrations
+### Phase 1: Reviews API (Highest Priority) - [ ] Update Google ratings calls - [ ] Update Google places search calls - [ ] Update Google place details calls - [ ] Update Google venue update calls - [ ] Update TripAdvisor ratings calls - [ ] Update TripAdvisor location search calls - [ ] Update TripAdvisor location details calls - [ ] Update TripAdvisor venue update calls - [ ] Update unified search calls - [ ] Test all review integrations
 
-### Phase 2: Google Reviews API
-- [ ] Update list reviews calls
-- [ ] Update sync reviews calls
-- [ ] Update reply to reviews calls
-- [ ] Test Google My Business integration
+### Phase 2: Google Reviews API - [ ] Update list reviews calls - [ ] Update sync reviews calls - [ ] Update reply to reviews calls - [ ] Test Google My Business integration
 
-### Phase 3: Google OAuth API
-- [ ] Update OAuth initialization
-- [ ] Update OAuth callback (redirect URI in Google Console)
-- [ ] Update disconnect calls
-- [ ] Update status check calls
-- [ ] Update locations fetch calls
-- [ ] Test OAuth flow end-to-end
+### Phase 3: Google OAuth API - [ ] Update OAuth initialization - [ ] Update OAuth callback (redirect URI in Google Console) - [ ] Update disconnect calls - [ ] Update status check calls - [ ] Update locations fetch calls - [ ] Test OAuth flow end-to-end
 
-### Phase 4: Admin API (Already Done)
-- [ ] Update create user calls (if any remaining)
-- [ ] Update invite manager calls
-- [ ] Update resend invitation calls
-- [ ] Update revoke invitation calls
-- [ ] Update get pending invitations calls
+### Phase 4: Admin API (Already Done) - [ ] Update create user calls (if any remaining) - [ ] Update invite manager calls - [ ] Update resend invitation calls - [ ] Update revoke invitation calls - [ ] Update get pending invitations calls
 
-### Phase 5: Cleanup
-- [ ] Monitor error logs for 2-3 weeks
-- [ ] Verify no old routes are being called
-- [ ] Add deprecation warnings to old endpoints
-- [ ] Remove old consolidated files after confirmation
-- [ ] Update API documentation
-- [ ] Update Postman/Thunder collections
+### Phase 5: Cleanup - [ ] Monitor error logs for 2-3 weeks - [ ] Verify no old routes are being called - [ ] Add deprecation warnings to old endpoints - [ ] Remove old consolidated files after confirmation - [ ] Update API documentation - [ ] Update Postman/Thunder collections
 
 ---
 
@@ -279,11 +248,7 @@ grep -r "action=" src/ --include="*.js" --include="*.jsx"
 
 ## ⚠️ Important Notes
 
-### Backwards Compatibility
-- Original consolidated files (`reviews.js`, `google-reviews.js`, `google.js`, `admin.js`) are still present
-- They can be kept for backwards compatibility during migration
-- Add console warnings to old endpoints after migration is complete
-- Remove old files after 2-3 weeks of stable operation
+### Backwards Compatibility - Original consolidated files (`reviews.js`, `google-reviews.js`, `google.js`, `admin.js`) are still present - They can be kept for backwards compatibility during migration - Add console warnings to old endpoints after migration is complete - Remove old files after 2-3 weeks of stable operation
 
 ### Google OAuth Redirect URI
 **IMPORTANT:** Update your Google Cloud Console OAuth settings:
@@ -301,13 +266,7 @@ https://my.getchatters.com/api/google/auth-callback
 Both can be kept active during migration period.
 
 ### Environment Variables
-No changes needed - all environment variables remain the same:
-- `GOOGLE_MAPS_API_KEY`
-- `TRIPADVISOR_API_KEY`
-- `GOOGLE_CLIENT_ID`
-- `GOOGLE_CLIENT_SECRET`
-- `SUPABASE_SERVICE_ROLE_KEY`
-- etc.
+No changes needed - all environment variables remain the same: - `GOOGLE_MAPS_API_KEY` - `TRIPADVISOR_API_KEY` - `GOOGLE_CLIENT_ID` - `GOOGLE_CLIENT_SECRET` - `SUPABASE_SERVICE_ROLE_KEY` - etc.
 
 ---
 

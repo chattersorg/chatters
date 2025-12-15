@@ -1,4 +1,4 @@
-// BusinessImpactTab.js — Ratings impact and progression metrics
+// BusinessImpactTab.js - Ratings impact and progression metrics
 
 import React, { useState } from 'react';
 import GoogleRatingKPITile from './GoogleRatingKPITile';

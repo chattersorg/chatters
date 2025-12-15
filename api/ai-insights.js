@@ -334,10 +334,7 @@ function prepareFeedbackSummary(feedbackData, npsData, venueName, dateFrom, date
 ${previousInsights.map((insight, idx) => {
   const insights = insight.critical_insights || [];
   const insightTitles = insights.map(i => i.title).join(', ');
-  return `${idx + 1}. Period: ${insight.date_from} to ${insight.date_to}
-   - AI Score: ${insight.ai_score}/10
-   - Key Issues: ${insightTitles || 'N/A'}
-   - Recommendation: ${insight.actionable_recommendation?.substring(0, 150) || 'N/A'}...`;
+  return `${idx + 1}. Period: ${insight.date_from} to ${insight.date_to} - AI Score: ${insight.ai_score}/10 - Key Issues: ${insightTitles || 'N/A'} - Recommendation: ${insight.actionable_recommendation?.substring(0, 150) || 'N/A'}...`;
 }).join('\n\n')}
 
 **Important:** Consider whether issues from previous analyses have improved, worsened, or remained the same. Acknowledge progress where visible and flag persistent problems.
@@ -347,16 +344,12 @@ ${previousInsights.map((insight, idx) => {
   // Build the comprehensive prompt for Claude
   const prompt = `You are an expert hospitality consultant analysing customer feedback for "${venueName}" from ${dateFrom} to ${dateTo}.
 
-## Overall Performance Summary:
-- **Total feedback submissions:** ${feedbackData.length}
-- **Average rating:** ${avgRating}/5 ⭐
-- **Rating distribution:**
+## Overall Performance Summary: - **Total feedback submissions:** ${feedbackData.length} - **Average rating:** ${avgRating}/5 ⭐ - **Rating distribution:**
   • 5★: ${ratingCounts[5]} (${Math.round((ratingCounts[5] / totalRatingCount) * 100)}%)
   • 4★: ${ratingCounts[4]} (${Math.round((ratingCounts[4] / totalRatingCount) * 100)}%)
   • 3★: ${ratingCounts[3]} (${Math.round((ratingCounts[3] / totalRatingCount) * 100)}%)
   • 2★: ${ratingCounts[2]} (${Math.round((ratingCounts[2] / totalRatingCount) * 100)}%)
-  • 1★: ${ratingCounts[1]} (${Math.round((ratingCounts[1] / totalRatingCount) * 100)}%)
-- **NPS responses:** ${npsData.length}${npsScore !== null ? `
+  • 1★: ${ratingCounts[1]} (${Math.round((ratingCounts[1] / totalRatingCount) * 100)}%) - **NPS responses:** ${npsData.length}${npsScore !== null ? `
   • Promoters (9-10): ${promoters} (${Math.round((promoters / npsScores.length) * 100)}%)
   • Passives (7-8): ${passives} (${Math.round((passives / npsScores.length) * 100)}%)
   • Detractors (0-6): ${detractors} (${Math.round((detractors / npsScores.length) * 100)}%)
@@ -364,9 +357,7 @@ ${previousInsights.map((insight, idx) => {
 
 ## Performance by Category:
 ${questionAnalysis.map((q, idx) =>
-  `${idx + 1}. **${q.question}**
-   - Average rating: ${q.avgRating}/5 (${q.responseCount} responses)
-   - Status: ${parseFloat(q.avgRating) >= 4.0 ? '✅ Strong' : parseFloat(q.avgRating) >= 3.0 ? '⚠️ Needs attention' : '🚨 Critical'}`
+  `${idx + 1}. **${q.question}** - Average rating: ${q.avgRating}/5 (${q.responseCount} responses) - Status: ${parseFloat(q.avgRating) >= 4.0 ? '✅ Strong' : parseFloat(q.avgRating) >= 3.0 ? '⚠️ Needs attention' : '🚨 Critical'}`
 ).join('\n\n')}
 
 ## Detailed Customer Feedback (Priority: Critical Issues First):
@@ -414,29 +405,16 @@ Analyse this feedback data and provide a comprehensive, actionable report in **U
 }
 \`\`\`
 
-**Scoring Guidelines for ai_score (0-10):**
-- **9-10:** Exceptional performance, minimal issues, NPS >70, avg rating >4.5
-- **7-8:** Strong performance, minor issues, NPS 50-70, avg rating 4.0-4.5
-- **5-6:** Good but room for improvement, NPS 20-50, avg rating 3.5-4.0
-- **3-4:** Significant issues present, NPS 0-20, avg rating 3.0-3.5
-- **0-2:** Critical issues, urgent action needed, NPS <0, avg rating <3.0
+**Scoring Guidelines for ai_score (0-10):** - **9-10:** Exceptional performance, minimal issues, NPS >70, avg rating >4.5 - **7-8:** Strong performance, minor issues, NPS 50-70, avg rating 4.0-4.5 - **5-6:** Good but room for improvement, NPS 20-50, avg rating 3.5-4.0 - **3-4:** Significant issues present, NPS 0-20, avg rating 3.0-3.5 - **0-2:** Critical issues, urgent action needed, NPS <0, avg rating <3.0
 
 **Analysis Requirements:**
-1. **critical_insights:** Identify 2-3 key insights. Each insight should have:
-   - title: 4-6 words max
-   - content: ONE sentence (under 20 words)
+1. **critical_insights:** Identify 2-3 key insights. Each insight should have: - title: 4-6 words max - content: ONE sentence (under 20 words)
 2. **strengths:** List 2-3 strengths. Each should be ONE sentence (under 20 words).
 3. **areas_for_improvement:** List 2-3 areas. Each should be ONE sentence (under 20 words).
 4. **actionable_recommendation:** ONE clear sentence with a specific action (under 35 words).
 5. **improvement_tips:** Provide 3-4 specific, actionable tips to improve the AI score. Each tip should be ONE sentence (under 20 words).
 
-**Quality Standards:**
-- BE CONCISE - use bullet-point style, not paragraphs
-- Use specific numbers from the data
-- Reference actual customer feedback when critical
-- Be direct and constructive
-- Use UK English spelling throughout (organisation, analyse, colour, etc.)
-- Keep everything brief and scannable
+**Quality Standards:** - BE CONCISE - use bullet-point style, not paragraphs - Use specific numbers from the data - Reference actual customer feedback when critical - Be direct and constructive - Use UK English spelling throughout (organisation, analyse, colour, etc.) - Keep everything brief and scannable
 
 **IMPORTANT:** Return ONLY the JSON object. No additional text before or after.`;
 

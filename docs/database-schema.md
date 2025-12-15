@@ -20,11 +20,7 @@ CREATE TABLE accounts (
 );
 ```
 
-**Key Fields**:
-- `trial_ends_at`: When the trial period expires
-- `is_paid`: Whether account has active subscription
-- `stripe_customer_id`: Stripe customer reference
-- `stripe_subscription_id`: Active subscription reference
+**Key Fields**: - `trial_ends_at`: When the trial period expires - `is_paid`: Whether account has active subscription - `stripe_customer_id`: Stripe customer reference - `stripe_subscription_id`: Active subscription reference
 
 ### `users`
 User authentication and role assignment.
@@ -40,10 +36,7 @@ CREATE TABLE users (
 );
 ```
 
-**Roles**:
-- `admin`: System administrators with full access
-- `master`: Account owners with billing access
-- `manager`: Venue-specific users with limited access
+**Roles**: - `admin`: System administrators with full access - `master`: Account owners with billing access - `manager`: Venue-specific users with limited access
 
 ### `venues`
 Individual venue information linked to accounts.
@@ -64,10 +57,7 @@ CREATE TABLE venues (
 );
 ```
 
-**Key Features**:
-- Venue-specific timezone support
-- Configurable feedback collection hours
-- Linked to account for billing purposes
+**Key Features**: - Venue-specific timezone support - Configurable feedback collection hours - Linked to account for billing purposes
 
 ### `staff`
 Many-to-many relationship between users and venues.
@@ -85,10 +75,7 @@ CREATE TABLE staff (
 );
 ```
 
-**Purpose**:
-- Links manager users to specific venues
-- Provides staff information for feedback resolution
-- Enforces venue access control for managers
+**Purpose**: - Links manager users to specific venues - Provides staff information for feedback resolution - Enforces venue access control for managers
 
 ### `employees`
 Venue-specific employees (not system users).
@@ -107,10 +94,7 @@ CREATE TABLE employees (
 );
 ```
 
-**Difference from Staff**:
-- Employees are venue-specific records
-- No system login capabilities
-- Can be assigned to resolve feedback via staff proxy
+**Difference from Staff**: - Employees are venue-specific records - No system login capabilities - Can be assigned to resolve feedback via staff proxy
 
 ### `feedback`
 Customer feedback entries with resolution tracking.
@@ -136,18 +120,9 @@ CREATE TABLE feedback (
 );
 ```
 
-**Key Fields**:
-- `session_id`: Groups related feedback from same customer session
-- `rating`: 1-5 star rating
-- `is_actioned`: Whether feedback has been addressed
-- `resolved_by`: Staff member who resolved (must be in staff table)
-- `resolution_type`: How the feedback was handled
-- `dismissed`: Whether feedback was dismissed without action
+**Key Fields**: - `session_id`: Groups related feedback from same customer session - `rating`: 1-5 star rating - `is_actioned`: Whether feedback has been addressed - `resolved_by`: Staff member who resolved (must be in staff table) - `resolution_type`: How the feedback was handled - `dismissed`: Whether feedback was dismissed without action
 
-**Resolution Types**:
-- `staff_resolved`: Negative feedback resolved by staff member
-- `positive_feedback_cleared`: Positive feedback acknowledged
-- `dismissed`: Feedback dismissed as no action needed
+**Resolution Types**: - `staff_resolved`: Negative feedback resolved by staff member - `positive_feedback_cleared`: Positive feedback acknowledged - `dismissed`: Feedback dismissed as no action needed
 
 ### `questions`
 Custom feedback questions per venue.
@@ -165,11 +140,7 @@ CREATE TABLE questions (
 );
 ```
 
-**Features**:
-- Venue-specific custom questions
-- Ordering support for question sequence
-- Multiple question types (rating, text, custom)
-- Active/inactive toggle
+**Features**: - Venue-specific custom questions - Ordering support for question sequence - Multiple question types (rating, text, custom) - Active/inactive toggle
 
 ## Supporting Tables
 
@@ -202,10 +173,7 @@ CREATE TABLE tables (
 );
 ```
 
-**Floor Plan Features**:
-- Visual positioning (x_position, y_position)
-- Zone grouping for organization
-- Unique table numbers per venue
+**Floor Plan Features**: - Visual positioning (x_position, y_position) - Zone grouping for organization - Unique table numbers per venue
 
 ## Data Relationships
 
@@ -225,10 +193,7 @@ accounts (1) ──── (many) venues
 feedback.resolved_by → staff.id → users.id
 ```
 
-**Important**: 
-- `feedback.resolved_by` must reference `staff.id` (not `users.id`)
-- For employee resolutions, use staff member as proxy
-- Positive feedback can have `resolved_by = null`
+**Important**: - `feedback.resolved_by` must reference `staff.id` (not `users.id`) - For employee resolutions, use staff member as proxy - Positive feedback can have `resolved_by = null`
 
 ## Row Level Security (RLS)
 

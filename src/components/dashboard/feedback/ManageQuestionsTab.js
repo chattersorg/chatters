@@ -1,4 +1,4 @@
-// ManageQuestionsTab.js — Current active questions management
+// ManageQuestionsTab.js - Current active questions management
 
 import React from 'react';
 import CurrentQuestions from './CurrentQuestions';

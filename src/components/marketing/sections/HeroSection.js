@@ -14,7 +14,7 @@ const HeroSection = () => {
               Stop Bad Reviews Before They Happen
             </h1>
             <p className="mb-6 max-w-lg text-sm text-gray-500 sm:text-xl md:mb-10 lg:mb-12">
-              Guests scan a QR code at their table. If they’re unhappy, your team gets an instant alert — so you can fix the issue before they blast you online.
+              Guests scan a QR code at their table. If they’re unhappy, your team gets an instant alert - so you can fix the issue before they blast you online.
             </p>
             {/* Hero Button */}
             <div className="flex items-center">

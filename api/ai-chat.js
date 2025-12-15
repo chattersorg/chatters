@@ -119,38 +119,14 @@ export default async function handler(req, res) {
         max_tokens: 1024,
         system: `You are a helpful assistant for "${venueName || 'this venue'}", a hospitality business.
 
-CRITICAL - BREVITY IS MANDATORY:
-- Give SHORT, DIRECT answers. 2-3 sentences max for simple questions.
-- Lead with the answer, not the explanation.
-- Only elaborate if specifically asked for details.
-- NO verbose context or unnecessary background.
-- Example good response: "Ethan Collins is your top performer with 91 resolved interactions and a 10-min average response time."
-- Example bad response: Long paragraphs explaining methodology, comparisons to peers, multiple metrics unprompted.
+CRITICAL - BREVITY IS MANDATORY: - Give SHORT, DIRECT answers. 2-3 sentences max for simple questions. - Lead with the answer, not the explanation. - Only elaborate if specifically asked for details. - NO verbose context or unnecessary background. - Example good response: "Ethan Collins is your top performer with 91 resolved interactions and a 10-min average response time." - Example bad response: Long paragraphs explaining methodology, comparisons to peers, multiple metrics unprompted.
 
-OTHER RULES:
-- Use UK English (organisation, analyse, colour)
-- Reference specific data when available
-- Use bullet points only when listing 3+ items
+OTHER RULES: - Use UK English (organisation, analyse, colour) - Reference specific data when available - Use bullet points only when listing 3+ items
 
-HANDLING MISSING DATA:
-- You CAN access all data types: feedback, NPS, staff, zones, trends. Don't claim you can't.
-- If no data exists for a time period, simply say "No [data type] recorded for [period]."
-- Don't add filler about other data that IS available - just answer the question asked.
-- For absurd dates (before 2020 or future), just say "No data for that period." - don't elaborate.
+HANDLING MISSING DATA: - You CAN access all data types: feedback, NPS, staff, zones, trends. Don't claim you can't. - If no data exists for a time period, simply say "No [data type] recorded for [period]." - Don't add filler about other data that IS available - just answer the question asked. - For absurd dates (before 2020 or future), just say "No data for that period." - don't elaborate.
 
-VISUALISATION CAPABILITY:
-- When the user asks for a graph, chart, or visual, OR when comparing multiple items, you MUST include a visualisation
-- Add the chart block on its own line in your response using this EXACT format (no spaces around the colon):
-  <!--CHART:{"type":"line","title":"Title","data":[{"label":"A","value":4.5},{"label":"B","value":4.2}]}-->
-- Chart types: "line" for trends/changes over time, "bar" for comparing categories/items, "table" for detailed breakdowns
-- The data array should have 2-12 data points with label and value for each
-- Always briefly explain the visualisation in your text too
-- Only ONE visualisation per response
-- Use "bar" charts for: comparing staff, comparing questions, rating distributions
-- Use "line" charts for: weekly trends, daily trends, changes over time
-- Use "table" for: detailed staff stats, question breakdowns with multiple metrics
-- Example bar chart for question comparison: <!--CHART:{"type":"bar","title":"Ratings by Question","data":[{"label":"Food Quality","value":4.5},{"label":"Service","value":4.0},{"label":"Ambience","value":4.2}]}-->
-- Example line chart for trends: <!--CHART:{"type":"line","title":"Weekly Ratings","data":[{"label":"Week 1","value":4.2},{"label":"Week 2","value":4.5}]}-->`,
+VISUALISATION CAPABILITY: - When the user asks for a graph, chart, or visual, OR when comparing multiple items, you MUST include a visualisation - Add the chart block on its own line in your response using this EXACT format (no spaces around the colon):
+  <!--CHART:{"type":"line","title":"Title","data":[{"label":"A","value":4.5},{"label":"B","value":4.2}]}--> - Chart types: "line" for trends/changes over time, "bar" for comparing categories/items, "table" for detailed breakdowns - The data array should have 2-12 data points with label and value for each - Always briefly explain the visualisation in your text too - Only ONE visualisation per response - Use "bar" charts for: comparing staff, comparing questions, rating distributions - Use "line" charts for: weekly trends, daily trends, changes over time - Use "table" for: detailed staff stats, question breakdowns with multiple metrics - Example bar chart for question comparison: <!--CHART:{"type":"bar","title":"Ratings by Question","data":[{"label":"Food Quality","value":4.5},{"label":"Service","value":4.0},{"label":"Ambience","value":4.2}]}--> - Example line chart for trends: <!--CHART:{"type":"line","title":"Weekly Ratings","data":[{"label":"Week 1","value":4.2},{"label":"Week 2","value":4.5}]}-->`,
         messages: [
           // Include conversation history for context (if any)
           ...history.map(h => ({
@@ -1102,12 +1078,7 @@ ${questions.length > 0
         }).join('\n')
       : 'No question data available'}
 
-### Summary Statistics:
-- Total feedback submissions: ${stats.totalFeedback}
-- Average rating: ${stats.avgRating || 'N/A'}/5
-- Rating breakdown: 5★: ${stats.ratingCounts[5]}, 4★: ${stats.ratingCounts[4]}, 3★: ${stats.ratingCounts[3]}, 2★: ${stats.ratingCounts[2]}, 1★: ${stats.ratingCounts[1]}
-- Feedback with comments: ${stats.feedbackWithComments}
-- Low ratings (1-2★): ${stats.lowRatingCount}
+### Summary Statistics: - Total feedback submissions: ${stats.totalFeedback} - Average rating: ${stats.avgRating || 'N/A'}/5 - Rating breakdown: 5★: ${stats.ratingCounts[5]}, 4★: ${stats.ratingCounts[4]}, 3★: ${stats.ratingCounts[3]}, 2★: ${stats.ratingCounts[2]}, 1★: ${stats.ratingCounts[1]} - Feedback with comments: ${stats.feedbackWithComments} - Low ratings (1-2★): ${stats.lowRatingCount}
 `;
   }
 
@@ -1119,10 +1090,7 @@ ${questions.length > 0
   // Add trend analysis if available
   if (trends) {
     context += `
-### Trend Analysis (over ${trends.totalDays} days):
-- First half (${trends.firstHalf.period}): ${trends.firstHalf.count} feedback, ${trends.firstHalf.avgRating}/5 avg
-- Second half (${trends.secondHalf.period}): ${trends.secondHalf.count} feedback, ${trends.secondHalf.avgRating}/5 avg
-- Overall trend: ${trends.trendDirection || 'insufficient data'}
+### Trend Analysis (over ${trends.totalDays} days): - First half (${trends.firstHalf.period}): ${trends.firstHalf.count} feedback, ${trends.firstHalf.avgRating}/5 avg - Second half (${trends.secondHalf.period}): ${trends.secondHalf.count} feedback, ${trends.secondHalf.avgRating}/5 avg - Overall trend: ${trends.trendDirection || 'insufficient data'}
 `;
 
     if (trends.weeklyBreakdown && trends.weeklyBreakdown.length > 0) {
@@ -1300,7 +1268,7 @@ ${questions.length > 0
       context += `${i + 1}. ${s.name}: ${s.count} recognition${s.count !== 1 ? 's' : ''}\n`;
       if (s.messages.length > 0) {
         s.messages.forEach(m => {
-          context += `   - "${m}"\n`;
+          context += ` - "${m}"\n`;
         });
       }
     });

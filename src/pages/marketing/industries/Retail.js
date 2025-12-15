@@ -20,7 +20,7 @@ import Navbar from '../../../components/marketing/layout/Navbar';
 import Footer from '../../../components/marketing/layout/Footer';
 
 // ─────────────────────────────────────────────────────────────
-// SECTION 1 — HERO
+// SECTION 1 - HERO
 // ─────────────────────────────────────────────────────────────
 const Hero = () => (
   <section className="relative pt-32 pb-20 bg-gradient-to-b from-white to-slate-50 overflow-hidden">
@@ -32,11 +32,11 @@ const Hero = () => (
             Retail
           </p>
           <h1 className="text-4xl sm:text-5xl font-bold text-gray-900 leading-tight mb-6">
-            Catch Customer Frustration Before They Walk Out —{' '}
+            Catch Customer Frustration Before They Walk Out  - {' '}
             <span className="text-[#4E74FF]">Not After They Post About It</span>
           </h1>
           <p className="text-xl text-gray-600 mb-8 leading-relaxed">
-            Chatters helps retail teams identify staff issues, product problems, and service bottlenecks — all while customers are still in the store.
+            Chatters helps retail teams identify staff issues, product problems, and service bottlenecks - all while customers are still in the store.
           </p>
           <div className="flex flex-col sm:flex-row gap-4">
             <Link
@@ -83,7 +83,7 @@ const Hero = () => (
 );
 
 // ─────────────────────────────────────────────────────────────
-// SECTION 2 — THE PROBLEM
+// SECTION 2 - THE PROBLEM
 // ─────────────────────────────────────────────────────────────
 const Problem = () => (
   <section className="py-20 bg-slate-900">
@@ -134,7 +134,7 @@ const Problem = () => (
           But these issues rarely surface on the shop floor.
         </p>
         <p className="text-xl text-white font-semibold">
-          Chatters exposes them — instantly.
+          Chatters exposes them - instantly.
         </p>
       </div>
     </div>
@@ -142,7 +142,7 @@ const Problem = () => (
 );
 
 // ─────────────────────────────────────────────────────────────
-// SECTION 3 — WHAT CHATTERS DOES FOR RETAIL
+// SECTION 3 - WHAT CHATTERS DOES FOR RETAIL
 // ─────────────────────────────────────────────────────────────
 const WhatChattersDoesSection = () => {
   const features = [
@@ -201,7 +201,7 @@ const WhatChattersDoesSection = () => {
 };
 
 // ─────────────────────────────────────────────────────────────
-// SECTION 4 — RETAIL SCENARIOS
+// SECTION 4 - RETAIL SCENARIOS
 // ─────────────────────────────────────────────────────────────
 const Scenarios = () => {
   const scenarios = [
@@ -268,7 +268,7 @@ const Scenarios = () => {
 };
 
 // ─────────────────────────────────────────────────────────────
-// SECTION 5 — WHY RETAILERS DEPEND ON CHATTERS
+// SECTION 5 - WHY RETAILERS DEPEND ON CHATTERS
 // ─────────────────────────────────────────────────────────────
 const WhyRetailers = () => {
   const benefits = [
@@ -280,7 +280,7 @@ const WhyRetailers = () => {
     {
       icon: TrendingUp,
       title: 'Improve NPS & loyalty',
-      description: 'Happy customers purchase more — and return.',
+      description: 'Happy customers purchase more - and return.',
     },
     {
       icon: Users,
@@ -330,7 +330,7 @@ const WhyRetailers = () => {
 };
 
 // ─────────────────────────────────────────────────────────────
-// SECTION 6 — A RETAIL STORY IN ACTION
+// SECTION 6 - A RETAIL STORY IN ACTION
 // ─────────────────────────────────────────────────────────────
 const StoryInAction = () => (
   <section className="py-20 bg-slate-50">
@@ -365,7 +365,7 @@ const StoryInAction = () => (
               ))}
             </div>
             <p className="text-lg text-gray-800 italic">
-              "Got great help in the fitting room area — someone came over right away. Really impressed."
+              "Got great help in the fitting room area - someone came over right away. Really impressed."
             </p>
           </div>
 
@@ -379,7 +379,7 @@ const StoryInAction = () => (
 );
 
 // ─────────────────────────────────────────────────────────────
-// SECTION 7 — FINAL CTA
+// SECTION 7 - FINAL CTA
 // ─────────────────────────────────────────────────────────────
 const FinalCTA = () => (
   <section className="py-20 bg-slate-900">
@@ -416,7 +416,7 @@ const RetailPage = () => {
         <title>Retail | Chatters - Real-Time Customer Feedback for Retail Stores</title>
         <meta
           name="description"
-          content="Chatters helps retail teams identify staff issues, product problems, and service bottlenecks — all while customers are still in the store."
+          content="Chatters helps retail teams identify staff issues, product problems, and service bottlenecks - all while customers are still in the store."
         />
         <meta
           name="keywords"
@@ -425,7 +425,7 @@ const RetailPage = () => {
         <meta property="og:title" content="Retail | Chatters" />
         <meta
           property="og:description"
-          content="Catch customer frustration before they walk out — not after they post about it."
+          content="Catch customer frustration before they walk out - not after they post about it."
         />
         <meta property="og:type" content="website" />
         <link rel="canonical" href="https://getchatters.com/industries/retail" />

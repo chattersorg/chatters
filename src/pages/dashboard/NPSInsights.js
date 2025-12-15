@@ -494,7 +494,7 @@ const NPSInsights = () => {
                   )}
                   <div className="absolute inset-0 flex items-center justify-between px-3">
                     <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                      {day.npsScore !== null ? day.npsScore : '—'}
+                      {day.npsScore !== null ? day.npsScore : ' - '}
                     </span>
                     <span className="text-xs text-gray-500 dark:text-gray-400">{day.count} resp.</span>
                   </div>

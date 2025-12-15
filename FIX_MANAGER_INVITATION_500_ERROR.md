@@ -109,20 +109,7 @@ After running the SQL, verify the table exists:
 
 1. Go to "Table Editor" in your Supabase Dashboard
 2. You should see `manager_invitations` in the list of tables
-3. Check that it has these columns:
-   - id (UUID)
-   - email (TEXT)
-   - first_name (TEXT)
-   - last_name (TEXT)
-   - invited_by (UUID)
-   - account_id (UUID)
-   - venue_ids (UUID[])
-   - token (TEXT)
-   - expires_at (TIMESTAMP)
-   - status (TEXT)
-   - created_at (TIMESTAMP)
-   - accepted_at (TIMESTAMP)
-   - updated_at (TIMESTAMP)
+3. Check that it has these columns: - id (UUID) - email (TEXT) - first_name (TEXT) - last_name (TEXT) - invited_by (UUID) - account_id (UUID) - venue_ids (UUID[]) - token (TEXT) - expires_at (TIMESTAMP) - status (TEXT) - created_at (TIMESTAMP) - accepted_at (TIMESTAMP) - updated_at (TIMESTAMP)
 
 ### Step 4: Test Adding a Manager
 

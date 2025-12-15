@@ -28,12 +28,7 @@ const { customerId } = await createStripeCustomer({
 });
 ```
 
-**Result:**
-- ✅ Stripe customer created
-- ✅ No payment method added yet
-- ✅ No subscription created
-- ✅ No charge made
-- ✅ Account has full access during trial
+**Result:** - ✅ Stripe customer created - ✅ No payment method added yet - ✅ No subscription created - ✅ No charge made - ✅ Account has full access during trial
 
 ### Step 2: Customer Adds Payment Method (During Trial)
 
@@ -60,11 +55,7 @@ const { error } = await stripe.confirmSetup({
 });
 ```
 
-**Result:**
-- ✅ Payment method saved to customer
-- ✅ Still no subscription created
-- ✅ Still no charge made
-- ✅ Customer continues trial with peace of mind
+**Result:** - ✅ Payment method saved to customer - ✅ Still no subscription created - ✅ Still no charge made - ✅ Customer continues trial with peace of mind
 
 ### Step 3A: Trial Expires (Automatic Activation)
 
@@ -82,11 +73,7 @@ const { subscriptionId, status } = await activateSubscription({
 console.log(`Subscription ${subscriptionId} is now ${status}`);
 ```
 
-**Result:**
-- ✅ Subscription created using saved payment method
-- ✅ First payment processed
-- ✅ Webhook updates account to `account_type: 'paid'`
-- ✅ Customer continues with seamless access
+**Result:** - ✅ Subscription created using saved payment method - ✅ First payment processed - ✅ Webhook updates account to `account_type: 'paid'` - ✅ Customer continues with seamless access
 
 ### Step 3B: Manual Activation in Stripe
 
@@ -98,10 +85,7 @@ You can also manually activate in Stripe Dashboard:
 4. Choose the saved payment method
 5. Click **"Start subscription"**
 
-**Result:**
-- ✅ Subscription starts immediately
-- ✅ Payment processed
-- ✅ Webhook syncs status to database
+**Result:** - ✅ Subscription starts immediately - ✅ Payment processed - ✅ Webhook syncs status to database
 
 ### Step 3C: Customer Upgrades Early
 
@@ -127,29 +111,15 @@ If trial expires and no payment method is saved:
 
 ## API Endpoints Created
 
-### 1. `/api/setup-payment-method` (NEW)
-- Creates SetupIntent for collecting payment method
-- No charge made
-- Returns `clientSecret` for Stripe Elements
+### 1. `/api/setup-payment-method` (NEW) - Creates SetupIntent for collecting payment method - No charge made - Returns `clientSecret` for Stripe Elements
 
-### 2. `/api/activate-subscription` (NEW)
-- Activates subscription using saved payment method
-- Checks payment method exists before creating subscription
-- Returns subscription ID and status
+### 2. `/api/activate-subscription` (NEW) - Activates subscription using saved payment method - Checks payment method exists before creating subscription - Returns subscription ID and status
 
-### 3. `/api/create-stripe-customer`
-- Creates Stripe customer with metadata
-- Called on account creation
+### 3. `/api/create-stripe-customer` - Creates Stripe customer with metadata - Called on account creation
 
 ## Webhook Events
 
-The webhook now handles:
-
-- `setup_intent.succeeded` - Payment method successfully added
-- `customer.subscription.created` - Subscription activated
-- `customer.subscription.updated` - Status changes
-- `invoice.payment_succeeded` - Payment successful
-- `invoice.payment_failed` - Payment failed
+The webhook now handles: - `setup_intent.succeeded` - Payment method successfully added - `customer.subscription.created` - Subscription activated - `customer.subscription.updated` - Status changes - `invoice.payment_succeeded` - Payment successful - `invoice.payment_failed` - Payment failed
 
 ## Test Account (£1/mo) Flow
 

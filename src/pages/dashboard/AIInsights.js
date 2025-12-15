@@ -451,7 +451,7 @@ const AIInsights = () => {
                   currentInsight.nps_score >= 0 ? 'text-yellow-600 dark:text-yellow-400' :
                   'text-red-600 dark:text-red-400'
                 }`}>
-                  {currentInsight.nps_score !== null ? currentInsight.nps_score : '—'}
+                  {currentInsight.nps_score !== null ? currentInsight.nps_score : ' - '}
                 </div>
                 <div className="text-xs text-gray-500 dark:text-gray-400">
                   {currentInsight.nps_score >= 50 ? 'Excellent' :

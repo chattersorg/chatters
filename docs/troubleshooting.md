@@ -342,10 +342,7 @@ supabase.from('table').select().then(result => {
 });
 ```
 
-### React DevTools
-- Install React Developer Tools browser extension
-- Use Profiler to identify performance issues
-- Inspect component props and state
+### React DevTools - Install React Developer Tools browser extension - Use Profiler to identify performance issues - Inspect component props and state
 
 ### Network Debugging
 ```javascript
@@ -387,14 +384,7 @@ setInterval(() => {
 5. Verify database state matches expectations
 
 ### Information to Include
-When reporting issues, include:
-- **Error messages**: Full error text and stack traces
-- **User role**: admin/master/manager
-- **Browser**: Chrome/Safari/Firefox + version
-- **Steps to reproduce**: Exact sequence that causes issue
-- **Expected vs actual behavior**
-- **Database state**: Relevant table data
-- **Environment**: Development/Production
+When reporting issues, include: - **Error messages**: Full error text and stack traces - **User role**: admin/master/manager - **Browser**: Chrome/Safari/Firefox + version - **Steps to reproduce**: Exact sequence that causes issue - **Expected vs actual behavior** - **Database state**: Relevant table data - **Environment**: Development/Production
 
 ---
 

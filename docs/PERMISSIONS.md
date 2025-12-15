@@ -121,30 +121,16 @@ There are three user roles in Chatters:
 These are predefined templates that cannot be modified:
 
 #### Viewer
-Read-only access to feedback and reports.
-- `feedback.view`, `questions.view`, `reports.view`, `nps.view`
-- `staff.view`, `staff.leaderboard`, `venue.view`, `floorplan.view`
-- `qr.view`, `ai.insights`, `reviews.view`, `multivenue.view`
+Read-only access to feedback and reports. - `feedback.view`, `questions.view`, `reports.view`, `nps.view` - `staff.view`, `staff.leaderboard`, `venue.view`, `floorplan.view` - `qr.view`, `ai.insights`, `reviews.view`, `multivenue.view`
 
 #### Editor
-Can respond to feedback and manage staff.
-- Everything in Viewer, plus:
-- `feedback.respond`, `feedback.export`
-- `reports.export`, `nps.export`
-- `staff.edit`, `staff.recognition`
-- `qr.generate`, `ai.chat`, `reviews.respond`
+Can respond to feedback and manage staff. - Everything in Viewer, plus: - `feedback.respond`, `feedback.export` - `reports.export`, `nps.export` - `staff.edit`, `staff.recognition` - `qr.generate`, `ai.chat`, `reviews.respond`
 
 #### Manager
-Full venue management except billing and permissions.
-- Everything in Editor, plus:
-- `feedback.delete`, `questions.edit`, `reports.create`
-- `managers.view`, `managers.invite`
-- `venue.edit`, `venue.branding`, `venue.integrations`
-- `floorplan.edit`, `ai.regenerate`, `multivenue.compare`
+Full venue management except billing and permissions. - Everything in Editor, plus: - `feedback.delete`, `questions.edit`, `reports.create` - `managers.view`, `managers.invite` - `venue.edit`, `venue.branding`, `venue.integrations` - `floorplan.edit`, `ai.regenerate`, `multivenue.compare`
 
 #### Admin
-Full access including billing and user management.
-- All permissions
+Full access including billing and user management. - All permissions
 
 ### Custom Templates
 
@@ -334,14 +320,8 @@ await supabase
   });
 ```
 
-## Default Behavior
-
-- **No permissions assigned**: Managers default to the `viewer` role template
-- **Master/Admin users**: Always have full access (bypass permission checks)
-- **New managers**: Start with viewer permissions until explicitly changed
+## Default Behavior - **No permissions assigned**: Managers default to the `viewer` role template - **Master/Admin users**: Always have full access (bypass permission checks) - **New managers**: Start with viewer permissions until explicitly changed
 
 ## Migrations
 
-The permissions system was created in:
-- `20251203000000_create_permissions_system.sql` - Initial schema and data
-- `20251203000001_remove_venue_specific_permissions.sql` - Removed venue-specific permissions (now account-wide only)
+The permissions system was created in: - `20251203000000_create_permissions_system.sql` - Initial schema and data - `20251203000001_remove_venue_specific_permissions.sql` - Removed venue-specific permissions (now account-wide only)

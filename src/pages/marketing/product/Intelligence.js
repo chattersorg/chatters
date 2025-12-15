@@ -16,7 +16,7 @@ import {
 import Navbar from '../../../components/marketing/layout/Navbar';
 import Footer from '../../../components/marketing/layout/Footer';
 
-// SECTION 1 — HERO
+// SECTION 1 - HERO
 const Hero = () => {
   return (
     <section className="bg-white py-20 lg:py-24">
@@ -28,11 +28,11 @@ const Hero = () => {
             </p>
 
             <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-gray-900 leading-tight mb-6">
-              Understand What Guests Mean — Not Just What They Rate
+              Understand What Guests Mean - Not Just What They Rate
             </h1>
 
             <p className="text-xl text-gray-600 mb-8 leading-relaxed">
-              Chatters Intelligence analyses comments and sentiment in real time — helping you understand context, emotion, and patterns hidden inside guest feedback.
+              Chatters Intelligence analyses comments and sentiment in real time - helping you understand context, emotion, and patterns hidden inside guest feedback.
             </p>
 
             <div className="flex flex-col sm:flex-row gap-4">
@@ -138,7 +138,7 @@ const Hero = () => {
   );
 };
 
-// SECTION 2 — THE PROBLEM
+// SECTION 2 - THE PROBLEM
 const Problem = () => {
   const items = [
     '4 stars but frustrated about slow mains',
@@ -187,7 +187,7 @@ const Problem = () => {
   );
 };
 
-// SECTION 3 — WHAT IT UNDERSTANDS
+// SECTION 3 - WHAT IT UNDERSTANDS
 const WhatItUnderstands = () => {
   const features = [
     {
@@ -208,7 +208,7 @@ const WhatItUnderstands = () => {
     {
       icon: Sparkles,
       title: 'Hidden opportunities',
-      description: 'Finds positive moments guests loved — and staff who consistently delight.'
+      description: 'Finds positive moments guests loved - and staff who consistently delight.'
     },
     {
       icon: AlertTriangle,
@@ -249,7 +249,7 @@ const WhatItUnderstands = () => {
   );
 };
 
-// SECTION 4 — HOW IT WORKS
+// SECTION 4 - HOW IT WORKS
 const HowItWorks = () => {
   const steps = [
     {
@@ -260,12 +260,12 @@ const HowItWorks = () => {
     {
       number: '2',
       title: 'Chatters analyses sentiment & meaning',
-      description: 'Positive, neutral, or negative — plus category tagging.',
+      description: 'Positive, neutral, or negative - plus category tagging.',
     },
     {
       number: '3',
       title: 'Patterns appear instantly',
-      description: 'Slow service, cold food, noise issues, rude staff — whatever guests mention.',
+      description: 'Slow service, cold food, noise issues, rude staff - whatever guests mention.',
     },
     {
       number: '4',
@@ -315,7 +315,7 @@ const HowItWorks = () => {
   );
 };
 
-// SECTION 5 — WHY OPERATORS DEPEND ON IT
+// SECTION 5 - WHY OPERATORS DEPEND ON IT
 const WhyOperators = () => {
   const benefits = [
     {
@@ -370,7 +370,7 @@ const WhyOperators = () => {
   );
 };
 
-// SECTION 6 — FEATURES
+// SECTION 6 - FEATURES
 const Features = () => {
   const features = [
     {
@@ -434,7 +434,7 @@ const Features = () => {
   );
 };
 
-// SECTION 7 — IN ACTION
+// SECTION 7 - IN ACTION
 const InAction = () => {
   return (
     <section className="bg-white py-20 lg:py-24">
@@ -485,7 +485,7 @@ const InAction = () => {
               </div>
 
               <p className="text-lg text-gray-800 italic">
-                "Food came out fast and hot tonight — much better!"
+                "Food came out fast and hot tonight - much better!"
               </p>
             </div>
           </div>
@@ -495,7 +495,7 @@ const InAction = () => {
   );
 };
 
-// SECTION 8 — TESTIMONIAL
+// SECTION 8 - TESTIMONIAL
 const Testimonial = () => {
   return (
     <section className="bg-gray-50 py-20 lg:py-24">
@@ -520,7 +520,7 @@ const Testimonial = () => {
   );
 };
 
-// SECTION 9 — FINAL CTA
+// SECTION 9 - FINAL CTA
 const FinalCTA = () => {
   return (
     <section className="bg-slate-900 py-20 lg:py-24">
@@ -559,14 +559,14 @@ const IntelligencePage = () => {
         <title>Chatters Intelligence | Understand Guest Sentiment | Chatters</title>
         <meta
           name="description"
-          content="Understand what guests mean — not just what they rate. Chatters Intelligence analyses comments and sentiment in real time to reveal context, emotion, and patterns."
+          content="Understand what guests mean - not just what they rate. Chatters Intelligence analyses comments and sentiment in real time to reveal context, emotion, and patterns."
         />
         <meta
           name="keywords"
           content="sentiment analysis, guest feedback intelligence, hospitality AI, comment analysis, feedback patterns, guest sentiment"
         />
         <meta property="og:title" content="Chatters Intelligence | Chatters" />
-        <meta property="og:description" content="Understand what guests mean — not just what they rate. Real-time sentiment analysis." />
+        <meta property="og:description" content="Understand what guests mean - not just what they rate. Real-time sentiment analysis." />
         <meta property="og:type" content="website" />
         <link rel="canonical" href="https://getchatters.com/analytics/intelligence" />
       </Helmet>

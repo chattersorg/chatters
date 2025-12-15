@@ -96,7 +96,7 @@ function generateRecognitionEmail(
                   "${personalMessage}"
                 </p>
                 <p style="margin: 12px 0 0 0; color: #6b7280; font-size: 14px;">
-                  — ${managerName}
+                  - ${managerName}
                 </p>
               </div>
               ` : ''}

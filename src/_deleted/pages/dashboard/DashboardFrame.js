@@ -231,7 +231,7 @@ const UpdatedDashboardFrame = ({ children }) => {
 
         {/* Right: Kiosk link + Venue Switcher + Avatar + Mobile Menu Button */}
         <div className="flex items-center gap-2 md:gap-4">
-          {/* Open Kiosk (desktop only) — to the LEFT of the venue switcher */}
+          {/* Open Kiosk (desktop only) - to the LEFT of the venue switcher */}
           <Button
             variant="outline"
             size="sm"

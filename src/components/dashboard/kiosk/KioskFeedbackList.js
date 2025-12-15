@@ -23,7 +23,7 @@ const groupBySession = (rows) => {
 
     const entry = map.get(sid) || {
       session_id: sid,
-      table_number: r.table_number ?? r.tableNumber ?? '—',
+      table_number: r.table_number ?? r.tableNumber ?? ' - ',
       created_at: r.created_at,
       items_count: 0,
       ratings: [],

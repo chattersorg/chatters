@@ -4,9 +4,7 @@
 
 Chatters is a React SaaS platform designed for hospitality venues (restaurants, pubs, hotels, events, retail) to capture real-time customer feedback, resolve issues before they become negative reviews, track staff performance, and improve customer satisfaction.
 
-The platform serves venues through a dual-domain architecture:
-- Marketing site: Main domain (getchatters.com)
-- Dashboard app: Subdomain (my.getchatters.com)
+The platform serves venues through a dual-domain architecture: - Marketing site: Main domain (getchatters.com) - Dashboard app: Subdomain (my.getchatters.com)
 
 ## WHY IT HELPS
 
@@ -54,113 +52,31 @@ Chatters solves critical problems for hospitality venues:
 ## DASHBOARD PAGES
 
 ### CORE DASHBOARD (/dashboard)
-Main overview with:
-- Personalized greeting with time-of-day detection (Good morning/afternoon/evening)
-- Real-time stats with 7-day trend sparkline graphs showing:
-  - Today's Sessions (with trend indicator)
-  - Satisfaction Score (with trend indicator)
-  - Average Response Time (with trend indicator)
-  - Completion Rate (with trend indicator)
-- Additional overview metrics:
-  - Active Alerts (requiring attention)
-  - Resolved Today (issues closed)
-  - Current Activity (traffic level)
-  - Today's Peak (busiest time)
-- Multi-venue overview tiles (up to 3 customizable metric tiles)
-- Google/TripAdvisor rating trends
-- Recent activity feed (last 24 hours)
-- Real-time notifications for assistance requests
+Main overview with: - Personalized greeting with time-of-day detection (Good morning/afternoon/evening) - Real-time stats with 7-day trend sparkline graphs showing: - Today's Sessions (with trend indicator) - Satisfaction Score (with trend indicator) - Average Response Time (with trend indicator) - Completion Rate (with trend indicator) - Additional overview metrics: - Active Alerts (requiring attention) - Resolved Today (issues closed) - Current Activity (traffic level) - Today's Peak (busiest time) - Multi-venue overview tiles (up to 3 customizable metric tiles) - Google/TripAdvisor rating trends - Recent activity feed (last 24 hours) - Real-time notifications for assistance requests
 
-### FEEDBACK MANAGEMENT
-- /feedback/qr - QR code generator and sharing tools
-- /feedback/questions - Question management (up to 5 active, drag-to-reorder)
-- /feedback/all - All feedback submissions view
-- /feedbackfeed - Live feed of customer feedback with text comments
+### FEEDBACK MANAGEMENT - /feedback/qr - QR code generator and sharing tools - /feedback/questions - Question management (up to 5 active, drag-to-reorder) - /feedback/all - All feedback submissions view - /feedbackfeed - Live feed of customer feedback with text comments
 
-### REPORTS & ANALYTICS
-- /reports/feedback - Daily feedback breakdown, ratings distribution, completion rates
-- /reports/performance - Performance metrics and trends over time
-- /reports/impact - Business impact analysis
-- /reports/insights - Customer insights and pattern detection
-- /reports/metrics - Key metrics dashboard
-- /reports/nps - Net Promoter Score analytics with trend charts
-- /reports/builder - Custom report builder
+### REPORTS & ANALYTICS - /reports/feedback - Daily feedback breakdown, ratings distribution, completion rates - /reports/performance - Performance metrics and trends over time - /reports/impact - Business impact analysis - /reports/insights - Customer insights and pattern detection - /reports/metrics - Key metrics dashboard - /reports/nps - Net Promoter Score analytics with trend charts - /reports/builder - Custom report builder
 
-### STAFF MANAGEMENT
-- /staff/leaderboard - Staff performance rankings with feedback resolution counts, recognition email system, CSV export
-- /staff/employees - Employee database management
-- /staff/managers - Manager access control
-- /staff/roles - Role management
-- /staff/locations - Location assignments
-- /staff/recognition - Recognition history
+### STAFF MANAGEMENT - /staff/leaderboard - Staff performance rankings with feedback resolution counts, recognition email system, CSV export - /staff/employees - Employee database management - /staff/managers - Manager access control - /staff/roles - Role management - /staff/locations - Location assignments - /staff/recognition - Recognition history
 
-### SETTINGS
-- /settings/venues - Venue information (name, address, contact, operating hours)
-- /settings/feedback - Feedback collection settings:
-  - Review platform links (Google, TripAdvisor)
-  - Session timeout (1-24 hours)
-  - Feedback collection hours (day/time restrictions)
-  - NPS email settings (delay, cooldown, custom question)
-  - Co-resolver feature toggle (enable/disable collaborative feedback resolution)
-- /settings/branding - Visual customization:
-  - Logo upload
-  - Color scheme (primary, background, text, button text)
-  - Assistance message customization (title, text, icon)
-  - Thank you message customization (title, text, icon)
-- /settings/integrations - Third-party connections
+### SETTINGS - /settings/venues - Venue information (name, address, contact, operating hours) - /settings/feedback - Feedback collection settings: - Review platform links (Google, TripAdvisor) - Session timeout (1-24 hours) - Feedback collection hours (day/time restrictions) - NPS email settings (delay, cooldown, custom question) - Co-resolver feature toggle (enable/disable collaborative feedback resolution) - /settings/branding - Visual customization: - Logo upload - Color scheme (primary, background, text, button text) - Assistance message customization (title, text, icon) - Thank you message customization (title, text, icon) - /settings/integrations - Third-party connections
 
-### ACCOUNT MANAGEMENT
-- /account/profile - User profile settings with dark mode toggle
-- /account/billing - Subscription management (Stripe integration)
+### ACCOUNT MANAGEMENT - /account/profile - User profile settings with dark mode toggle - /account/billing - Subscription management (Stripe integration)
 
-### SPECIAL FEATURES
-- /floorplan - Interactive floor plan designer:
-  - Zone creation and management
-  - Drag-and-drop table placement
-  - Multiple table shapes (square, circle, long)
-  - Table resizing capabilities
-  - Desktop-only feature
-
-- /kiosk - Staff kiosk mode:
-  - Priority queue (urgent feedback first, then assistance)
-  - Real-time floor plan with color-coded tables
-  - Zone-based navigation
-  - Feedback resolution tracking
-  - Manual navigation (no auto-return)
-
-- /reviews - Google Reviews integration (requires API approval)
+### SPECIAL FEATURES - /floorplan - Interactive floor plan designer: - Zone creation and management - Drag-and-drop table placement - Multiple table shapes (square, circle, long) - Table resizing capabilities - Desktop-only feature - /kiosk - Staff kiosk mode: - Priority queue (urgent feedback first, then assistance) - Real-time floor plan with color-coded tables - Zone-based navigation - Feedback resolution tracking - Manual navigation (no auto-return) - /reviews - Google Reviews integration (requires API approval)
 
 ## DARK MODE FEATURE
 
 The platform includes a comprehensive dark mode implementation:
 
-### HOW IT WORKS
-- Toggle location: Account Profile page (/account/profile) under "Appearance" section
-- Toggle interface: Custom switch with Moon/Sun icons indicating current mode
-- State persistence: Preference saved to localStorage and persists across sessions
-- System-wide application: Dark mode affects all pages and components throughout the dashboard
+### HOW IT WORKS - Toggle location: Account Profile page (/account/profile) under "Appearance" section - Toggle interface: Custom switch with Moon/Sun icons indicating current mode - State persistence: Preference saved to localStorage and persists across sessions - System-wide application: Dark mode affects all pages and components throughout the dashboard
 
-### TECHNICAL IMPLEMENTATION
-- Uses React Context API (DarkModeContext) for global state management
-- Tailwind CSS dark mode classes (dark:) applied throughout UI
-- Automatic HTML class manipulation (adds/removes 'dark' class on document root)
-- Initial state detection from localStorage on page load
+### TECHNICAL IMPLEMENTATION - Uses React Context API (DarkModeContext) for global state management - Tailwind CSS dark mode classes (dark:) applied throughout UI - Automatic HTML class manipulation (adds/removes 'dark' class on document root) - Initial state detection from localStorage on page load
 
-### COLOR SCHEME
-- Light Mode: White backgrounds, gray text, blue accents
-- Dark Mode: Dark gray backgrounds (gray-900), white text, preserved blue accents
-- Borders: Adapts from gray-200 to gray-800
-- Hover states: Adjusted for visibility in both modes
-- Charts: Maintains readability with appropriate color adjustments
+### COLOR SCHEME - Light Mode: White backgrounds, gray text, blue accents - Dark Mode: Dark gray backgrounds (gray-900), white text, preserved blue accents - Borders: Adapts from gray-200 to gray-800 - Hover states: Adjusted for visibility in both modes - Charts: Maintains readability with appropriate color adjustments
 
-### AFFECTED COMPONENTS
-- Dashboard layouts and cards
-- Navigation sidebar and header
-- Settings pages
-- Report pages and charts
-- Modals and dropdowns
-- Form inputs and buttons
-- Tables and data grids
+### AFFECTED COMPONENTS - Dashboard layouts and cards - Navigation sidebar and header - Settings pages - Report pages and charts - Modals and dropdowns - Form inputs and buttons - Tables and data grids
 
 ## SPARKLINE METRIC CARDS (7-DAY TRENDS)
 
@@ -172,331 +88,92 @@ The dashboard overview now features sparkline graphs showing 7-day trends for ke
 3. **Average Response Time**: Tracks how quickly staff resolve issues
 4. **Completion Rate**: Shows percentage of resolved feedback over time
 
-### SPARKLINE FEATURES
-- 7-day historical data visualization
-- Compact inline graphs (mini line charts)
-- Daily data points calculated from midnight to midnight
-- Trend indicators showing percentage change from yesterday
-- Color-coded trend direction (green for up, red for down, gray for neutral)
-- Real-time data updates matching main dashboard refresh
+### SPARKLINE FEATURES - 7-day historical data visualization - Compact inline graphs (mini line charts) - Daily data points calculated from midnight to midnight - Trend indicators showing percentage change from yesterday - Color-coded trend direction (green for up, red for down, gray for neutral) - Real-time data updates matching main dashboard refresh
 
-### DATA CALCULATION
-- Sessions: Unique feedback sessions per day
-- Satisfaction: Average of all ratings (1-5 stars) per day
-- Response Time: Average time from creation to resolution (in minutes)
-- Completion Rate: Percentage of feedback + assistance requests resolved per day
+### DATA CALCULATION - Sessions: Unique feedback sessions per day - Satisfaction: Average of all ratings (1-5 stars) per day - Response Time: Average time from creation to resolution (in minutes) - Completion Rate: Percentage of feedback + assistance requests resolved per day
 
-### VISUAL DESIGN
-- Blue line graphs using Recharts library
-- Responsive container sizing
-- No data point markers for cleaner appearance
-- No animation for instant rendering
-- Integrated within metric card layout
+### VISUAL DESIGN - Blue line graphs using Recharts library - Responsive container sizing - No data point markers for cleaner appearance - No animation for instant rendering - Integrated within metric card layout
 
 ## CUSTOMIZABLE MULTI-VENUE TILES
 
 Users with multiple venues can add up to 3 customizable metric tiles to their dashboard:
 
-### TILE MANAGEMENT
-- Add Tile: Click "+" button to open metric selector modal
-- Change Metric: Click Settings icon on existing tile
-- Remove Tile: Click X icon on tile
-- Position: Tiles stored with position index, auto-reorder on removal
-- Persistence: User preferences saved to user_dashboard_tiles table
+### TILE MANAGEMENT - Add Tile: Click "+" button to open metric selector modal - Change Metric: Click Settings icon on existing tile - Remove Tile: Click X icon on tile - Position: Tiles stored with position index, auto-reorder on removal - Persistence: User preferences saved to user_dashboard_tiles table
 
 ### AVAILABLE METRICS (69+ Options)
 
-**NPS & Satisfaction (5 metrics)**
-- NPS Score Chart: Net Promoter Score with breakdown by category
-- NPS Trend Over Time: Track NPS changes across selected period
-- Venue NPS Comparison: Compare NPS scores across venues
-- Average Satisfaction Score: Average rating across all feedback
-- Satisfaction Distribution: Breakdown of ratings (1-5 stars)
+**NPS & Satisfaction (5 metrics)** - NPS Score Chart: Net Promoter Score with breakdown by category - NPS Trend Over Time: Track NPS changes across selected period - Venue NPS Comparison: Compare NPS scores across venues - Average Satisfaction Score: Average rating across all feedback - Satisfaction Distribution: Breakdown of ratings (1-5 stars)
 
-**Feedback Volume (6 metrics)**
-- Total Feedback Count: Number of feedback sessions
-- Overall Feedback Chart: Comprehensive metrics with multiple chart views
-- Feedback by Venue: Compare total volume across venues
-- Feedback Trend: Track feedback volume over time
-- Average Response Time: How quickly staff resolve feedback
-- Response Rate: Percentage of feedback receiving response
+**Feedback Volume (6 metrics)** - Total Feedback Count: Number of feedback sessions - Overall Feedback Chart: Comprehensive metrics with multiple chart views - Feedback by Venue: Compare total volume across venues - Feedback Trend: Track feedback volume over time - Average Response Time: How quickly staff resolve feedback - Response Rate: Percentage of feedback receiving response
 
-**Resolution & Actions (6 metrics)**
-- Total Resolved Feedback: Sessions that have been actioned
-- Resolution Rate: Percentage of feedback marked as resolved (with progress bars)
-- Resolution by Venue: Compare resolution rates across venues
-- Unresolved Alerts: Urgent feedback requiring immediate attention
-- Pending Feedback: Feedback awaiting action or response
+**Resolution & Actions (6 metrics)** - Total Resolved Feedback: Sessions that have been actioned - Resolution Rate: Percentage of feedback marked as resolved (with progress bars) - Resolution by Venue: Compare resolution rates across venues - Unresolved Alerts: Urgent feedback requiring immediate attention - Pending Feedback: Feedback awaiting action or response
 
-**Staff Performance (5 metrics)**
-- Top Staff Member: Staff with most resolutions
-- Staff Leaderboard: Top 5 staff by resolution count
-- Staff Performance by Venue: Compare staff activity across venues
-- Staff Recognition Count: Number of positive mentions
-- Average Staff Rating: Overall performance rating
+**Staff Performance (5 metrics)** - Top Staff Member: Staff with most resolutions - Staff Leaderboard: Top 5 staff by resolution count - Staff Performance by Venue: Compare staff activity across venues - Staff Recognition Count: Number of positive mentions - Average Staff Rating: Overall performance rating
 
-**Venue Performance (4 metrics)**
-- Multi-Venue Overview: Side-by-side performance comparison
-- Top Performing Venue: Highest satisfaction score
-- Venue Trend Comparison: Compare trends over time
-- Venue Activity Heatmap: Visual representation of feedback volume
+**Venue Performance (4 metrics)** - Multi-Venue Overview: Side-by-side performance comparison - Top Performing Venue: Highest satisfaction score - Venue Trend Comparison: Compare trends over time - Venue Activity Heatmap: Visual representation of feedback volume
 
-**Time-Based Analytics (3 metrics)**
-- Peak Feedback Hours: Busiest times for feedback
-- Day-by-Day Comparison: Performance across days of week
-- Hourly Breakdown: Feedback and satisfaction by hour
+**Time-Based Analytics (3 metrics)** - Peak Feedback Hours: Busiest times for feedback - Day-by-Day Comparison: Performance across days of week - Hourly Breakdown: Feedback and satisfaction by hour
 
-**Sentiment & Issues (4 metrics)**
-- Sentiment Analysis: Positive, neutral, negative breakdown
-- Top Issues: Most common feedback topics
-- Areas for Improvement: Venues needing attention
-- Positive Highlights: Most praised aspects
+**Sentiment & Issues (4 metrics)** - Sentiment Analysis: Positive, neutral, negative breakdown - Top Issues: Most common feedback topics - Areas for Improvement: Venues needing attention - Positive Highlights: Most praised aspects
 
-**External Reviews (3 metrics)**
-- Google Rating: Current Google review rating with change indicator
-- TripAdvisor Rating: Current TripAdvisor rating with change indicator
-- External Review Comparison: Compare Google & TripAdvisor across venues
+**External Reviews (3 metrics)** - Google Rating: Current Google review rating with change indicator - TripAdvisor Rating: Current TripAdvisor rating with change indicator - External Review Comparison: Compare Google & TripAdvisor across venues
 
-### METRIC SELECTOR MODAL
-- Category filtering: Filter metrics by category (NPS, Feedback, Staff, etc.)
-- Search-like interface: Browse all available metrics
-- Visual selection: Icon + description for each metric
-- Duplicate prevention: Cannot add same metric twice
-- Edit mode: Update existing tiles or add new ones
+### METRIC SELECTOR MODAL - Category filtering: Filter metrics by category (NPS, Feedback, Staff, etc.) - Search-like interface: Browse all available metrics - Visual selection: Icon + description for each metric - Duplicate prevention: Cannot add same metric twice - Edit mode: Update existing tiles or add new ones
 
-### TILE FEATURES
-- Date range filtering: Apply time period to all tiles
-- Venue breakdown: See per-venue stats within each tile
-- Color-coded performance: Visual indicators (progress bars, badges)
-- Real-time updates: Refresh with dashboard data
-- Responsive design: Adapts to screen size
-- Dark mode support: Full dark mode compatibility
+### TILE FEATURES - Date range filtering: Apply time period to all tiles - Venue breakdown: See per-venue stats within each tile - Color-coded performance: Visual indicators (progress bars, badges) - Real-time updates: Refresh with dashboard data - Responsive design: Adapts to screen size - Dark mode support: Full dark mode compatibility
 
-### DATA AGGREGATION
-- Cross-venue calculations: Aggregate data from all user venues
-- Smart ranking: Sort venues by performance (highest first)
-- Performance indicators: Labels like "Excellent", "Good", "Fair", "Poor"
-- Activity levels: "Very High", "High", "Medium", "Low" classifications
-- Percentage calculations: Automatic percentage and ratio computations
+### DATA AGGREGATION - Cross-venue calculations: Aggregate data from all user venues - Smart ranking: Sort venues by performance (highest first) - Performance indicators: Labels like "Excellent", "Good", "Fair", "Poor" - Activity levels: "Very High", "High", "Medium", "Low" classifications - Percentage calculations: Automatic percentage and ratio computations
 
 ## KEY FEATURES IN DETAIL
 
-### REAL-TIME FEEDBACK COLLECTION
-- QR code-based feedback system
-- Star ratings (1-5) for each question
-- Optional free-text comments
-- Table number selection (dropdown or manual entry)
-- Email collection for NPS surveys (optional)
-- Session-based tracking with UUIDs
-- Mobile-optimized customer interface
-- Time-restricted availability (configurable collection hours)
+### REAL-TIME FEEDBACK COLLECTION - QR code-based feedback system - Star ratings (1-5) for each question - Optional free-text comments - Table number selection (dropdown or manual entry) - Email collection for NPS surveys (optional) - Session-based tracking with UUIDs - Mobile-optimized customer interface - Time-restricted availability (configurable collection hours)
 
-### ASSISTANCE REQUEST SYSTEM
-- Customers can request help without leaving feedback
-- Real-time notifications to staff (toast alerts)
-- Status tracking (pending → acknowledged → resolved)
-- Staff assignment tracking
-- Resolution notes
-- Priority display in kiosk (urgent requests shown first)
+### ASSISTANCE REQUEST SYSTEM - Customers can request help without leaving feedback - Real-time notifications to staff (toast alerts) - Status tracking (pending → acknowledged → resolved) - Staff assignment tracking - Resolution notes - Priority display in kiosk (urgent requests shown first)
 
-### QUESTION MANAGEMENT
-- Up to 5 active questions per venue
-- Drag-and-drop reordering interface
-- Question archive system (deactivate without deleting)
-- Suggested questions library
-- Character limit validation (100 chars max)
-- Duplicate detection
+### QUESTION MANAGEMENT - Up to 5 active questions per venue - Drag-and-drop reordering interface - Question archive system (deactivate without deleting) - Suggested questions library - Character limit validation (100 chars max) - Duplicate detection
 
-### STAFF PERFORMANCE TRACKING
-- Individual staff resolution metrics
-- Feedback handling statistics (including co-resolver credits)
-- Assistance request completion counts
-- Leaderboard rankings (based on total resolutions including co-resolved)
-- Recognition email system
-- CSV data export for payroll/HR integration
-- Time-period filtering (daily, weekly, monthly)
-- Separate tracking: resolved vs co-resolved counts
+### STAFF PERFORMANCE TRACKING - Individual staff resolution metrics - Feedback handling statistics (including co-resolver credits) - Assistance request completion counts - Leaderboard rankings (based on total resolutions including co-resolved) - Recognition email system - CSV data export for payroll/HR integration - Time-period filtering (daily, weekly, monthly) - Separate tracking: resolved vs co-resolved counts
 
-### NPS (NET PROMOTER SCORE)
-- Email-based survey system
-- Automated send scheduling (12/24/36 hour delays)
-- NPS score calculation (-100 to +100)
-- Promoters/Passives/Detractors breakdown
-- Response rate tracking
-- Email cooldown period (prevents spam)
-- Trend analysis over time
-- Recent responses table
+### NPS (NET PROMOTER SCORE) - Email-based survey system - Automated send scheduling (12/24/36 hour delays) - NPS score calculation (-100 to +100) - Promoters/Passives/Detractors breakdown - Response rate tracking - Email cooldown period (prevents spam) - Trend analysis over time - Recent responses table
 
-### MULTI-VENUE SUPPORT
-- Account-level grouping
-- Cross-venue analytics and comparisons via customizable metric tiles
-- Centralized management dashboard
-- Venue switching interface with localStorage persistence
-- Context-aware navigation
-- Aggregate statistics across all locations
-- Multi-venue greeting showing total venue count
-- Date range filtering for all multi-venue tiles
-- Per-venue breakdowns within metric cards
+### MULTI-VENUE SUPPORT - Account-level grouping - Cross-venue analytics and comparisons via customizable metric tiles - Centralized management dashboard - Venue switching interface with localStorage persistence - Context-aware navigation - Aggregate statistics across all locations - Multi-venue greeting showing total venue count - Date range filtering for all multi-venue tiles - Per-venue breakdowns within metric cards
 
-### BRANDING & CUSTOMIZATION
-- Custom logo upload (stored in Supabase Storage)
-- Primary brand color picker
-- Background color customization
-- Text color customization
-- Button text color customization
-- Live preview in feedback forms
-- Custom assistance message (title, text, icon)
-- Custom thank you message (title, text, icon)
-- Icon library (hand-heart, bell, user-check, sparkles, check-circle, thumbs-up, heart, smile, party-popper, star)
+### BRANDING & CUSTOMIZATION - Custom logo upload (stored in Supabase Storage) - Primary brand color picker - Background color customization - Text color customization - Button text color customization - Live preview in feedback forms - Custom assistance message (title, text, icon) - Custom thank you message (title, text, icon) - Icon library (hand-heart, bell, user-check, sparkles, check-circle, thumbs-up, heart, smile, party-popper, star)
 
-### ANALYTICS & REPORTING
-- Total sessions and response counts
-- Average satisfaction ratings across all questions
-- Rating distribution charts (1-5 stars)
-- Completion rates
-- Action tracking (resolved vs unresolved feedback)
-- Low score alerts (ratings ≤2 stars)
-- Time-based filtering (today, yesterday, 7/14/30 days, all-time)
-- Google & TripAdvisor rating trends
-- Historical rating change tracking
-- Staff performance comparisons
-- Export to CSV
+### ANALYTICS & REPORTING - Total sessions and response counts - Average satisfaction ratings across all questions - Rating distribution charts (1-5 stars) - Completion rates - Action tracking (resolved vs unresolved feedback) - Low score alerts (ratings ≤2 stars) - Time-based filtering (today, yesterday, 7/14/30 days, all-time) - Google & TripAdvisor rating trends - Historical rating change tracking - Staff performance comparisons - Export to CSV
 
-### INTEGRATIONS
-- Stripe for subscription payments (£149/month or £119/year)
-- Resend for transactional emails
-- Google Business Profile API (OAuth2, review links, rating sync)
-- TripAdvisor API (location linking, review links)
-- Supabase backend (PostgreSQL, real-time subscriptions, authentication)
-- Vercel hosting with edge functions
-- Sentry error tracking
+### INTEGRATIONS - Stripe for subscription payments (£149/month or £119/year) - Resend for transactional emails - Google Business Profile API (OAuth2, review links, rating sync) - TripAdvisor API (location linking, review links) - Supabase backend (PostgreSQL, real-time subscriptions, authentication) - Vercel hosting with edge functions - Sentry error tracking
 
-### CO-RESOLVER FEATURE (Collaborative Feedback Resolution)
-- Venue-specific setting (enable/disable per venue)
-- Only applies to feedback resolution, not assistance requests
-- Main resolver required before co-resolver can be added
-- Optional checkbox "Add co-resolver" in kiosk resolution modal
-- Dropdown excludes main resolver from co-resolver options
-- Both resolvers receive full credit in performance metrics
-- Display format: "Resolved by [Name] with [Co-resolver Name]"
-- Metrics format: "Resolved: X | Co-resolved: Y | Total: Z"
-- Leaderboards rank by total resolutions (resolved + co-resolved)
-- Separate column tracking in staff leaderboard and reports
-- Co-resolver counts included in all analytics and exports
-- Encourages team collaboration and mentoring
-- Particularly useful for training new staff members
-- Helps track team-based problem resolution
+### CO-RESOLVER FEATURE (Collaborative Feedback Resolution) - Venue-specific setting (enable/disable per venue) - Only applies to feedback resolution, not assistance requests - Main resolver required before co-resolver can be added - Optional checkbox "Add co-resolver" in kiosk resolution modal - Dropdown excludes main resolver from co-resolver options - Both resolvers receive full credit in performance metrics - Display format: "Resolved by [Name] with [Co-resolver Name]" - Metrics format: "Resolved: X | Co-resolved: Y | Total: Z" - Leaderboards rank by total resolutions (resolved + co-resolved) - Separate column tracking in staff leaderboard and reports - Co-resolver counts included in all analytics and exports - Encourages team collaboration and mentoring - Particularly useful for training new staff members - Helps track team-based problem resolution
 
-### AUTOMATION FEATURES
-- Real-time notifications (WebSocket via Supabase)
-- Automated NPS email scheduling (hourly cron job)
-- Email cooldown system (prevents duplicate surveys)
-- Assistance request alerts (toast notifications)
-- Live dashboard updates (30-second fallback polling)
-- Automated review redirects (positive feedback → review platforms)
-- Password reset emails
-- Staff invitation emails
-- Recognition emails
-- Email change verification
+### AUTOMATION FEATURES - Real-time notifications (WebSocket via Supabase) - Automated NPS email scheduling (hourly cron job) - Email cooldown system (prevents duplicate surveys) - Assistance request alerts (toast notifications) - Live dashboard updates (30-second fallback polling) - Automated review redirects (positive feedback → review platforms) - Password reset emails - Staff invitation emails - Recognition emails - Email change verification
 
 ## USER ROLES & ACCESS CONTROL
 
-### ADMIN ROLE
-- Full system access across all accounts
-- Bypasses VenueContext
-- Separate routing from regular users
-- Can impersonate other users
-- Access to all venues and settings
+### ADMIN ROLE - Full system access across all accounts - Bypasses VenueContext - Separate routing from regular users - Can impersonate other users - Access to all venues and settings
 
-### MASTER ROLE
-- Account owner level
-- Multiple venue access within account
-- Billing and subscription management
-- Can add/remove managers
-- Full analytics access
-- Staff management capabilities
+### MASTER ROLE - Account owner level - Multiple venue access within account - Billing and subscription management - Can add/remove managers - Full analytics access - Staff management capabilities
 
-### MANAGER ROLE
-- Venue-specific access via staff table
-- Limited to assigned venues
-- Feedback and staff management
-- Cannot access billing
-- Cannot add other managers
-- Performance tracking and reports
+### MANAGER ROLE - Venue-specific access via staff table - Limited to assigned venues - Feedback and staff management - Cannot access billing - Cannot add other managers - Performance tracking and reports
 
 ## TECHNICAL ARCHITECTURE
 
-### FRONTEND
-- React with React Router
-- Tailwind CSS for styling with dark mode support
-- Radix UI component library
-- shadcn/ui components
-- Ant Design components
-- Chart.js and Recharts for data visualization (including sparkline graphs)
-- Context API for state management (VenueContext, ModalContext, DarkModeContext)
-- Real-time updates via Supabase subscriptions
-- LocalStorage for user preferences (dark mode, venue selection)
+### FRONTEND - React with React Router - Tailwind CSS for styling with dark mode support - Radix UI component library - shadcn/ui components - Ant Design components - Chart.js and Recharts for data visualization (including sparkline graphs) - Context API for state management (VenueContext, ModalContext, DarkModeContext) - Real-time updates via Supabase subscriptions - LocalStorage for user preferences (dark mode, venue selection)
 
-### BACKEND
-- Supabase (PostgreSQL database)
-- Row Level Security (RLS) policies
-- Supabase Edge Functions (TypeScript)
-- Real-time WebSocket subscriptions
-- Supabase Storage for file uploads
+### BACKEND - Supabase (PostgreSQL database) - Row Level Security (RLS) policies - Supabase Edge Functions (TypeScript) - Real-time WebSocket subscriptions - Supabase Storage for file uploads
 
-### INFRASTRUCTURE & COST OPTIMIZATION
-- Vercel hosting with serverless functions
-- Vercel Cron Jobs (2 daily scheduled tasks)
-  - Google/TripAdvisor ratings refresh: Daily at midnight
-  - Google reviews sync: Daily at 1 AM
-- Supabase Edge Functions for email processing
-  - NPS email sending (batch limit: 50 per run)
-- Real-time subscriptions with proper cleanup
-  - Dashboard: Activity notifications
-  - Kiosk: Feedback and assistance updates
-  - Fallback polling: 30-second intervals (optimization opportunity)
-- Webhook processing with Stripe signature verification
-  - Handles subscription lifecycle events
-  - Payment success/failure tracking
-  - No retry loop protection (optimization needed)
+### INFRASTRUCTURE & COST OPTIMIZATION - Vercel hosting with serverless functions - Vercel Cron Jobs (2 daily scheduled tasks) - Google/TripAdvisor ratings refresh: Daily at midnight - Google reviews sync: Daily at 1 AM - Supabase Edge Functions for email processing - NPS email sending (batch limit: 50 per run) - Real-time subscriptions with proper cleanup - Dashboard: Activity notifications - Kiosk: Feedback and assistance updates - Fallback polling: 30-second intervals (optimization opportunity) - Webhook processing with Stripe signature verification - Handles subscription lifecycle events - Payment success/failure tracking - No retry loop protection (optimization needed)
 
 ### DATABASE STRUCTURE
-Key tables:
-- users: Authentication and role assignment
-- accounts: Top-level account grouping
-- venues: Venue information linked to accounts (includes enable_co_resolving setting)
-- staff: Many-to-many relationship between users and venues
-- feedback_sessions: Customer session tracking
-- feedback: Individual feedback submissions (includes co_resolver_id for collaborative resolution)
-- assistance_requests: Help request tracking
-- questions: Configurable feedback questions
-- nps_submissions: NPS survey responses
-- venue_settings: Branding and configuration
-- floor_plans: Table layout data
-- tables: Individual table records with zones
-- user_dashboard_tiles: User-specific customizable dashboard metric tiles (metric_type, position)
-- venue_google_ratings: Historical Google rating data for trend analysis
-- venue_tripadvisor_ratings: Historical TripAdvisor rating data for trend analysis
+Key tables: - users: Authentication and role assignment - accounts: Top-level account grouping - venues: Venue information linked to accounts (includes enable_co_resolving setting) - staff: Many-to-many relationship between users and venues - feedback_sessions: Customer session tracking - feedback: Individual feedback submissions (includes co_resolver_id for collaborative resolution) - assistance_requests: Help request tracking - questions: Configurable feedback questions - nps_submissions: NPS survey responses - venue_settings: Branding and configuration - floor_plans: Table layout data - tables: Individual table records with zones - user_dashboard_tiles: User-specific customizable dashboard metric tiles (metric_type, position) - venue_google_ratings: Historical Google rating data for trend analysis - venue_tripadvisor_ratings: Historical TripAdvisor rating data for trend analysis
 
-### EXTERNAL SERVICES
-- Stripe for payment processing
-- Resend for email delivery
-- Google Business Profile API
-- TripAdvisor API
-- Vercel for hosting and serverless functions
-- Sentry for error monitoring and tracking
+### EXTERNAL SERVICES - Stripe for payment processing - Resend for email delivery - Google Business Profile API - TripAdvisor API - Vercel for hosting and serverless functions - Sentry for error monitoring and tracking
 
 ### DOMAIN-BASED ROUTING
-App.js detects domain to serve different content:
-- window.location.hostname.startsWith('my.') → Dashboard app (AppRoutes)
-- Other domains → Marketing site (MarketingRoutes)
+App.js detects domain to serve different content: - window.location.hostname.startsWith('my.') → Dashboard app (AppRoutes) - Other domains → Marketing site (MarketingRoutes)
 
 ### ROLE-BASED ROUTING
-AppRoutes.js handles automatic redirection:
-- Admin users → /admin routes, bypass VenueContext
-- Master users → /dashboard with VenueContext
-- Manager users → /dashboard with venue-specific VenueContext
-- Unauthenticated → /signin
+AppRoutes.js handles automatic redirection: - Admin users → /admin routes, bypass VenueContext - Master users → /dashboard with VenueContext - Manager users → /dashboard with venue-specific VenueContext - Unauthenticated → /signin
 
 ## DATA FLOW EXAMPLES
 
@@ -573,49 +250,15 @@ AppRoutes.js handles automatic redirection:
 
 ## CONFIGURATION OPTIONS
 
-### VENUE SETTINGS
-- Venue name, address, phone number, website
-- Operating hours
-- Logo image upload
-- Google Business Profile connection (Place ID)
-- TripAdvisor connection (Location ID)
+### VENUE SETTINGS - Venue name, address, phone number, website - Operating hours - Logo image upload - Google Business Profile connection (Place ID) - TripAdvisor connection (Location ID)
 
-### FEEDBACK SETTINGS
-- Active questions (up to 5, drag-to-reorder)
-- Session timeout duration (1-24 hours)
-- Feedback collection hours (day/time scheduling)
-- Google review link
-- TripAdvisor review link
-- Enable/disable review redirects
-- Co-resolver feature toggle (collaborative resolution)
+### FEEDBACK SETTINGS - Active questions (up to 5, drag-to-reorder) - Session timeout duration (1-24 hours) - Feedback collection hours (day/time scheduling) - Google review link - TripAdvisor review link - Enable/disable review redirects - Co-resolver feature toggle (collaborative resolution)
 
-### NPS SETTINGS
-- Enable/disable NPS emails
-- Send delay after feedback (12/24/36 hours)
-- Custom NPS question text
-- Cooldown period (default 24 hours)
-- Email template customization
+### NPS SETTINGS - Enable/disable NPS emails - Send delay after feedback (12/24/36 hours) - Custom NPS question text - Cooldown period (default 24 hours) - Email template customization
 
-### BRANDING SETTINGS
-- Primary color (hex picker)
-- Background color (hex picker)
-- Text color (hex picker)
-- Button text color (hex picker)
-- Logo upload (PNG/JPG/SVG)
-- Assistance message title
-- Assistance message text
-- Assistance message icon
-- Thank you message title
-- Thank you message text
-- Thank you message icon
+### BRANDING SETTINGS - Primary color (hex picker) - Background color (hex picker) - Text color (hex picker) - Button text color (hex picker) - Logo upload (PNG/JPG/SVG) - Assistance message title - Assistance message text - Assistance message icon - Thank you message title - Thank you message text - Thank you message icon
 
-### SUBSCRIPTION SETTINGS (Stripe)
-- Monthly plan: £149/month
-- Annual plan: £119/year
-- Payment method management
-- Invoice downloads
-- Subscription cancellation
-- Trial period handling
+### SUBSCRIPTION SETTINGS (Stripe) - Monthly plan: £149/month - Annual plan: £119/year - Payment method management - Invoice downloads - Subscription cancellation - Trial period handling
 
 ## KIOSK MODE DETAILS
 
@@ -626,12 +269,7 @@ The kiosk is a critical real-time operational tool for staff:
 2. ASSISTANCE REQUESTS - Help requests shown second (amber indicators)
 3. REGULAR FEEDBACK - Normal feedback shown last (blue indicators)
 
-### VISUAL FLOOR PLAN
-- Color-coded tables based on feedback status
-- Real-time updates as new feedback arrives
-- Zone-based filtering
-- Click table to view feedback details
-- Table shapes: square, circle, long (customizable)
+### VISUAL FLOOR PLAN - Color-coded tables based on feedback status - Real-time updates as new feedback arrives - Zone-based filtering - Click table to view feedback details - Table shapes: square, circle, long (customizable)
 
 ### RESOLUTION WORKFLOW
 1. Staff sees priority item at top of queue
@@ -643,135 +281,43 @@ The kiosk is a critical real-time operational tool for staff:
 7. Next priority item automatically shown
 8. No auto-return (staff manually navigates)
 
-### KIOSK INTERFACE FEATURES
-- Desktop-only (mobile shows warning)
-- Real-time WebSocket updates
-- Fallback to 30-second polling
-- Zone selector for large venues
-- Table number display
-- Time since feedback submitted
-- Star ratings visible
-- Text comments expandable
-- Staff assignment tracking
+### KIOSK INTERFACE FEATURES - Desktop-only (mobile shows warning) - Real-time WebSocket updates - Fallback to 30-second polling - Zone selector for large venues - Table number display - Time since feedback submitted - Star ratings visible - Text comments expandable - Staff assignment tracking
 
 ## REPORTING & ANALYTICS DETAILS
 
-### FEEDBACK REPORTS
-- Total sessions vs completed feedback
-- Response rate percentage
-- Average rating per question
-- Rating distribution charts (bar/pie)
-- Low score alerts (≤2 stars)
-- Most common text feedback themes (manual analysis)
-- Peak feedback times (hour/day analysis)
-- Table hotspots (most feedback by table)
+### FEEDBACK REPORTS - Total sessions vs completed feedback - Response rate percentage - Average rating per question - Rating distribution charts (bar/pie) - Low score alerts (≤2 stars) - Most common text feedback themes (manual analysis) - Peak feedback times (hour/day analysis) - Table hotspots (most feedback by table)
 
-### NPS REPORTS
-- Overall NPS score (-100 to +100)
-- Promoters count and percentage (9-10)
-- Passives count and percentage (7-8)
-- Detractors count and percentage (0-6)
-- Response rate (surveys sent vs completed)
-- Email delivery status (sent/pending/failed)
-- NPS trend over time (line chart)
-- Score distribution (bar chart)
-- Recent responses table
+### NPS REPORTS - Overall NPS score (-100 to +100) - Promoters count and percentage (9-10) - Passives count and percentage (7-8) - Detractors count and percentage (0-6) - Response rate (surveys sent vs completed) - Email delivery status (sent/pending/failed) - NPS trend over time (line chart) - Score distribution (bar chart) - Recent responses table
 
-### STAFF PERFORMANCE REPORTS
-- Individual resolution counts (main resolver + co-resolver)
-- Separate tracking of resolved vs co-resolved contributions
-- Assistance request handling
-- Average resolution time (if tracked)
-- Leaderboard rankings (total resolutions)
-- Time-period comparisons
-- Recognition history
-- CSV export with date range filtering
-- Co-resolver collaboration metrics
+### STAFF PERFORMANCE REPORTS - Individual resolution counts (main resolver + co-resolver) - Separate tracking of resolved vs co-resolved contributions - Assistance request handling - Average resolution time (if tracked) - Leaderboard rankings (total resolutions) - Time-period comparisons - Recognition history - CSV export with date range filtering - Co-resolver collaboration metrics
 
-### IMPACT REPORTS
-- Before/after rating comparisons
-- Issue resolution impact on ratings
-- Staff performance correlation with satisfaction
-- Venue comparison metrics
-- Review platform rating trends
-- Customer retention indicators
+### IMPACT REPORTS - Before/after rating comparisons - Issue resolution impact on ratings - Staff performance correlation with satisfaction - Venue comparison metrics - Review platform rating trends - Customer retention indicators
 
-### CUSTOM REPORT BUILDER
-- Date range selection
-- Metric selection (checkboxes)
-- Venue filtering
-- Export formats
-- Saved report templates
-- Scheduled report generation (if implemented)
+### CUSTOM REPORT BUILDER - Date range selection - Metric selection (checkboxes) - Venue filtering - Export formats - Saved report templates - Scheduled report generation (if implemented)
 
 ## MOBILE RESPONSIVENESS
 
-### CUSTOMER FEEDBACK INTERFACE
-- Fully mobile-optimized
-- Touch-friendly star ratings
-- Large tap targets for buttons
-- Progressive form (one question per screen)
-- Mobile-friendly keyboard for text input
-- Table number dropdown scrollable
-- Assistance button always visible
+### CUSTOMER FEEDBACK INTERFACE - Fully mobile-optimized - Touch-friendly star ratings - Large tap targets for buttons - Progressive form (one question per screen) - Mobile-friendly keyboard for text input - Table number dropdown scrollable - Assistance button always visible
 
-### DASHBOARD MOBILE VIEW
-- Responsive grid layouts
-- Collapsible navigation
-- Mobile-friendly charts
-- Touch-friendly dropdowns
-- Swipeable metric cards
-- Mobile-optimized tables with horizontal scroll
+### DASHBOARD MOBILE VIEW - Responsive grid layouts - Collapsible navigation - Mobile-friendly charts - Touch-friendly dropdowns - Swipeable metric cards - Mobile-optimized tables with horizontal scroll
 
-### DESKTOP-ONLY FEATURES
-- Floor plan editor (too complex for mobile)
-- Kiosk mode (requires larger screen)
-- Some advanced reporting interfaces
+### DESKTOP-ONLY FEATURES - Floor plan editor (too complex for mobile) - Kiosk mode (requires larger screen) - Some advanced reporting interfaces
 
 ## SECURITY FEATURES
 
-### AUTHENTICATION
-- Supabase Auth (email/password)
-- Password reset via email
-- Email change verification
-- Session management
-- Remember me functionality
+### AUTHENTICATION - Supabase Auth (email/password) - Password reset via email - Email change verification - Session management - Remember me functionality
 
-### AUTHORIZATION
-- Row Level Security (RLS) policies in Supabase
-- Role-based access control (admin/master/manager)
-- Venue-scoped data access
-- Staff-venue relationship enforcement
-- API endpoint protection
+### AUTHORIZATION - Row Level Security (RLS) policies in Supabase - Role-based access control (admin/master/manager) - Venue-scoped data access - Staff-venue relationship enforcement - API endpoint protection
 
-### DATA PRIVACY
-- Customer emails optional
-- GDPR-compliant data handling
-- Feedback anonymization options
-- Data export capabilities
-- Account deletion process
+### DATA PRIVACY - Customer emails optional - GDPR-compliant data handling - Feedback anonymization options - Data export capabilities - Account deletion process
 
-### PAYMENT SECURITY
-- Stripe PCI compliance
-- No credit card data stored locally
-- Webhook signature verification
-- Secure checkout sessions
+### PAYMENT SECURITY - Stripe PCI compliance - No credit card data stored locally - Webhook signature verification - Secure checkout sessions
 
 ## ERROR HANDLING
 
-### USER-FACING ERRORS
-- Toast notifications for failures
-- Form validation messages
-- Friendly error pages
-- Retry mechanisms
-- Offline detection
+### USER-FACING ERRORS - Toast notifications for failures - Form validation messages - Friendly error pages - Retry mechanisms - Offline detection
 
-### TECHNICAL ERROR TRACKING
-- Sentry integration for error monitoring
-- Error boundaries in React components
-- API error logging
-- Webhook failure alerts
-- Database constraint violations logged
+### TECHNICAL ERROR TRACKING - Sentry integration for error monitoring - Error boundaries in React components - API error logging - Webhook failure alerts - Database constraint violations logged
 
 ## FUTURE AI/ML OPPORTUNITIES
 
@@ -790,20 +336,9 @@ Currently, Chatters has NO AI/ML features implemented. However, the data collect
 
 ## MONETIZATION MODEL
 
-### SUBSCRIPTION TIERS
-- Monthly: £149/month per venue
-- Annual: £119/year per venue
+### SUBSCRIPTION TIERS - Monthly: £149/month per venue - Annual: £119/year per venue
 
-### WHAT'S INCLUDED
-- Unlimited feedback submissions
-- Unlimited staff users
-- Multiple venue support
-- All analytics and reporting features
-- NPS email surveys
-- Custom branding
-- Floor plan and kiosk mode
-- Integrations (Google, TripAdvisor, Stripe)
-- Email support
+### WHAT'S INCLUDED - Unlimited feedback submissions - Unlimited staff users - Multiple venue support - All analytics and reporting features - NPS email surveys - Custom branding - Floor plan and kiosk mode - Integrations (Google, TripAdvisor, Stripe) - Email support
 
 ### PAYMENT FLOW
 1. User signs up (trial or direct to paid)
@@ -815,29 +350,13 @@ Currently, Chatters has NO AI/ML features implemented. However, the data collect
 7. Monthly/annual billing cycle begins
 8. Invoices sent via Stripe
 
-### SUBSCRIPTION MANAGEMENT
-- Self-service billing portal
-- Update payment method
-- Cancel subscription
-- Download invoices
-- View usage stats
-- Upgrade/downgrade plans
+### SUBSCRIPTION MANAGEMENT - Self-service billing portal - Update payment method - Cancel subscription - Download invoices - View usage stats - Upgrade/downgrade plans
 
 ## SUPPORT & DOCUMENTATION
 
-### IN-APP GUIDANCE
-- Tooltips on complex features
-- Dark mode toggle with visual feedback (Moon/Sun icons)
-- Help text in settings
-- Empty state illustrations with instructions
-- Metric selector modal with category filtering and descriptions
-- Coming soon badges for planned features
+### IN-APP GUIDANCE - Tooltips on complex features - Dark mode toggle with visual feedback (Moon/Sun icons) - Help text in settings - Empty state illustrations with instructions - Metric selector modal with category filtering and descriptions - Coming soon badges for planned features
 
-### EXTERNAL RESOURCES
-- Marketing site with feature explanations
-- Knowledge base articles (if implemented)
-- Video tutorials (if implemented)
-- Email support for technical issues
+### EXTERNAL RESOURCES - Marketing site with feature explanations - Knowledge base articles (if implemented) - Video tutorials (if implemented) - Email support for technical issues
 
 ## SUMMARY OF VALUE PROPOSITION
 
@@ -860,51 +379,14 @@ The platform sits at the intersection of customer feedback, staff management, an
 
 This section documents recently added features that enhance the Chatters platform:
 
-### DARK MODE (Latest)
-- **Location**: Account Profile page (/account/profile)
-- **Feature**: Full dark mode toggle affecting entire application
-- **Benefits**: Reduced eye strain, improved accessibility, professional appearance
-- **Persistence**: User preference saved to localStorage
-- **Implementation**: Tailwind CSS dark mode classes throughout entire UI
+### DARK MODE (Latest) - **Location**: Account Profile page (/account/profile) - **Feature**: Full dark mode toggle affecting entire application - **Benefits**: Reduced eye strain, improved accessibility, professional appearance - **Persistence**: User preference saved to localStorage - **Implementation**: Tailwind CSS dark mode classes throughout entire UI
 
-### SPARKLINE METRIC CARDS (Latest)
-- **Location**: Dashboard overview page
-- **Feature**: 7-day trend graphs for 4 key metrics
-- **Metrics**: Sessions, Satisfaction Score, Response Time, Completion Rate
-- **Benefits**: Quick visual trend analysis, historical context for today's performance
-- **Data**: Daily calculations with percentage change indicators
-- **Display**: Compact inline line charts using Recharts
+### SPARKLINE METRIC CARDS (Latest) - **Location**: Dashboard overview page - **Feature**: 7-day trend graphs for 4 key metrics - **Metrics**: Sessions, Satisfaction Score, Response Time, Completion Rate - **Benefits**: Quick visual trend analysis, historical context for today's performance - **Data**: Daily calculations with percentage change indicators - **Display**: Compact inline line charts using Recharts
 
-### CUSTOMIZABLE MULTI-VENUE TILES (Latest)
-- **Location**: Dashboard overview page
-- **Feature**: Up to 3 user-customizable metric tiles
-- **Options**: 69+ different metrics across 8 categories
-- **Benefits**: Personalized dashboard, cross-venue comparisons, flexible analytics
-- **Categories**: NPS, Feedback Volume, Resolution, Staff Performance, Venue Performance, Time Analytics, Sentiment, External Reviews
-- **Key Metrics Include**:
-  - Total Feedback Count with session tracking
-  - Average Satisfaction with per-venue breakdown
-  - Unresolved Alerts combining feedback and assistance
-  - Best Staff Member with resolution counts
-  - Google/TripAdvisor Rating changes over selected period
-  - Resolution Rate with progress bars and performance labels
-  - Venue Activity Heatmap with color-coded levels
-- **Interface**: Metric selector modal with category filtering and visual icons
-- **Flexibility**: Change metrics anytime, remove tiles, reorder automatically
+### CUSTOMIZABLE MULTI-VENUE TILES (Latest) - **Location**: Dashboard overview page - **Feature**: Up to 3 user-customizable metric tiles - **Options**: 69+ different metrics across 8 categories - **Benefits**: Personalized dashboard, cross-venue comparisons, flexible analytics - **Categories**: NPS, Feedback Volume, Resolution, Staff Performance, Venue Performance, Time Analytics, Sentiment, External Reviews - **Key Metrics Include**: - Total Feedback Count with session tracking - Average Satisfaction with per-venue breakdown - Unresolved Alerts combining feedback and assistance - Best Staff Member with resolution counts - Google/TripAdvisor Rating changes over selected period - Resolution Rate with progress bars and performance labels - Venue Activity Heatmap with color-coded levels - **Interface**: Metric selector modal with category filtering and visual icons - **Flexibility**: Change metrics anytime, remove tiles, reorder automatically
 
-### USER EXPERIENCE IMPROVEMENTS
-- **Time-of-Day Greetings**: Dynamic "Good morning/afternoon/evening" messages
-- **Multi-Venue Awareness**: Dashboard shows total venue count for multi-location users
-- **Enhanced Profile Page**: Consolidated personal information, appearance settings, and security options
-- **Performance Indicators**: Color-coded badges showing "Excellent", "Good", "Fair", "Poor" performance
-- **Activity Level Classification**: "Very High", "High", "Medium", "Low" traffic indicators
+### USER EXPERIENCE IMPROVEMENTS - **Time-of-Day Greetings**: Dynamic "Good morning/afternoon/evening" messages - **Multi-Venue Awareness**: Dashboard shows total venue count for multi-location users - **Enhanced Profile Page**: Consolidated personal information, appearance settings, and security options - **Performance Indicators**: Color-coded badges showing "Excellent", "Good", "Fair", "Poor" performance - **Activity Level Classification**: "Very High", "High", "Medium", "Low" traffic indicators
 
-### TECHNICAL ENHANCEMENTS
-- **New Context**: DarkModeContext for global theme management
-- **New Hook**: useOverviewStats with 7-day sparkline calculations
-- **New Hook**: useMultiVenueStats for cross-venue data aggregation
-- **New Tables**: user_dashboard_tiles for tile preferences, venue_google_ratings and venue_tripadvisor_ratings for historical tracking
-- **Chart Library**: Expanded use of Recharts for sparkline visualization
-- **LocalStorage**: Enhanced usage for dark mode and user preferences
+### TECHNICAL ENHANCEMENTS - **New Context**: DarkModeContext for global theme management - **New Hook**: useOverviewStats with 7-day sparkline calculations - **New Hook**: useMultiVenueStats for cross-venue data aggregation - **New Tables**: user_dashboard_tiles for tile preferences, venue_google_ratings and venue_tripadvisor_ratings for historical tracking - **Chart Library**: Expanded use of Recharts for sparkline visualization - **LocalStorage**: Enhanced usage for dark mode and user preferences
 
 These features significantly enhance the user experience by providing better visual feedback, personalized dashboards, and improved multi-venue management capabilities.

@@ -12,10 +12,7 @@ The Chatters feedback system allows customers to submit real-time feedback via Q
 3. **Additional Comments**: Optional text feedback for each question
 4. **Submission**: Creates feedback entries grouped by `session_id`
 
-### 2. Staff Notification
-- Real-time alerts for ratings ≤ 2 (poor feedback)
-- Dashboard notifications for immediate attention
-- Feedback appears in alerts tab for action
+### 2. Staff Notification - Real-time alerts for ratings ≤ 2 (poor feedback) - Dashboard notifications for immediate attention - Feedback appears in alerts tab for action
 
 ## Feedback Data Structure
 
@@ -47,40 +44,23 @@ Multiple feedback items are grouped by `session_id`:
 }
 ```
 
-### Rating Classification
-- **Positive Feedback**: Average rating > 3
-- **Neutral Feedback**: Average rating = 3
-- **Negative Feedback**: Average rating < 3 (requires resolution)
+### Rating Classification - **Positive Feedback**: Average rating > 3 - **Neutral Feedback**: Average rating = 3 - **Negative Feedback**: Average rating < 3 (requires resolution)
 
 ## Resolution Workflows
 
 ### Main Dashboard (`FeedbackTabs.js`)
 
-#### Positive Feedback (Rating > 3)
-- **Button Text**: "View & Clear"
-- **Modal Title**: "View Feedback"
-- **Action**: Simple acknowledgment
-- **Database**: `resolution_type: 'positive_feedback_cleared'`, `resolved_by: null`
-- **No staff assignment required**
+#### Positive Feedback (Rating > 3) - **Button Text**: "View & Clear" - **Modal Title**: "View Feedback" - **Action**: Simple acknowledgment - **Database**: `resolution_type: 'positive_feedback_cleared'`, `resolved_by: null` - **No staff assignment required**
 
-#### Negative Feedback (Rating ≤ 3)
-- **Button Text**: "Resolve"
-- **Modal Title**: "Resolve Feedback"
-- **Actions Available**:
+#### Negative Feedback (Rating ≤ 3) - **Button Text**: "Resolve" - **Modal Title**: "Resolve Feedback" - **Actions Available**:
   1. **Mark as Resolved**: Assign to staff member, resolution type: `staff_resolved`
   2. **No Action Needed**: Dismiss with reason, resolution type: `dismissed`
 
 ### Kiosk Mode (`FeedbackDetailModal.js`)
 
-#### Positive Feedback (Rating > 3)
-- **Section Title**: "Acknowledgment"
-- **Interface**: Clean acknowledgment with green styling
-- **Action**: "Acknowledge & Clear Feedback"
-- **Database**: Same as dashboard - `positive_feedback_cleared`, no staff assignment
+#### Positive Feedback (Rating > 3) - **Section Title**: "Acknowledgment" - **Interface**: Clean acknowledgment with green styling - **Action**: "Acknowledge & Clear Feedback" - **Database**: Same as dashboard - `positive_feedback_cleared`, no staff assignment
 
-#### Negative Feedback (Rating ≤ 3)  
-- **Section Title**: "Resolution Actions"
-- **Action Types**:
+#### Negative Feedback (Rating ≤ 3) - **Section Title**: "Resolution Actions" - **Action Types**:
   1. **Mark as Resolved**: Full staff assignment workflow
   2. **Acknowledge & Dismiss**: With dismissal reason
 
@@ -119,10 +99,7 @@ dismissed_at TIMESTAMPTZ            -- When dismissed
 dismissed_reason TEXT               -- Reason for dismissal
 ```
 
-### Resolution Types
-- `staff_resolved`: Negative feedback resolved by staff member
-- `positive_feedback_cleared`: Positive feedback acknowledged  
-- `dismissed`: Feedback dismissed as no action needed
+### Resolution Types - `staff_resolved`: Negative feedback resolved by staff member - `positive_feedback_cleared`: Positive feedback acknowledged - `dismissed`: Feedback dismissed as no action needed
 
 ## Feedback States & Filtering
 
@@ -165,10 +142,7 @@ const subscription = supabase
   .subscribe();
 ```
 
-### Auto-Refresh
-- Dashboard auto-refreshes every 30 seconds
-- Real-time updates for new submissions
-- Immediate UI updates after resolution actions
+### Auto-Refresh - Dashboard auto-refreshes every 30 seconds - Real-time updates for new submissions - Immediate UI updates after resolution actions
 
 ## Question Management
 
@@ -185,10 +159,7 @@ const subscription = supabase
 }
 ```
 
-### Question Types
-- `rating`: 1-5 star rating with optional comments
-- `text`: Text-only feedback
-- `custom`: Venue-specific question formats
+### Question Types - `rating`: 1-5 star rating with optional comments - `text`: Text-only feedback - `custom`: Venue-specific question formats
 
 ## Performance Considerations
 
@@ -200,10 +171,7 @@ CREATE INDEX idx_feedback_session ON feedback(session_id);
 CREATE INDEX idx_feedback_resolution ON feedback(is_actioned, dismissed, venue_id);
 ```
 
-### Query Optimization
-- Paginate large feedback lists
-- Use session grouping to reduce data transfer
-- Index on frequently filtered fields (`venue_id`, `is_actioned`, `created_at`)
+### Query Optimization - Paginate large feedback lists - Use session grouping to reduce data transfer - Index on frequently filtered fields (`venue_id`, `is_actioned`, `created_at`)
 
 ## Error Handling
 
@@ -228,11 +196,7 @@ if (!staffExists) {
 
 ## Analytics & Reporting
 
-### Key Metrics
-- **Response Rate**: Percentage of tables providing feedback
-- **Resolution Time**: Time from submission to resolution
-- **Staff Performance**: Resolutions per staff member
-- **Customer Satisfaction**: Average ratings over time
+### Key Metrics - **Response Rate**: Percentage of tables providing feedback - **Resolution Time**: Time from submission to resolution - **Staff Performance**: Resolutions per staff member - **Customer Satisfaction**: Average ratings over time
 
 ### Data Aggregation
 ```javascript

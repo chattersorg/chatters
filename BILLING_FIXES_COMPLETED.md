@@ -10,14 +10,12 @@
 
 **Problem:** Billing data was being stored on `venues` table but checked on `accounts` table.
 
-**Solution:**
-- Modified `api/create-trial-account.js` to:
+**Solution:** - Modified `api/create-trial-account.js` to:
   1. Create `accounts` record with `trial_ends_at`, `is_paid`
   2. Create `venues` record linked to account via `account_id`
   3. Create `users` record linking auth user to account
 
-**Files Changed:**
-- `api/create-trial-account.js` - Now follows correct schema
+**Files Changed:** - `api/create-trial-account.js` - Now follows correct schema
 
 ---
 
@@ -35,14 +33,9 @@
 ✅ invoice.payment_succeeded → Confirm recurring payments
 ```
 
-**Impact:**
-- Cancelled users will now lose access ✅
-- Failed payments will be tracked ✅
-- Subscription updates will sync properly ✅
-- `stripe_customer_id` and `stripe_subscription_id` now stored ✅
+**Impact:** - Cancelled users will now lose access ✅ - Failed payments will be tracked ✅ - Subscription updates will sync properly ✅ - `stripe_customer_id` and `stripe_subscription_id` now stored ✅
 
-**Files Changed:**
-- `api/webhook.js` - Complete rewrite with switch/case for all events
+**Files Changed:** - `api/webhook.js` - Complete rewrite with switch/case for all events
 
 ---
 
@@ -50,27 +43,17 @@
 
 **Problem:** Plaintext passwords were being sent to Stripe metadata.
 
-**Solution:**
-- Removed password from checkout session metadata
-- Webhook now finds users by email lookup instead
-- No sensitive data leaves our system
+**Solution:** - Removed password from checkout session metadata - Webhook now finds users by email lookup instead - No sensitive data leaves our system
 
-**Files Changed:**
-- `api/create-checkout-session.js` - Removed password parameter
+**Files Changed:** - `api/create-checkout-session.js` - Removed password parameter
 
 ---
 
 ## ✅ VERIFIED WORKING
 
-### Frontend Already Correct
-- ✅ `SignUp.js` - Correctly calls `/api/create-trial-account`
-- ✅ `BillingTab.js` - Correctly checks `accounts.is_paid`
-- ✅ `Billing.js` - Correctly checks `accounts.is_paid`
-- ✅ `ModernDashboardFrame.js` - Correctly enforces trial expiration from accounts table
+### Frontend Already Correct - ✅ `SignUp.js` - Correctly calls `/api/create-trial-account` - ✅ `BillingTab.js` - Correctly checks `accounts.is_paid` - ✅ `Billing.js` - Correctly checks `accounts.is_paid` - ✅ `ModernDashboardFrame.js` - Correctly enforces trial expiration from accounts table
 
-### No Further Code Changes Needed for Schema
-- ✅ No code found checking `venues.is_paid` (searched entire codebase)
-- ✅ All trial checks already use `accounts` table
+### No Further Code Changes Needed for Schema - ✅ No code found checking `venues.is_paid` (searched entire codebase) - ✅ All trial checks already use `accounts` table
 
 ---
 
@@ -93,21 +76,12 @@ Total Users: 11
 ✅ All venues linked to valid accounts (no orphans)
 ✅ 9 non-admin users properly linked to accounts
 ✅ 2 admin users correctly have no account_id
-✅ Account has correct billing data structure:
-    - is_paid: false
-    - trial_ends_at: 2025-10-16
-    - stripe_customer_id: null
-    - stripe_subscription_id: null
-    - Linked venues: 3
-    - Linked users: 9
+✅ Account has correct billing data structure: - is_paid: false - trial_ends_at: 2025-10-16 - stripe_customer_id: null - stripe_subscription_id: null - Linked venues: 3 - Linked users: 9
 ```
 
-**What was fixed:**
-- Linked 1 orphaned master user (matt@getchatters.com) to account ✅
+**What was fixed:** - Linked 1 orphaned master user (matt@getchatters.com) to account ✅
 
-**Scripts created for future use:**
-- `scripts/check-database-health.js` - Validates database integrity
-- `scripts/migrate-billing-data.js` - Automated migration tool (not needed currently)
+**Scripts created for future use:** - `scripts/check-database-health.js` - Validates database integrity - `scripts/migrate-billing-data.js` - Automated migration tool (not needed currently)
 
 **Conclusion:** No migration needed! Database already structured correctly.
 
@@ -119,12 +93,7 @@ Total Users: 11
 
 1. Go to Stripe Dashboard → Developers → Webhooks
 2. Add your webhook endpoint: `https://my.getchatters.com/api/webhook`
-3. Subscribe to these events:
-   - ✅ `checkout.session.completed`
-   - ✅ `customer.subscription.updated`
-   - ✅ `customer.subscription.deleted`
-   - ✅ `invoice.payment_failed`
-   - ✅ `invoice.payment_succeeded`
+3. Subscribe to these events: - ✅ `checkout.session.completed` - ✅ `customer.subscription.updated` - ✅ `customer.subscription.deleted` - ✅ `invoice.payment_failed` - ✅ `invoice.payment_succeeded`
 
 ---
 
@@ -183,9 +152,7 @@ export default async function handler(req, res) {
 
 **Issue:** Two files show different prices.
 
-**Files:**
-- `Billing.js` shows £29/mo (OLD - probably unused)
-- `BillingTab.js` shows £149/mo (CURRENT)
+**Files:** - `Billing.js` shows £29/mo (OLD - probably unused) - `BillingTab.js` shows £149/mo (CURRENT)
 
 **Action:**
 1. Verify which file is actually used
@@ -198,16 +165,9 @@ export default async function handler(req, res) {
 
 **Question:** How is billing calculated for accounts with multiple venues?
 
-**Current State:**
-- Billing is per `account` (not per venue)
-- No limit on venue count per account
-- Pricing page says "custom pricing based on venues"
-- But code allows unlimited venues?
+**Current State:** - Billing is per `account` (not per venue) - No limit on venue count per account - Pricing page says "custom pricing based on venues" - But code allows unlimited venues?
 
-**Action:** Decide on business model:
-- Option A: Unlimited venues per account (£149/mo flat)
-- Option B: Tiered pricing based on venue count
-- Option C: Per-venue pricing
+**Action:** Decide on business model: - Option A: Unlimited venues per account (£149/mo flat) - Option B: Tiered pricing based on venue count - Option C: Per-venue pricing
 
 Then implement limits/pricing accordingly.
 
@@ -217,56 +177,23 @@ Then implement limits/pricing accordingly.
 
 Before deploying to production, test:
 
-### Trial Flow
-- [ ] Sign up with new account
-- [ ] Verify `accounts` record created with trial
-- [ ] Verify `venues` record linked to account
-- [ ] Verify `users` record created with account_id
-- [ ] Verify dashboard shows correct trial days remaining
-- [ ] Verify trial expiration blocks access correctly
+### Trial Flow - [ ] Sign up with new account - [ ] Verify `accounts` record created with trial - [ ] Verify `venues` record linked to account - [ ] Verify `users` record created with account_id - [ ] Verify dashboard shows correct trial days remaining - [ ] Verify trial expiration blocks access correctly
 
-### Payment Flow
-- [ ] Start checkout from trial account
-- [ ] Complete payment in Stripe test mode
-- [ ] Verify webhook receives `checkout.session.completed`
-- [ ] Verify `accounts.is_paid` set to `true`
-- [ ] Verify `stripe_customer_id` and `stripe_subscription_id` stored
-- [ ] Verify immediate dashboard access after payment
+### Payment Flow - [ ] Start checkout from trial account - [ ] Complete payment in Stripe test mode - [ ] Verify webhook receives `checkout.session.completed` - [ ] Verify `accounts.is_paid` set to `true` - [ ] Verify `stripe_customer_id` and `stripe_subscription_id` stored - [ ] Verify immediate dashboard access after payment
 
-### Subscription Management
-- [ ] Cancel subscription in Stripe
-- [ ] Verify webhook receives `customer.subscription.deleted`
-- [ ] Verify `accounts.is_paid` set to `false`
-- [ ] Verify dashboard access revoked
+### Subscription Management - [ ] Cancel subscription in Stripe - [ ] Verify webhook receives `customer.subscription.deleted` - [ ] Verify `accounts.is_paid` set to `false` - [ ] Verify dashboard access revoked
 
-### Payment Failure
-- [ ] Trigger failed payment in Stripe test mode
-- [ ] Verify webhook receives `invoice.payment_failed`
-- [ ] Verify logged in console
+### Payment Failure - [ ] Trigger failed payment in Stripe test mode - [ ] Verify webhook receives `invoice.payment_failed` - [ ] Verify logged in console
 
-### Security
-- [ ] Verify no passwords in Stripe metadata
-- [ ] Verify webhook signature validation works
-- [ ] Verify no sensitive data logged
+### Security - [ ] Verify no passwords in Stripe metadata - [ ] Verify webhook signature validation works - [ ] Verify no sensitive data logged
 
 ---
 
 ## 📊 EXPECTED IMPACT
 
-### Before Fixes:
-- ❌ Paid users couldn't access system (billing data in wrong table)
-- ❌ Cancelled users kept access forever (no cancellation handling)
-- ❌ Failed payments ignored (no tracking)
-- ❌ Passwords sent to Stripe (security issue)
-- ❌ Duplicate accounts created (webhook creating new users)
+### Before Fixes: - ❌ Paid users couldn't access system (billing data in wrong table) - ❌ Cancelled users kept access forever (no cancellation handling) - ❌ Failed payments ignored (no tracking) - ❌ Passwords sent to Stripe (security issue) - ❌ Duplicate accounts created (webhook creating new users)
 
-### After Fixes:
-- ✅ Paid users get immediate access
-- ✅ Cancelled subscriptions revoke access
-- ✅ Payment failures tracked
-- ✅ No passwords leave the system
-- ✅ Single account per user (no duplicates)
-- ✅ Full subscription lifecycle managed
+### After Fixes: - ✅ Paid users get immediate access - ✅ Cancelled subscriptions revoke access - ✅ Payment failures tracked - ✅ No passwords leave the system - ✅ Single account per user (no duplicates) - ✅ Full subscription lifecycle managed
 
 ---
 
@@ -277,11 +204,7 @@ Before deploying to production, test:
 2. `api/webhook.js` - Complete rewrite with multiple event handlers
 3. `api/create-checkout-session.js` - Removed password metadata
 
-### Frontend (No Changes Needed)
-- `src/pages/auth/SignUp.js` - Already correct ✅
-- `src/components/dashboard/settings/BillingTab.js` - Already correct ✅
-- `src/pages/dashboard/Billing.js` - Already correct ✅
-- `src/components/dashboard/layout/ModernDashboardFrame.js` - Already correct ✅
+### Frontend (No Changes Needed) - `src/pages/auth/SignUp.js` - Already correct ✅ - `src/components/dashboard/settings/BillingTab.js` - Already correct ✅ - `src/pages/dashboard/Billing.js` - Already correct ✅ - `src/components/dashboard/layout/ModernDashboardFrame.js` - Already correct ✅
 
 ---
 

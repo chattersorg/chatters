@@ -37,7 +37,7 @@ const PricingPage = () => {
 
       <PageHeader
         title="UK Restaurant Feedback Software Pricing - Transparent Plans for Every Venue"
-        description="Get everything you need to prevent negative reviews, capture real-time guest feedback, and empower your hospitality team — with flexible UK pricing that scales with your restaurant group."
+        description="Get everything you need to prevent negative reviews, capture real-time guest feedback, and empower your hospitality team - with flexible UK pricing that scales with your restaurant group."
         backgroundGradient="from-white to-green-100"
         showSubtitle={true}
         subtitle="Pricing"
@@ -46,7 +46,7 @@ const PricingPage = () => {
       <PricingSection
         eyebrow="Pricing"
         title="Flexible plans that scale with you"
-        subtitle="Tell us about your venues and goals — we’ll tailor a plan to fit."
+        subtitle="Tell us about your venues and goals - we’ll tailor a plan to fit."
         buttonText="Speak to Sales"
         buttonLink="/demo"
         gradientDirection="bg-gradient-to-b"
@@ -81,7 +81,7 @@ const PricingPage = () => {
         faqs={[
           { 
             q: "Do you publish your pricing?", 
-            a: "No — because every venue operates differently. We tailor pricing based on your number of locations, guest volume, and specific needs." 
+            a: "No - because every venue operates differently. We tailor pricing based on your number of locations, guest volume, and specific needs." 
           },
           { 
             q: "Is there a minimum contract?", 
@@ -93,7 +93,7 @@ const PricingPage = () => {
           },
           { 
             q: "What’s included in the subscription?", 
-            a: "All plans include unlimited feedback, instant alerts, analytics, custom branding, and review routing — no hidden fees." 
+            a: "All plans include unlimited feedback, instant alerts, analytics, custom branding, and review routing - no hidden fees." 
           },
           { 
             q: "Can we scale up later?", 
@@ -101,7 +101,7 @@ const PricingPage = () => {
           },
           { 
             q: "Do you offer trials?", 
-            a: "Yes — new accounts start with a free 14-day trial so you can experience Chatters before committing." 
+            a: "Yes - new accounts start with a free 14-day trial so you can experience Chatters before committing." 
           }
         ]}
       />

@@ -121,7 +121,7 @@ export default function PeakHoursAnalysisTile({ venueId }) {
       ) : noData ? (
         <div className="text-center py-10">
           <Clock className="w-10 h-10 text-gray-300 mx-auto mb-3" />
-          <div className="text-sm text-gray-600">No feedback yet — peak hours will appear once data comes in.</div>
+          <div className="text-sm text-gray-600">No feedback yet - peak hours will appear once data comes in.</div>
         </div>
       ) : (
         <div className="space-y-6">

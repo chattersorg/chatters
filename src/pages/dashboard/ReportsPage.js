@@ -1,4 +1,4 @@
-// ReportsPage.js — Refactored with tabbed interface like SettingsPage
+// ReportsPage.js - Refactored with tabbed interface like SettingsPage
 
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';

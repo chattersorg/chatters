@@ -14,7 +14,7 @@ import {
 import Navbar from '../../../components/marketing/layout/Navbar';
 import Footer from '../../../components/marketing/layout/Footer';
 
-// SECTION 1 — HERO
+// SECTION 1 - HERO
 const Hero = () => {
   return (
     <section className="bg-white py-20 lg:py-24">
@@ -30,7 +30,7 @@ const Hero = () => {
             </h1>
 
             <p className="text-xl text-gray-600 mb-8 leading-relaxed">
-              Chatters guides satisfied guests to Google and TripAdvisor at the perfect moment — boosting your ratings with zero extra work for your team.
+              Chatters guides satisfied guests to Google and TripAdvisor at the perfect moment - boosting your ratings with zero extra work for your team.
             </p>
 
             <div className="flex flex-col sm:flex-row gap-4">
@@ -109,7 +109,7 @@ const Hero = () => {
   );
 };
 
-// SECTION 2 — THE PROBLEM (Dark Background)
+// SECTION 2 - THE PROBLEM (Dark Background)
 const Problem = () => {
   const problems = [
     'Great experiences go unnoticed',
@@ -145,7 +145,7 @@ const Problem = () => {
           </div>
 
           <p className="text-xl text-white font-semibold">
-            Chatters fixes this by capturing happy moments in the moment — and turning them into public 5-star reviews.
+            Chatters fixes this by capturing happy moments in the moment - and turning them into public 5-star reviews.
           </p>
         </div>
       </div>
@@ -153,7 +153,7 @@ const Problem = () => {
   );
 };
 
-// SECTION 3 — HOW REVIEW BOOSTING WORKS
+// SECTION 3 - HOW REVIEW BOOSTING WORKS
 const HowItWorks = () => {
   const features = [
     {
@@ -174,7 +174,7 @@ const HowItWorks = () => {
     },
     {
       title: 'Timing is everything',
-      description: "Guests are prompted when they're happiest — right after a great experience.",
+      description: "Guests are prompted when they're happiest - right after a great experience.",
     },
   ];
 
@@ -210,7 +210,7 @@ const HowItWorks = () => {
   );
 };
 
-// SECTION 4 — THE FLOW
+// SECTION 4 - THE FLOW
 const TheFlow = () => {
   const steps = [
     {
@@ -276,7 +276,7 @@ const TheFlow = () => {
   );
 };
 
-// SECTION 5 — WHY OPERATORS DEPEND ON REVIEW BOOSTING
+// SECTION 5 - WHY OPERATORS DEPEND ON REVIEW BOOSTING
 const WhyOperators = () => {
   const benefits = [
     {
@@ -331,7 +331,7 @@ const WhyOperators = () => {
   );
 };
 
-// SECTION 6 — FEATURES BUILT FOR HOSPITALITY MARKETING
+// SECTION 6 - FEATURES BUILT FOR HOSPITALITY MARKETING
 const Features = () => {
   const features = [
     {
@@ -395,7 +395,7 @@ const Features = () => {
   );
 };
 
-// SECTION 7 — REVIEW BOOSTING IN ACTION
+// SECTION 7 - REVIEW BOOSTING IN ACTION
 const InAction = () => {
   return (
     <section className="bg-white py-20 lg:py-24">
@@ -423,7 +423,7 @@ const InAction = () => {
             </div>
 
             <p className="text-lg text-gray-700">
-              They tap once. They post a 5-star review. It helps attract new guests — instantly.
+              They tap once. They post a 5-star review. It helps attract new guests - instantly.
             </p>
 
             <p className="text-xl font-bold text-gray-900 text-center">
@@ -436,14 +436,14 @@ const InAction = () => {
   );
 };
 
-// SECTION 8 — TESTIMONIAL
+// SECTION 8 - TESTIMONIAL
 const Testimonial = () => {
   return (
     <section className="bg-white py-20 lg:py-24">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="max-w-3xl mx-auto text-center">
           <blockquote className="text-2xl sm:text-3xl text-gray-700 italic mb-8 leading-relaxed">
-            "Our Google reviews skyrocketed once we turned this on. We now get positive reviews every single night — automatically."
+            "Our Google reviews skyrocketed once we turned this on. We now get positive reviews every single night - automatically."
           </blockquote>
 
           <div className="flex items-center justify-center gap-4">
@@ -461,7 +461,7 @@ const Testimonial = () => {
   );
 };
 
-// SECTION 9 — FINAL CTA
+// SECTION 9 - FINAL CTA
 const FinalCTA = () => {
   return (
     <section className="bg-slate-900 py-20 lg:py-24">

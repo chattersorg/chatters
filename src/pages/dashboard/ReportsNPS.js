@@ -305,7 +305,7 @@ const ReportsNPS = () => {
                               {data.npsScore}
                             </div>
                           ) : (
-                            <div className="text-3xl font-bold text-gray-400 mb-1">—</div>
+                            <div className="text-3xl font-bold text-gray-400 mb-1"> - </div>
                           )}
                           <div className="text-xs text-gray-600 font-medium">NPS Score</div>
                         </div>
@@ -388,7 +388,7 @@ const ReportsNPS = () => {
               <div className={`text-2xl font-bold mb-1 ${
                 npsData.npsScore !== null ? getNPSColor(npsData.npsScore) : 'text-gray-400'
               }`}>
-                {npsData.npsScore !== null ? npsData.npsScore : '—'}
+                {npsData.npsScore !== null ? npsData.npsScore : ' - '}
               </div>
               <div className="text-sm text-gray-600 dark:text-gray-400">
                 NPS Score
@@ -680,7 +680,7 @@ const ReportsNPS = () => {
                             {submission.linkedFeedback?.table_number || submission.table_number ? (
                               <span>{submission.linkedFeedback?.table_number || submission.table_number}</span>
                             ) : (
-                              <span className="text-gray-400 dark:text-gray-500">—</span>
+                              <span className="text-gray-400 dark:text-gray-500"> - </span>
                             )}
                           </td>
                           <td className="py-3 px-4">
@@ -699,7 +699,7 @@ const ReportsNPS = () => {
                                 {submission.feedback}
                               </span>
                             ) : (
-                              <span className="text-gray-400 dark:text-gray-500">—</span>
+                              <span className="text-gray-400 dark:text-gray-500"> - </span>
                             )}
                           </td>
                           <td className="py-3 px-4 text-sm text-gray-600 dark:text-gray-400">

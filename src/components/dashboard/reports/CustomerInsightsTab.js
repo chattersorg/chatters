@@ -1,4 +1,4 @@
-// CustomerInsightsTab.js — Detailed customer feedback analysis
+// CustomerInsightsTab.js - Detailed customer feedback analysis
 
 import React from 'react';
 import RatingDistributionTile from './RatingDistributionTile';

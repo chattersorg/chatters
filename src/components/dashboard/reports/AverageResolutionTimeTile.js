@@ -223,7 +223,7 @@ export default function AverageResolutionTimeTile({ venueId, timeframe = 'last7'
   return (
     <MetricCard
       title="Avg. Resolution Time"
-      value={loading ? '—' : formatTime(avg)}
+      value={loading ? ' - ' : formatTime(avg)}
       description={count > 0 ? `${count} items resolved` : 'No resolved items'}
       icon={Clock}
       variant="neutral"
