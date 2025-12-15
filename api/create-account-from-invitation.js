@@ -109,6 +109,8 @@ module.exports = async function handler(req, res) {
         email: invitation.email,
         first_name: invitation.first_name,
         last_name: invitation.last_name,
+        phone: invitation.phone || null,
+        date_of_birth: invitation.date_of_birth || null,
         role: 'manager',
         account_id: invitation.account_id
       });
@@ -137,6 +139,24 @@ module.exports = async function handler(req, res) {
     if (staffError) {
       console.error('Staff records creation error:', staffError);
       // Don't fail the whole request, but log it
+    }
+
+    // Create user permissions if a permission template was specified
+    if (invitation.permission_template_id) {
+      const { error: permError } = await supabaseAdmin
+        .from('user_permissions')
+        .insert({
+          user_id: authData.user.id,
+          account_id: invitation.account_id,
+          role_template_id: invitation.permission_template_id,
+          custom_permissions: [],
+          created_by: invitation.invited_by
+        });
+
+      if (permError) {
+        console.error('User permissions creation error:', permError);
+        // Don't fail the whole request, but log it
+      }
     }
 
     // Mark invitation as accepted

@@ -1,17 +1,19 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { supabase } from '../../../utils/supabase';
 import { Button } from '../../ui/button';
 import PermissionsManager from './PermissionsManager';
-import { Shield } from 'lucide-react';
+import { Shield, Plus } from 'lucide-react';
 import { PermissionGate } from '../../../context/PermissionsContext';
 
-const ManagersTab = ({ 
-  managers, 
-  allVenues, 
+const ManagersTab = ({
+  managers,
+  allVenues,
   fetchStaffData,
   loading,
-  setMessage 
+  setMessage
 }) => {
+  const navigate = useNavigate();
   const [showAddForm, setShowAddForm] = useState(false);
   const [showAssignForm, setShowAssignForm] = useState(false);
   const [assigningToVenue, setAssigningToVenue] = useState(null);
@@ -530,9 +532,10 @@ const ManagersTab = ({
           <PermissionGate permission="managers.invite">
             <Button
               variant="primary"
-              onClick={() => setShowAddForm(true)}
+              onClick={() => navigate('/staff/managers/add')}
               className="w-full sm:w-auto"
             >
+              <Plus className="w-4 h-4 mr-2" />
               Add Manager
             </Button>
           </PermissionGate>
@@ -559,8 +562,9 @@ const ManagersTab = ({
             <p className="text-gray-600 dark:text-gray-400 mb-4">Add your first manager to get started</p>
             <Button
               variant="primary"
-              onClick={() => setShowAddForm(true)}
+              onClick={() => navigate('/staff/managers/add')}
             >
+              <Plus className="w-4 h-4 mr-2" />
               Add First Manager
             </Button>
           </div>
