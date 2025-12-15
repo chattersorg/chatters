@@ -52,6 +52,7 @@ const StaffListPage = () => {
 
   // Pending invitations
   const [pendingInvitations, setPendingInvitations] = useState([]);
+  const [revokingInvitation, setRevokingInvitation] = useState(null);
 
   // CSV states
   const [uploading, setUploading] = useState(false);
@@ -208,21 +209,23 @@ const StaffListPage = () => {
 
   const fetchPendingInvitations = async () => {
     try {
-      const { data: authUser } = await supabase.auth.getUser();
-      const { data: userData } = await supabase
-        .from('users')
-        .select('account_id')
-        .eq('id', authUser.user.id)
-        .single();
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) return;
 
-      const { data: invitations } = await supabase
-        .from('manager_invitations')
-        .select('*')
-        .eq('account_id', userData.account_id)
-        .eq('status', 'pending')
-        .gt('expires_at', new Date().toISOString());
+      const response = await fetch('/api/admin/get-pending-invitations', {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${session.access_token}`,
+          'Content-Type': 'application/json'
+        }
+      });
 
-      setPendingInvitations(invitations || []);
+      if (response.ok) {
+        const data = await response.json();
+        setPendingInvitations(data.invitations || []);
+      } else {
+        console.error('Failed to fetch pending invitations');
+      }
     } catch (error) {
       console.error('Error fetching pending invitations:', error);
     }
@@ -493,6 +496,31 @@ const StaffListPage = () => {
     }
   };
 
+  const handleRevokeInvitation = async (invitationId) => {
+    setRevokingInvitation(invitationId);
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      const res = await fetch('/api/admin/revoke-invitation', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session?.access_token}`
+        },
+        body: JSON.stringify({ invitationId }),
+      });
+
+      const result = await res.json();
+      if (!res.ok) throw new Error(result.error || 'Failed to revoke invitation');
+
+      setMessage('Invitation revoked successfully');
+      await fetchPendingInvitations();
+    } catch (error) {
+      setMessage('Failed to revoke invitation: ' + error.message);
+    } finally {
+      setRevokingInvitation(null);
+    }
+  };
+
   const handleRecoverManager = async (managerId) => {
     setRecoveringManager(managerId);
     try {
@@ -680,7 +708,15 @@ const StaffListPage = () => {
             {/* Staff Table */}
             <div className="bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-800 shadow-sm overflow-hidden">
               <div className="overflow-x-auto">
-                <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700 table-fixed">
+                  <colgroup>
+                    <col className="w-[22%]" />
+                    <col className="w-[12%]" />
+                    <col className="w-[18%]" />
+                    <col className="w-[22%]" />
+                    <col className="w-[12%]" />
+                    <col className="w-[14%]" />
+                  </colgroup>
                   <thead className="bg-gray-50 dark:bg-gray-800">
                     <tr>
                       <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wider">
@@ -694,6 +730,9 @@ const StaffListPage = () => {
                       </th>
                       <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wider">
                         Email
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wider">
+                        Status
                       </th>
                       <th className="px-6 py-3 text-center text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wider">
                         Actions
@@ -750,6 +789,11 @@ const StaffListPage = () => {
                               {manager.users?.email}
                             </div>
                           </td>
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400">
+                              Active
+                            </span>
+                          </td>
                           <td className="px-6 py-4 whitespace-nowrap text-center">
                             <div className="flex items-center justify-center space-x-2">
                               <button
@@ -771,6 +815,82 @@ const StaffListPage = () => {
                                   </button>
                                 </PermissionGate>
                               )}
+                            </div>
+                          </td>
+                        </tr>
+                      );
+                    })}
+
+                    {/* Pending Manager Invitations */}
+                    {(activeTab === 'all' || activeTab === 'managers') && pendingInvitations.map((invitation, index) => {
+                      const invitationVenues = (invitation.venue_ids || [])
+                        .map(vid => allVenues.find(v => v.id === vid))
+                        .filter(Boolean);
+
+                      return (
+                        <tr
+                          key={`pending-${invitation.id}`}
+                          className={`hover:bg-amber-50 dark:hover:bg-amber-900/10 transition-colors duration-150 bg-amber-50/50 dark:bg-amber-900/10`}
+                        >
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <div className="flex items-center">
+                              <div className="w-10 h-10 rounded-full bg-amber-100 dark:bg-amber-900/30 flex items-center justify-center text-sm font-medium text-amber-600 dark:text-amber-400 mr-3">
+                                {((invitation.first_name || '') + ' ' + (invitation.last_name || '')).split(' ').map(word => word[0]).join('').toUpperCase() || '?'}
+                              </div>
+                              <div>
+                                <span className="text-sm font-medium text-gray-900 dark:text-white">
+                                  {invitation.first_name} {invitation.last_name}
+                                </span>
+                              </div>
+                            </div>
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-400">
+                              <UserCheck className="w-3 h-3 mr-1" />
+                              Manager
+                            </span>
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <div className="text-sm text-gray-600 dark:text-gray-400 flex items-center">
+                              <Building2 className="w-3.5 h-3.5 mr-1.5 text-gray-400" />
+                              {invitationVenues.length === 1
+                                ? invitationVenues[0]?.name
+                                : invitationVenues.length > 1
+                                  ? `${invitationVenues.length} venues`
+                                  : '-'
+                              }
+                            </div>
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <div className="text-sm text-gray-600 dark:text-gray-400">
+                              {invitation.email}
+                            </div>
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400">
+                              Pending
+                            </span>
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-center">
+                            <div className="flex items-center justify-center space-x-2">
+                              <PermissionGate permission="managers.invite">
+                                <button
+                                  onClick={() => handleResendInvitation(invitation.email)}
+                                  disabled={resendingEmail === invitation.email}
+                                  className="text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 text-sm font-medium disabled:opacity-50"
+                                >
+                                  {resendingEmail === invitation.email ? 'Sending...' : 'Resend'}
+                                </button>
+                              </PermissionGate>
+                              <PermissionGate permission="managers.invite">
+                                <button
+                                  onClick={() => handleRevokeInvitation(invitation.id)}
+                                  disabled={revokingInvitation === invitation.id}
+                                  className="text-red-600 dark:text-red-400 hover:text-red-800 dark:hover:text-red-300 text-sm font-medium disabled:opacity-50"
+                                >
+                                  {revokingInvitation === invitation.id ? 'Revoking...' : 'Revoke'}
+                                </button>
+                              </PermissionGate>
                             </div>
                           </td>
                         </tr>
@@ -827,6 +947,11 @@ const StaffListPage = () => {
                             <span className="text-sm text-gray-400 dark:text-gray-500">-</span>
                           )}
                         </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400">
+                            Active
+                          </span>
+                        </td>
                         <td className="px-6 py-4 whitespace-nowrap text-center">
                           <button
                             onClick={() => navigate(`/staff/employees/${employee.id}`)}
@@ -844,7 +969,7 @@ const StaffListPage = () => {
                       (activeTab === 'employees' && tabCounts.employees === 0) ||
                       (activeTab === 'managers' && tabCounts.managers === 0)) && (
                       <tr>
-                        <td colSpan="5" className="px-6 py-12 text-center">
+                        <td colSpan="6" className="px-6 py-12 text-center">
                           <div className="flex flex-col items-center">
                             <div className="w-16 h-16 bg-gray-100 dark:bg-gray-800 rounded-full flex items-center justify-center mb-4">
                               <Users className="w-8 h-8 text-gray-400 dark:text-gray-500" />

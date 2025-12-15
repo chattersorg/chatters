@@ -392,22 +392,28 @@ const ManagersTab = ({
   }, []);
 
   const fetchPendingInvitations = async () => {
+    console.log('fetchPendingInvitations called');
     try {
-      const { data: authUser } = await supabase.auth.getUser();
-      const { data: userData } = await supabase
-        .from('users')
-        .select('account_id')
-        .eq('id', authUser.user.id)
-        .single();
+      const { data: { session } } = await supabase.auth.getSession();
+      console.log('Session:', session ? 'exists' : 'null');
+      if (!session) return;
 
-      const { data: invitations } = await supabase
-        .from('manager_invitations')
-        .select('*')
-        .eq('account_id', userData.account_id)
-        .eq('status', 'pending')
-        .gt('expires_at', new Date().toISOString());
+      const response = await fetch('/api/admin/get-pending-invitations', {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${session.access_token}`,
+          'Content-Type': 'application/json'
+        }
+      });
 
-      setPendingInvitations(invitations || []);
+      console.log('Response status:', response.status);
+      if (response.ok) {
+        const data = await response.json();
+        console.log('Pending invitations data:', data);
+        setPendingInvitations(data.invitations || []);
+      } else {
+        console.error('Failed to fetch pending invitations:', await response.text());
+      }
     } catch (error) {
       console.error('Error fetching pending invitations:', error);
     }

@@ -18,8 +18,9 @@ module.exports = async function handler(req, res) {
     const { data: invitations, error } = await supabaseAdmin
       .from('manager_invitations')
       .select('*')
-      .eq('invited_by', userData.id)
+      .eq('account_id', userData.account_id)
       .eq('status', 'pending')
+      .gt('expires_at', new Date().toISOString())
       .order('created_at', { ascending: false });
 
     if (error) throw error;
