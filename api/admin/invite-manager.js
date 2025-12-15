@@ -51,11 +51,12 @@ module.exports = async function handler(req, res) {
       return res.status(403).json({ error: 'Some venues do not belong to your account' });
     }
 
-    // Check if user already exists
+    // Check if user already exists (excluding soft-deleted users)
     const { data: existingUser } = await supabaseAdmin
       .from('users')
       .select('id, email, role')
       .eq('email', email)
+      .is('deleted_at', null)
       .single();
 
     if (existingUser) {
@@ -165,7 +166,7 @@ function generateInvitationEmail(firstName, inviterName, venueNames, inviteLink)
           <!-- Header with Logo -->
           <tr>
             <td style="background-color: #000000; padding: 40px; text-align: center;">
-              <img src="https://getchatters.com/img/Logo.svg" alt="Chatters" style="height: 40px; width: auto; margin-bottom: 20px;" />
+              <img src="https://getchatters.com/img/logo/chatters-logo-white-2025.svg" alt="Chatters" style="height: 32px; width: auto; margin-bottom: 20px;" />
               <h1 style="margin: 0; color: #ffffff; font-size: 26px; font-weight: 600; letter-spacing: -0.5px;">You're Invited!</h1>
             </td>
           </tr>
@@ -238,7 +239,7 @@ function generateInvitationEmail(firstName, inviterName, venueNames, inviteLink)
               <table width="100%" cellpadding="0" cellspacing="0">
                 <tr>
                   <td align="center">
-                    <img src="https://getchatters.com/img/Logo.svg" alt="Chatters" style="height: 24px; width: auto; opacity: 0.6; margin-bottom: 16px;" />
+                    <img src="https://getchatters.com/img/logo/chatters-logo-black-2025.svg" alt="Chatters" style="height: 20px; width: auto; opacity: 0.6; margin-bottom: 16px;" />
                   </td>
                 </tr>
               </table>

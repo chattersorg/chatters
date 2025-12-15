@@ -114,7 +114,7 @@ function generateRecognitionEmail(
           <!-- Footer -->
           <tr>
             <td style="background-color: #000000; padding: 32px; text-align: center;">
-              <img src="https://getchatters.com/img/Logo.svg" alt="Chatters" style="height: 24px; margin-bottom: 16px; filter: invert(1) brightness(2);">
+              <img src="https://getchatters.com/img/logo/chatters-logo-white-2025.svg" alt="Chatters" style="height: 20px; margin-bottom: 16px;">
               <p style="margin: 0; color: #9ca3af; font-size: 13px; line-height: 1.5;">
                 This recognition was sent via Chatters
               </p>
