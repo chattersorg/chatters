@@ -13,7 +13,7 @@ const HowItWorksSection = () => {
           How It Works
         </h1>
         <p className="font-inter mx-auto mb-12 mt-4 max-w-lg px-5 text-center text-base font-light text-gray-500">
-          Stop negative reviews in 3 steps — catch unhappy guests before they leave and fix the problem on the spot.
+          Stop negative reviews in 3 steps: catch unhappy guests before they leave and fix the problem on the spot.
         </p>
 
         {/* Steps */}
@@ -26,7 +26,7 @@ const HowItWorksSection = () => {
             <div className="ml-6 lg:ml-0">
               <h2 className="mb-5 text-xl font-medium lg:mt-8">Guests Scan QR Code</h2>
               <p className="font-inter max-w-md pr-5 text-base text-gray-500">
-                Guests scan a QR code at their table to leave quick, honest feedback in seconds — no app needed.
+                Guests scan a QR code at their table to leave quick, honest feedback in seconds with no app needed.
               </p>
             </div>
           </div>
@@ -39,7 +39,7 @@ const HowItWorksSection = () => {
             <div className="ml-6 lg:ml-0">
               <h2 className="mb-5 text-xl font-medium lg:mt-8">Real-Time Alert</h2>
               <p className="font-inter max-w-md pr-5 text-base text-gray-500">
-                If a guest is unhappy, your team gets notified instantly — giving you a chance to fix it before they walk out.
+                If a guest is unhappy, your team gets notified instantly, giving you a chance to fix it before they walk out.
               </p>
             </div>
           </div>
@@ -50,7 +50,7 @@ const HowItWorksSection = () => {
               <h2 className="text-3xl font-medium">3</h2>
             </div>
             <div className="ml-6 lg:ml-0">
-              <h2 className="mb-5 text-xl font-medium lg:mt-8">Take Action — Instantly</h2>
+              <h2 className="mb-5 text-xl font-medium lg:mt-8">Take Action Instantly</h2>
               <p className="font-inter max-w-md pr-5 text-base text-gray-500">
                 Speak to the guest, solve the issue, and turn a 1-star experience into a 5-star review.
               </p>

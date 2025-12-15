@@ -20,7 +20,7 @@ import Navbar from '../../../components/marketing/layout/Navbar';
 import Footer from '../../../components/marketing/layout/Footer';
 
 // ─────────────────────────────────────────────────────────────
-// SECTION 1 — HERO
+// SECTION 1, HERO
 // ─────────────────────────────────────────────────────────────
 const Hero = () => (
   <section className="relative pt-32 pb-20 bg-gradient-to-b from-white to-slate-50 overflow-hidden">
@@ -32,11 +32,11 @@ const Hero = () => (
             Restaurants
           </p>
           <h1 className="text-4xl sm:text-5xl font-bold text-gray-900 leading-tight mb-6">
-            Fix Service Issues Before Guests Leave —{' '}
+            Fix Service Issues Before Guests Leave, {' '}
             <span className="text-[#4E74FF]">Not After They Review You</span>
           </h1>
           <p className="text-xl text-gray-600 mb-8 leading-relaxed">
-            Chatters helps restaurants catch unhappy guests in real time, recover service instantly, and boost online ratings — all during the same visit.
+            Chatters helps restaurants catch unhappy guests in real time, recover service instantly, and boost online ratings, all during the same visit.
           </p>
           <div className="flex flex-col sm:flex-row gap-4">
             <Link
@@ -83,7 +83,7 @@ const Hero = () => (
 );
 
 // ─────────────────────────────────────────────────────────────
-// SECTION 2 — THE PROBLEM
+// SECTION 2, THE PROBLEM
 // ─────────────────────────────────────────────────────────────
 const Problem = () => (
   <section className="py-20 bg-slate-900">
@@ -116,7 +116,7 @@ const Problem = () => (
           ))}
         </div>
         <p className="text-lg text-slate-300 mb-4">
-          Most unhappy guests never complain in person. They just leave — and review you later.
+          Most unhappy guests never complain in person. They just leave, and review you later.
         </p>
         <p className="text-xl text-white font-semibold">
           Chatters turns these silent moments into real-time opportunities to recover the experience.
@@ -127,7 +127,7 @@ const Problem = () => (
 );
 
 // ─────────────────────────────────────────────────────────────
-// SECTION 3 — WHAT CHATTERS DOES FOR RESTAURANTS
+// SECTION 3, WHAT CHATTERS DOES FOR RESTAURANTS
 // ─────────────────────────────────────────────────────────────
 const WhatChattersDoesSection = () => {
   const features = [
@@ -189,7 +189,7 @@ const WhatChattersDoesSection = () => {
 };
 
 // ─────────────────────────────────────────────────────────────
-// SECTION 4 — REAL RESTAURANT MOMENTS
+// SECTION 4, REAL RESTAURANT MOMENTS
 // ─────────────────────────────────────────────────────────────
 const Scenarios = () => {
   const scenarios = [
@@ -236,7 +236,7 @@ const Scenarios = () => {
           ))}
         </div>
         <p className="text-center text-xl text-gray-600 mt-12 font-medium">
-          This is real-time hospitality — not guesswork.
+          This is real-time hospitality, not guesswork.
         </p>
       </div>
     </section>
@@ -244,7 +244,7 @@ const Scenarios = () => {
 };
 
 // ─────────────────────────────────────────────────────────────
-// SECTION 5 — WHY RESTAURANTS DEPEND ON CHATTERS
+// SECTION 5, WHY RESTAURANTS DEPEND ON CHATTERS
 // ─────────────────────────────────────────────────────────────
 const WhyRestaurants = () => {
   const benefits = [
@@ -306,7 +306,7 @@ const WhyRestaurants = () => {
 };
 
 // ─────────────────────────────────────────────────────────────
-// SECTION 6 — A RESTAURANT STORY IN ACTION
+// SECTION 6, A RESTAURANT STORY IN ACTION
 // ─────────────────────────────────────────────────────────────
 const StoryInAction = () => (
   <section className="py-20 bg-slate-50">
@@ -341,7 +341,7 @@ const StoryInAction = () => (
               ))}
             </div>
             <p className="text-lg text-gray-800 italic">
-              "Service was brilliant — they handled everything perfectly. Will definitely return."
+              "Service was brilliant, they handled everything perfectly. Will definitely return."
             </p>
           </div>
 
@@ -355,7 +355,7 @@ const StoryInAction = () => (
 );
 
 // ─────────────────────────────────────────────────────────────
-// SECTION 7 — FINAL CTA
+// SECTION 7, FINAL CTA
 // ─────────────────────────────────────────────────────────────
 const FinalCTA = () => (
   <section className="py-20 bg-slate-900">
@@ -392,7 +392,7 @@ const RestaurantsPage = () => {
         <title>Restaurants | Chatters - Real-Time Guest Feedback for Restaurants</title>
         <meta
           name="description"
-          content="Chatters helps restaurants catch unhappy guests in real time, recover service instantly, and boost online ratings — all during the same visit."
+          content="Chatters helps restaurants catch unhappy guests in real time, recover service instantly, and boost online ratings, all during the same visit."
         />
         <meta
           name="keywords"
@@ -401,7 +401,7 @@ const RestaurantsPage = () => {
         <meta property="og:title" content="Restaurants | Chatters" />
         <meta
           property="og:description"
-          content="Fix service issues before guests leave — not after they review you."
+          content="Fix service issues before guests leave, not after they review you."
         />
         <meta property="og:type" content="website" />
         <link rel="canonical" href="https://getchatters.com/industries/restaurants" />

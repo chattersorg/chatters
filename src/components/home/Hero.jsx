@@ -152,7 +152,7 @@ const Hero = () => {
 
           {/* Subheadline */}
           <p className="text-lg sm:text-xl text-gray-600 mb-8 max-w-2xl mx-auto leading-relaxed">
-            Real-time guest feedback that alerts your team instantly — so you can fix issues while customers are still at the table.
+            Real-time guest feedback that alerts your team instantly so you can fix issues while customers are still at the table.
           </p>
 
           {/* CTAs */}

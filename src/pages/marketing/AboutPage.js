@@ -215,13 +215,13 @@ const AboutUsPage = () => {
           <div>
             <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-6">Why UK Restaurants Need Real-Time Feedback Software</h2>
             <p className="text-gray-600 mb-4 text-lg">
-              The hospitality industry has a feedback problem. Guests leave without saying a word about poor service, cold food, or unclean facilities — then blast venues online hours or days later.
+              The hospitality industry has a feedback problem. Guests leave without saying a word about poor service, cold food, or unclean facilities, then blast venues online hours or days later.
             </p>
             <p className="text-gray-600 mb-4">
-              We saw incredible teams losing customers and reputation damage — not because they didn't care, but because they found out too late. The traditional comment card was dead, and online reviews came after the damage was done.
+              We saw incredible teams losing customers and reputation damage, not because they didn't care, but because they found out too late. The traditional comment card was dead, and online reviews came after the damage was done.
             </p>
             <p className="text-gray-600 mb-4">
-              So we built a bridge: QR codes that give guests a voice in the moment, and give venues the power to act immediately. No apps to download, no accounts to create — just instant, actionable feedback. See our <a href="/features" className="text-blue-600 hover:text-blue-700 underline">complete feature list</a> for UK restaurants.
+              So we built a bridge: QR codes that give guests a voice in the moment, and give venues the power to act immediately. No apps to download, no accounts to create, just instant, actionable feedback. See our <a href="/features" className="text-blue-600 hover:text-blue-700 underline">complete feature list</a> for UK restaurants.
             </p>
             <p className="text-gray-600 font-medium">
               Chatters transforms customer service from reactive damage control to proactive guest recovery. Learn about our <a href="/pricing" className="text-blue-600 hover:text-blue-700 underline">flexible pricing plans</a> or <a href="/contact" className="text-blue-600 hover:text-blue-700 underline">book a demo</a> today.
@@ -316,7 +316,7 @@ const AboutUsPage = () => {
             <div>
               <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-6">Built for Scale</h2>
               <p className="text-gray-600 mb-6 text-lg">
-                Chatters runs on modern cloud infrastructure designed for the hospitality industry's unique demands — high availability during peak hours, instant global response times, and bulletproof security.
+                Chatters runs on modern cloud infrastructure designed for the hospitality industry's unique demands, high availability during peak hours, instant global response times, and bulletproof security.
               </p>
               <div className="space-y-4">
                 <div className="flex items-start space-x-3">
