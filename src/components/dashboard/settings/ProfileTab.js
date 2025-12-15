@@ -135,17 +135,18 @@ const ProfileTab = ({
     setEmailChangeMessage('');
 
     try {
-      const { data, error } = await supabase.functions.invoke('send-email-change', {
-        body: { currentEmail: email, newEmail: newEmail }
+      const res = await fetch('/api/send-email-change', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ currentEmail: email, newEmail: newEmail })
       });
 
-      if (error) {
-        console.error('Email change error:', error);
-        throw error;
-      }
+      const data = await res.json();
 
-      if (data.error) {
-        throw new Error(data.error);
+      if (!res.ok) {
+        throw new Error(data.error || 'Failed to send verification email');
       }
 
       setEmailChangeMessage(`Verification email sent to ${newEmail}! Please check your inbox to confirm the change.`);
