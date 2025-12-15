@@ -17,17 +17,17 @@ const ForgotPassword = () => {
     setMessage('');
 
     try {
-      const { data, error } = await supabase.functions.invoke('send-password-reset', {
-        body: { email }
+      const res = await fetch('/api/send-password-reset', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email })
       });
 
-      if (error) {
-        console.error('Password reset error:', error);
-        throw new Error(error.message || 'Failed to send password reset email');
-      }
+      const data = await res.json();
 
-      if (data.error) {
-        throw new Error(data.error);
+      if (!res.ok || data.error) {
+        console.error('Password reset error:', data.error);
+        throw new Error(data.error || 'Failed to send password reset email');
       }
 
       setMessage('Password reset link sent to your email. Check your inbox (and spam folder)!');

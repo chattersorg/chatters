@@ -95,13 +95,17 @@ const ProfileTab = ({
     setPasswordResetMessage('');
 
     try {
-      const { data, error } = await supabase.functions.invoke('send-password-reset', {
-        body: { email }
+      const res = await fetch('/api/send-password-reset', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email })
       });
 
-      if (error) {
-        console.error('Password reset error:', error);
-        throw error;
+      const data = await res.json();
+
+      if (!res.ok || data.error) {
+        console.error('Password reset error:', data.error);
+        throw new Error(data.error || 'Failed to send password reset email');
       }
 
       setPasswordResetMessage('Password reset email sent! Please check your inbox (and spam folder).');

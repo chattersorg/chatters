@@ -10,7 +10,7 @@ module.exports = async function handler(req, res) {
   // CORS headers
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
 
   if (req.method === 'OPTIONS') {
     return res.status(200).end();
@@ -30,7 +30,41 @@ module.exports = async function handler(req, res) {
       });
     }
 
-    // Look up the invitation
+    // First, try staff_invitation_tokens table
+    const { data: staffToken, error: staffError } = await supabaseAdmin
+      .from('staff_invitation_tokens')
+      .select('*')
+      .eq('token', token)
+      .single();
+
+    if (!staffError && staffToken) {
+      // Check if token has been used
+      if (staffToken.used_at) {
+        return res.status(200).json({
+          valid: false,
+          message: 'This invitation has already been used'
+        });
+      }
+
+      // Check if token has expired
+      const expiresAt = new Date(staffToken.expires_at);
+      if (expiresAt < new Date()) {
+        return res.status(200).json({
+          valid: false,
+          message: 'This invitation has expired'
+        });
+      }
+
+      // Token is valid
+      return res.status(200).json({
+        valid: true,
+        email: staffToken.email,
+        venueId: staffToken.venue_id,
+        role: staffToken.role
+      });
+    }
+
+    // Fallback: try manager_invitations table
     const { data: invitation, error } = await supabaseAdmin
       .from('manager_invitations')
       .select('*')
