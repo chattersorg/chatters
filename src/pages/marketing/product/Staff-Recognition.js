@@ -17,7 +17,7 @@ import {
 import Navbar from '../../../components/marketing/layout/Navbar';
 import Footer from '../../../components/marketing/layout/Footer';
 
-// SECTION 1 — HERO
+// SECTION 1, HERO
 const Hero = () => {
   return (
     <section className="bg-white py-20 lg:py-24">
@@ -33,7 +33,7 @@ const Hero = () => {
             </h1>
 
             <p className="text-xl text-gray-600 mb-8 leading-relaxed">
-              Automatically send recognition emails to staff when guests mention them by name — boosting morale and reinforcing great service.
+              Automatically send recognition emails to staff when guests mention them by name, boosting morale and reinforcing great service.
             </p>
 
             <div className="flex flex-col sm:flex-row gap-4">
@@ -114,7 +114,7 @@ const Hero = () => {
   );
 };
 
-// SECTION 2 — THE PROBLEM
+// SECTION 2, THE PROBLEM
 const Problem = () => {
   return (
     <section className="bg-slate-900 py-20 lg:py-24">
@@ -128,7 +128,7 @@ const Problem = () => {
             <p>
               Your team works hard. Guests notice.
               <br />
-              But too often, that praise stays buried in feedback forms — never reaching the person who earned it.
+              But too often, that praise stays buried in feedback forms, never reaching the person who earned it.
             </p>
 
             <p className="text-white font-semibold text-2xl">
@@ -136,7 +136,7 @@ const Problem = () => {
             </p>
 
             <p>
-              Staff Recognition automates the celebration — so your team feels valued, every time.
+              Staff Recognition automates the celebration, so your team feels valued, every time.
             </p>
           </div>
         </div>
@@ -145,7 +145,7 @@ const Problem = () => {
   );
 };
 
-// SECTION 3 — HOW IT WORKS
+// SECTION 3, HOW IT WORKS
 const HowItWorksSection = () => {
   const features = [
     { icon: MessageSquare, text: 'Guest leaves feedback mentioning a staff member' },
@@ -164,7 +164,7 @@ const HowItWorksSection = () => {
               How Staff Recognition Works
             </h2>
             <p className="text-lg text-gray-600">
-              From guest comment to staff inbox — automatically.
+              From guest comment to staff inbox, automatically.
             </p>
           </div>
 
@@ -191,7 +191,7 @@ const HowItWorksSection = () => {
   );
 };
 
-// SECTION 4 — THE FLOW
+// SECTION 4, THE FLOW
 const TheFlow = () => {
   const steps = [
     {
@@ -202,7 +202,7 @@ const TheFlow = () => {
     {
       number: '2',
       title: 'Chatters matches the name',
-      description: 'Sarah is on your staff list — she gets the credit.',
+      description: 'Sarah is on your staff list, she gets the credit.',
     },
     {
       number: '3',
@@ -257,7 +257,7 @@ const TheFlow = () => {
   );
 };
 
-// SECTION 5 — WHY IT MATTERS
+// SECTION 5, WHY IT MATTERS
 const WhyItMatters = () => {
   const benefits = [
     {
@@ -274,7 +274,7 @@ const WhyItMatters = () => {
     },
     {
       title: 'Zero admin for managers',
-      description: 'It happens automatically — no forwarding required.',
+      description: 'It happens automatically, no forwarding required.',
     },
     {
       title: 'Build a positive culture',
@@ -312,13 +312,13 @@ const WhyItMatters = () => {
   );
 };
 
-// SECTION 6 — FEATURES
+// SECTION 6, FEATURES
 const Features = () => {
   const features = [
     {
       icon: Users,
       title: 'Staff Directory Sync',
-      description: 'Add your team once — Chatters handles the rest.',
+      description: 'Add your team once, Chatters handles the rest.',
     },
     {
       icon: Mail,
@@ -333,7 +333,7 @@ const Features = () => {
     {
       icon: TrendingUp,
       title: 'Recognition Reports',
-      description: "See who's getting praised — and how often.",
+      description: "See who's getting praised, and how often.",
     },
   ];
 
@@ -371,7 +371,7 @@ const Features = () => {
   );
 };
 
-// SECTION 7 — REAL EXAMPLE
+// SECTION 7, REAL EXAMPLE
 const RealExample = () => {
   return (
     <section className="bg-white py-20 lg:py-24">
@@ -390,7 +390,7 @@ const RealExample = () => {
 
             <div className="bg-blue-50 border-l-4 border-blue-400 p-6 rounded-r-xl">
               <p className="text-lg text-gray-800 italic">
-                "James was absolutely wonderful — he recommended the wine pairing and it made the whole meal. Thank you!"
+                "James was absolutely wonderful, he recommended the wine pairing and it made the whole meal. Thank you!"
               </p>
             </div>
 
@@ -415,12 +415,12 @@ const RealExample = () => {
               </div>
 
               <p className="text-lg text-gray-800 italic">
-                "James was absolutely wonderful — he recommended the wine pairing and it made the whole meal."
+                "James was absolutely wonderful, he recommended the wine pairing and it made the whole meal."
               </p>
             </div>
 
             <p className="text-xl font-bold text-gray-900 text-center">
-              That email costs nothing — but means everything.
+              That email costs nothing, but means everything.
             </p>
           </div>
         </div>
@@ -429,7 +429,7 @@ const RealExample = () => {
   );
 };
 
-// SECTION 8 — TESTIMONIAL
+// SECTION 8, TESTIMONIAL
 const Testimonial = () => {
   return (
     <section className="bg-gray-50 py-20 lg:py-24">
@@ -454,7 +454,7 @@ const Testimonial = () => {
   );
 };
 
-// SECTION 9 — FINAL CTA
+// SECTION 9, FINAL CTA
 const FinalCTA = () => {
   return (
     <section className="bg-slate-900 py-20 lg:py-24">
@@ -493,7 +493,7 @@ const StaffRecognitionPage = () => {
         <title>Staff Recognition | Automated Team Appreciation | Chatters</title>
         <meta
           name="description"
-          content="Celebrate your team when guests do. Automatically send recognition emails to staff when guests mention them by name — boosting morale and reinforcing great service."
+          content="Celebrate your team when guests do. Automatically send recognition emails to staff when guests mention them by name, boosting morale and reinforcing great service."
         />
         <meta
           name="keywords"

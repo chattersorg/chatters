@@ -22,7 +22,7 @@ const Differentiator = () => {
 
           {/* Intro Paragraph */}
           <p className="text-xl text-gray-600 text-center mb-12 leading-relaxed">
-            Most feedback tools are slow, complicated, or designed for corporate analysts — not fast-moving hospitality teams. Chatters is different:
+            Most feedback tools are slow, complicated, or designed for corporate analysts, not fast-moving hospitality teams. Chatters is different:
           </p>
 
           {/* Points */}

@@ -17,7 +17,7 @@ import {
 import Navbar from '../../../components/marketing/layout/Navbar';
 import Footer from '../../../components/marketing/layout/Footer';
 
-// SECTION 1 — HERO
+// SECTION 1, HERO
 const Hero = () => {
   return (
     <section className="bg-white py-20 lg:py-24">
@@ -33,7 +33,7 @@ const Hero = () => {
             </h1>
 
             <p className="text-xl text-gray-600 mb-8 leading-relaxed">
-              Multi-Venue Analytics reveals cross-location patterns, performance trends, and operational insights — helping hospitality groups scale consistency and excellence.
+              Multi-Venue Analytics reveals cross-location patterns, performance trends, and operational insights, helping hospitality groups scale consistency and excellence.
             </p>
 
             <div className="flex flex-col sm:flex-row gap-4">
@@ -136,7 +136,7 @@ const Hero = () => {
   );
 };
 
-// SECTION 2 — THE PROBLEM
+// SECTION 2, THE PROBLEM
 const Problem = () => {
   const items = [
     'Each location',
@@ -155,7 +155,7 @@ const Problem = () => {
 
           <div className="text-xl text-slate-300 space-y-6">
             <p>
-              Individual venue feedback is useful. But patterns across multiple venues are powerful — and most operators never see them.
+              Individual venue feedback is useful. But patterns across multiple venues are powerful, and most operators never see them.
             </p>
 
             <p>
@@ -172,7 +172,7 @@ const Problem = () => {
             </ul>
 
             <p className="text-white font-semibold text-2xl pt-4">
-              Multi-Venue Analytics connects the dots automatically — so you see the truth across your entire operation.
+              Multi-Venue Analytics connects the dots automatically, so you see the truth across your entire operation.
             </p>
           </div>
         </div>
@@ -181,7 +181,7 @@ const Problem = () => {
   );
 };
 
-// SECTION 3 — WHAT IT REVEALS
+// SECTION 3, WHAT IT REVEALS
 const WhatItReveals = () => {
   const features = [
     {
@@ -192,7 +192,7 @@ const WhatItReveals = () => {
     {
       icon: PieChart,
       title: 'Category insight',
-      description: 'Service, food, drinks, ambience — by venue.'
+      description: 'Service, food, drinks, ambience, by venue.'
     },
     {
       icon: TrendingUp,
@@ -207,7 +207,7 @@ const WhatItReveals = () => {
     {
       icon: Building2,
       title: 'Group-wide performance drivers',
-      description: "Understand what's working — and replicate it."
+      description: "Understand what's working, and replicate it."
     },
   ];
 
@@ -243,7 +243,7 @@ const WhatItReveals = () => {
   );
 };
 
-// SECTION 4 — HOW IT WORKS
+// SECTION 4, HOW IT WORKS
 const HowItWorks = () => {
   const steps = [
     {
@@ -309,7 +309,7 @@ const HowItWorks = () => {
   );
 };
 
-// SECTION 5 — WHY OPERATORS DEPEND ON IT
+// SECTION 5, WHY OPERATORS DEPEND ON IT
 const WhyOperators = () => {
   const benefits = [
     {
@@ -364,7 +364,7 @@ const WhyOperators = () => {
   );
 };
 
-// SECTION 6 — FEATURES
+// SECTION 6, FEATURES
 const Features = () => {
   const features = [
     {
@@ -428,7 +428,7 @@ const Features = () => {
   );
 };
 
-// SECTION 7 — IN ACTION
+// SECTION 7, IN ACTION
 const InAction = () => {
   return (
     <section className="bg-white py-20 lg:py-24">
@@ -477,7 +477,7 @@ const InAction = () => {
               </div>
 
               <p className="text-lg text-gray-800 italic">
-                "Visited two branches — both excellent. Love how consistent they are."
+                "Visited two branches, both excellent. Love how consistent they are."
               </p>
             </div>
           </div>
@@ -487,7 +487,7 @@ const InAction = () => {
   );
 };
 
-// SECTION 8 — TESTIMONIAL
+// SECTION 8, TESTIMONIAL
 const Testimonial = () => {
   return (
     <section className="bg-gray-50 py-20 lg:py-24">
@@ -512,7 +512,7 @@ const Testimonial = () => {
   );
 };
 
-// SECTION 9 — FINAL CTA
+// SECTION 9, FINAL CTA
 const FinalCTA = () => {
   return (
     <section className="bg-slate-900 py-20 lg:py-24">

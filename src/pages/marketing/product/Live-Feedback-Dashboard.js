@@ -17,7 +17,7 @@ import {
 import Navbar from '../../../components/marketing/layout/Navbar';
 import Footer from '../../../components/marketing/layout/Footer';
 
-// SECTION 1 — HERO
+// SECTION 1, HERO
 const Hero = () => {
   return (
     <section className="bg-white py-20 lg:py-24">
@@ -33,7 +33,7 @@ const Hero = () => {
             </h1>
 
             <p className="text-xl text-gray-600 mb-8 leading-relaxed">
-              A real-time stream of all feedback across your venue — filterable, searchable, and always up to date.
+              A real-time stream of all feedback across your venue, filterable, searchable, and always up to date.
             </p>
 
             <div className="flex flex-col sm:flex-row gap-4">
@@ -122,7 +122,7 @@ const Hero = () => {
   );
 };
 
-// SECTION 2 — THE PROBLEM
+// SECTION 2, THE PROBLEM
 const Problem = () => {
   return (
     <section className="bg-slate-900 py-20 lg:py-24">
@@ -140,7 +140,7 @@ const Problem = () => {
             </p>
 
             <p className="text-white font-semibold text-2xl">
-              Your team needs visibility — not another dashboard to ignore.
+              Your team needs visibility, not another dashboard to ignore.
             </p>
 
             <p>
@@ -153,7 +153,7 @@ const Problem = () => {
   );
 };
 
-// SECTION 3 — WHAT YOU GET
+// SECTION 3, WHAT YOU GET
 const WhatYouGet = () => {
   const features = [
     { icon: RefreshCw, text: 'Real-time feed of all incoming feedback' },
@@ -199,13 +199,13 @@ const WhatYouGet = () => {
   );
 };
 
-// SECTION 4 — HOW IT WORKS
+// SECTION 4, HOW IT WORKS
 const HowItWorks = () => {
   const steps = [
     {
       number: '1',
       title: 'Guest submits feedback',
-      description: 'Via QR code at their table — takes 30 seconds.',
+      description: 'Via QR code at their table, takes 30 seconds.',
     },
     {
       number: '2',
@@ -265,7 +265,7 @@ const HowItWorks = () => {
   );
 };
 
-// SECTION 5 — WHY OPERATORS LOVE IT
+// SECTION 5, WHY OPERATORS LOVE IT
 const WhyOperators = () => {
   const benefits = [
     {
@@ -282,7 +282,7 @@ const WhyOperators = () => {
     },
     {
       title: 'Team accountability',
-      description: "See who's handling what — and how quickly.",
+      description: "See who's handling what, and how quickly.",
     },
     {
       title: 'Informed decisions',
@@ -320,13 +320,13 @@ const WhyOperators = () => {
   );
 };
 
-// SECTION 6 — FEATURES
+// SECTION 6, FEATURES
 const Features = () => {
   const features = [
     {
       icon: LayoutDashboard,
       title: 'Clean Interface',
-      description: 'No clutter — just the information that matters.',
+      description: 'No clutter, just the information that matters.',
     },
     {
       icon: Clock,
@@ -379,7 +379,7 @@ const Features = () => {
   );
 };
 
-// SECTION 7 — REAL EXAMPLE
+// SECTION 7, REAL EXAMPLE
 const RealExample = () => {
   return (
     <section className="bg-white py-20 lg:py-24">
@@ -419,7 +419,7 @@ const RealExample = () => {
               </div>
 
               <p className="text-lg text-gray-800 italic">
-                "Great service tonight — everyone was on it. Dashboard showed no unresolved alerts."
+                "Great service tonight, everyone was on it. Dashboard showed no unresolved alerts."
               </p>
             </div>
 
@@ -433,7 +433,7 @@ const RealExample = () => {
   );
 };
 
-// SECTION 8 — TESTIMONIAL
+// SECTION 8, TESTIMONIAL
 const Testimonial = () => {
   return (
     <section className="bg-gray-50 py-20 lg:py-24">
@@ -458,7 +458,7 @@ const Testimonial = () => {
   );
 };
 
-// SECTION 9 — FINAL CTA
+// SECTION 9, FINAL CTA
 const FinalCTA = () => {
   return (
     <section className="bg-slate-900 py-20 lg:py-24">
@@ -497,7 +497,7 @@ const LiveFeedbackDashboardPage = () => {
         <title>Live Feedback Dashboard | Real-Time Guest Comments | Chatters</title>
         <meta
           name="description"
-          content="Every guest. Every comment. One view. The Live Feedback Dashboard gives you real-time visibility into all guest feedback — filterable, searchable, and always up to date."
+          content="Every guest. Every comment. One view. The Live Feedback Dashboard gives you real-time visibility into all guest feedback, filterable, searchable, and always up to date."
         />
         <meta
           name="keywords"

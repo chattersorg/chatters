@@ -17,7 +17,7 @@ import {
 import Navbar from '../../../components/marketing/layout/Navbar';
 import Footer from '../../../components/marketing/layout/Footer';
 
-// SECTION 1 — HERO
+// SECTION 1, HERO
 const Hero = () => {
   return (
     <section className="bg-white py-20 lg:py-24">
@@ -33,7 +33,7 @@ const Hero = () => {
             </h1>
 
             <p className="text-xl text-gray-600 mb-8 leading-relaxed">
-              Multi-Location Control gives operators real-time oversight across all venues — ensuring consistency, quality, and service standards everywhere.
+              Multi-Location Control gives operators real-time oversight across all venues, ensuring consistency, quality, and service standards everywhere.
             </p>
 
             <div className="flex flex-col sm:flex-row gap-4">
@@ -159,7 +159,7 @@ const Hero = () => {
   );
 };
 
-// SECTION 2 — THE PROBLEM
+// SECTION 2, THE PROBLEM
 const Problem = () => {
   const items = [
     'Manager updates',
@@ -196,7 +196,7 @@ const Problem = () => {
             </p>
 
             <p>
-              Multi-Location Control gives you instant visibility — so every venue stays on track.
+              Multi-Location Control gives you instant visibility, so every venue stays on track.
             </p>
           </div>
         </div>
@@ -205,13 +205,13 @@ const Problem = () => {
   );
 };
 
-// SECTION 3 — WHAT IT SHOWS
+// SECTION 3, WHAT IT SHOWS
 const WhatItShows = () => {
   const features = [
     {
       icon: Eye,
       title: 'Live performance across all venues',
-      description: 'Ratings, comments, issues — updated in real time.'
+      description: 'Ratings, comments, issues, updated in real time.'
     },
     {
       icon: BarChart3,
@@ -231,7 +231,7 @@ const WhatItShows = () => {
     {
       icon: Layers,
       title: 'Unified source of truth',
-      description: 'Every manager sees the same data — no conflicting reports.'
+      description: 'Every manager sees the same data, no conflicting reports.'
     },
   ];
 
@@ -267,7 +267,7 @@ const WhatItShows = () => {
   );
 };
 
-// SECTION 4 — HOW IT WORKS
+// SECTION 4, HOW IT WORKS
 const HowItWorks = () => {
   const steps = [
     {
@@ -293,7 +293,7 @@ const HowItWorks = () => {
     {
       number: '5',
       title: 'Maintain consistent standards across the group',
-      description: 'Service, speed, quality — measured equally everywhere.',
+      description: 'Service, speed, quality, measured equally everywhere.',
     },
   ];
 
@@ -333,7 +333,7 @@ const HowItWorks = () => {
   );
 };
 
-// SECTION 5 — WHY OPERATORS DEPEND ON IT
+// SECTION 5, WHY OPERATORS DEPEND ON IT
 const WhyOperators = () => {
   const benefits = [
     {
@@ -354,7 +354,7 @@ const WhyOperators = () => {
     },
     {
       title: 'Operate with complete confidence',
-      description: 'Your entire operation — always visible.',
+      description: 'Your entire operation, always visible.',
     },
   ];
 
@@ -388,7 +388,7 @@ const WhyOperators = () => {
   );
 };
 
-// SECTION 6 — FEATURES
+// SECTION 6, FEATURES
 const Features = () => {
   const features = [
     {
@@ -414,7 +414,7 @@ const Features = () => {
     {
       icon: Clock,
       title: 'Shift Performance Insights',
-      description: 'Lunch, dinner, weekends — across all venues.',
+      description: 'Lunch, dinner, weekends, across all venues.',
     },
   ];
 
@@ -452,7 +452,7 @@ const Features = () => {
   );
 };
 
-// SECTION 7 — IN ACTION
+// SECTION 7, IN ACTION
 const InAction = () => {
   return (
     <section className="bg-white py-20 lg:py-24">
@@ -511,7 +511,7 @@ const InAction = () => {
   );
 };
 
-// SECTION 8 — TESTIMONIAL
+// SECTION 8, TESTIMONIAL
 const Testimonial = () => {
   return (
     <section className="bg-gray-50 py-20 lg:py-24">
@@ -536,7 +536,7 @@ const Testimonial = () => {
   );
 };
 
-// SECTION 9 — FINAL CTA
+// SECTION 9, FINAL CTA
 const FinalCTA = () => {
   return (
     <section className="bg-slate-900 py-20 lg:py-24">
@@ -575,7 +575,7 @@ const MultiLocationControlPage = () => {
         <title>Multi-Location Control | Manage All Venues in One Dashboard | Chatters</title>
         <meta
           name="description"
-          content="One dashboard. Every venue. Complete control. Multi-Location Control gives operators real-time oversight across all venues — ensuring consistency, quality, and service standards everywhere."
+          content="One dashboard. Every venue. Complete control. Multi-Location Control gives operators real-time oversight across all venues, ensuring consistency, quality, and service standards everywhere."
         />
         <meta
           name="keywords"

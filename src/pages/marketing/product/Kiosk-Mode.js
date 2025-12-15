@@ -18,7 +18,7 @@ import {
 import Navbar from '../../../components/marketing/layout/Navbar';
 import Footer from '../../../components/marketing/layout/Footer';
 
-// SECTION 1 — HERO
+// SECTION 1, HERO
 const Hero = () => {
   return (
     <section className="bg-white py-20 lg:py-24">
@@ -38,7 +38,7 @@ const Hero = () => {
 
             {/* Subheadline */}
             <p className="text-xl text-gray-600 mb-8 leading-relaxed">
-              A live dashboard designed for front-of-house — showing real-time alerts, table statuses, and guest requests on a single screen.
+              A live dashboard designed for front-of-house, showing real-time alerts, table statuses, and guest requests on a single screen.
             </p>
 
             {/* Buttons */}
@@ -147,7 +147,7 @@ const Hero = () => {
   );
 };
 
-// SECTION 2 — THE PROBLEM
+// SECTION 2, THE PROBLEM
 const Problem = () => {
   return (
     <section className="bg-slate-900 py-20 lg:py-24">
@@ -182,7 +182,7 @@ const Problem = () => {
   );
 };
 
-// SECTION 3 — COMMAND CENTRE
+// SECTION 3, COMMAND CENTRE
 const CommandCentre = () => {
   const features = [
     { icon: Bell, text: 'Live alerts for every table' },
@@ -202,7 +202,7 @@ const CommandCentre = () => {
               Your Command Centre for Service
             </h2>
             <p className="text-lg text-gray-600">
-              Kiosk Mode is a live view of your venue — built to run all shift long.
+              Kiosk Mode is a live view of your venue, built to run all shift long.
             </p>
           </div>
 
@@ -231,7 +231,7 @@ const CommandCentre = () => {
   );
 };
 
-// SECTION 4 — HOW IT WORKS
+// SECTION 4, HOW IT WORKS
 const HowItWorks = () => {
   const steps = [
     {
@@ -242,7 +242,7 @@ const HowItWorks = () => {
     {
       number: '2',
       title: 'New feedback, alerts, and requests stream in live',
-      description: 'Everything appears automatically — no manual refresh needed.',
+      description: 'Everything appears automatically, no manual refresh needed.',
     },
     {
       number: '3',
@@ -334,7 +334,7 @@ const HowItWorks = () => {
   );
 };
 
-// SECTION 5 — WHY OPERATORS DEPEND ON IT
+// SECTION 5, WHY OPERATORS DEPEND ON IT
 const WhyOperators = () => {
   const benefits = [
     {
@@ -347,7 +347,7 @@ const WhyOperators = () => {
     },
     {
       title: 'Clearer team coordination',
-      description: 'Everyone sees the same view — no confusion.',
+      description: 'Everyone sees the same view, no confusion.',
     },
     {
       title: 'Fewer complaints',
@@ -391,13 +391,13 @@ const WhyOperators = () => {
   );
 };
 
-// SECTION 6 — FEATURES
+// SECTION 6, FEATURES
 const Features = () => {
   const features = [
     {
       icon: Monitor,
       title: 'Auto-Refresh',
-      description: 'The screen updates on its own — no manual action needed.',
+      description: 'The screen updates on its own, no manual action needed.',
     },
     {
       icon: TrendingUp,
@@ -412,7 +412,7 @@ const Features = () => {
     {
       icon: Zap,
       title: 'Works on Any Device',
-      description: 'Tablets, TVs, or monitors — plug in and go.',
+      description: 'Tablets, TVs, or monitors, plug in and go.',
     },
   ];
 
@@ -455,7 +455,7 @@ const Features = () => {
   );
 };
 
-// SECTION 7 — REAL EXAMPLE
+// SECTION 7, REAL EXAMPLE
 const RealExample = () => {
   return (
     <section className="bg-white py-20 lg:py-24">
@@ -483,7 +483,7 @@ const RealExample = () => {
               <div className="flex items-center gap-3">
                 <Circle className="w-5 h-5 fill-red-500 text-red-500" />
                 <p className="text-lg text-gray-800 font-medium">
-                  Table 4 — Low rating — "Service a bit slow tonight"
+                  Table 4, Low rating, "Service a bit slow tonight"
                 </p>
               </div>
             </div>
@@ -511,7 +511,7 @@ const RealExample = () => {
 
             {/* Closing Line */}
             <p className="text-xl font-bold text-gray-900 text-center">
-              Without Kiosk Mode, that issue would've been missed. With it — one screen, instant awareness.
+              Without Kiosk Mode, that issue would've been missed. With it, one screen, instant awareness.
             </p>
           </div>
         </div>
@@ -520,7 +520,7 @@ const RealExample = () => {
   );
 };
 
-// SECTION 8 — TESTIMONIAL
+// SECTION 8, TESTIMONIAL
 const Testimonial = () => {
   return (
     <section className="bg-gray-50 py-20 lg:py-24">
@@ -547,7 +547,7 @@ const Testimonial = () => {
   );
 };
 
-// SECTION 9 — FINAL CTA
+// SECTION 9, FINAL CTA
 const FinalCTA = () => {
   return (
     <section className="bg-slate-900 py-20 lg:py-24">

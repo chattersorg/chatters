@@ -37,7 +37,7 @@ const DemoPage = () => {
     {
       icon: Bell,
       title: "Catch problems in real-time",
-      description: "Get instant alerts when a guest is unhappy — while they're still at the table."
+      description: "Get instant alerts when a guest is unhappy, while they're still at the table."
     },
     {
       icon: Shield,
@@ -204,7 +204,7 @@ const DemoPage = () => {
             {[
               {
                 q: "How long is the demo?",
-                a: "You choose. Pick a time that works for you — it's a focused walkthrough, not a sales pitch."
+                a: "You choose. Pick a time that works for you, it's a focused walkthrough, not a sales pitch."
               },
               {
                 q: "Do I need to prepare anything?",
@@ -216,7 +216,7 @@ const DemoPage = () => {
               },
               {
                 q: "What if I have multiple locations?",
-                a: "Perfect — Chatters is built for multi-site operators. We'll show you the group dashboard."
+                a: "Perfect, Chatters is built for multi-site operators. We'll show you the group dashboard."
               },
               {
                 q: "How quickly can I go live?",

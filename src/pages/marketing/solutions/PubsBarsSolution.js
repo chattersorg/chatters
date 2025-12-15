@@ -130,7 +130,7 @@ const PubDashboardMockup = () => {
   );
 };
 
-// SECTION 1 — HERO
+// SECTION 1, HERO
 const Hero = () => {
   return (
     <section className="bg-white py-20 lg:py-24">
@@ -146,7 +146,7 @@ const Hero = () => {
             </h1>
 
             <p className="text-xl text-gray-600 mb-8 leading-relaxed">
-              Real-time feedback for busy pubs and bars — catch service issues, respond to complaints, and turn regulars into advocates.
+              Real-time feedback for busy pubs and bars, catch service issues, respond to complaints, and turn regulars into advocates.
             </p>
 
             <div className="flex flex-col sm:flex-row gap-4">
@@ -186,7 +186,7 @@ const Hero = () => {
   );
 };
 
-// SECTION 2 — THE PROBLEM
+// SECTION 2, THE PROBLEM
 const Problem = () => {
   return (
     <section className="bg-slate-900 py-20 lg:py-24">
@@ -200,7 +200,7 @@ const Problem = () => {
             <p>
               Friday night. Music's loud. Bar's three-deep.
               <br />
-              A customer waits too long for food. They don't complain to staff — they just leave and post a review.
+              A customer waits too long for food. They don't complain to staff, they just leave and post a review.
             </p>
 
             <p className="text-white font-semibold text-2xl">
@@ -208,7 +208,7 @@ const Problem = () => {
             </p>
 
             <p>
-              Chatters gives your team eyes on every table — even when the floor is packed.
+              Chatters gives your team eyes on every table, even when the floor is packed.
             </p>
           </div>
         </div>
@@ -217,7 +217,7 @@ const Problem = () => {
   );
 };
 
-// SECTION 3 — BUILT FOR PUBS
+// SECTION 3, BUILT FOR PUBS
 const BuiltForPubs = () => {
   const features = [
     { icon: Beer, text: 'Designed for high-volume, fast-paced service' },
@@ -236,7 +236,7 @@ const BuiltForPubs = () => {
               Built for Pubs and Bars
             </h2>
             <p className="text-lg text-gray-600">
-              We know your world is different — that's why we built for it.
+              We know your world is different, that's why we built for it.
             </p>
           </div>
 
@@ -263,7 +263,7 @@ const BuiltForPubs = () => {
   );
 };
 
-// SECTION 4 — HOW IT WORKS
+// SECTION 4, HOW IT WORKS
 const HowItWorks = () => {
   const steps = [
     {
@@ -289,7 +289,7 @@ const HowItWorks = () => {
     {
       number: '5',
       title: 'Happy guests, better reviews',
-      description: 'Problems become recovery stories — not TripAdvisor rants.',
+      description: 'Problems become recovery stories, not TripAdvisor rants.',
     },
   ];
 
@@ -329,7 +329,7 @@ const HowItWorks = () => {
   );
 };
 
-// SECTION 5 — WHY PUBS CHOOSE CHATTERS
+// SECTION 5, WHY PUBS CHOOSE CHATTERS
 const WhyPubsChoose = () => {
   const benefits = [
     {
@@ -338,7 +338,7 @@ const WhyPubsChoose = () => {
     },
     {
       title: 'Keep regulars coming back',
-      description: 'Show customers you care — even on your busiest nights.',
+      description: 'Show customers you care, even on your busiest nights.',
     },
     {
       title: 'Protect your reputation',
@@ -384,7 +384,7 @@ const WhyPubsChoose = () => {
   );
 };
 
-// SECTION 6 — FEATURES
+// SECTION 6, FEATURES
 const Features = () => {
   const features = [
     {
@@ -443,7 +443,7 @@ const Features = () => {
   );
 };
 
-// SECTION 7 — REAL EXAMPLE
+// SECTION 7, REAL EXAMPLE
 const RealExample = () => {
   return (
     <section className="bg-white py-20 lg:py-24">
@@ -457,7 +457,7 @@ const RealExample = () => {
 
           <div className="space-y-8">
             <p className="text-lg text-gray-700">
-              It's 9pm on a Saturday. The pub's rammed. A couple at table 14 have been waiting 40 minutes for food. They're fed up — but instead of flagging a server, they scan the QR code and leave a 2-star rating.
+              It's 9pm on a Saturday. The pub's rammed. A couple at table 14 have been waiting 40 minutes for food. They're fed up, but instead of flagging a server, they scan the QR code and leave a 2-star rating.
             </p>
 
             <div className="bg-red-50 border-l-4 border-red-400 p-6 rounded-r-xl">
@@ -497,7 +497,7 @@ const RealExample = () => {
   );
 };
 
-// SECTION 8 — FINAL CTA
+// SECTION 8, FINAL CTA
 const FinalCTA = () => {
   return (
     <section className="bg-slate-900 py-20 lg:py-24">

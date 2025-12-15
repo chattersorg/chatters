@@ -17,7 +17,7 @@ import {
 import Navbar from '../../../components/marketing/layout/Navbar';
 import Footer from '../../../components/marketing/layout/Footer';
 
-// SECTION 1 — HERO
+// SECTION 1, HERO
 const Hero = () => {
   return (
     <section className="bg-white py-20 lg:py-24">
@@ -33,7 +33,7 @@ const Hero = () => {
             </h1>
 
             <p className="text-xl text-gray-600 mb-8 leading-relaxed">
-              Analyse feedback over time to spot emerging issues, seasonal shifts, and improvement opportunities — before they hit your reviews.
+              Analyse feedback over time to spot emerging issues, seasonal shifts, and improvement opportunities, before they hit your reviews.
             </p>
 
             <div className="flex flex-col sm:flex-row gap-4">
@@ -124,7 +124,7 @@ const Hero = () => {
   );
 };
 
-// SECTION 2 — THE PROBLEM
+// SECTION 2, THE PROBLEM
 const Problem = () => {
   return (
     <section className="bg-slate-900 py-20 lg:py-24">
@@ -142,7 +142,7 @@ const Problem = () => {
             </p>
 
             <p className="text-white font-semibold text-2xl">
-              The real insights live in the trends — not the one-offs.
+              The real insights live in the trends, not the one-offs.
             </p>
 
             <p>
@@ -155,7 +155,7 @@ const Problem = () => {
   );
 };
 
-// SECTION 3 — WHAT YOU GET
+// SECTION 3, WHAT YOU GET
 const WhatYouGet = () => {
   const features = [
     { icon: LineChart, text: 'Rating trends over time' },
@@ -174,7 +174,7 @@ const WhatYouGet = () => {
               Turn Feedback Into Foresight
             </h2>
             <p className="text-lg text-gray-600">
-              See what's changing — and why.
+              See what's changing, and why.
             </p>
           </div>
 
@@ -201,7 +201,7 @@ const WhatYouGet = () => {
   );
 };
 
-// SECTION 4 — HOW IT WORKS
+// SECTION 4, HOW IT WORKS
 const HowItWorks = () => {
   const steps = [
     {
@@ -267,7 +267,7 @@ const HowItWorks = () => {
   );
 };
 
-// SECTION 5 — WHY IT MATTERS
+// SECTION 5, WHY IT MATTERS
 const WhyItMatters = () => {
   const benefits = [
     {
@@ -322,7 +322,7 @@ const WhyItMatters = () => {
   );
 };
 
-// SECTION 6 — FEATURES
+// SECTION 6, FEATURES
 const Features = () => {
   const features = [
     {
@@ -381,7 +381,7 @@ const Features = () => {
   );
 };
 
-// SECTION 7 — REAL EXAMPLE
+// SECTION 7, REAL EXAMPLE
 const RealExample = () => {
   return (
     <section className="bg-white py-20 lg:py-24">
@@ -395,7 +395,7 @@ const RealExample = () => {
 
           <div className="space-y-8">
             <p className="text-lg text-gray-700">
-              A restaurant manager notices something in Customer Trends: the word "cold" has appeared in 15 comments over the past two weeks — up from just 2 the month before.
+              A restaurant manager notices something in Customer Trends: the word "cold" has appeared in 15 comments over the past two weeks, up from just 2 the month before.
             </p>
 
             <div className="bg-amber-50 border-l-4 border-amber-400 p-6 rounded-r-xl">
@@ -436,14 +436,14 @@ const RealExample = () => {
   );
 };
 
-// SECTION 8 — TESTIMONIAL
+// SECTION 8, TESTIMONIAL
 const Testimonial = () => {
   return (
     <section className="bg-gray-50 py-20 lg:py-24">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="max-w-3xl mx-auto text-center">
           <blockquote className="text-2xl sm:text-3xl text-gray-700 italic mb-8 leading-relaxed">
-            "Customer Trends showed us that weekend brunch service was slipping — something we'd completely missed in day-to-day feedback. We fixed it before a single bad review."
+            "Customer Trends showed us that weekend brunch service was slipping, something we'd completely missed in day-to-day feedback. We fixed it before a single bad review."
           </blockquote>
 
           <div className="flex items-center justify-center gap-4">
@@ -461,7 +461,7 @@ const Testimonial = () => {
   );
 };
 
-// SECTION 9 — FINAL CTA
+// SECTION 9, FINAL CTA
 const FinalCTA = () => {
   return (
     <section className="bg-slate-900 py-20 lg:py-24">

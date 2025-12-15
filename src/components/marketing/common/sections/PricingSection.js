@@ -7,7 +7,7 @@ const PricingSection = ({
   // Headline + CTA
   eyebrow = "Pricing",
   title = "Tailored for your business",
-  subtitle = "Every venue is different — our pricing is customised to fit your needs. From single sites to groups, we’ll build a plan that scales with you.",
+  subtitle = "Every venue is different, so our pricing is customised to fit your needs. From single sites to groups, we’ll build a plan that scales with you.",
   buttonText = "Speak to Sales",
   buttonLink = "/demo",
 
