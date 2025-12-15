@@ -392,22 +392,28 @@ const ManagersTab = ({
   }, []);
 
   const fetchPendingInvitations = async () => {
+    console.log('fetchPendingInvitations called');
     try {
-      const { data: authUser } = await supabase.auth.getUser();
-      const { data: userData } = await supabase
-        .from('users')
-        .select('account_id')
-        .eq('id', authUser.user.id)
-        .single();
+      const { data: { session } } = await supabase.auth.getSession();
+      console.log('Session:', session ? 'exists' : 'null');
+      if (!session) return;
 
-      const { data: invitations } = await supabase
-        .from('manager_invitations')
-        .select('*')
-        .eq('account_id', userData.account_id)
-        .eq('status', 'pending')
-        .gt('expires_at', new Date().toISOString());
+      const response = await fetch('/api/admin/get-pending-invitations', {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${session.access_token}`,
+          'Content-Type': 'application/json'
+        }
+      });
 
-      setPendingInvitations(invitations || []);
+      console.log('Response status:', response.status);
+      if (response.ok) {
+        const data = await response.json();
+        console.log('Pending invitations data:', data);
+        setPendingInvitations(data.invitations || []);
+      } else {
+        console.error('Failed to fetch pending invitations:', await response.text());
+      }
     } catch (error) {
       console.error('Error fetching pending invitations:', error);
     }
@@ -542,16 +548,109 @@ const ManagersTab = ({
         </div>
       </div>
 
+      {/* Pending Invitations Section */}
+      {pendingInvitations.length > 0 && (
+        <div className="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-lg p-4 lg:p-6 mb-6">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-4 space-y-2 sm:space-y-0">
+            <h3 className="text-base lg:text-lg font-medium text-amber-900 dark:text-amber-200 flex items-center">
+              <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+              Pending Invitations
+            </h3>
+            <span className="text-sm text-amber-700 dark:text-amber-300">
+              {pendingInvitations.length} pending invitation{pendingInvitations.length !== 1 ? 's' : ''}
+            </span>
+          </div>
+
+          <div className="bg-white dark:bg-gray-900 rounded-lg border border-amber-200 dark:border-amber-700 overflow-hidden">
+            <div className="overflow-x-auto">
+              <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                <thead className="bg-amber-100 dark:bg-amber-900/30">
+                  <tr>
+                    <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wider">
+                      Manager
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wider">
+                      Email
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wider">
+                      Invited
+                    </th>
+                    <th className="px-6 py-3 text-center text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wider">
+                      Actions
+                    </th>
+                  </tr>
+                </thead>
+                <tbody className="bg-white dark:bg-gray-900 divide-y divide-gray-100 dark:divide-gray-700">
+                  {pendingInvitations.map((invitation, index) => (
+                    <tr
+                      key={invitation.id}
+                      className={`hover:bg-amber-50 dark:hover:bg-amber-900/10 transition-colors duration-150 ${
+                        index % 2 === 0 ? 'bg-white dark:bg-gray-900' : 'bg-gray-50 dark:bg-gray-800/50'
+                      }`}
+                    >
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="flex items-center">
+                          <div className="w-10 h-10 rounded-full bg-amber-200 dark:bg-amber-800 flex items-center justify-center text-sm font-medium text-amber-700 dark:text-amber-200 mr-3">
+                            {((invitation.first_name || '') + ' ' + (invitation.last_name || '')).split(' ').map(word => word[0]).join('').toUpperCase() || '?'}
+                          </div>
+                          <div>
+                            <div className="text-sm font-medium text-gray-900 dark:text-white">
+                              {invitation.first_name} {invitation.last_name}
+                            </div>
+                            <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-amber-100 dark:bg-amber-900/50 text-amber-800 dark:text-amber-200">
+                              Pending
+                            </span>
+                          </div>
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="text-sm text-gray-600 dark:text-gray-400">
+                          {invitation.email}
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="text-sm text-gray-600 dark:text-gray-400">
+                          {new Date(invitation.created_at).toLocaleDateString('en-GB', {
+                            day: '2-digit',
+                            month: 'short',
+                            year: 'numeric'
+                          })}
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-center">
+                        <div className="flex items-center justify-center space-x-2">
+                          <PermissionGate permission="managers.invite">
+                            <button
+                              onClick={() => handleResendInvitation(invitation.email)}
+                              disabled={resendingEmail === invitation.email}
+                              className="text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 text-sm font-medium disabled:opacity-50"
+                            >
+                              {resendingEmail === invitation.email ? 'Sending...' : 'Resend'}
+                            </button>
+                          </PermissionGate>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Managers List */}
       <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-lg p-4 lg:p-6">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-4 space-y-2 sm:space-y-0">
-          <h3 className="text-base lg:text-lg font-medium text-gray-900 dark:text-white">All Managers</h3>
+          <h3 className="text-base lg:text-lg font-medium text-gray-900 dark:text-white">Active Managers</h3>
           <span className="text-sm text-gray-500 dark:text-gray-400">
             {uniqueManagers.length} manager{uniqueManagers.length !== 1 ? 's' : ''} across all venues
           </span>
         </div>
 
-        {uniqueManagers.length === 0 ? (
+        {uniqueManagers.length === 0 && pendingInvitations.length === 0 ? (
           <div className="text-center py-8 lg:py-12">
             <div className="w-16 h-16 mx-auto mb-4 bg-gray-100 dark:bg-gray-800 rounded-full flex items-center justify-center">
               <svg className="w-8 h-8 text-gray-400 dark:text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -567,6 +666,10 @@ const ManagersTab = ({
               <Plus className="w-4 h-4 mr-2" />
               Add First Manager
             </Button>
+          </div>
+        ) : uniqueManagers.length === 0 ? (
+          <div className="text-center py-6">
+            <p className="text-gray-500 dark:text-gray-400 text-sm">No active managers yet. Check pending invitations above.</p>
           </div>
         ) : (
           <div className="bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-800 shadow-sm overflow-hidden">

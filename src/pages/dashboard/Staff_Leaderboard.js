@@ -228,8 +228,12 @@ const StaffLeaderboard = () => {
         ? `${userData.first_name} ${userData.last_name}`
         : 'Your Manager';
 
-      const response = await supabase.functions.invoke('send-recognition-email', {
-        body: {
+      const response = await fetch('/api/send-recognition-email', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
           employeeId: staff.id,
           employeeEmail: employeeData.email,
           employeeName: staff.name,
@@ -243,34 +247,13 @@ const StaffLeaderboard = () => {
             period: getPeriodText(timeFilter)
           },
           personalMessage: personalMessage.trim() || undefined
-        }
+        })
       });
 
-      if (response.error) {
-        // Try to get the actual response body for better error details
-        if (response.response) {
-          try {
-            const errorBody = await response.response.json();
-            if (errorBody.message) {
-              throw new Error(errorBody.message);
-            }
-          } catch (jsonError) {
-            // Could not parse error response
-          }
-        }
+      const data = await response.json();
 
-        // Check if it's a deployment issue
-        if (response.error.message?.includes('FunctionsRelayError') || response.error.message?.includes('not found')) {
-          throw new Error('Recognition email feature not yet deployed. Please deploy the send-recognition-email Edge Function first.');
-        }
-
-        // Try to extract more details from the error
-        const errorMessage = response.data?.message || response.error.message || 'Failed to send recognition email';
-        throw new Error(errorMessage);
-      }
-
-      if (!response.data?.success) {
-        throw new Error(response.data?.message || 'Failed to send recognition email');
+      if (!response.ok || !data.success) {
+        throw new Error(data.message || 'Failed to send recognition email');
       }
 
       setRecognitionMessage('Recognition email sent successfully!');

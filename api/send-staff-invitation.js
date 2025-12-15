@@ -1,45 +1,43 @@
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+// /api/send-staff-invitation.js
+const { createClient } = require('@supabase/supabase-js');
+const { Resend } = require('resend');
+const crypto = require('crypto');
 
-const RESEND_API_KEY = Deno.env.get('RESEND_API_KEY');
-const SUPABASE_URL = Deno.env.get('SUPABASE_URL')!;
-const SUPABASE_SERVICE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
-const APP_URL = Deno.env.get('APP_URL') || 'https://my.getchatters.com';
+const supabaseAdmin = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.REACT_APP_SUPABASE_URL,
+  process.env.SUPABASE_SERVICE_ROLE_KEY
+);
 
-serve(async (req) => {
+const resend = new Resend(process.env.RESEND_API_KEY);
+const APP_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://my.getchatters.com';
+
+module.exports = async function handler(req, res) {
   // CORS headers
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+
   if (req.method === 'OPTIONS') {
-    return new Response('ok', {
-      headers: {
-        'Access-Control-Allow-Origin': '*',
-        'Access-Control-Allow-Methods': 'POST',
-        'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-      }
-    });
+    return res.status(200).end();
   }
 
   if (req.method !== 'POST') {
-    return new Response('Method not allowed', { status: 405 });
+    return res.status(405).json({ error: 'Method not allowed' });
   }
 
   try {
-    const { email, venueId, role, invitedBy, venueName } = await req.json();
+    const { email, venueId, role, invitedBy, venueName } = req.body;
 
     if (!email || !venueId || !role) {
-      return new Response(JSON.stringify({ error: 'Email, venueId, and role are required' }), {
-        status: 400,
-        headers: { 'Content-Type': 'application/json' }
-      });
+      return res.status(400).json({ error: 'Email, venueId, and role are required' });
     }
-
-    const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_KEY);
 
     // Generate secure token
     const token = crypto.randomUUID();
     const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000); // 7 days
 
     // Store invitation token
-    const { error: tokenError } = await supabase
+    const { error: tokenError } = await supabaseAdmin
       .from('staff_invitation_tokens')
       .insert({
         email: email.toLowerCase(),
@@ -61,7 +59,7 @@ serve(async (req) => {
     // Get inviter's name if available
     let inviterName = 'Your colleague';
     if (invitedBy) {
-      const { data: inviter } = await supabase
+      const { data: inviter } = await supabaseAdmin
         .from('users')
         .select('first_name, last_name')
         .eq('id', invitedBy)
@@ -73,63 +71,31 @@ serve(async (req) => {
     }
 
     // Send email via Resend
-    const emailResponse = await fetch('https://api.resend.com/emails', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${RESEND_API_KEY}`
-      },
-      body: JSON.stringify({
-        from: 'Chatters <noreply@getchatters.com>',
-        to: [email],
-        subject: `You've been invited to join ${venueName || 'a venue'} on Chatters`,
-        html: generateInvitationEmail(email, venueName || 'the team', inviterName, invitationLink, expiresAt, role)
-      })
+    const emailData = await resend.emails.send({
+      from: 'Chatters <noreply@getchatters.com>',
+      to: email,
+      subject: `You've been invited to join ${venueName || 'a venue'} on Chatters`,
+      html: generateInvitationEmail(email, venueName || 'the team', inviterName, invitationLink, expiresAt, role)
     });
 
-    if (!emailResponse.ok) {
-      const errorData = await emailResponse.json();
-      console.error('Resend API error:', errorData);
-      throw new Error('Failed to send invitation email');
-    }
-
-    const emailData = await emailResponse.json();
     console.log('Invitation email sent successfully:', emailData.id);
 
-    return new Response(JSON.stringify({
+    return res.status(200).json({
       success: true,
       message: 'Invitation sent successfully',
       token // Return for testing purposes
-    }), {
-      headers: {
-        'Content-Type': 'application/json',
-        'Access-Control-Allow-Origin': '*'
-      }
     });
 
   } catch (error) {
     console.error('Error:', error);
-    return new Response(JSON.stringify({
+    return res.status(500).json({
       error: 'Failed to send invitation',
       details: error.message
-    }), {
-      status: 500,
-      headers: {
-        'Content-Type': 'application/json',
-        'Access-Control-Allow-Origin': '*'
-      }
     });
   }
-});
+};
 
-function generateInvitationEmail(
-  email: string,
-  venueName: string,
-  inviterName: string,
-  invitationLink: string,
-  expiresAt: Date,
-  role: string
-): string {
+function generateInvitationEmail(email, venueName, inviterName, invitationLink, expiresAt, role) {
   const expiryDate = expiresAt.toLocaleDateString('en-GB', {
     day: 'numeric',
     month: 'long',

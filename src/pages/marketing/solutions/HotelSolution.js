@@ -132,7 +132,7 @@ const HotelDashboardMockup = () => {
   );
 };
 
-// SECTION 1 — HERO
+// SECTION 1, HERO
 const Hero = () => {
   return (
     <section className="bg-white py-20 lg:py-24">
@@ -148,7 +148,7 @@ const Hero = () => {
             </h1>
 
             <p className="text-xl text-gray-600 mb-8 leading-relaxed">
-              Real-time feedback for hotels — catch service issues, respond to guest concerns, and protect your TripAdvisor rating while guests are still on property.
+              Real-time feedback for hotels, catch service issues, respond to guest concerns, and protect your TripAdvisor rating while guests are still on property.
             </p>
 
             <div className="flex flex-col sm:flex-row gap-4">
@@ -188,7 +188,7 @@ const Hero = () => {
   );
 };
 
-// SECTION 2 — THE PROBLEM
+// SECTION 2, THE PROBLEM
 const Problem = () => {
   return (
     <section className="bg-slate-900 py-20 lg:py-24">
@@ -202,7 +202,7 @@ const Problem = () => {
             <p>
               A guest checks in after a long flight. The room isn't ready. Housekeeping missed a spot.
               <br />
-              They don't call reception — they just post a review from bed.
+              They don't call reception, they just post a review from bed.
             </p>
 
             <p className="text-white font-semibold text-2xl">
@@ -210,7 +210,7 @@ const Problem = () => {
             </p>
 
             <p>
-              Chatters gives your team visibility across every room — from check-in to checkout.
+              Chatters gives your team visibility across every room, from check-in to checkout.
             </p>
           </div>
         </div>
@@ -219,7 +219,7 @@ const Problem = () => {
   );
 };
 
-// SECTION 3 — BUILT FOR HOTELS
+// SECTION 3, BUILT FOR HOTELS
 const BuiltForHotels = () => {
   const features = [
     { icon: Building2, text: 'Designed for multi-department hotel operations' },
@@ -238,7 +238,7 @@ const BuiltForHotels = () => {
               Built for Hotels
             </h2>
             <p className="text-lg text-gray-600">
-              We understand the complexity of hotel operations — that's why we built for it.
+              We understand the complexity of hotel operations, that's why we built for it.
             </p>
           </div>
 
@@ -265,7 +265,7 @@ const BuiltForHotels = () => {
   );
 };
 
-// SECTION 4 — HOW IT WORKS
+// SECTION 4, HOW IT WORKS
 const HowItWorks = () => {
   const steps = [
     {
@@ -291,7 +291,7 @@ const HowItWorks = () => {
     {
       number: '5',
       title: 'Happy guests, better reviews',
-      description: 'Problems become recovery stories — not Booking.com complaints.',
+      description: 'Problems become recovery stories, not Booking.com complaints.',
     },
   ];
 
@@ -331,7 +331,7 @@ const HowItWorks = () => {
   );
 };
 
-// SECTION 5 — WHY HOTELS CHOOSE CHATTERS
+// SECTION 5, WHY HOTELS CHOOSE CHATTERS
 const WhyHotelsChoose = () => {
   const benefits = [
     {
@@ -348,7 +348,7 @@ const WhyHotelsChoose = () => {
     },
     {
       title: 'Build guest loyalty',
-      description: 'Show guests you care — turn problems into memorable recoveries.',
+      description: 'Show guests you care, turn problems into memorable recoveries.',
     },
     {
       title: 'Manage multiple properties',
@@ -386,7 +386,7 @@ const WhyHotelsChoose = () => {
   );
 };
 
-// SECTION 6 — FEATURES
+// SECTION 6, FEATURES
 const Features = () => {
   const features = [
     {
@@ -445,7 +445,7 @@ const Features = () => {
   );
 };
 
-// SECTION 7 — REAL EXAMPLE
+// SECTION 7, REAL EXAMPLE
 const RealExample = () => {
   return (
     <section className="bg-white py-20 lg:py-24">
@@ -459,7 +459,7 @@ const RealExample = () => {
 
           <div className="space-y-8">
             <p className="text-lg text-gray-700">
-              It's 3pm. A business traveller checks into room 412 after a long flight. The bathroom hasn't been cleaned properly — there's hair in the shower and the towels look used. Exhausted and frustrated, she scans the QR code on the bedside table.
+              It's 3pm. A business traveller checks into room 412 after a long flight. The bathroom hasn't been cleaned properly, there's hair in the shower and the towels look used. Exhausted and frustrated, she scans the QR code on the bedside table.
             </p>
 
             <div className="bg-red-50 border-l-4 border-red-400 p-6 rounded-r-xl">
@@ -498,7 +498,7 @@ const RealExample = () => {
   );
 };
 
-// SECTION 8 — FINAL CTA
+// SECTION 8, FINAL CTA
 const FinalCTA = () => {
   return (
     <section className="bg-slate-900 py-20 lg:py-24">

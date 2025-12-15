@@ -19,7 +19,7 @@ import {
 import Navbar from '../../../components/marketing/layout/Navbar';
 import Footer from '../../../components/marketing/layout/Footer';
 
-// SECTION 1 — HERO
+// SECTION 1, HERO
 const Hero = () => {
   return (
     <section className="bg-white py-20 lg:py-24">
@@ -35,7 +35,7 @@ const Hero = () => {
             </h1>
 
             <p className="text-xl text-gray-600 mb-8 leading-relaxed">
-              Create custom questions, set up smart logic, and build surveys guests want to complete — all without any technical skills.
+              Create custom questions, set up smart logic, and build surveys guests want to complete, all without any technical skills.
             </p>
 
             <div className="flex flex-col sm:flex-row gap-4">
@@ -151,7 +151,7 @@ const Hero = () => {
   );
 };
 
-// SECTION 2 — THE PROBLEM
+// SECTION 2, THE PROBLEM
 const Problem = () => {
   return (
     <section className="bg-slate-900 py-20 lg:py-24">
@@ -171,7 +171,7 @@ const Problem = () => {
             </p>
 
             <p>
-              Question Management lets you build focused, engaging surveys that guests complete — and that give you actionable insights.
+              Question Management lets you build focused, engaging surveys that guests complete, and that give you actionable insights.
             </p>
           </div>
         </div>
@@ -180,13 +180,13 @@ const Problem = () => {
   );
 };
 
-// SECTION 3 — WHAT IT OFFERS
+// SECTION 3, WHAT IT OFFERS
 const WhatItOffers = () => {
   const features = [
     {
       icon: Edit3,
       title: 'Drag-and-drop builder',
-      description: 'Create professional surveys visually — no coding required.'
+      description: 'Create professional surveys visually, no coding required.'
     },
     {
       icon: Filter,
@@ -242,13 +242,13 @@ const WhatItOffers = () => {
   );
 };
 
-// SECTION 4 — HOW IT WORKS
+// SECTION 4, HOW IT WORKS
 const HowItWorks = () => {
   const steps = [
     {
       number: '1',
       title: 'Choose your question types',
-      description: 'Ratings, text, NPS, multiple choice — pick what fits.',
+      description: 'Ratings, text, NPS, multiple choice, pick what fits.',
     },
     {
       number: '2',
@@ -308,7 +308,7 @@ const HowItWorks = () => {
   );
 };
 
-// SECTION 5 — WHY IT MATTERS
+// SECTION 5, WHY IT MATTERS
 const WhyItMatters = () => {
   const benefits = [
     {
@@ -363,13 +363,13 @@ const WhyItMatters = () => {
   );
 };
 
-// SECTION 6 — FEATURES
+// SECTION 6, FEATURES
 const Features = () => {
   const features = [
     {
       icon: MessageSquare,
       title: 'Multiple Question Types',
-      description: 'Ratings, text, choice, NPS — all built in.',
+      description: 'Ratings, text, choice, NPS, all built in.',
     },
     {
       icon: Filter,
@@ -427,7 +427,7 @@ const Features = () => {
   );
 };
 
-// SECTION 7 — IN ACTION
+// SECTION 7, IN ACTION
 const InAction = () => {
   return (
     <section className="bg-white py-20 lg:py-24">
@@ -475,7 +475,7 @@ const InAction = () => {
               </div>
 
               <p className="text-lg text-gray-800 italic">
-                "Brunch was brilliant today — food came out so quickly!"
+                "Brunch was brilliant today, food came out so quickly!"
               </p>
             </div>
           </div>
@@ -485,14 +485,14 @@ const InAction = () => {
   );
 };
 
-// SECTION 8 — TESTIMONIAL
+// SECTION 8, TESTIMONIAL
 const Testimonial = () => {
   return (
     <section className="bg-gray-50 py-20 lg:py-24">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="max-w-3xl mx-auto text-center">
           <blockquote className="text-2xl sm:text-3xl text-gray-700 italic mb-8 leading-relaxed">
-            "We used to get vague feedback. Now we ask exactly what we need to know — and guests actually answer because it's so quick."
+            "We used to get vague feedback. Now we ask exactly what we need to know, and guests actually answer because it's so quick."
           </blockquote>
 
           <div className="flex items-center justify-center gap-4">
@@ -510,7 +510,7 @@ const Testimonial = () => {
   );
 };
 
-// SECTION 9 — FINAL CTA
+// SECTION 9, FINAL CTA
 const FinalCTA = () => {
   return (
     <section className="bg-slate-900 py-20 lg:py-24">

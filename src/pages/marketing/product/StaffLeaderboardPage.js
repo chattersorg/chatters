@@ -16,7 +16,7 @@ import {
 import Navbar from '../../../components/marketing/layout/Navbar';
 import Footer from '../../../components/marketing/layout/Footer';
 
-// SECTION 1 — HERO
+// SECTION 1, HERO
 const Hero = () => {
   return (
     <section className="bg-white py-20 lg:py-24">
@@ -28,11 +28,11 @@ const Hero = () => {
             </p>
 
             <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-gray-900 leading-tight mb-6">
-              See Who's Earning the Love — And Celebrate Them
+              See Who's Earning the Love, And Celebrate Them
             </h1>
 
             <p className="text-xl text-gray-600 mb-8 leading-relaxed">
-              A real-time leaderboard that ranks staff by guest feedback — so you always know who's crushing it.
+              A real-time leaderboard that ranks staff by guest feedback, so you always know who's crushing it.
             </p>
 
             <div className="flex flex-col sm:flex-row gap-4">
@@ -147,7 +147,7 @@ const Hero = () => {
   );
 };
 
-// SECTION 2 — THE PROBLEM
+// SECTION 2, THE PROBLEM
 const Problem = () => {
   return (
     <section className="bg-slate-900 py-20 lg:py-24">
@@ -159,7 +159,7 @@ const Problem = () => {
 
           <div className="text-xl text-slate-300 space-y-6">
             <p>
-              Your staff work hard. Guests notice — and say so.
+              Your staff work hard. Guests notice, and say so.
               <br />
               But unless managers are watching every interaction, praise gets lost in the noise.
             </p>
@@ -169,7 +169,7 @@ const Problem = () => {
             </p>
 
             <p>
-              The Staff Leaderboard brings visibility to performance — based on real guest feedback, not gut feel.
+              The Staff Leaderboard brings visibility to performance, based on real guest feedback, not gut feel.
             </p>
           </div>
         </div>
@@ -178,7 +178,7 @@ const Problem = () => {
   );
 };
 
-// SECTION 3 — WHAT THE LEADERBOARD SHOWS
+// SECTION 3, WHAT THE LEADERBOARD SHOWS
 const WhatItShows = () => {
   const features = [
     { icon: Trophy, text: 'Staff ranked by guest ratings and mentions' },
@@ -216,7 +216,7 @@ const WhatItShows = () => {
           </div>
 
           <p className="text-center text-xl font-bold text-gray-900">
-            Performance you can see — and celebrate.
+            Performance you can see, and celebrate.
           </p>
         </div>
       </div>
@@ -224,7 +224,7 @@ const WhatItShows = () => {
   );
 };
 
-// SECTION 4 — HOW IT WORKS
+// SECTION 4, HOW IT WORKS
 const HowItWorks = () => {
   const steps = [
     {
@@ -290,12 +290,12 @@ const HowItWorks = () => {
   );
 };
 
-// SECTION 5 — WHY OPERATORS DEPEND ON IT
+// SECTION 5, WHY OPERATORS DEPEND ON IT
 const WhyOperators = () => {
   const benefits = [
     {
       title: 'Visibility without micromanaging',
-      description: "Know who's performing — without hovering.",
+      description: "Know who's performing, without hovering.",
     },
     {
       title: 'Fair recognition based on data',
@@ -345,7 +345,7 @@ const WhyOperators = () => {
   );
 };
 
-// SECTION 6 — FEATURES
+// SECTION 6, FEATURES
 const Features = () => {
   const features = [
     {
@@ -371,7 +371,7 @@ const Features = () => {
     {
       icon: TrendingUp,
       title: 'Performance Trends',
-      description: "Track who's improving — and who might need support.",
+      description: "Track who's improving, and who might need support.",
     },
   ];
 
@@ -409,7 +409,7 @@ const Features = () => {
   );
 };
 
-// SECTION 7 — IN ACTION
+// SECTION 7, IN ACTION
 const InAction = () => {
   return (
     <section className="bg-white py-20 lg:py-24">
@@ -423,7 +423,7 @@ const InAction = () => {
 
           <div className="space-y-8">
             <p className="text-lg text-gray-700">
-              Amy has been serving tables for three months. She works hard — but does anyone notice?
+              Amy has been serving tables for three months. She works hard, but does anyone notice?
             </p>
 
             <p className="text-lg text-gray-700">
@@ -432,7 +432,7 @@ const InAction = () => {
 
             <div className="bg-blue-50 border-l-4 border-blue-400 p-6 rounded-r-xl">
               <p className="text-lg text-gray-800 italic">
-                "Amy was brilliant — friendly, fast, and made us feel welcome from the moment we sat down."
+                "Amy was brilliant, friendly, fast, and made us feel welcome from the moment we sat down."
               </p>
             </div>
 
@@ -464,7 +464,7 @@ const InAction = () => {
 
             <div className="bg-blue-50 border border-green-200 rounded-xl p-6">
               <p className="text-lg text-gray-800 italic">
-                "Amy shot up the leaderboard this week — great work! Keep it up."
+                "Amy shot up the leaderboard this week, great work! Keep it up."
               </p>
             </div>
 
@@ -478,14 +478,14 @@ const InAction = () => {
   );
 };
 
-// SECTION 8 — TESTIMONIAL
+// SECTION 8, TESTIMONIAL
 const Testimonial = () => {
   return (
     <section className="bg-gray-50 py-20 lg:py-24">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="max-w-3xl mx-auto text-center">
           <blockquote className="text-2xl sm:text-3xl text-gray-700 italic mb-8 leading-relaxed">
-            "The leaderboard turned service into a game — in the best way. Our team actually talks about guest feedback now."
+            "The leaderboard turned service into a game, in the best way. Our team actually talks about guest feedback now."
           </blockquote>
 
           <div className="flex items-center justify-center gap-4">
@@ -503,7 +503,7 @@ const Testimonial = () => {
   );
 };
 
-// SECTION 9 — FINAL CTA
+// SECTION 9, FINAL CTA
 const FinalCTA = () => {
   return (
     <section className="bg-slate-900 py-20 lg:py-24">
@@ -542,7 +542,7 @@ const StaffLeaderboardPage = () => {
         <title>Staff Leaderboard | Real-Time Team Performance Rankings | Chatters</title>
         <meta
           name="description"
-          content="See who's earning the love and celebrate them. A real-time leaderboard that ranks staff by guest feedback — so you always know who's crushing it."
+          content="See who's earning the love and celebrate them. A real-time leaderboard that ranks staff by guest feedback, so you always know who's crushing it."
         />
         <meta
           name="keywords"

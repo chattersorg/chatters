@@ -152,7 +152,7 @@ const Hero = () => {
 
           {/* Subheadline */}
           <p className="text-lg sm:text-xl text-gray-600 mb-8 max-w-2xl mx-auto leading-relaxed">
-            Real-time guest feedback that alerts your team instantly — so you can fix issues while customers are still at the table.
+            Real-time guest feedback that alerts your team instantly so you can fix issues while customers are still at the table.
           </p>
 
           {/* CTAs */}
@@ -181,7 +181,7 @@ const Hero = () => {
 
         {/* Floating UI Cards - closer to text, bigger, cut off at bottom */}
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-8">
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 lg:gap-8">
             {/* Card 1 - Real-time Alert */}
             <div
               className={`transform transition-all duration-700 ease-out ${
@@ -190,19 +190,19 @@ const Hero = () => {
                   : 'translate-y-16 opacity-0'
               }`}
             >
-              <div className="bg-white rounded-2xl shadow-2xl p-6 border border-gray-100">
-                <div className="flex items-center gap-4 mb-4">
-                  <div className="w-14 h-14 bg-red-100 rounded-xl flex items-center justify-center flex-shrink-0">
-                    <Bell className="w-7 h-7 text-red-500" />
+              <div className="bg-white rounded-2xl shadow-2xl p-4 sm:p-6 border border-gray-100">
+                <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4 mb-3 sm:mb-4">
+                  <div className="w-12 h-12 sm:w-14 sm:h-14 bg-red-100 rounded-xl flex items-center justify-center flex-shrink-0">
+                    <Bell className="w-6 h-6 sm:w-7 sm:h-7 text-red-500" />
                   </div>
                   <div className="min-w-0">
-                    <p className="text-sm text-gray-500">Real-Time Alert</p>
-                    <p className="text-lg font-semibold text-gray-900">Table 12 needs help</p>
+                    <p className="text-xs sm:text-sm text-gray-500">Real-Time Alert</p>
+                    <p className="text-base sm:text-lg font-semibold text-gray-900">Table 12 needs help</p>
                   </div>
                 </div>
                 <div className="flex items-center gap-2">
-                  <div className="w-2.5 h-2.5 bg-red-500 rounded-full animate-pulse"></div>
-                  <span className="text-sm text-gray-500">Just now</span>
+                  <div className="w-2 h-2 sm:w-2.5 sm:h-2.5 bg-red-500 rounded-full animate-pulse"></div>
+                  <span className="text-xs sm:text-sm text-gray-500">Just now</span>
                 </div>
               </div>
             </div>
@@ -215,21 +215,21 @@ const Hero = () => {
                   : 'translate-y-16 opacity-0'
               }`}
             >
-              <div className="bg-white rounded-2xl shadow-2xl p-6 border border-gray-100">
-                <div className="flex items-center gap-4 mb-4">
-                  <div className="w-14 h-14 bg-[#4E74FF]/10 rounded-xl flex items-center justify-center flex-shrink-0">
-                    <MessageSquare className="w-7 h-7 text-[#4E74FF]" />
+              <div className="bg-white rounded-2xl shadow-2xl p-4 sm:p-6 border border-gray-100">
+                <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4 mb-3 sm:mb-4">
+                  <div className="w-12 h-12 sm:w-14 sm:h-14 bg-[#4E74FF]/10 rounded-xl flex items-center justify-center flex-shrink-0">
+                    <MessageSquare className="w-6 h-6 sm:w-7 sm:h-7 text-[#4E74FF]" />
                   </div>
                   <div>
-                    <p className="text-lg font-semibold text-gray-900">Quick Feedback</p>
+                    <p className="text-base sm:text-lg font-semibold text-gray-900">Quick Feedback</p>
                   </div>
                 </div>
-                <p className="text-sm text-gray-600 mb-4">How was your experience?</p>
-                <div className="flex gap-1.5">
+                <p className="text-xs sm:text-sm text-gray-600 mb-3 sm:mb-4">How was your experience?</p>
+                <div className="flex gap-1 sm:gap-1.5">
                   {[1, 2, 3, 4, 5].map((star) => (
                     <Star
                       key={star}
-                      className={`w-7 h-7 ${star <= 4 ? 'text-yellow-400 fill-yellow-400' : 'text-gray-200'}`}
+                      className={`w-5 h-5 sm:w-7 sm:h-7 ${star <= 4 ? 'text-yellow-400 fill-yellow-400' : 'text-gray-200'}`}
                     />
                   ))}
                 </div>
@@ -244,20 +244,20 @@ const Hero = () => {
                   : 'translate-y-16 opacity-0'
               }`}
             >
-              <div className="bg-white rounded-2xl shadow-2xl p-6 border border-gray-100">
-                <div className="flex items-center gap-4 mb-4">
-                  <div className="w-14 h-14 bg-[#4E74FF]/10 rounded-xl flex items-center justify-center flex-shrink-0">
-                    <TrendingUp className="w-7 h-7 text-[#4E74FF]" />
+              <div className="bg-white rounded-2xl shadow-2xl p-4 sm:p-6 border border-gray-100">
+                <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4 mb-3 sm:mb-4">
+                  <div className="w-12 h-12 sm:w-14 sm:h-14 bg-[#4E74FF]/10 rounded-xl flex items-center justify-center flex-shrink-0">
+                    <TrendingUp className="w-6 h-6 sm:w-7 sm:h-7 text-[#4E74FF]" />
                   </div>
-                  <p className="text-lg font-semibold text-gray-900">This Week</p>
+                  <p className="text-base sm:text-lg font-semibold text-gray-900">This Week</p>
                 </div>
-                <div className="space-y-3">
+                <div className="space-y-2 sm:space-y-3">
                   <div className="flex justify-between items-center">
-                    <span className="text-sm text-gray-500">Avg Rating</span>
-                    <span className="text-lg font-bold text-[#4E74FF]">4.7</span>
+                    <span className="text-xs sm:text-sm text-gray-500">Avg Rating</span>
+                    <span className="text-base sm:text-lg font-bold text-[#4E74FF]">4.7</span>
                   </div>
-                  <div className="w-full bg-gray-100 rounded-full h-3">
-                    <div className="bg-[#4E74FF] h-3 rounded-full" style={{ width: '94%' }}></div>
+                  <div className="w-full bg-gray-100 rounded-full h-2 sm:h-3">
+                    <div className="bg-[#4E74FF] h-2 sm:h-3 rounded-full" style={{ width: '94%' }}></div>
                   </div>
                 </div>
               </div>
@@ -271,17 +271,17 @@ const Hero = () => {
                   : 'translate-y-16 opacity-0'
               }`}
             >
-              <div className="bg-white rounded-2xl shadow-2xl p-6 border border-gray-100">
-                <div className="flex items-center gap-4 mb-4">
-                  <div className="w-14 h-14 bg-yellow-100 rounded-xl flex items-center justify-center flex-shrink-0">
-                    <Star className="w-7 h-7 text-yellow-500 fill-yellow-500" />
+              <div className="bg-white rounded-2xl shadow-2xl p-4 sm:p-6 border border-gray-100">
+                <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4 mb-3 sm:mb-4">
+                  <div className="w-12 h-12 sm:w-14 sm:h-14 bg-yellow-100 rounded-xl flex items-center justify-center flex-shrink-0">
+                    <Star className="w-6 h-6 sm:w-7 sm:h-7 text-yellow-500 fill-yellow-500" />
                   </div>
                   <div className="min-w-0">
-                    <p className="text-sm text-gray-500">Review Boost</p>
-                    <p className="text-lg font-semibold text-gray-900">+47 Google Reviews</p>
+                    <p className="text-xs sm:text-sm text-gray-500">Review Boost</p>
+                    <p className="text-base sm:text-lg font-semibold text-gray-900">+47 Google Reviews</p>
                   </div>
                 </div>
-                <p className="text-sm text-gray-500">This month from happy guests</p>
+                <p className="text-xs sm:text-sm text-gray-500">This month from happy guests</p>
               </div>
             </div>
           </div>

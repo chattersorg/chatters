@@ -318,7 +318,7 @@ const NewSite = () => {
                 Protect Your Online Reputation
               </h2>
               <p className="text-lg text-gray-600 mb-8">
-                Most customers won't complain—they'll just leave a negative review and never return. Chatters gives them a private channel to voice concerns while you still have a chance to fix things.
+                Most customers won't complain, they'll just leave a negative review and never return. Chatters gives them a private channel to voice concerns while you still have a chance to fix things.
               </p>
               <ul className="space-y-4">
                 <li className="flex items-start gap-3">

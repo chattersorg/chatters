@@ -10,7 +10,7 @@ import {
   ArrowLeft, Mail, Building2, Save, Trash2, Shield, User,
   ChevronDown, ChevronRight, Check, RefreshCw,
   MessageSquare, Edit2, BarChart3, Users, Map, Settings,
-  QrCode, Sparkles, Star, CreditCard
+  QrCode, Sparkles, Star, CreditCard, Phone, Calendar, X
 } from 'lucide-react';
 
 // Permission category icons
@@ -66,6 +66,14 @@ const ManagerDetail = () => {
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [deleting, setDeleting] = useState(false);
 
+  // Edit details state
+  const [isEditingDetails, setIsEditingDetails] = useState(false);
+  const [editedFirstName, setEditedFirstName] = useState('');
+  const [editedLastName, setEditedLastName] = useState('');
+  const [editedPhone, setEditedPhone] = useState('');
+  const [editedDateOfBirth, setEditedDateOfBirth] = useState('');
+  const [savingDetails, setSavingDetails] = useState(false);
+
   // Permissions state
   const [allPermissions, setAllPermissions] = useState([]);
   const [roleTemplates, setRoleTemplates] = useState([]);
@@ -90,7 +98,7 @@ const ManagerDetail = () => {
       // Fetch user data
       const { data: userData, error: userError } = await supabase
         .from('users')
-        .select('id, email, first_name, last_name, role, created_at')
+        .select('id, email, first_name, last_name, phone, date_of_birth, role, created_at')
         .eq('id', managerId)
         .is('deleted_at', null)
         .single();
@@ -109,6 +117,12 @@ const ManagerDetail = () => {
       setManager(userData);
       setManagerVenues(venueIds);
       setEditedVenueIds(venueIds);
+
+      // Set edit state
+      setEditedFirstName(userData.first_name || '');
+      setEditedLastName(userData.last_name || '');
+      setEditedPhone(userData.phone || '');
+      setEditedDateOfBirth(userData.date_of_birth || '');
     } catch (error) {
       console.error('Error fetching manager:', error);
       setMessage('Failed to load manager details');
@@ -268,6 +282,54 @@ const ManagerDetail = () => {
     }
   };
 
+  const handleSaveDetails = async () => {
+    if (!editedFirstName.trim() || !editedLastName.trim()) {
+      setMessage('First name and last name are required');
+      return;
+    }
+
+    setSavingDetails(true);
+    setMessage('');
+
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      const res = await fetch('/api/admin/update-manager', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session?.access_token}`
+        },
+        body: JSON.stringify({
+          managerId,
+          firstName: editedFirstName.trim(),
+          lastName: editedLastName.trim(),
+          phone: editedPhone.trim() || null,
+          dateOfBirth: editedDateOfBirth || null
+        }),
+      });
+
+      const result = await res.json();
+      if (!res.ok) throw new Error(result.error || 'Failed to update manager');
+
+      setMessage('Manager details updated successfully!');
+      setIsEditingDetails(false);
+      await fetchManager();
+    } catch (error) {
+      console.error('Error updating manager:', error);
+      setMessage('Failed to update manager: ' + error.message);
+    } finally {
+      setSavingDetails(false);
+    }
+  };
+
+  const handleCancelEdit = () => {
+    setIsEditingDetails(false);
+    setEditedFirstName(manager.first_name || '');
+    setEditedLastName(manager.last_name || '');
+    setEditedPhone(manager.phone || '');
+    setEditedDateOfBirth(manager.date_of_birth || '');
+  };
+
   // Permission handlers
   const toggleCategory = (category) => {
     setExpandedCategories(prev => ({
@@ -404,12 +466,44 @@ const ManagerDetail = () => {
             <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl overflow-hidden">
               {/* Manager Header */}
               <div className="p-5 border-b border-gray-200 dark:border-gray-800">
-                <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
-                  {manager.first_name} {manager.last_name}
-                </h2>
-                <span className="text-sm text-gray-500 dark:text-gray-400">
-                  Manager
-                </span>
+                <div className="flex items-start justify-between">
+                  <div>
+                    {isEditingDetails ? (
+                      <div className="space-y-2">
+                        <input
+                          type="text"
+                          value={editedFirstName}
+                          onChange={(e) => setEditedFirstName(e.target.value)}
+                          placeholder="First name"
+                          className="w-full px-3 py-1.5 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                        />
+                        <input
+                          type="text"
+                          value={editedLastName}
+                          onChange={(e) => setEditedLastName(e.target.value)}
+                          placeholder="Last name"
+                          className="w-full px-3 py-1.5 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                        />
+                      </div>
+                    ) : (
+                      <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
+                        {manager.first_name} {manager.last_name}
+                      </h2>
+                    )}
+                    <span className="text-sm text-gray-500 dark:text-gray-400">
+                      Manager
+                    </span>
+                  </div>
+                  {!isEditingDetails && (
+                    <button
+                      onClick={() => setIsEditingDetails(true)}
+                      className="p-1.5 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors"
+                      title="Edit details"
+                    >
+                      <Edit2 className="w-4 h-4" />
+                    </button>
+                  )}
+                </div>
               </div>
 
               {/* Manager Details */}
@@ -418,6 +512,46 @@ const ManagerDetail = () => {
                   <Mail className="w-4 h-4 text-gray-500 dark:text-gray-400 flex-shrink-0" />
                   <span className="text-sm text-gray-700 dark:text-gray-300 truncate">{manager.email}</span>
                 </div>
+
+                {/* Phone */}
+                {isEditingDetails ? (
+                  <div className="flex items-center gap-3 p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
+                    <Phone className="w-4 h-4 text-gray-500 dark:text-gray-400 flex-shrink-0" />
+                    <input
+                      type="tel"
+                      value={editedPhone}
+                      onChange={(e) => setEditedPhone(e.target.value)}
+                      placeholder="Phone number"
+                      className="flex-1 px-2 py-1 text-sm border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    />
+                  </div>
+                ) : manager.phone ? (
+                  <div className="flex items-center gap-3 p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
+                    <Phone className="w-4 h-4 text-gray-500 dark:text-gray-400 flex-shrink-0" />
+                    <span className="text-sm text-gray-700 dark:text-gray-300">{manager.phone}</span>
+                  </div>
+                ) : null}
+
+                {/* Date of Birth */}
+                {isEditingDetails ? (
+                  <div className="flex items-center gap-3 p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
+                    <Calendar className="w-4 h-4 text-gray-500 dark:text-gray-400 flex-shrink-0" />
+                    <input
+                      type="date"
+                      value={editedDateOfBirth}
+                      onChange={(e) => setEditedDateOfBirth(e.target.value)}
+                      className="flex-1 px-2 py-1 text-sm border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    />
+                  </div>
+                ) : manager.date_of_birth ? (
+                  <div className="flex items-center gap-3 p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
+                    <Calendar className="w-4 h-4 text-gray-500 dark:text-gray-400 flex-shrink-0" />
+                    <span className="text-sm text-gray-700 dark:text-gray-300">
+                      {new Date(manager.date_of_birth).toLocaleDateString()}
+                    </span>
+                  </div>
+                ) : null}
+
                 <div className="flex items-center gap-3 p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
                   <Building2 className="w-4 h-4 text-gray-500 dark:text-gray-400 flex-shrink-0" />
                   <span className="text-sm text-gray-700 dark:text-gray-300">
@@ -434,6 +568,36 @@ const ManagerDetail = () => {
                   </span>
                 </div>
               </div>
+
+              {/* Save/Cancel Edit Buttons */}
+              {isEditingDetails && (
+                <div className="p-4 border-t border-gray-200 dark:border-gray-800 flex gap-2">
+                  <button
+                    onClick={handleCancelEdit}
+                    disabled={savingDetails}
+                    className="flex-1 px-3 py-2 text-sm font-medium text-gray-600 dark:text-gray-300 bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-lg transition-colors disabled:opacity-50"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    onClick={handleSaveDetails}
+                    disabled={savingDetails}
+                    className="flex-1 px-3 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-lg transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
+                  >
+                    {savingDetails ? (
+                      <>
+                        <RefreshCw className="w-4 h-4 animate-spin" />
+                        Saving...
+                      </>
+                    ) : (
+                      <>
+                        <Save className="w-4 h-4" />
+                        Save
+                      </>
+                    )}
+                  </button>
+                </div>
+              )}
 
               {/* Delete Button */}
               <PermissionGate permission="managers.remove">

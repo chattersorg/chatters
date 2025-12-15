@@ -8,15 +8,15 @@ const faqs = [
   },
   {
     question: 'Do guests need an app?',
-    answer: 'No — everything works through a simple QR code.',
+    answer: 'No. Everything works through a simple QR code.',
   },
   {
     question: 'Can we customise the feedback questions?',
-    answer: 'Yes — choose up to five questions that matter most.',
+    answer: 'Yes. Choose up to five questions that matter most.',
   },
   {
     question: 'Does Chatters support multiple venues?',
-    answer: 'Absolutely — built for single sites, groups, and national chains.',
+    answer: 'Absolutely. It is built for single sites, groups, and national chains.',
   },
   {
     question: 'Will Chatters help reduce negative reviews?',

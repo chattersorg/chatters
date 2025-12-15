@@ -67,13 +67,17 @@ const ResetPassword = () => {
         return;
       }
 
-      const { data, error } = await supabase.functions.invoke('reset-password-with-token', {
-        body: { token, password }
+      const res = await fetch('/api/reset-password-with-token', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ token, password })
       });
 
-      if (error || !data?.success) {
-        console.error('[ResetPassword] Token-based reset error:', error);
-        setError('Failed to reset password. Please try again.');
+      const data = await res.json();
+
+      if (!res.ok || !data?.success) {
+        console.error('[ResetPassword] Token-based reset error:', data?.error);
+        setError(data?.error || 'Failed to reset password. Please try again.');
       } else {
         setMessage('Password successfully reset! Redirecting...');
         setTimeout(() => navigate('/signin'), 2000);

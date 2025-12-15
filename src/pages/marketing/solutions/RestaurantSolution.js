@@ -130,7 +130,7 @@ const RestaurantDashboardMockup = () => {
   );
 };
 
-// SECTION 1 — HERO
+// SECTION 1, HERO
 const Hero = () => {
   return (
     <section className="bg-white py-20 lg:py-24">
@@ -146,7 +146,7 @@ const Hero = () => {
             </h1>
 
             <p className="text-xl text-gray-600 mb-8 leading-relaxed">
-              Real-time feedback for restaurants — catch service and kitchen issues, respond instantly, and protect your Google rating while guests are still at the table.
+              Real-time feedback for restaurants, catch service and kitchen issues, respond instantly, and protect your Google rating while guests are still at the table.
             </p>
 
             <div className="flex flex-col sm:flex-row gap-4">
@@ -186,7 +186,7 @@ const Hero = () => {
   );
 };
 
-// SECTION 2 — THE PROBLEM
+// SECTION 2, THE PROBLEM
 const Problem = () => {
   return (
     <section className="bg-slate-900 py-20 lg:py-24">
@@ -200,7 +200,7 @@ const Problem = () => {
             <p>
               A couple celebrating their anniversary. The steak is overcooked. The waiter is rushed.
               <br />
-              They smile politely, pay the bill — and write a scathing review in the car park.
+              They smile politely, pay the bill, and write a scathing review in the car park.
             </p>
 
             <p className="text-white font-semibold text-2xl">
@@ -208,7 +208,7 @@ const Problem = () => {
             </p>
 
             <p>
-              Chatters gives your team visibility on every table — even during the busiest service.
+              Chatters gives your team visibility on every table, even during the busiest service.
             </p>
           </div>
         </div>
@@ -217,7 +217,7 @@ const Problem = () => {
   );
 };
 
-// SECTION 3 — BUILT FOR RESTAURANTS
+// SECTION 3, BUILT FOR RESTAURANTS
 const BuiltForRestaurants = () => {
   const features = [
     { icon: UtensilsCrossed, text: 'Designed for fine dining to casual eateries' },
@@ -236,7 +236,7 @@ const BuiltForRestaurants = () => {
               Built for Restaurants
             </h2>
             <p className="text-lg text-gray-600">
-              We know dining service is different — that's why we built specifically for it.
+              We know dining service is different, that's why we built specifically for it.
             </p>
           </div>
 
@@ -263,7 +263,7 @@ const BuiltForRestaurants = () => {
   );
 };
 
-// SECTION 4 — HOW IT WORKS
+// SECTION 4, HOW IT WORKS
 const HowItWorks = () => {
   const steps = [
     {
@@ -289,7 +289,7 @@ const HowItWorks = () => {
     {
       number: '5',
       title: 'Happy diners, better reviews',
-      description: 'Problems become recovery stories — not Google rants.',
+      description: 'Problems become recovery stories, not Google rants.',
     },
   ];
 
@@ -329,7 +329,7 @@ const HowItWorks = () => {
   );
 };
 
-// SECTION 5 — WHY RESTAURANTS CHOOSE CHATTERS
+// SECTION 5, WHY RESTAURANTS CHOOSE CHATTERS
 const WhyRestaurantsChoose = () => {
   const benefits = [
     {
@@ -338,7 +338,7 @@ const WhyRestaurantsChoose = () => {
     },
     {
       title: 'Keep diners coming back',
-      description: 'Show customers you care — even on your busiest nights.',
+      description: 'Show customers you care, even on your busiest nights.',
     },
     {
       title: 'Protect your reputation',
@@ -384,7 +384,7 @@ const WhyRestaurantsChoose = () => {
   );
 };
 
-// SECTION 6 — FEATURES
+// SECTION 6, FEATURES
 const Features = () => {
   const features = [
     {
@@ -443,7 +443,7 @@ const Features = () => {
   );
 };
 
-// SECTION 7 — REAL EXAMPLE
+// SECTION 7, REAL EXAMPLE
 const RealExample = () => {
   return (
     <section className="bg-white py-20 lg:py-24">
@@ -457,7 +457,7 @@ const RealExample = () => {
 
           <div className="space-y-8">
             <p className="text-lg text-gray-700">
-              It's 8pm on a Friday. A couple at table 7 ordered the ribeye medium-rare — but it arrived well-done. Rather than flag down the busy server, they scan the QR code and leave a 2-star rating.
+              It's 8pm on a Friday. A couple at table 7 ordered the ribeye medium-rare, but it arrived well-done. Rather than flag down the busy server, they scan the QR code and leave a 2-star rating.
             </p>
 
             <div className="bg-red-50 border-l-4 border-red-400 p-6 rounded-r-xl">
@@ -496,7 +496,7 @@ const RealExample = () => {
   );
 };
 
-// SECTION 8 — FINAL CTA
+// SECTION 8, FINAL CTA
 const FinalCTA = () => {
   return (
     <section className="bg-slate-900 py-20 lg:py-24">

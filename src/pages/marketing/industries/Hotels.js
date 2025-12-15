@@ -21,7 +21,7 @@ import Navbar from '../../../components/marketing/layout/Navbar';
 import Footer from '../../../components/marketing/layout/Footer';
 
 // ─────────────────────────────────────────────────────────────
-// SECTION 1 — HERO
+// SECTION 1, HERO
 // ─────────────────────────────────────────────────────────────
 const Hero = () => (
   <section className="relative pt-32 pb-20 bg-gradient-to-b from-white to-slate-50 overflow-hidden">
@@ -33,7 +33,7 @@ const Hero = () => (
             Hotels
           </p>
           <h1 className="text-4xl sm:text-5xl font-bold text-gray-900 leading-tight mb-6">
-            Fix Guest Issues During Their Stay —{' '}
+            Fix Guest Issues During Their Stay, {' '}
             <span className="text-[#4E74FF]">Not After They Check Out</span>
           </h1>
           <p className="text-xl text-gray-600 mb-8 leading-relaxed">
@@ -84,7 +84,7 @@ const Hero = () => (
 );
 
 // ─────────────────────────────────────────────────────────────
-// SECTION 2 — THE PROBLEM
+// SECTION 2, THE PROBLEM
 // ─────────────────────────────────────────────────────────────
 const Problem = () => (
   <section className="py-20 bg-slate-900">
@@ -114,7 +114,7 @@ const Problem = () => (
           ))}
         </div>
         <p className="text-lg text-slate-300 mb-4">
-          Whether it's housekeeping, breakfast, check-in, room temperature, or noise — problems often surface after departure.
+          Whether it's housekeeping, breakfast, check-in, room temperature, or noise, problems often surface after departure.
         </p>
         <p className="text-xl text-white font-semibold">
           Chatters changes that.
@@ -125,7 +125,7 @@ const Problem = () => (
 );
 
 // ─────────────────────────────────────────────────────────────
-// SECTION 3 — WHAT CHATTERS DOES FOR HOTELS
+// SECTION 3, WHAT CHATTERS DOES FOR HOTELS
 // ─────────────────────────────────────────────────────────────
 const WhatChattersDoesSection = () => {
   const features = [
@@ -135,7 +135,7 @@ const WhatChattersDoesSection = () => {
     },
     {
       title: 'Alert staff instantly',
-      description: 'Front desk, housekeeping, restaurant — whoever needs to know.',
+      description: 'Front desk, housekeeping, restaurant, whoever needs to know.',
     },
     {
       title: 'Prevent negative reviews',
@@ -187,7 +187,7 @@ const WhatChattersDoesSection = () => {
 };
 
 // ─────────────────────────────────────────────────────────────
-// SECTION 4 — HOTEL SCENARIOS
+// SECTION 4, HOTEL SCENARIOS
 // ─────────────────────────────────────────────────────────────
 const Scenarios = () => {
   const scenarios = [
@@ -251,7 +251,7 @@ const Scenarios = () => {
 };
 
 // ─────────────────────────────────────────────────────────────
-// SECTION 5 — WHY HOTELS DEPEND ON CHATTERS
+// SECTION 5, WHY HOTELS DEPEND ON CHATTERS
 // ─────────────────────────────────────────────────────────────
 const WhyHotels = () => {
   const benefits = [
@@ -268,7 +268,7 @@ const WhyHotels = () => {
     {
       icon: MessageSquare,
       title: 'Better communication between teams',
-      description: 'Front desk, restaurant, housekeeping, breakfast — aligned.',
+      description: 'Front desk, restaurant, housekeeping, breakfast, aligned.',
     },
     {
       icon: BarChart3,
@@ -313,7 +313,7 @@ const WhyHotels = () => {
 };
 
 // ─────────────────────────────────────────────────────────────
-// SECTION 6 — A HOTEL STORY IN ACTION
+// SECTION 6, A HOTEL STORY IN ACTION
 // ─────────────────────────────────────────────────────────────
 const StoryInAction = () => (
   <section className="py-20 bg-slate-50">
@@ -362,7 +362,7 @@ const StoryInAction = () => (
 );
 
 // ─────────────────────────────────────────────────────────────
-// SECTION 7 — FINAL CTA
+// SECTION 7, FINAL CTA
 // ─────────────────────────────────────────────────────────────
 const FinalCTA = () => (
   <section className="py-20 bg-slate-900">
@@ -408,7 +408,7 @@ const HotelsPage = () => {
         <meta property="og:title" content="Hotels | Chatters" />
         <meta
           property="og:description"
-          content="Fix guest issues during their stay — not after they check out."
+          content="Fix guest issues during their stay, not after they check out."
         />
         <meta property="og:type" content="website" />
         <link rel="canonical" href="https://getchatters.com/industries/hotels" />

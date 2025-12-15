@@ -1,41 +1,39 @@
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+// /api/send-password-reset.js
+const { createClient } = require('@supabase/supabase-js');
+const { Resend } = require('resend');
+const crypto = require('crypto');
 
-const RESEND_API_KEY = Deno.env.get('RESEND_API_KEY');
-const SUPABASE_URL = Deno.env.get('SUPABASE_URL')!;
-const SUPABASE_SERVICE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
-const APP_URL = Deno.env.get('APP_URL') || 'https://my.getchatters.com';
+const supabaseAdmin = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.REACT_APP_SUPABASE_URL,
+  process.env.SUPABASE_SERVICE_ROLE_KEY
+);
 
-serve(async (req) => {
+const resend = new Resend(process.env.RESEND_API_KEY);
+const APP_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://my.getchatters.com';
+
+module.exports = async function handler(req, res) {
   // CORS headers
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+
   if (req.method === 'OPTIONS') {
-    return new Response('ok', {
-      headers: {
-        'Access-Control-Allow-Origin': '*',
-        'Access-Control-Allow-Methods': 'POST',
-        'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-      }
-    });
+    return res.status(200).end();
   }
 
   if (req.method !== 'POST') {
-    return new Response('Method not allowed', { status: 405 });
+    return res.status(405).json({ error: 'Method not allowed' });
   }
 
   try {
-    const { email } = await req.json();
+    const { email } = req.body;
 
     if (!email) {
-      return new Response(JSON.stringify({ error: 'Email is required' }), {
-        status: 400,
-        headers: { 'Content-Type': 'application/json' }
-      });
+      return res.status(400).json({ error: 'Email is required' });
     }
 
-    const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_KEY);
-
     // Check if user exists
-    const { data: users, error: userError } = await supabase
+    const { data: users, error: userError } = await supabaseAdmin
       .from('users')
       .select('id, email, first_name')
       .eq('email', email.toLowerCase())
@@ -44,14 +42,9 @@ serve(async (req) => {
     if (userError || !users || users.length === 0) {
       // Don't reveal if email exists or not (security best practice)
       console.log('User not found for email:', email);
-      return new Response(JSON.stringify({
+      return res.status(200).json({
         success: true,
         message: 'If an account exists with this email, a password reset link has been sent.'
-      }), {
-        headers: {
-          'Content-Type': 'application/json',
-          'Access-Control-Allow-Origin': '*'
-        }
       });
     }
 
@@ -62,7 +55,7 @@ serve(async (req) => {
     const expiresAt = new Date(Date.now() + 60 * 60 * 1000); // 1 hour
 
     // Store token
-    const { error: tokenError } = await supabase
+    const { error: tokenError } = await supabaseAdmin
       .from('password_reset_tokens')
       .insert({
         user_id: user.id,
@@ -80,55 +73,34 @@ serve(async (req) => {
     const resetLink = `${APP_URL}/reset-password?token=${token}`;
 
     // Send email via Resend
-    const emailResponse = await fetch('https://api.resend.com/emails', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${RESEND_API_KEY}`
-      },
-      body: JSON.stringify({
+    if (process.env.RESEND_API_KEY) {
+      await resend.emails.send({
         from: 'Chatters <noreply@getchatters.com>',
-        to: [user.email],
+        to: user.email,
         subject: 'Reset your Chatters password',
         html: generatePasswordResetEmail(user.first_name || 'there', resetLink, expiresAt)
-      })
-    });
+      });
 
-    if (!emailResponse.ok) {
-      const errorData = await emailResponse.json();
-      console.error('Resend API error:', errorData);
-      throw new Error('Failed to send email');
+      console.log('Password reset email sent to:', user.email);
+    } else {
+      console.warn('RESEND_API_KEY not set, skipping email send');
     }
 
-    const emailData = await emailResponse.json();
-    console.log('Email sent successfully:', emailData.id);
-
-    return new Response(JSON.stringify({
+    return res.status(200).json({
       success: true,
       message: 'Password reset email sent successfully'
-    }), {
-      headers: {
-        'Content-Type': 'application/json',
-        'Access-Control-Allow-Origin': '*'
-      }
     });
 
   } catch (error) {
     console.error('Error:', error);
-    return new Response(JSON.stringify({
+    return res.status(500).json({
       error: 'Failed to send password reset email',
       details: error.message
-    }), {
-      status: 500,
-      headers: {
-        'Content-Type': 'application/json',
-        'Access-Control-Allow-Origin': '*'
-      }
     });
   }
-});
+};
 
-function generatePasswordResetEmail(name: string, resetLink: string, expiresAt: Date): string {
+function generatePasswordResetEmail(name, resetLink, expiresAt) {
   const expiryTime = expiresAt.toLocaleTimeString('en-GB', {
     hour: '2-digit',
     minute: '2-digit'

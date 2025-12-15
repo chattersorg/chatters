@@ -1,26 +1,109 @@
-// supabase/functions/send-recognition-email/index.ts
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
+// /api/send-recognition-email.js
+const { createClient } = require('@supabase/supabase-js');
+const { Resend } = require('resend');
 
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+const supabaseAdmin = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.REACT_APP_SUPABASE_URL,
+  process.env.SUPABASE_SERVICE_ROLE_KEY
+);
+
+const resend = new Resend(process.env.RESEND_API_KEY);
+
+module.exports = async function handler(req, res) {
+  // CORS headers
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+
+  if (req.method === 'OPTIONS') {
+    return res.status(200).end();
+  }
+
+  if (req.method !== 'POST') {
+    return res.status(405).json({ error: 'Method not allowed' });
+  }
+
+  try {
+    if (!process.env.RESEND_API_KEY) {
+      console.error('RESEND_API_KEY is not set');
+      return res.status(500).json({
+        success: false,
+        message: 'RESEND_API_KEY environment variable is not configured'
+      });
+    }
+
+    const {
+      employeeId,
+      employeeEmail,
+      employeeName,
+      managerName,
+      venueName,
+      stats,
+      personalMessage
+    } = req.body;
+
+    // Validate required fields
+    if (!employeeEmail || !employeeName || !managerName || !venueName || !stats) {
+      return res.status(400).json({
+        success: false,
+        message: 'Missing required fields'
+      });
+    }
+
+    // Generate the email HTML
+    const emailHtml = generateRecognitionEmail(
+      employeeName,
+      managerName,
+      venueName,
+      stats,
+      personalMessage
+    );
+
+    // Send email via Resend
+    const emailData = await resend.emails.send({
+      from: 'Chatters <noreply@getchatters.com>',
+      to: employeeEmail,
+      subject: `🎉 Congratulations on your outstanding performance, ${employeeName.split(' ')[0]}!`,
+      html: emailHtml
+    });
+
+    console.log('Recognition email sent successfully:', emailData);
+
+    // Optional: Log recognition in database for tracking
+    if (employeeId) {
+      const { error: logError } = await supabaseAdmin.from('staff_recognitions').insert({
+        employee_id: employeeId,
+        manager_name: managerName,
+        venue_name: venueName,
+        rank: stats.rank,
+        period: stats.period,
+        total_resolved: stats.totalResolved,
+        personal_message: personalMessage,
+        sent_at: new Date().toISOString()
+      });
+
+      if (logError) {
+        // Don't fail if logging fails - recognition table might not exist yet
+        console.log('Note: Could not log recognition (table may not exist):', logError.message);
+      }
+    }
+
+    return res.status(200).json({
+      success: true,
+      message: 'Recognition email sent successfully',
+      emailId: emailData.id
+    });
+
+  } catch (error) {
+    console.error('Error sending recognition email:', error);
+    return res.status(500).json({
+      success: false,
+      message: error.message || 'Internal server error'
+    });
+  }
 };
 
-const RESEND_API_KEY = Deno.env.get('RESEND_API_KEY');
-
-function generateRecognitionEmail(
-  employeeName: string,
-  managerName: string,
-  venueName: string,
-  stats: {
-    rank: number;
-    feedbackResolved: number;
-    assistanceResolved: number;
-    totalResolved: number;
-    period: string;
-  },
-  personalMessage?: string
-): string {
+function generateRecognitionEmail(employeeName, managerName, venueName, stats, personalMessage) {
   const rankSuffix = stats.rank === 1 ? 'st' : stats.rank === 2 ? 'nd' : stats.rank === 3 ? 'rd' : 'th';
   const medalEmoji = stats.rank === 1 ? '🥇' : stats.rank === 2 ? '🥈' : stats.rank === 3 ? '🥉' : '🏆';
 
@@ -132,139 +215,3 @@ function generateRecognitionEmail(
 </html>
   `.trim();
 }
-
-Deno.serve(async (req) => {
-  // Handle CORS preflight requests
-  if (req.method === 'OPTIONS') {
-    return new Response('ok', { headers: corsHeaders });
-  }
-
-  try {
-    // Check environment variables first
-    const supabaseUrl = Deno.env.get('SUPABASE_URL');
-    const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
-    const resendKey = Deno.env.get('RESEND_API_KEY');
-
-    if (!resendKey) {
-      console.error('RESEND_API_KEY is not set');
-      return new Response(
-        JSON.stringify({ success: false, message: 'RESEND_API_KEY environment variable is not configured' }),
-        {
-          status: 500,
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-        }
-      );
-    }
-
-    if (!supabaseUrl || !supabaseKey) {
-      console.error('Supabase environment variables not set');
-      return new Response(
-        JSON.stringify({ success: false, message: 'Supabase environment variables are not configured' }),
-        {
-          status: 500,
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-        }
-      );
-    }
-
-    const supabase = createClient(supabaseUrl, supabaseKey);
-
-    const {
-      employeeId,
-      employeeEmail,
-      employeeName,
-      managerName,
-      venueName,
-      stats,
-      personalMessage
-    } = await req.json();
-
-    // Validate required fields
-    if (!employeeEmail || !employeeName || !managerName || !venueName || !stats) {
-      return new Response(
-        JSON.stringify({ success: false, message: 'Missing required fields' }),
-        {
-          status: 400,
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-        }
-      );
-    }
-
-    // Generate the email HTML
-    const emailHtml = generateRecognitionEmail(
-      employeeName,
-      managerName,
-      venueName,
-      stats,
-      personalMessage
-    );
-
-    // Send email via Resend
-    const emailResponse = await fetch('https://api.resend.com/emails', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${RESEND_API_KEY}`
-      },
-      body: JSON.stringify({
-        from: 'Chatters <noreply@getchatters.com>',
-        to: [employeeEmail],
-        subject: `🎉 Congratulations on your outstanding performance, ${employeeName.split(' ')[0]}!`,
-        html: emailHtml
-      })
-    });
-
-    if (!emailResponse.ok) {
-      const errorText = await emailResponse.text();
-      console.error('Resend API error:', errorText);
-      throw new Error(`Failed to send email: ${errorText}`);
-    }
-
-    const emailData = await emailResponse.json();
-    console.log('Recognition email sent successfully:', emailData);
-
-    // Optional: Log recognition in database for tracking
-    if (employeeId) {
-      const { error: logError } = await supabase.from('staff_recognitions').insert({
-        employee_id: employeeId,
-        manager_name: managerName,
-        venue_name: venueName,
-        rank: stats.rank,
-        period: stats.period,
-        total_resolved: stats.totalResolved,
-        personal_message: personalMessage,
-        sent_at: new Date().toISOString()
-      });
-
-      if (logError) {
-        // Don't fail if logging fails - recognition table might not exist yet
-        console.log('Note: Could not log recognition (table may not exist):', logError.message);
-      }
-    }
-
-    return new Response(
-      JSON.stringify({
-        success: true,
-        message: 'Recognition email sent successfully',
-        emailId: emailData.id
-      }),
-      {
-        status: 200,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-      }
-    );
-
-  } catch (error) {
-    console.error('Error sending recognition email:', error);
-    return new Response(
-      JSON.stringify({
-        success: false,
-        message: error instanceof Error ? error.message : 'Internal server error'
-      }),
-      {
-        status: 500,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-      }
-    );
-  }
-});

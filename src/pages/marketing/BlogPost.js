@@ -25,10 +25,10 @@ const BlogPost = () => {
       image: '/img/blog/realtime-table-feedback.jpg',
       tags: ['Real-Time Feedback', 'Table Service', 'Customer Experience', 'QR Codes'],
       content: `
-        <p class="lead">The traditional approach to restaurant feedback—sending surveys days after a visit—is broken. By the time you read a negative review on TripAdvisor, the guest has already left, told their friends, and possibly sworn never to return. Real-time feedback at the table changes everything.</p>
+        <p class="lead">The traditional approach to restaurant feedback, sending surveys days after a visit, is broken. By the time you read a negative review on TripAdvisor, the guest has already left, told their friends, and possibly sworn never to return. Real-time feedback at the table changes everything.</p>
 
         <h2 id="what-is-real-time-feedback">What is Real-Time Table Feedback?</h2>
-        <p>Real-time table feedback allows guests to share their experience whilst they're still dining, typically via QR codes placed on tables, menus, or receipts. The feedback reaches staff instantly—within seconds—enabling immediate action whilst the guest is still present.</p>
+        <p>Real-time table feedback allows guests to share their experience whilst they're still dining, typically via QR codes placed on tables, menus, or receipts. The feedback reaches staff instantly, within seconds, enabling immediate action whilst the guest is still present.</p>
 
         <h3>How It Works</h3>
         <ol>
@@ -71,11 +71,11 @@ const BlogPost = () => {
         <h2 id="benefits-real-time-feedback">The Transformative Benefits of Real-Time Feedback</h2>
 
         <h3>1. Prevent Negative Reviews Before They Happen</h3>
-        <p>When you catch issues whilst guests are still dining, you can fix problems immediately. A cold meal, slow service, or mix-up can be resolved on the spot—often turning a potential detractor into a promoter.</p>
+        <p>When you catch issues whilst guests are still dining, you can fix problems immediately. A cold meal, slow service, or mix-up can be resolved on the spot, often turning a potential detractor into a promoter.</p>
 
         <blockquote>
           <p>"We prevented 73 potential negative reviews in our first month using real-time feedback. Instead of leaving frustrated, those guests left happy because we fixed their issues immediately."</p>
-          <footer>— Restaurant Manager, Manchester</footer>
+          <footer>, Restaurant Manager, Manchester</footer>
         </blockquote>
 
         <h3>2. Increase Response Rates by 5-10x</h3>
@@ -180,7 +180,7 @@ const BlogPost = () => {
         <h2 id="common-concerns">Common Concerns Addressed</h2>
 
         <h3>"Won't guests find it intrusive?"</h3>
-        <p>No—when done right, QR codes are unobtrusive. Guests who want to provide feedback will scan; those who don't will ignore them. Response rates of 25-35% indicate strong guest acceptance.</p>
+        <p>No, when done right, QR codes are unobtrusive. Guests who want to provide feedback will scan; those who don't will ignore them. Response rates of 25-35% indicate strong guest acceptance.</p>
 
         <h3>"What if we get overwhelmed with negative feedback?"</h3>
         <p>That's actually a good thing. Better to know about problems so you can fix them than to remain ignorant whilst bad reviews pile up online. Most venues find that 70-80% of feedback is positive or neutral.</p>
@@ -212,7 +212,7 @@ const BlogPost = () => {
         <h3>Step 5: Launch and Monitor (Week 3+)</h3>
         <p>Start collecting feedback, respond to every alert, and track your improvement.</p>
 
-        <p>Real-time feedback at the table isn't just a trend—it's the future of hospitality service. UK restaurants that embrace it now will have a significant competitive advantage over those waiting for problems to show up in online reviews.</p>
+        <p>Real-time feedback at the table isn't just a trend, it's the future of hospitality service. UK restaurants that embrace it now will have a significant competitive advantage over those waiting for problems to show up in online reviews.</p>
       `,
       metaDescription: 'Discover why real-time table feedback is transforming UK restaurants. Learn how QR code feedback systems prevent negative reviews, boost NPS scores, and enable instant service recovery.',
       relatedPosts: [
@@ -293,14 +293,14 @@ const BlogPost = () => {
 
         <blockquote>
           <p>"After implementing NPS tracking, we identified service delays during peak hours were our biggest detractor driver. Within two months of addressing this, our NPS jumped from 32 to 51."</p>
-          <footer>— Marcus Chen, Restaurant Group Operations Director</footer>
+          <footer>, Marcus Chen, Restaurant Group Operations Director</footer>
         </blockquote>
 
         <h2 id="collecting-nps">Best Practices for Collecting NPS Data</h2>
         <p>Getting accurate NPS data requires strategic collection:</p>
 
         <h3>Timing Matters</h3>
-        <p>For restaurants and pubs, the ideal time to ask is immediately after the experience—either through table-side tablets, QR codes, or as guests are leaving. For hotels, survey guests 24-48 hours after checkout when the experience is fresh but emotions have settled.</p>
+        <p>For restaurants and pubs, the ideal time to ask is immediately after the experience, either through table-side tablets, QR codes, or as guests are leaving. For hotels, survey guests 24-48 hours after checkout when the experience is fresh but emotions have settled.</p>
 
         <h3>Keep It Simple</h3>
         <p>Start with the core NPS question, then ask one follow-up: "What's the primary reason for your score?" This qualitative feedback is where the real insights live.</p>
@@ -309,7 +309,7 @@ const BlogPost = () => {
         <p>Long surveys kill response rates. Modern NPS collection uses QR codes, SMS, or email links that take less than 30 seconds to complete. Aim for a response rate of at least 25-30%.</p>
 
         <h3>Close the Loop</h3>
-        <p>The most successful NPS programs don't just collect data—they act on it. Respond to detractors within 24 hours, acknowledge passives, and thank promoters for their loyalty.</p>
+        <p>The most successful NPS programs don't just collect data, they act on it. Respond to detractors within 24 hours, acknowledge passives, and thank promoters for their loyalty.</p>
 
         <h2 id="improving-nps">Strategies to Improve Your NPS Score</h2>
         <p>Improving your NPS requires a systematic approach:</p>
@@ -372,7 +372,7 @@ const BlogPost = () => {
           <li><strong>Track Progress:</strong> Monitor your score weekly and celebrate improvements</li>
         </ol>
 
-        <p>NPS isn't just a metric—it's a framework for building a customer-centric culture. When done right, it transforms how your team thinks about service, drives operational improvements, and ultimately fuels sustainable growth.</p>
+        <p>NPS isn't just a metric, it's a framework for building a customer-centric culture. When done right, it transforms how your team thinks about service, drives operational improvements, and ultimately fuels sustainable growth.</p>
 
         <p>The hospitality businesses that thrive in today's competitive market are those that listen to their customers systematically and act on what they learn. NPS gives you that system.</p>
       `,
@@ -429,7 +429,7 @@ const BlogPost = () => {
 
         <blockquote>
           <p>"We thought our NPS of 42 was solid until we learned the fine dining average was 58. That realisation kicked off a transformation that brought us to 61 within six months."</p>
-          <footer>— Restaurant Owner, London</footer>
+          <footer>, Restaurant Owner, London</footer>
         </blockquote>
 
         <h2 id="regional-variations">Regional Variations in the UK</h2>
@@ -563,7 +563,7 @@ const BlogPost = () => {
       image: '/img/blog/improve-nps.jpg',
       tags: ['NPS', 'Customer Satisfaction', 'Strategy', 'Best Practices'],
       content: `
-        <p class="lead">Improving your NPS isn't about manipulation or survey tricks—it's about systematically delivering better experiences. These ten strategies have been proven in real hospitality businesses to drive sustainable NPS improvements of 10-25 points.</p>
+        <p class="lead">Improving your NPS isn't about manipulation or survey tricks, it's about systematically delivering better experiences. These ten strategies have been proven in real hospitality businesses to drive sustainable NPS improvements of 10-25 points.</p>
 
         <h2 id="strategy-1">1. Close the Loop Within 24 Hours</h2>
         <p>The single most impactful action you can take: respond to every piece of feedback within 24 hours, especially from detractors.</p>
@@ -581,7 +581,7 @@ const BlogPost = () => {
 
         <blockquote>
           <p>"We implemented 24-hour response and our NPS jumped from 38 to 49 in just two months. Detractors were shocked we actually listened."</p>
-          <footer>— Pub Manager, Manchester</footer>
+          <footer>, Pub Manager, Manchester</footer>
         </blockquote>
 
         <h2 id="strategy-2">2. Turn Your Staff into NPS Champions</h2>
@@ -609,7 +609,7 @@ const BlogPost = () => {
         <ul>
           <li>Analyse passive feedback for common themes (usually minor issues)</li>
           <li>Add small "wow" moments: complimentary appetizer, birthday acknowledgment, preferred table</li>
-          <li>Improve consistency—passives often cite minor inconsistencies</li>
+          <li>Improve consistency, passives often cite minor inconsistencies</li>
           <li>Follow up post-visit with a personal thank you</li>
         </ul>
 
@@ -688,7 +688,7 @@ const BlogPost = () => {
         </ul>
 
         <h2 id="strategy-9">9. Transform Promoters into Active Advocates</h2>
-        <p>Don't just collect 9-10 scores—activate those promoters.</p>
+        <p>Don't just collect 9-10 scores, activate those promoters.</p>
 
         <h3>Activation Tactics</h3>
         <ul>
@@ -757,7 +757,7 @@ const BlogPost = () => {
       image: '/img/blog/metrics-comparison.jpg',
       tags: ['NPS', 'CSAT', 'CES', 'Metrics', 'Customer Satisfaction'],
       content: `
-        <p class="lead">With so many customer satisfaction metrics available, choosing the right ones for your hospitality business can feel overwhelming. NPS, CSAT, and CES each measure different aspects of the customer experience—and understanding when to use each is crucial for actionable insights.</p>
+        <p class="lead">With so many customer satisfaction metrics available, choosing the right ones for your hospitality business can feel overwhelming. NPS, CSAT, and CES each measure different aspects of the customer experience, and understanding when to use each is crucial for actionable insights.</p>
 
         <h2 id="understanding-metrics">Understanding the Three Key Metrics</h2>
 
@@ -845,7 +845,7 @@ const BlogPost = () => {
 
         <blockquote>
           <p>"We use CSAT for daily operations, CES to improve processes, and NPS for strategic planning. Together, they give us a complete picture of our customer experience."</p>
-          <footer>— Hotel Operations Director</footer>
+          <footer>, Hotel Operations Director</footer>
         </blockquote>
 
         <h3>Recommended Implementation</h3>
@@ -1002,7 +1002,7 @@ const BlogPost = () => {
 
         <blockquote>
           <p>"We calculate NPS weekly and have seen our score climb from 28 to 47 over six months by consistently addressing feedback themes."</p>
-          <footer>— Restaurant Group Manager</footer>
+          <footer>, Restaurant Group Manager</footer>
         </blockquote>
 
         <h2 id="spreadsheet-template">Using a Spreadsheet</h2>
@@ -1042,7 +1042,7 @@ const BlogPost = () => {
         <p class="lead">QR codes have evolved from pandemic necessity to powerful feedback collection tools. UK restaurants, pubs, and hotels are discovering that QR code feedback systems deliver response rates 10x higher than email surveys whilst preventing negative online reviews. Here's everything you need to know.</p>
 
         <h2 id="what-are-qr-feedback-systems">What Are QR Code Feedback Systems?</h2>
-        <p>QR code feedback systems allow guests to scan a Quick Response code using their smartphone camera, instantly accessing a feedback survey without downloading an app or typing a URL. The entire process—from scan to submission—takes under 30 seconds.</p>
+        <p>QR code feedback systems allow guests to scan a Quick Response code using their smartphone camera, instantly accessing a feedback survey without downloading an app or typing a URL. The entire process, from scan to submission, takes under 30 seconds.</p>
 
         <h3>The Technology Behind It</h3>
         <ul>
@@ -1140,7 +1140,7 @@ const BlogPost = () => {
 
         <blockquote>
           <p>"We kept our survey to just 3 questions and saw completion rates of 89%. When we had 8 questions, only 45% finished."</p>
-          <footer>— Operations Manager, Casual Dining Chain</footer>
+          <footer>, Operations Manager, Casual Dining Chain</footer>
         </blockquote>
 
         <h3>Step 3: Create Your QR Codes</h3>
@@ -1190,10 +1190,10 @@ const BlogPost = () => {
         <h2 id="maximising-response-rates">How to Maximise QR Code Scan Rates</h2>
 
         <h3>1. Add Clear Call-to-Action Text</h3>
-        <p>Don't just show a QR code—tell guests why to scan it:</p>
+        <p>Don't just show a QR code, tell guests why to scan it:</p>
         <ul>
           <li>✅ "Scan to share your feedback and help us improve"</li>
-          <li>✅ "Let us know how we're doing—it takes 30 seconds"</li>
+          <li>✅ "Let us know how we're doing, it takes 30 seconds"</li>
           <li>✅ "Your opinion matters. Scan now for quick feedback"</li>
           <li>❌ "QR Code" (no context)</li>
         </ul>
@@ -1213,7 +1213,7 @@ const BlogPost = () => {
         <p>Train staff to mention the QR code:</p>
         <ul>
           <li><strong>When clearing mains:</strong> "Hope you enjoyed everything! There's a feedback QR code on the table if you have a moment."</li>
-          <li><strong>When delivering bill:</strong> "We'd love your thoughts—there's a quick survey on your receipt."</li>
+          <li><strong>When delivering bill:</strong> "We'd love your thoughts, there's a quick survey on your receipt."</li>
           <li><strong>At the door:</strong> "Thanks for visiting! Scan the QR by the door to let us know how we did."</li>
         </ul>
 

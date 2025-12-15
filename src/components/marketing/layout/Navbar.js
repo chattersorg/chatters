@@ -137,7 +137,7 @@ const Navbar = ({ overlay = false }) => {
   const SolutionsDropdown = ({ isVisible }) => {
     return (
       <div
-        className={`absolute left-1/2 -translate-x-1/2 top-full pt-2 z-[60] transition-all duration-200 ease-out ${
+        className={`absolute left-0 top-full pt-2 z-[60] transition-all duration-200 ease-out ${
           isVisible ? 'opacity-100 visible translate-y-0' : 'opacity-0 invisible -translate-y-1 pointer-events-none'
         }`}
         onMouseEnter={handleDropdownContentEnter}
@@ -170,7 +170,7 @@ const Navbar = ({ overlay = false }) => {
   const ResourcesDropdown = ({ isVisible }) => {
     return (
       <div
-        className={`absolute left-1/2 -translate-x-1/2 top-full pt-2 z-[60] transition-all duration-200 ease-out ${
+        className={`absolute left-0 top-full pt-2 z-[60] transition-all duration-200 ease-out ${
           isVisible ? 'opacity-100 visible translate-y-0' : 'opacity-0 invisible -translate-y-1 pointer-events-none'
         }`}
         onMouseEnter={handleDropdownContentEnter}
@@ -293,10 +293,10 @@ const Navbar = ({ overlay = false }) => {
         </div>
       </div>
 
-      {/* Mobile menu */}
+      {/* Mobile menu - fullscreen */}
       {isMobileMenuOpen && (
-        <div className="lg:hidden bg-white border-t border-gray-200 shadow-xl max-h-[80vh] overflow-y-auto">
-          <div className="px-6 py-6 space-y-6">
+        <div className="lg:hidden fixed inset-0 top-16 bg-white z-50 overflow-y-auto">
+          <div className="px-6 py-6 space-y-6 pb-24">
             {/* Product Categories */}
             <div>
               <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3">Product</p>
@@ -371,8 +371,8 @@ const Navbar = ({ overlay = false }) => {
               </div>
             </div>
 
-            {/* Pricing & Auth */}
-            <div className="pt-4 border-t border-gray-200 space-y-3">
+            {/* Pricing */}
+            <div className="pt-4 border-t border-gray-200">
               <Link
                 to="/pricing"
                 onClick={() => setIsMobileMenuOpen(false)}
@@ -380,18 +380,21 @@ const Navbar = ({ overlay = false }) => {
               >
                 Pricing
               </Link>
+            </div>
+          </div>
 
-              <div className="grid grid-cols-2 gap-3 pt-2">
-                <Link
-                  to={getDashboardUrl('/signin')}
-                  onClick={() => setIsMobileMenuOpen(false)}
-                  className="text-center border border-gray-300 text-gray-700 px-4 py-2.5 rounded-lg text-sm font-medium hover:bg-gray-50 transition-colors"
-                >
-                  Log in
-                </Link>
-                <div onClick={() => setIsMobileMenuOpen(false)}>
-                  <PrimaryButton text="Book a Demo" to="/demo" size="sm" className="w-full justify-center" />
-                </div>
+          {/* Sticky bottom CTA bar */}
+          <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 px-4 py-4 shadow-[0_-4px_20px_rgba(0,0,0,0.1)]">
+            <div className="flex gap-3">
+              <Link
+                to={getDashboardUrl('/signin')}
+                onClick={() => setIsMobileMenuOpen(false)}
+                className="flex-1 text-center border border-gray-300 text-gray-700 px-4 py-3 rounded-lg text-sm font-medium hover:bg-gray-50 transition-colors"
+              >
+                Log in
+              </Link>
+              <div onClick={() => setIsMobileMenuOpen(false)} className="flex-1">
+                <PrimaryButton text="Book a Demo" to="/demo" size="sm" className="w-full justify-center py-3" />
               </div>
             </div>
           </div>

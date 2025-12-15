@@ -172,7 +172,7 @@ const RealTimeAlertsMockup = () => {
   );
 };
 
-// SECTION 1 — HERO
+// SECTION 1, HERO
 const Hero = () => {
   return (
     <section className="bg-white py-20 lg:py-24">
@@ -192,7 +192,7 @@ const Hero = () => {
 
             {/* Subheadline */}
             <p className="text-xl text-gray-600 mb-8 leading-relaxed">
-              Real-time alerts notify your team instantly — so issues are resolved in seconds, not the next day.
+              Real-time alerts notify your team instantly, so issues are resolved in seconds, not the next day.
             </p>
 
             {/* Buttons */}
@@ -228,7 +228,7 @@ const Hero = () => {
   );
 };
 
-// SECTION 2 — THE PROBLEM
+// SECTION 2, THE PROBLEM
 const Problem = () => {
   return (
     <section className="bg-slate-900 py-20 lg:py-24">
@@ -261,7 +261,7 @@ const Problem = () => {
   );
 };
 
-// SECTION 3 — WHAT IT DETECTS
+// SECTION 3, WHAT IT DETECTS
 const WhatItDetects = () => {
   const detections = [
     { icon: Star, text: 'Leave a low rating' },
@@ -310,7 +310,7 @@ const WhatItDetects = () => {
   );
 };
 
-// SECTION 4 — HOW IT WORKS
+// SECTION 4, HOW IT WORKS
 const HowItWorks = () => {
   const steps = [
     {
@@ -321,7 +321,7 @@ const HowItWorks = () => {
     {
       number: '2',
       title: 'Chatters Intelligence flags issues automatically',
-      description: 'Low scores, help requests, and negative sentiment in comments all trigger alerts — instantly.',
+      description: 'Low scores, help requests, and negative sentiment in comments all trigger alerts, instantly.',
     },
     {
       number: '3',
@@ -381,7 +381,7 @@ const HowItWorks = () => {
   );
 };
 
-// SECTION 5 — WHY OPERATORS DEPEND ON IT
+// SECTION 5, WHY OPERATORS DEPEND ON IT
 const WhyOperators = () => {
   const benefits = [
     {
@@ -402,7 +402,7 @@ const WhyOperators = () => {
     },
     {
       title: 'Build a reputation for exceptional service',
-      description: 'Guests feel looked after — and they tell others.',
+      description: 'Guests feel looked after, and they tell others.',
     },
   ];
 
@@ -438,7 +438,7 @@ const WhyOperators = () => {
   );
 };
 
-// SECTION 6 — FEATURES
+// SECTION 6, FEATURES
 const Features = () => {
   const features = [
     {
@@ -459,7 +459,7 @@ const Features = () => {
     {
       icon: ClipboardCheck,
       title: 'Full Resolution Tracking',
-      description: 'You see who handled what — and how fast.',
+      description: 'You see who handled what, and how fast.',
     },
   ];
 
@@ -502,7 +502,7 @@ const Features = () => {
   );
 };
 
-// SECTION 7 — REAL EXAMPLE
+// SECTION 7, REAL EXAMPLE
 const RealExample = () => {
   return (
     <section className="bg-white py-20 lg:py-24">
@@ -560,7 +560,7 @@ const RealExample = () => {
   );
 };
 
-// SECTION 8 — TESTIMONIAL
+// SECTION 8, TESTIMONIAL
 const Testimonial = () => {
   return (
     <section className="bg-gray-50 py-20 lg:py-24">
@@ -587,7 +587,7 @@ const Testimonial = () => {
   );
 };
 
-// SECTION 9 — FINAL CTA
+// SECTION 9, FINAL CTA
 const FinalCTA = () => {
   return (
     <section className="bg-slate-900 py-20 lg:py-24">

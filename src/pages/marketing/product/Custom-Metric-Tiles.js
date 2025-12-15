@@ -16,7 +16,7 @@ import {
 import Navbar from '../../../components/marketing/layout/Navbar';
 import Footer from '../../../components/marketing/layout/Footer';
 
-// SECTION 1 — HERO
+// SECTION 1, HERO
 const Hero = () => {
   return (
     <section className="bg-white py-20 lg:py-24">
@@ -32,7 +32,7 @@ const Hero = () => {
             </h1>
 
             <p className="text-xl text-gray-600 mb-8 leading-relaxed">
-              Custom Metric Tiles let you track the metrics that matter most to your venues — from service speed and cleanliness to food accuracy and guest satisfaction.
+              Custom Metric Tiles let you track the metrics that matter most to your venues, from service speed and cleanliness to food accuracy and guest satisfaction.
             </p>
 
             <div className="flex flex-col sm:flex-row gap-4">
@@ -76,7 +76,7 @@ const Hero = () => {
   );
 };
 
-// SECTION 2 — THE PROBLEM
+// SECTION 2, THE PROBLEM
 const Problem = () => {
   const items = [
     'A pub focuses on ambience',
@@ -122,13 +122,13 @@ const Problem = () => {
   );
 };
 
-// SECTION 3 — WHAT YOU CAN TRACK
+// SECTION 3, WHAT YOU CAN TRACK
 const WhatYouTrack = () => {
   const features = [
     {
       icon: Target,
       title: 'Your most important metrics',
-      description: 'Speed, friendliness, accuracy, cleanliness — whatever drives your venue.'
+      description: 'Speed, friendliness, accuracy, cleanliness, whatever drives your venue.'
     },
     {
       icon: Building2,
@@ -184,7 +184,7 @@ const WhatYouTrack = () => {
   );
 };
 
-// SECTION 4 — HOW IT WORKS
+// SECTION 4, HOW IT WORKS
 const HowItWorks = () => {
   const steps = [
     {
@@ -210,7 +210,7 @@ const HowItWorks = () => {
     {
       number: '5',
       title: 'Adjust anytime',
-      description: 'Season, menu changes, events, new management — everything adapts.',
+      description: 'Season, menu changes, events, new management, everything adapts.',
     },
   ];
 
@@ -250,7 +250,7 @@ const HowItWorks = () => {
   );
 };
 
-// SECTION 5 — WHY OPERATORS DEPEND ON IT
+// SECTION 5, WHY OPERATORS DEPEND ON IT
 const WhyOperators = () => {
   const benefits = [
     {
@@ -263,7 +263,7 @@ const WhyOperators = () => {
     },
     {
       title: 'Remove noise',
-      description: 'Focus on what matters — nothing more.',
+      description: 'Focus on what matters, nothing more.',
     },
     {
       title: 'Excellent for multi-venue rollout',
@@ -305,7 +305,7 @@ const WhyOperators = () => {
   );
 };
 
-// SECTION 6 — FEATURES
+// SECTION 6, FEATURES
 const Features = () => {
   const features = [
     {
@@ -369,7 +369,7 @@ const Features = () => {
   );
 };
 
-// SECTION 7 — IN ACTION
+// SECTION 7, IN ACTION
 const InAction = () => {
   return (
     <section className="bg-white py-20 lg:py-24">
@@ -423,7 +423,7 @@ const InAction = () => {
               </div>
 
               <p className="text-lg text-gray-800 italic">
-                "Seasonal menu was amazing — everything came out hot and fast. Really impressed."
+                "Seasonal menu was amazing, everything came out hot and fast. Really impressed."
               </p>
             </div>
           </div>
@@ -433,7 +433,7 @@ const InAction = () => {
   );
 };
 
-// SECTION 8 — TESTIMONIAL
+// SECTION 8, TESTIMONIAL
 const Testimonial = () => {
   return (
     <section className="bg-gray-50 py-20 lg:py-24">
@@ -458,7 +458,7 @@ const Testimonial = () => {
   );
 };
 
-// SECTION 9 — FINAL CTA
+// SECTION 9, FINAL CTA
 const FinalCTA = () => {
   return (
     <section className="bg-slate-900 py-20 lg:py-24">
@@ -497,7 +497,7 @@ const CustomMetricTilesPage = () => {
         <title>Custom Metric Tiles | Build Your Own Dashboard | Chatters</title>
         <meta
           name="description"
-          content="Build the dashboard that matches how you operate. Custom Metric Tiles let you track the metrics that matter most to your venues — from service speed to guest satisfaction."
+          content="Build the dashboard that matches how you operate. Custom Metric Tiles let you track the metrics that matter most to your venues, from service speed to guest satisfaction."
         />
         <meta
           name="keywords"
