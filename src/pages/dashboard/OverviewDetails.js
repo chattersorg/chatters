@@ -334,7 +334,7 @@ const OverviewDetails = () => {
               <span className="text-xs font-medium text-gray-500 dark:text-gray-400">Avg NPS</span>
             </div>
             <div className={`text-2xl font-bold ${getNPSColor(portfolioStats.avgNPS)}`}>
-              {portfolioStats.avgNPS !== null ? portfolioStats.avgNPS : '—'}
+              {portfolioStats.avgNPS !== null ? portfolioStats.avgNPS : ' - '}
             </div>
           </div>
 
@@ -345,7 +345,7 @@ const OverviewDetails = () => {
               <span className="text-xs font-medium text-gray-500 dark:text-gray-400">Avg Rating</span>
             </div>
             <div className={`text-2xl font-bold ${getRatingColor(portfolioStats.avgRating)}`}>
-              {portfolioStats.avgRating !== null ? portfolioStats.avgRating : '—'}
+              {portfolioStats.avgRating !== null ? portfolioStats.avgRating : ' - '}
             </div>
           </div>
 
@@ -356,7 +356,7 @@ const OverviewDetails = () => {
               <span className="text-xs font-medium text-gray-500 dark:text-gray-400">Avg AI Score</span>
             </div>
             <div className={`text-2xl font-bold ${getAIScoreColor(portfolioStats.avgAIScore)}`}>
-              {portfolioStats.avgAIScore !== null ? portfolioStats.avgAIScore : '—'}
+              {portfolioStats.avgAIScore !== null ? portfolioStats.avgAIScore : ' - '}
             </div>
           </div>
         </div>
@@ -503,7 +503,7 @@ const OverviewDetails = () => {
                   <div className={`rounded-lg p-3 border ${getNPSBgColor(stats.nps)}`}>
                     <div className="text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">NPS</div>
                     <div className={`text-xl font-bold ${getNPSColor(stats.nps)}`}>
-                      {stats.nps !== null ? stats.nps : '—'}
+                      {stats.nps !== null ? stats.nps : ' - '}
                     </div>
                     <div className="text-[10px] text-gray-500 dark:text-gray-400">{stats.npsCount} resp.</div>
                   </div>
@@ -514,7 +514,7 @@ const OverviewDetails = () => {
                     <div className="flex items-center gap-1">
                       <Star className="w-4 h-4 text-amber-500 fill-amber-500" />
                       <span className={`text-xl font-bold ${getRatingColor(stats.avgRating)}`}>
-                        {stats.avgRating !== null ? stats.avgRating : '—'}
+                        {stats.avgRating !== null ? stats.avgRating : ' - '}
                       </span>
                     </div>
                     <div className="text-[10px] text-gray-500 dark:text-gray-400">{stats.feedbackCount} reviews</div>
@@ -524,7 +524,7 @@ const OverviewDetails = () => {
                   <div className="bg-white dark:bg-gray-900 rounded-lg p-3 border border-gray-200 dark:border-gray-700">
                     <div className="text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">AI Score</div>
                     <div className={`text-xl font-bold ${getAIScoreColor(stats.aiScore)}`}>
-                      {stats.aiScore !== null ? stats.aiScore : '—'}
+                      {stats.aiScore !== null ? stats.aiScore : ' - '}
                     </div>
                     <div className="text-[10px] text-gray-500 dark:text-gray-400">/10</div>
                   </div>

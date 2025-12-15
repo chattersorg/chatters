@@ -4,11 +4,7 @@ This document outlines the setup process for the Google Reviews integration feat
 
 ## Overview
 
-The Google Reviews integration allows venues to:
-- Display current Google star ratings and review counts
-- Automatically refresh ratings daily via cron job
-- Set up automated review prompts based on current ratings
-- Track review performance over time
+The Google Reviews integration allows venues to: - Display current Google star ratings and review counts - Automatically refresh ratings daily via cron job - Set up automated review prompts based on current ratings - Track review performance over time
 
 ## Prerequisites
 
@@ -31,16 +27,9 @@ Or apply manually in Supabase SQL editor.
 
 ### 2. Google Cloud Configuration
 
-1. **Enable Places API**:
-   - Go to [Google Cloud Console](https://console.cloud.google.com/)
-   - Enable "Places API" for your project
-   - Create an API key restricted to Places API
+1. **Enable Places API**: - Go to [Google Cloud Console](https://console.cloud.google.com/) - Enable "Places API" for your project - Create an API key restricted to Places API
 
-2. **Configure API Key Restrictions**:
-   - **Application restrictions**: HTTP referrers (websites)
-     - Add your domain: `*.yourdomain.com/*`
-     - Add localhost for development: `localhost/*`
-   - **API restrictions**: Restrict to "Places API"
+2. **Configure API Key Restrictions**: - **Application restrictions**: HTTP referrers (websites) - Add your domain: `*.yourdomain.com/*` - Add localhost for development: `localhost/*` - **API restrictions**: Restrict to "Places API"
 
 ### 3. Environment Variables
 
@@ -140,53 +129,26 @@ import GoogleRatingBadge from './components/dashboard/GoogleRatingBadge';
 <GoogleRatingBadge showAttribution={true} />
 ```
 
-### 3. Monitor Costs
+### 3. Monitor Costs - Check logs for monthly API call counts - Default limit: 1000 calls/day maximum - Estimated cost: <£30/month for ≤200 venues
 
-- Check logs for monthly API call counts
-- Default limit: 1000 calls/day maximum
-- Estimated cost: <£30/month for ≤200 venues
-
-## Cost Control
-
-- **Cache TTL**: 24 hours (configurable via `GOOGLE_RATINGS_TTL_HOURS`)
-- **Daily limit**: 1000 calls maximum per day
-- **Minimal fields**: Only requests `rating,user_ratings_total` to minimize cost
-- **Active venues only**: Optional setting to only refresh venues with recent feedback
+## Cost Control - **Cache TTL**: 24 hours (configurable via `GOOGLE_RATINGS_TTL_HOURS`) - **Daily limit**: 1000 calls maximum per day - **Minimal fields**: Only requests `rating,user_ratings_total` to minimize cost - **Active venues only**: Optional setting to only refresh venues with recent feedback
 
 ## Troubleshooting
 
 ### Common Issues
 
-1. **"Invalid Place ID" errors**:
-   - Verify the Place ID is correct in the venue settings
-   - Try re-linking the venue using the search function
+1. **"Invalid Place ID" errors**: - Verify the Place ID is correct in the venue settings - Try re-linking the venue using the search function
 
-2. **"Quota exceeded" errors**:
-   - Check Google Cloud Console quotas
-   - Monitor daily API usage in cron job logs
+2. **"Quota exceeded" errors**: - Check Google Cloud Console quotas - Monitor daily API usage in cron job logs
 
-3. **Cron job failures**:
-   - Check Vercel function logs
-   - Verify `CRON_SECRET` and `SUPABASE_SERVICE_ROLE_KEY`
+3. **Cron job failures**: - Check Vercel function logs - Verify `CRON_SECRET` and `SUPABASE_SERVICE_ROLE_KEY`
 
-### Monitoring
-
-- Cron job results are logged to Vercel function logs
-- API errors return appropriate HTTP status codes
-- Failed venue updates are logged with venue IDs for debugging
+### Monitoring - Cron job results are logged to Vercel function logs - API errors return appropriate HTTP status codes - Failed venue updates are logged with venue IDs for debugging
 
 ## Attribution Requirements
 
-Per Google Places API terms:
-- Always display attribution when showing ratings
-- Use the `attributions` field returned by the API
-- The `GoogleRatingBadge` component handles this automatically
+Per Google Places API terms: - Always display attribution when showing ratings - Use the `attributions` field returned by the API - The `GoogleRatingBadge` component handles this automatically
 
 ## Future Enhancements
 
-The current implementation supports minimal fields for cost control. Future versions could add:
-
-- Review text extraction
-- Review reply management
-- TripAdvisor integration
-- Historical rating tracking
+The current implementation supports minimal fields for cost control. Future versions could add: - Review text extraction - Review reply management - TripAdvisor integration - Historical rating tracking

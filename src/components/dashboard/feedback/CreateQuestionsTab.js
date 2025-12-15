@@ -1,4 +1,4 @@
-// CreateQuestionsTab.js — Suggested questions and new question creation
+// CreateQuestionsTab.js - Suggested questions and new question creation
 
 import React from 'react';
 import SuggestedQuestions from './SuggestedQuestions';

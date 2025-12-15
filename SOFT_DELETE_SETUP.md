@@ -2,12 +2,7 @@
 
 ## Overview
 
-Managers can now be "deleted" without losing their data. When a manager is deleted:
-- They are marked as deleted (`deleted_at` timestamp set)
-- All their data is preserved (staff records, feedback, sessions)
-- They disappear from active manager listings
-- They can be recovered within 14 days
-- After 14 days, a cleanup script permanently deletes them
+Managers can now be "deleted" without losing their data. When a manager is deleted: - They are marked as deleted (`deleted_at` timestamp set) - All their data is preserved (staff records, feedback, sessions) - They disappear from active manager listings - They can be recovered within 14 days - After 14 days, a cleanup script permanently deletes them
 
 ## Setup Required
 
@@ -59,9 +54,7 @@ WHERE table_name = 'users'
 AND column_name IN ('deleted_at', 'deleted_by');
 ```
 
-You should see:
-- `deleted_at` - timestamp with time zone - YES (nullable)
-- `deleted_by` - uuid - YES (nullable)
+You should see: - `deleted_at` - timestamp with time zone - YES (nullable) - `deleted_by` - uuid - YES (nullable)
 
 ## How It Works
 
@@ -102,12 +95,7 @@ Run the cleanup script manually or as a cron job:
 SUPABASE_SERVICE_ROLE_KEY=your_key node scripts/cleanup-deleted-managers.js
 ```
 
-This script:
-- Finds managers deleted more than 14 days ago
-- Permanently deletes their staff records
-- Permanently deletes their user record
-- Permanently deletes their auth record
-- Logs all deletions
+This script: - Finds managers deleted more than 14 days ago - Permanently deletes their staff records - Permanently deletes their user record - Permanently deletes their auth record - Logs all deletions
 
 **Recommended**: Set up a weekly cron job to run this script automatically.
 

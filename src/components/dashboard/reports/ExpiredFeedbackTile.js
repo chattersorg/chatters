@@ -318,7 +318,7 @@ export default function ExpiredFeedbackTile({ venueId, timeframe = 'today', from
   return (
     <MetricCard
       title="Expired Feedback"
-      value={loading ? '—' : expiredCount}
+      value={loading ? ' - ' : expiredCount}
       description={getDescription()}
       icon={AlertTriangle}
       variant={getVariant()}

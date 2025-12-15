@@ -1,4 +1,4 @@
-// QuestionManagementTab.js — Comprehensive question management with better UX
+// QuestionManagementTab.js - Comprehensive question management with better UX
 
 import React, { useState } from 'react';
 import { Plus, Search, Edit3, Trash2, GripVertical, Archive, RotateCcw } from 'lucide-react';

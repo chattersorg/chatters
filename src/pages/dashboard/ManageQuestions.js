@@ -1,4 +1,4 @@
-// ManageQuestions.js — Refactored with tabbed interface like ReportsPage
+// ManageQuestions.js - Refactored with tabbed interface like ReportsPage
 
 import React, { useState, useEffect, useRef } from 'react';
 import { supabase } from '../../utils/supabase';

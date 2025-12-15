@@ -44,20 +44,11 @@ const response = await fetch('/api/admin/create-user', {
 
 The `/api/reviews.js` file is **1267 lines** and needs to be split. It contains:
 
-### Google Platform Actions
-- `GET /api/reviews?platform=google&action=ratings` → Get Google ratings for venue
-- `GET /api/reviews?platform=google&action=places-search` → Search Google Places
-- `GET /api/reviews?platform=google&action=place-details` → Get place details
-- `POST /api/reviews?platform=google&action=update-venue` → Update venue with Google data
+### Google Platform Actions - `GET /api/reviews?platform=google&action=ratings` → Get Google ratings for venue - `GET /api/reviews?platform=google&action=places-search` → Search Google Places - `GET /api/reviews?platform=google&action=place-details` → Get place details - `POST /api/reviews?platform=google&action=update-venue` → Update venue with Google data
 
-### TripAdvisor Platform Actions
-- `GET /api/reviews?platform=tripadvisor&action=ratings` → Get TripAdvisor ratings
-- `GET /api/reviews?platform=tripadvisor&action=location-search` → Search locations
-- `GET /api/reviews?platform=tripadvisor&action=location-details` → Get location details
-- `POST /api/reviews?platform=tripadvisor&action=update-venue` → Update venue
+### TripAdvisor Platform Actions - `GET /api/reviews?platform=tripadvisor&action=ratings` → Get TripAdvisor ratings - `GET /api/reviews?platform=tripadvisor&action=location-search` → Search locations - `GET /api/reviews?platform=tripadvisor&action=location-details` → Get location details - `POST /api/reviews?platform=tripadvisor&action=update-venue` → Update venue
 
-### Unified Actions
-- `GET /api/reviews?platform=unified&action=search` → Unified review search
+### Unified Actions - `GET /api/reviews?platform=unified&action=search` → Unified review search
 
 ### Recommended Split Structure
 
@@ -78,11 +69,7 @@ api/
 │       └── search.js
 ```
 
-**Suggested new routes:**
-- `/api/reviews/google/ratings`
-- `/api/reviews/google/places-search`
-- `/api/reviews/tripadvisor/ratings`
-- `/api/reviews/unified/search`
+**Suggested new routes:** - `/api/reviews/google/ratings` - `/api/reviews/google/places-search` - `/api/reviews/tripadvisor/ratings` - `/api/reviews/unified/search`
 
 ---
 
@@ -99,37 +86,20 @@ api/
 
 ## 🔄 Migration Strategy
 
-### Phase 1: Create New Endpoints (Done for Admin)
-- [x] Split admin.js into `/api/admin/*` files
-- [ ] Split reviews.js into `/api/reviews/**/*` files
-- [ ] Split google-reviews.js if needed
-- [ ] Split google.js if needed
+### Phase 1: Create New Endpoints (Done for Admin) - [x] Split admin.js into `/api/admin/*` files - [ ] Split reviews.js into `/api/reviews/**/*` files - [ ] Split google-reviews.js if needed - [ ] Split google.js if needed
 
-### Phase 2: Update Frontend Calls
-- [ ] Update admin API calls in dashboard
-- [ ] Update review API calls in dashboard
-- [ ] Update Google integration calls
+### Phase 2: Update Frontend Calls - [ ] Update admin API calls in dashboard - [ ] Update review API calls in dashboard - [ ] Update Google integration calls
 
-### Phase 3: Backwards Compatibility
-- Keep old files for 1-2 releases for backwards compatibility
-- Add deprecation warnings in console
-- Remove old files after frontend migration complete
+### Phase 3: Backwards Compatibility - Keep old files for 1-2 releases for backwards compatibility - Add deprecation warnings in console - Remove old files after frontend migration complete
 
-### Phase 4: Testing
-- [ ] Test all new admin endpoints
-- [ ] Test all new review endpoints
-- [ ] Verify authentication still works
-- [ ] Check error handling
+### Phase 4: Testing - [ ] Test all new admin endpoints - [ ] Test all new review endpoints - [ ] Verify authentication still works - [ ] Check error handling
 
 ---
 
 ## 🛠️ Implementation Notes
 
 ### Authentication Handling
-All endpoints use `auth-helper.js` functions:
-- `requireAdminRole(req)` - For admin-only endpoints
-- `requireMasterRole(req)` - For account owners
-- `authenticateVenueAccess(req, venueId)` - For venue-specific access
+All endpoints use `auth-helper.js` functions: - `requireAdminRole(req)` - For admin-only endpoints - `requireMasterRole(req)` - For account owners - `authenticateVenueAccess(req, venueId)` - For venue-specific access
 
 ### Error Response Format
 Consistent error format across all endpoints:
@@ -139,9 +109,7 @@ Consistent error format across all endpoints:
 }
 ```
 
-### Supabase Clients
-- **Admin Client**: Uses `SUPABASE_SERVICE_ROLE_KEY` for bypassing RLS
-- **Regular Client**: Uses `SUPABASE_ANON_KEY` for user-level access
+### Supabase Clients - **Admin Client**: Uses `SUPABASE_SERVICE_ROLE_KEY` for bypassing RLS - **Regular Client**: Uses `SUPABASE_ANON_KEY` for user-level access
 
 ---
 
@@ -156,13 +124,7 @@ Consistent error format across all endpoints:
 
 ---
 
-## ⚠️ Important Notes
-
-- **Don't delete old files yet** - Keep for backwards compatibility during migration
-- **Test thoroughly** - Each endpoint should be tested in production
-- **Update incrementally** - Migrate frontend calls gradually, not all at once
-- **Monitor errors** - Watch Sentry for any issues with new endpoints
-- **Document changes** - Update API documentation when migration complete
+## ⚠️ Important Notes - **Don't delete old files yet** - Keep for backwards compatibility during migration - **Test thoroughly** - Each endpoint should be tested in production - **Update incrementally** - Migrate frontend calls gradually, not all at once - **Monitor errors** - Watch Sentry for any issues with new endpoints - **Document changes** - Update API documentation when migration complete
 
 ---
 

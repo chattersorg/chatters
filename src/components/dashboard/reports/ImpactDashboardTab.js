@@ -1,4 +1,4 @@
-// ImpactDashboardTab.js — Ratings impact and progression metrics
+// ImpactDashboardTab.js - Ratings impact and progression metrics
 
 import React from 'react';
 import GoogleRatingKPITile from './GoogleRatingKPITile';

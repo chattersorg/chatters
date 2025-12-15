@@ -17,7 +17,7 @@ import {
 import Navbar from '../../../components/marketing/layout/Navbar';
 import Footer from '../../../components/marketing/layout/Footer';
 
-// SECTION 1 — HERO
+// SECTION 1 - HERO
 const Hero = () => {
   return (
     <section className="bg-white py-20 lg:py-24">
@@ -33,7 +33,7 @@ const Hero = () => {
             </h1>
 
             <p className="text-xl text-gray-600 mb-8 leading-relaxed">
-              Track individual and team performance with detailed metrics — response times, guest ratings, and recognition trends all in one place.
+              Track individual and team performance with detailed metrics - response times, guest ratings, and recognition trends all in one place.
             </p>
 
             <div className="flex flex-col sm:flex-row gap-4">
@@ -161,7 +161,7 @@ const Hero = () => {
   );
 };
 
-// SECTION 2 — THE PROBLEM
+// SECTION 2 - THE PROBLEM
 const Problem = () => {
   return (
     <section className="bg-slate-900 py-20 lg:py-24">
@@ -183,7 +183,7 @@ const Problem = () => {
             </p>
 
             <p>
-              Staff Metrics gives you the numbers behind the service — so you can coach, reward, and improve with clarity.
+              Staff Metrics gives you the numbers behind the service - so you can coach, reward, and improve with clarity.
             </p>
           </div>
         </div>
@@ -192,7 +192,7 @@ const Problem = () => {
   );
 };
 
-// SECTION 3 — WHAT YOU GET
+// SECTION 3 - WHAT YOU GET
 const WhatYouGet = () => {
   const features = [
     { icon: Star, text: 'Individual guest rating averages' },
@@ -238,13 +238,13 @@ const WhatYouGet = () => {
   );
 };
 
-// SECTION 4 — HOW IT WORKS
+// SECTION 4 - HOW IT WORKS
 const HowItWorks = () => {
   const steps = [
     {
       number: '1',
       title: 'Add your team to Chatters',
-      description: "Names, roles, and email addresses — that's it.",
+      description: "Names, roles, and email addresses - that's it.",
     },
     {
       number: '2',
@@ -304,7 +304,7 @@ const HowItWorks = () => {
   );
 };
 
-// SECTION 5 — WHY IT MATTERS
+// SECTION 5 - WHY IT MATTERS
 const WhyItMatters = () => {
   const benefits = [
     {
@@ -359,7 +359,7 @@ const WhyItMatters = () => {
   );
 };
 
-// SECTION 6 — FEATURES
+// SECTION 6 - FEATURES
 const Features = () => {
   const features = [
     {
@@ -418,7 +418,7 @@ const Features = () => {
   );
 };
 
-// SECTION 7 — REAL EXAMPLE
+// SECTION 7 - REAL EXAMPLE
 const RealExample = () => {
   return (
     <section className="bg-white py-20 lg:py-24">
@@ -443,7 +443,7 @@ const RealExample = () => {
             </div>
 
             <p className="text-lg text-gray-700">
-              The conversation starts with facts, not feelings. Tom sees exactly where he's excelling — and where he can grow.
+              The conversation starts with facts, not feelings. Tom sees exactly where he's excelling - and where he can grow.
             </p>
 
             <div className="bg-blue-50 border border-green-200 rounded-xl p-6">
@@ -466,7 +466,7 @@ const RealExample = () => {
   );
 };
 
-// SECTION 8 — TESTIMONIAL
+// SECTION 8 - TESTIMONIAL
 const Testimonial = () => {
   return (
     <section className="bg-gray-50 py-20 lg:py-24">
@@ -491,7 +491,7 @@ const Testimonial = () => {
   );
 };
 
-// SECTION 9 — FINAL CTA
+// SECTION 9 - FINAL CTA
 const FinalCTA = () => {
   return (
     <section className="bg-slate-900 py-20 lg:py-24">
@@ -530,7 +530,7 @@ const StaffMetricsPage = () => {
         <title>Staff Metrics & Reporting | Team Performance Analytics | Chatters</title>
         <meta
           name="description"
-          content="Measure what matters about your team. Track individual and team performance with detailed metrics — response times, guest ratings, and recognition trends."
+          content="Measure what matters about your team. Track individual and team performance with detailed metrics - response times, guest ratings, and recognition trends."
         />
         <meta
           name="keywords"

@@ -120,7 +120,7 @@ const RetailSolution = () => {
         defaultOpenIndex={0}
         faqs={[
           { q: "How do customers provide feedback in-store?", a: "QR codes at checkout, customer service desks, or tablet kiosks make it easy for customers to share feedback quickly." },
-          { q: "Does it work during busy shopping periods?", a: "Yes—alerts are designed for fast-paced retail environments with quick resolution workflows." },
+          { q: "Does it work during busy shopping periods?", a: "Yes - alerts are designed for fast-paced retail environments with quick resolution workflows." },
           { q: "Can we use it across multiple store locations?", a: "Absolutely. Multi-store dashboards with location-specific insights and performance comparisons." },
           { q: "What types of issues does it handle?", a: "Everything from product availability to staff service, checkout problems, and store cleanliness concerns." },
         ]}

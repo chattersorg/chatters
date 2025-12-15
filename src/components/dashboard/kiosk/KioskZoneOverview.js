@@ -20,7 +20,7 @@ const groupBySession = (rows) => {
     if (!sid) continue;
     const entry = map.get(sid) || {
       session_id: sid,
-      table_number: r.table_number ?? r.tableNumber ?? '—',
+      table_number: r.table_number ?? r.tableNumber ?? ' - ',
       created_at: r.created_at,
       items_count: 0,
       ratings: [],
@@ -149,7 +149,7 @@ const KioskZoneOverview = ({ zones, tables, feedbackMap, feedbackList, assistanc
         key={table.id}
         onClick={() => onZoneSelect(table.zone_id)}
         className="relative focus:outline-none"
-        title={`Table ${table.table_number} — ${statusText}`}
+        title={`Table ${table.table_number} - ${statusText}`}
       >
         <div className={cfg.className} style={cfg.style}>{table.table_number}</div>
       </button>

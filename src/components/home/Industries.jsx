@@ -15,7 +15,7 @@ const industries = [
   {
     icon: Building,
     title: 'Hotels',
-    description: 'Resolve room or service issues during the stay — not after the review.',
+    description: 'Resolve room or service issues during the stay - not after the review.',
   },
   {
     icon: Network,

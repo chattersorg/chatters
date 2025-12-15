@@ -142,7 +142,7 @@ export default function TablePerformanceRankingTile({ venueId, timeframe = 'last
         </div>
       ) : noData ? (
         <div className="text-center py-10">
-          <div className="text-sm text-gray-600 dark:text-gray-400">No table data yet — rankings will appear once feedback comes in.</div>
+          <div className="text-sm text-gray-600 dark:text-gray-400">No table data yet - rankings will appear once feedback comes in.</div>
         </div>
       ) : (
         <div className="space-y-2 overflow-y-auto pr-1" style={{ maxHeight: 'calc(100vh - 400px)', minHeight: '300px' }}>

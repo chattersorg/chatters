@@ -6,11 +6,7 @@ The `stripe_subscription_status` field keeps reverting to `incomplete_expired`.
 ## Possible Causes
 
 ### 1. **Stripe Webhook Events**
-The most likely cause is that Stripe is sending webhook events that update the subscription status. This can happen when:
-- A subscription payment fails
-- A subscription expires before payment completes
-- The customer doesn't complete the payment within the allowed time (usually 24 hours)
-- Multiple webhook events are being received and processed in the wrong order
+The most likely cause is that Stripe is sending webhook events that update the subscription status. This can happen when: - A subscription payment fails - A subscription expires before payment completes - The customer doesn't complete the payment within the allowed time (usually 24 hours) - Multiple webhook events are being received and processed in the wrong order
 
 ### 2. **Database Triggers or Functions**
 There might be a database trigger or function that automatically updates this field.
@@ -32,11 +28,7 @@ Frontend or backend code might be inadvertently updating this field.
 ### Step 2: Check Webhook Logs in Stripe
 1. Go to Developers → Webhooks in Stripe Dashboard
 2. Check the webhook endpoint logs
-3. Look for these events:
-   - `customer.subscription.updated`
-   - `customer.subscription.created`
-   - `customer.subscription.deleted`
-   - `checkout.session.completed`
+3. Look for these events: - `customer.subscription.updated` - `customer.subscription.created` - `customer.subscription.deleted` - `checkout.session.completed`
 4. Check if any of these events have `status: 'incomplete_expired'`
 
 ### Step 3: Run Diagnostic Queries in Supabase

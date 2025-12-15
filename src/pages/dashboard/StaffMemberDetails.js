@@ -928,7 +928,7 @@ const StaffMemberDetails = () => {
                             <span className="text-red-600 dark:text-red-400 text-xs">↘ {Math.abs(resolvedTrend)}</span>
                           )}
                           {resolvedTrend === 0 && prevMonth && (
-                            <span className="text-gray-400 dark:text-gray-500 text-xs">—</span>
+                            <span className="text-gray-400 dark:text-gray-500 text-xs"> - </span>
                           )}
                         </div>
                       </td>

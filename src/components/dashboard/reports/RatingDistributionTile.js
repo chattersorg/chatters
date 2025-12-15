@@ -158,7 +158,7 @@ export default function RatingDistributionTile({ venueId, timeframe = 'last30' }
           <div className="w-12 h-12 bg-gray-100 dark:bg-gray-800 rounded-full flex items-center justify-center mx-auto mb-3">
             <BarChart3 className="w-6 h-6 text-gray-400 dark:text-gray-500" />
           </div>
-          <div className="text-sm text-gray-600 dark:text-gray-400">No ratings yet — distribution will appear once feedback comes in.</div>
+          <div className="text-sm text-gray-600 dark:text-gray-400">No ratings yet - distribution will appear once feedback comes in.</div>
         </div>
       ) : (
         <>

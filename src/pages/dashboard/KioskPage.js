@@ -88,7 +88,7 @@ const KioskPage = () => {
   const [showTableFeedbackModal, setShowTableFeedbackModal] = useState(false);
   const [showTableAssistanceModal, setShowTableAssistanceModal] = useState(false);
 
-  // ==== AUTO-RETURN (10s) — DISABLED ====
+  // ==== AUTO-RETURN (10s) - DISABLED ====
   // useEffect(() => {
   //   if (currentView !== 'overview') {
   //     const timer = setTimeout(() => {
@@ -100,7 +100,7 @@ const KioskPage = () => {
   //   }
   // }, [currentView]);
 
-  // Reset inactivity timer on user interaction — DISABLED
+  // Reset inactivity timer on user interaction - DISABLED
   const resetInactivityTimer = () => {
     // if (inactivityTimer) clearTimeout(inactivityTimer);
     // if (currentView !== 'overview') {

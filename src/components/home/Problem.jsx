@@ -227,7 +227,7 @@ const Problem = () => {
             <p>
               <span className="text-white font-semibold">68% of unhappy customers won't complain to your staff.</span>
               <br />
-              They'll just leave — and tell everyone else online.
+              They'll just leave - and tell everyone else online.
             </p>
 
             <p>
@@ -235,7 +235,7 @@ const Problem = () => {
             </p>
 
             <p>
-              Chatters gives you real-time visibility so you can fix issues before the customer walks out — and before the review goes public.
+              Chatters gives you real-time visibility so you can fix issues before the customer walks out - and before the review goes public.
             </p>
           </div>
 

@@ -1,4 +1,4 @@
-// QuestionArchiveTab.js — Previously used questions archive
+// QuestionArchiveTab.js - Previously used questions archive
 
 import React from 'react';
 import PreviouslyUsedQuestions from './PreviouslyUsedQuestions';

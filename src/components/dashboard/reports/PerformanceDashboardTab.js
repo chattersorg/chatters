@@ -1,4 +1,4 @@
-// PerformanceDashboardTab.js — Performance metrics and trends
+// PerformanceDashboardTab.js - Performance metrics and trends
 
 import React from 'react';
 import ActionCompletionRateTile from './ActionCompletionRateTile';

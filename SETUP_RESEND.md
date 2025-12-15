@@ -17,10 +17,7 @@ The manager invitation system now sends emails via Resend when managers are invi
 1. Go to your [Vercel Dashboard](https://vercel.com/dashboard)
 2. Select your Chatters project
 3. Go to **Settings** → **Environment Variables**
-4. Add a new environment variable:
-   - **Key**: `RESEND_API_KEY`
-   - **Value**: Your Resend API key (e.g., `re_xxxxxxxxxxxxx`)
-   - **Environments**: Select all (Production, Preview, Development)
+4. Add a new environment variable: - **Key**: `RESEND_API_KEY` - **Value**: Your Resend API key (e.g., `re_xxxxxxxxxxxxx`) - **Environments**: Select all (Production, Preview, Development)
 5. Click **Save**
 6. Redeploy your project for the changes to take effect
 
@@ -44,13 +41,7 @@ To send emails from your own domain instead of `noreply@getchatters.com`:
 
 ## Email Template
 
-The invitation email includes:
-- Personalized greeting with manager's first name
-- Who invited them
-- Which venues they'll have access to
-- A clear "Accept Invitation" button
-- Link expiration notice (7 days)
-- Plain text fallback link
+The invitation email includes: - Personalized greeting with manager's first name - Who invited them - Which venues they'll have access to - A clear "Accept Invitation" button - Link expiration notice (7 days) - Plain text fallback link
 
 ## Troubleshooting
 
@@ -85,8 +76,6 @@ NEXT_PUBLIC_APP_URL=https://my.getchatters.com
 
 ## Cost
 
-Resend pricing:
-- **Free tier**: 3,000 emails/month
-- **Pro tier**: $20/month for 50,000 emails
+Resend pricing: - **Free tier**: 3,000 emails/month - **Pro tier**: $20/month for 50,000 emails
 
 For typical usage (a few manager invitations per day), the free tier should be sufficient.

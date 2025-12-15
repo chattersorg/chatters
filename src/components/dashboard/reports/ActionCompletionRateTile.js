@@ -316,7 +316,7 @@ export default function ActionCompletionRateTile({
   return (
     <MetricCard
       title="Completion Rate"
-      value={loading ? '—' : `${rate.toFixed(1)}%`}
+      value={loading ? ' - ' : `${rate.toFixed(1)}%`}
       description={description}
       icon={CheckCircle}
       variant={rate >= 80 ? "success" : rate >= 60 ? "neutral" : "warning"}

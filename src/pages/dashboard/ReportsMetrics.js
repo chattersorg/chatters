@@ -307,17 +307,17 @@ const ReportsMetricsPage = () => {
       metrics: [
         { 
           label: 'Total Responses', 
-          value: loading ? '—' : formatNumber(metrics.totalResponses), 
+          value: loading ? ' - ' : formatNumber(metrics.totalResponses), 
           period: 'Feedback & assistance' 
         },
         { 
           label: 'Response Rate', 
-          value: loading ? '—' : `${metrics.responseRate}%`, 
+          value: loading ? ' - ' : `${metrics.responseRate}%`, 
           period: 'Engagement rate' 
         },
         { 
           label: 'Avg Response Time', 
-          value: loading ? '—' : formatTime(metrics.avgResponseTime), 
+          value: loading ? ' - ' : formatTime(metrics.avgResponseTime), 
           period: 'Time to resolution' 
         }
       ]
@@ -329,17 +329,17 @@ const ReportsMetricsPage = () => {
       metrics: [
         { 
           label: 'Overall Score', 
-          value: loading ? '—' : `${metrics.overallScore}/5`, 
+          value: loading ? ' - ' : `${metrics.overallScore}/5`, 
           period: 'Average rating' 
         },
         { 
           label: 'Happy Customers', 
-          value: loading ? '—' : `${metrics.happyCustomers}%`, 
+          value: loading ? ' - ' : `${metrics.happyCustomers}%`, 
           period: '4+ star ratings' 
         },
         { 
           label: 'Resolution Rate', 
-          value: loading ? '—' : `${metrics.resolutionRate}%`, 
+          value: loading ? ' - ' : `${metrics.resolutionRate}%`, 
           period: 'Issues resolved' 
         }
       ]
@@ -351,19 +351,19 @@ const ReportsMetricsPage = () => {
       metrics: [
         {
           label: 'Top Performer',
-          value: loading ? '—' : (metrics.topStaffMember ? metrics.topStaffMember.name : 'No data'),
+          value: loading ? ' - ' : (metrics.topStaffMember ? metrics.topStaffMember.name : 'No data'),
           period: metrics.topStaffMember
             ? `Resolved: ${metrics.topStaffMember.resolutions} | Co-resolved: ${metrics.topStaffMember.coResolutions} | Total: ${metrics.topStaffMember.totalResolutions}`
             : '0 resolutions'
         },
         {
           label: 'Avg Staff Response',
-          value: loading ? '—' : formatTime(metrics.avgStaffResponseTime),
+          value: loading ? ' - ' : formatTime(metrics.avgStaffResponseTime),
           period: 'Time to resolve'
         },
         {
           label: 'Staff Resolutions',
-          value: loading ? '—' : formatNumber(metrics.staffResolutionCount),
+          value: loading ? ' - ' : formatNumber(metrics.staffResolutionCount),
           period: 'Feedback resolved by staff'
         }
       ]
@@ -375,17 +375,17 @@ const ReportsMetricsPage = () => {
       metrics: [
         { 
           label: 'Peak Hour', 
-          value: loading ? '—' : (metrics.peakHour ? `${metrics.peakHour.hour}:00` : 'No data'), 
+          value: loading ? ' - ' : (metrics.peakHour ? `${metrics.peakHour.hour}:00` : 'No data'), 
           period: `${metrics.peakHour ? metrics.peakHour.count : 0} activities` 
         },
         { 
           label: 'Busiest Day', 
-          value: loading ? '—' : (metrics.busiestDay ? metrics.busiestDay.day : 'No data'), 
+          value: loading ? ' - ' : (metrics.busiestDay ? metrics.busiestDay.day : 'No data'), 
           period: `${metrics.busiestDay ? metrics.busiestDay.count : 0} activities` 
         },
         {
           label: 'Daily Average',
-          value: loading ? '—' : Math.round((metrics.totalResponses || 0) / (metrics.daysInPeriod || 1)),
+          value: loading ? ' - ' : Math.round((metrics.totalResponses || 0) / (metrics.daysInPeriod || 1)),
           period: 'Activities per day'
         }
       ]

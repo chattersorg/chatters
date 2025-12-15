@@ -14,21 +14,21 @@ const FeaturesSection = () => {
               <QrCode className="mb-4 h-10 w-10 text-black" />
               <p className="mb-2 font-semibold">Smart QR Codes</p>
               <p className="text-sm text-gray-500">
-                Place at every table — guests scan to share feedback instantly, no app required.
+                Place at every table - guests scan to share feedback instantly, no app required.
               </p>
             </li>
             <li className="flex flex-col p-5">
               <BarChart className="mb-4 h-10 w-10 text-black" />
               <p className="mb-2 font-semibold">Real-Time Alerts</p>
               <p className="text-sm text-gray-500">
-                Be notified the moment a guest is unhappy — resolve it before they leave angry.
+                Be notified the moment a guest is unhappy - resolve it before they leave angry.
               </p>
             </li>
             <li className="flex flex-col p-5">
               <ClipboardList className="mb-4 h-10 w-10 text-black" />
               <p className="mb-2 font-semibold">Custom Feedback Prompts</p>
               <p className="text-sm text-gray-500">
-                Ask the right questions for your venue — food, service, cleanliness and more.
+                Ask the right questions for your venue - food, service, cleanliness and more.
               </p>
             </li>
             <li className="flex flex-col p-5">
@@ -42,7 +42,7 @@ const FeaturesSection = () => {
               <Paintbrush className="mb-4 h-10 w-10 text-black" />
               <p className="mb-2 font-semibold">Your Branding</p>
               <p className="text-sm text-gray-500">
-                Fully customisable to match your brand — logo, tone, and customer voice.
+                Fully customisable to match your brand - logo, tone, and customer voice.
               </p>
             </li>
             <li className="flex flex-col p-5">

@@ -1,12 +1,6 @@
 # Development Setup
 
-## Prerequisites
-
-- **Node.js**: v18 or higher
-- **npm**: v8 or higher  
-- **Git**: Latest version
-- **Supabase Account**: For database access
-- **Stripe Account**: For payment testing
+## Prerequisites - **Node.js**: v18 or higher - **npm**: v8 or higher - **Git**: Latest version - **Supabase Account**: For database access - **Stripe Account**: For payment testing
 
 ## Initial Setup
 
@@ -57,9 +51,7 @@ REACT_APP_SENTRY_DSN=
 #### Test Mode Configuration
 1. Create [Stripe account](https://stripe.com) (or use existing)
 2. Switch to Test mode in Stripe Dashboard
-3. Create test products and prices:
-   - Monthly subscription product
-   - Yearly subscription product
+3. Create test products and prices: - Monthly subscription product - Yearly subscription product
 4. Copy price IDs to environment variables
 5. Set up test webhooks pointing to your local development server
 
@@ -108,27 +100,19 @@ Runs TypeScript compiler to check for type errors.
 
 The app uses domain-based routing. For local development:
 
-#### Main App (Dashboard)
-- URL: `http://localhost:3000`
-- Add this to your hosts file to simulate subdomain:
+#### Main App (Dashboard) - URL: `http://localhost:3000` - Add this to your hosts file to simulate subdomain:
 ```bash
 # /etc/hosts (macOS/Linux) or C:\Windows\System32\drivers\etc\hosts (Windows)
 127.0.0.1 my.localhost
-```
-- Access at: `http://my.localhost:3000`
+``` - Access at: `http://my.localhost:3000`
 
-#### Marketing Site
-- URL: `http://localhost:3000` (without subdomain)
-- This will show marketing pages
+#### Marketing Site - URL: `http://localhost:3000` (without subdomain) - This will show marketing pages
 
 ### 2. Authentication Flow
 
 #### Test User Creation
 1. Use Supabase Auth UI or create users via dashboard
-2. Assign appropriate roles in `users` table:
-   - `admin`: Full system access
-   - `master`: Account owner
-   - `manager`: Venue-specific access
+2. Assign appropriate roles in `users` table: - `admin`: Full system access - `master`: Account owner - `manager`: Venue-specific access
 
 #### Role Testing
 ```javascript
@@ -165,10 +149,7 @@ When schema changes are needed:
 ### 4. Testing Payments
 
 #### Stripe Test Mode
-Use test card numbers:
-- **Success**: `4242 4242 4242 4242`
-- **Decline**: `4000 0000 0000 0002`
-- **Authentication Required**: `4000 0025 0000 3155`
+Use test card numbers: - **Success**: `4242 4242 4242 4242` - **Decline**: `4000 0000 0000 0002` - **Authentication Required**: `4000 0025 0000 3155`
 
 Any future date and CVC will work with test cards.
 
@@ -240,10 +221,7 @@ const supabase = createClient(url, key, {
 supabase.from('table').select().then(console.log);
 ```
 
-### Network Debugging
-- Use browser DevTools Network tab
-- Monitor Supabase requests in real-time
-- Check for CORS issues with local development
+### Network Debugging - Use browser DevTools Network tab - Monitor Supabase requests in real-time - Check for CORS issues with local development
 
 ## Common Issues
 
@@ -253,10 +231,7 @@ supabase.from('table').select().then(console.log);
 curl https://your-project.supabase.co/rest/v1/
 ```
 
-**Solutions**:
-- Verify environment variables
-- Check Supabase project status
-- Ensure IP allowlist includes your development machine
+**Solutions**: - Verify environment variables - Check Supabase project status - Ensure IP allowlist includes your development machine
 
 ### 2. Authentication Failures
 ```javascript
@@ -265,10 +240,7 @@ supabase.auth.getSession().then(console.log);
 supabase.auth.getUser().then(console.log);
 ```
 
-**Solutions**:
-- Clear localStorage and cookies
-- Check user exists in `users` table
-- Verify role assignment
+**Solutions**: - Clear localStorage and cookies - Check user exists in `users` table - Verify role assignment
 
 ### 3. RLS Policy Issues
 ```sql
@@ -278,10 +250,7 @@ SET request.jwt.claims TO '{"sub": "user-id-here"}';
 SELECT * FROM venues; -- Should only show user's venues
 ```
 
-**Solutions**:
-- Verify RLS policies are enabled
-- Check policy conditions match user context
-- Test with different user roles
+**Solutions**: - Verify RLS policies are enabled - Check policy conditions match user context - Test with different user roles
 
 ### 4. Build Errors
 ```bash
@@ -323,10 +292,7 @@ if (module.hot) {
 }
 ```
 
-### Manual Refresh Triggers
-- Save any file to trigger reload
-- CSS changes apply instantly
-- Component state is preserved when possible
+### Manual Refresh Triggers - Save any file to trigger reload - CSS changes apply instantly - Component state is preserved when possible
 
 ---
 

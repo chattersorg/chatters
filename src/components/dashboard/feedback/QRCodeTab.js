@@ -1,4 +1,4 @@
-// QRCodeTab.js — QR code generation and sharing
+// QRCodeTab.js - QR code generation and sharing
 
 import React from 'react';
 import QRCodeSection from './QRCodeSection';
