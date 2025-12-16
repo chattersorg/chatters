@@ -47,6 +47,7 @@ import RetailIndustry from './pages/marketing/industries/Retail';
 import EventsIndustry from './pages/marketing/industries/Events';
 
 import NewSite from './pages/marketing/NewSite';
+import NPSEmailPreview from './pages/admin/NPSEmailPreview';
 
 const MarketingRoutes = () => {
   return (
@@ -103,6 +104,9 @@ const MarketingRoutes = () => {
 
       {/* 🆕 New Site (Rebrand Test) */}
       <Route path="/new-site" element={<NewSite />} />
+
+      {/* NPS Email Preview */}
+      <Route path="/nps-email-preview" element={<NPSEmailPreview />} />
 
       </Routes>
 

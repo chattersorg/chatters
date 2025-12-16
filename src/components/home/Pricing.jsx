@@ -4,11 +4,11 @@ import { ArrowRight, CheckCircle2, ShieldCheck, Sparkles } from 'lucide-react';
 
 const Pricing = () => {
   return (
-    <section className="relative overflow-hidden bg-gradient-to-br from-slate-900 via-indigo-900 to-sky-900 py-20 lg:py-24 text-white">
-      <div className="absolute inset-0 pointer-events-none opacity-60 mix-blend-screen" aria-hidden="true">
-        <div className="absolute -left-32 -top-32 h-80 w-80 rounded-full bg-sky-500 blur-3xl" />
-        <div className="absolute right-0 top-10 h-96 w-96 rounded-full bg-indigo-500 blur-3xl" />
-        <div className="absolute bottom-0 left-1/3 h-80 w-80 rounded-full bg-purple-500 blur-3xl" />
+    <section className="relative overflow-hidden bg-gradient-to-br from-slate-900 via-[#1a2a5e] to-[#0f1a3d] py-20 lg:py-24 text-white">
+      <div className="absolute inset-0 pointer-events-none opacity-70 mix-blend-screen" aria-hidden="true">
+        <div className="absolute -left-32 -top-32 h-80 w-80 rounded-full bg-[#4E74FF] blur-3xl" />
+        <div className="absolute right-0 top-10 h-96 w-96 rounded-full bg-[#6B8AFF] blur-3xl" />
+        <div className="absolute bottom-0 left-1/3 h-80 w-80 rounded-full bg-[#3D5BD9] blur-3xl" />
       </div>
 
       <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -45,12 +45,12 @@ const Pricing = () => {
           </div>
 
           <div className="relative">
-            <div className="absolute -inset-1 rounded-3xl bg-gradient-to-r from-indigo-400/40 via-sky-400/30 to-emerald-300/40 blur-2xl" aria-hidden="true" />
+            <div className="absolute -inset-1 rounded-3xl bg-gradient-to-r from-[#4E74FF]/50 via-[#6B8AFF]/40 to-[#4E74FF]/50 blur-2xl" aria-hidden="true" />
             <div className="relative bg-white text-slate-900 rounded-2xl shadow-2xl p-8 sm:p-10 lg:p-12 border border-white/60">
               <div className="space-y-3">
                 <div className="flex items-center justify-between gap-4">
-                  <p className="text-sm font-semibold text-indigo-600">All-inclusive platform</p>
-                  <span className="inline-flex items-center rounded-full bg-indigo-50 px-3 py-1.5 text-xs font-semibold text-indigo-700 ring-1 ring-indigo-100 whitespace-nowrap">
+                  <p className="text-sm font-semibold text-[#4E74FF]">All-inclusive platform</p>
+                  <span className="inline-flex items-center rounded-full bg-[#4E74FF]/10 px-3 py-1.5 text-xs font-semibold text-[#4E74FF] ring-1 ring-[#4E74FF]/20 whitespace-nowrap">
                     No surprises
                   </span>
                 </div>
@@ -67,9 +67,9 @@ const Pricing = () => {
                   ))}
               </div>
 
-              <div className="mt-8 rounded-xl bg-gradient-to-r from-indigo-50 to-sky-50 p-5 text-left border border-indigo-100">
+              <div className="mt-8 rounded-xl bg-gradient-to-r from-[#4E74FF]/10 to-[#6B8AFF]/10 p-5 text-left border border-[#4E74FF]/20">
                 <div className="flex items-start gap-3">
-                  <ShieldCheck className="h-6 w-6 text-indigo-600" />
+                  <ShieldCheck className="h-6 w-6 text-[#4E74FF]" />
                   <div className="space-y-1">
                     <p className="text-base font-semibold text-slate-900">Pricing assurance</p>
                     <p className="text-sm text-slate-600">We'll walk through the right plan for your venue during your demo and lock in a transparent rate.</p>
@@ -79,7 +79,7 @@ const Pricing = () => {
 
               <Link
                 to="/demo"
-                className="mt-8 inline-flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-indigo-600 via-indigo-500 to-sky-500 px-8 py-4 text-lg font-semibold text-white shadow-lg shadow-indigo-300/40 transition-transform duration-200 hover:scale-[1.01] hover:shadow-xl"
+                className="mt-8 inline-flex w-full items-center justify-center gap-2 rounded-xl bg-[#4E74FF] hover:bg-[#3D5BD9] px-8 py-4 text-lg font-semibold text-white shadow-lg shadow-[#4E74FF]/40 transition-all duration-200 hover:scale-[1.01] hover:shadow-xl"
               >
                 Book a Demo
                 <ArrowRight className="w-5 h-5" />

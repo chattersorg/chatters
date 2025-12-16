@@ -8,6 +8,7 @@ import AdminFrame from './pages/admin/AdminFrame';
 import AdminAccountsList from './pages/admin/AdminAccountsList';
 import AdminAccountDetail from './pages/admin/AdminAccountDetail';
 import AdminCreateAccount from './pages/admin/AdminCreateAccount';
+import NPSEmailPreview from './pages/admin/NPSEmailPreview';
 // Keep old admin for now
 import EnhancedAdminDashboard from './pages/admin/EnhancedAdminDashboard';
 
@@ -67,6 +68,9 @@ export default function AppRoutes() {
     <Routes>
       {/* Role-based landing */}
       <Route path="/" element={<RoleRedirector />} />
+
+      {/* NPS Email Preview - standalone page without admin frame */}
+      <Route path="/nps-email-preview" element={<NPSEmailPreview />} />
 
       {/* Admin section (never mounts VenueProvider) */}
       <Route
