@@ -9,7 +9,7 @@ import AddEmployeeModal from './employeetabcomponents/AddEmployeeModal';
 import EmployeeSummary from './employeetabcomponents/EmployeeSummary';
 import EditEmployeeModal from './employeetabcomponents/EditEmployeeModal';
 import DeleteEmployeeModal from './employeetabcomponents/DeleteEmployeeModal';
-import ConfirmationModal from '../../ui/ConfirmationModal';
+import DuplicateResolutionModal from './employeetabcomponents/DuplicateResolutionModal';
 
 const EmployeesTab = ({ 
   employees, 
@@ -26,7 +26,9 @@ const EmployeesTab = ({
   const [uploading, setUploading] = useState(false);
   const [employeeToDelete, setEmployeeToDelete] = useState(null);
   const [deleteLoading, setDeleteLoading] = useState(false);
-  const [csvConfirmation, setCsvConfirmation] = useState(null);
+
+  // Bulk add state
+  const [duplicateResolution, setDuplicateResolution] = useState(null);
   
   // Search state
   const [searchTerm, setSearchTerm] = useState('');
@@ -208,119 +210,184 @@ const EmployeesTab = ({
     downloadEmployeesCSV(employeesToDownload, venueName);
   };
 
-  // Handle CSV upload
+  // Handle CSV upload - Bulk Add with duplicate detection
   const handleCSVUpload = async (file, targetVenueId = null) => {
     if (!file) return;
-    
+
     setUploading(true);
     try {
       const { employees: parsedEmployees, errors } = await parseEmployeesCSV(file);
-      
+
       if (errors.length > 0) {
         setMessage(`CSV parsing errors: ${errors.join('; ')}`);
+        setUploading(false);
         return;
       }
-      
+
       if (parsedEmployees.length === 0) {
         setMessage('No valid employee data found in CSV file');
+        setUploading(false);
         return;
       }
-      
-      // Determine venue ID for replacement
-      let targetVenueIdForReplace;
+
+      // Determine venue ID for import
+      let targetVenueIdForImport;
       if (userRole === 'master' && targetVenueId) {
-        targetVenueIdForReplace = targetVenueId;
+        targetVenueIdForImport = targetVenueId;
       } else if (userRole === 'manager') {
-        targetVenueIdForReplace = venueId;
+        targetVenueIdForImport = venueId;
       } else {
         setMessage('Unable to determine venue for employee import');
+        setUploading(false);
         return;
       }
-      
-      // Confirm replacement action
-      const venueName = allVenues.find(v => v.id === targetVenueIdForReplace)?.name || 'this venue';
-      const existingEmployeesCount = employees.filter(emp => emp.venue_id === targetVenueIdForReplace).length;
-      
-      if (existingEmployeesCount > 0) {
-        // Show confirmation modal instead of window.confirm
-        await new Promise((resolve) => {
-          setCsvConfirmation({
-            message: (
-              <div>
-                <p className="mb-4 dark:text-gray-300">
-                  This will replace all <strong>{existingEmployeesCount}</strong> existing employees at <strong>{venueName}</strong> with <strong>{parsedEmployees.length}</strong> new employees from your CSV.
-                </p>
-                <div className="bg-yellow-50 dark:bg-yellow-900/30 border border-yellow-200 dark:border-yellow-800 rounded-lg p-3">
-                  <p className="text-sm text-custom-yellow dark:text-yellow-400">
-                    <strong>Warning:</strong> This action cannot be undone. All existing employee data will be permanently deleted.
-                  </p>
-                </div>
-              </div>
-            ),
-            onConfirm: () => {
-              setCsvConfirmation(null);
-              resolve(true);
-            },
-            onCancel: () => {
-              setCsvConfirmation(null);
-              setUploading(false);
-              resolve(false);
-            }
-          });
-        }).then(confirmed => {
-          if (!confirmed) return;
-        });
-      }
-      
-      // Delete all existing employees for this venue
-      const { error: deleteError } = await supabase
-        .from('employees')
-        .delete()
-        .eq('venue_id', targetVenueIdForReplace);
-      
-      if (deleteError) {
-        console.error('Error deleting existing employees:', deleteError);
-        setMessage('Failed to remove existing employees');
-        return;
-      }
-      
-      // Add venue_id to each employee
-      const employeesToInsert = parsedEmployees.map(emp => ({
-        ...emp,
-        venue_id: targetVenueIdForReplace
-      }));
-      
-      // Insert all new employees
-      const { data, error } = await supabase
-        .from('employees')
-        .insert(employeesToInsert)
-        .select();
-      
-      if (error) {
-        console.error('Error inserting employees:', error);
-        
-        // Handle specific error codes
-        if (error.code === '23505') {
-          setMessage('Import failed: Duplicate email addresses found within your CSV file.');
-        } else {
-          setMessage(`Failed to import employees: ${error.message}`);
+
+      // Get existing employees for this venue
+      const existingEmployees = employees.filter(emp => emp.venue_id === targetVenueIdForImport);
+
+      // Create a map of existing employees by email (lowercased for case-insensitive comparison)
+      const existingByEmail = {};
+      existingEmployees.forEach(emp => {
+        if (emp.email) {
+          existingByEmail[emp.email.toLowerCase()] = emp;
         }
+      });
+
+      // Categorize parsed employees into new and duplicates
+      const newEmployees = [];
+      const duplicates = [];
+
+      parsedEmployees.forEach(emp => {
+        const emailKey = emp.email?.toLowerCase();
+        if (emailKey && existingByEmail[emailKey]) {
+          duplicates.push({
+            email: emp.email,
+            existing: existingByEmail[emailKey],
+            new: emp
+          });
+        } else {
+          newEmployees.push(emp);
+        }
+      });
+
+      // If there are duplicates, show the resolution modal
+      if (duplicates.length > 0) {
+        setDuplicateResolution({
+          duplicates,
+          newEmployees,
+          targetVenueId: targetVenueIdForImport
+        });
+        setUploading(false);
         return;
       }
-      
-      setMessage(`Successfully replaced all employees with ${data.length} new employee${data.length !== 1 ? 's' : ''} from CSV`);
-      
-      // Refresh the staff data
-      if (fetchStaffData) {
-        await fetchStaffData();
-      }
-      
+
+      // No duplicates - just insert all new employees
+      await performBulkImport(newEmployees, [], targetVenueIdForImport);
+
     } catch (error) {
       console.error('Error processing CSV:', error);
       setMessage(`Failed to process CSV: ${error.message}`);
-    } finally {
       setUploading(false);
     }
+  };
+
+  // Handle duplicate resolution confirmation
+  const handleDuplicateResolution = async (emailsToOverwrite) => {
+    if (!duplicateResolution) return;
+
+    setUploading(true);
+    try {
+      const { duplicates, newEmployees, targetVenueId } = duplicateResolution;
+
+      // Get the duplicate entries that should be overwritten
+      const duplicatesToOverwrite = duplicates.filter(d => emailsToOverwrite.includes(d.email));
+
+      await performBulkImport(newEmployees, duplicatesToOverwrite, targetVenueId);
+
+    } catch (error) {
+      console.error('Error processing bulk import:', error);
+      setMessage(`Failed to import employees: ${error.message}`);
+    } finally {
+      setUploading(false);
+      setDuplicateResolution(null);
+    }
+  };
+
+  // Perform the actual bulk import
+  const performBulkImport = async (newEmployees, duplicatesToOverwrite, targetVenueId) => {
+    let insertedCount = 0;
+    let updatedCount = 0;
+
+    // Insert new employees
+    if (newEmployees.length > 0) {
+      const employeesToInsert = newEmployees.map(emp => ({
+        ...emp,
+        venue_id: targetVenueId
+      }));
+
+      const { data: insertedData, error: insertError } = await supabase
+        .from('employees')
+        .insert(employeesToInsert)
+        .select();
+
+      if (insertError) {
+        console.error('Error inserting employees:', insertError);
+
+        if (insertError.code === '23505') {
+          setMessage('Import failed: Duplicate email addresses found within your CSV file.');
+        } else {
+          setMessage(`Failed to import employees: ${insertError.message}`);
+        }
+        setUploading(false);
+        return;
+      }
+
+      insertedCount = insertedData?.length || 0;
+    }
+
+    // Update duplicate employees that user chose to overwrite
+    if (duplicatesToOverwrite.length > 0) {
+      for (const duplicate of duplicatesToOverwrite) {
+        const { error: updateError } = await supabase
+          .from('employees')
+          .update({
+            first_name: duplicate.new.first_name,
+            last_name: duplicate.new.last_name,
+            role: duplicate.new.role,
+            location: duplicate.new.location,
+            phone: duplicate.new.phone
+          })
+          .eq('id', duplicate.existing.id);
+
+        if (updateError) {
+          console.error('Error updating employee:', updateError);
+        } else {
+          updatedCount++;
+        }
+      }
+    }
+
+    // Build success message
+    const messageParts = [];
+    if (insertedCount > 0) {
+      messageParts.push(`${insertedCount} new employee${insertedCount !== 1 ? 's' : ''} added`);
+    }
+    if (updatedCount > 0) {
+      messageParts.push(`${updatedCount} employee${updatedCount !== 1 ? 's' : ''} updated`);
+    }
+
+    if (messageParts.length > 0) {
+      setMessage(`Successfully ${messageParts.join(' and ')}`);
+    } else {
+      setMessage('No changes made - all employees in CSV already exist');
+    }
+
+    // Refresh the staff data
+    if (fetchStaffData) {
+      await fetchStaffData();
+    }
+
+    setUploading(false);
   };
 
   // Handle file input change
@@ -457,17 +524,13 @@ const EmployeesTab = ({
         loading={deleteLoading}
       />
 
-      {/* CSV Upload Confirmation Modal */}
-      <ConfirmationModal
-        isOpen={!!csvConfirmation}
-        onConfirm={csvConfirmation?.onConfirm}
-        onCancel={csvConfirmation?.onCancel}
-        title="Replace All Employees"
-        message={csvConfirmation?.message}
-        confirmText="Replace Employees"
-        cancelText="Cancel Upload"
-        confirmButtonStyle="warning"
-        icon="warning"
+      {/* Bulk Add Duplicate Resolution Modal */}
+      <DuplicateResolutionModal
+        isOpen={!!duplicateResolution}
+        duplicates={duplicateResolution?.duplicates || []}
+        newEmployeesCount={duplicateResolution?.newEmployees?.length || 0}
+        onConfirm={handleDuplicateResolution}
+        onCancel={() => setDuplicateResolution(null)}
         loading={uploading}
       />
     </div>
