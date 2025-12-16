@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { supabase } from '../../utils/supabase';
 import { ChartCard } from '../../components/dashboard/layout/ModernCard';
 import usePageTitle from '../../hooks/usePageTitle';
@@ -9,8 +9,6 @@ import { Button } from '../../components/ui/button';
 import AddEmployeeModal from '../../components/dashboard/staff/employeetabcomponents/AddEmployeeModal';
 import EditEmployeeModal from '../../components/dashboard/staff/employeetabcomponents/EditEmployeeModal';
 import DeleteEmployeeModal from '../../components/dashboard/staff/employeetabcomponents/DeleteEmployeeModal';
-import DuplicateResolutionModal from '../../components/dashboard/staff/employeetabcomponents/DuplicateResolutionModal';
-import ConfirmationModal from '../../components/ui/ConfirmationModal';
 import { downloadEmployeesCSV, parseEmployeesCSV } from '../../utils/csvUtils';
 import {
   Search, X, Download, Upload, Eye,
@@ -20,6 +18,7 @@ import {
 const StaffListPage = () => {
   usePageTitle('Staff List');
   const navigate = useNavigate();
+  const location = useLocation();
   const { venueId, userRole, allVenues, loading: venueLoading } = useVenue();
 
   // Data states
@@ -27,6 +26,20 @@ const StaffListPage = () => {
   const [employees, setEmployees] = useState([]);
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState('');
+  const [messageType, setMessageType] = useState('success');
+
+  // Handle success message from CSV import page
+  useEffect(() => {
+    if (location.state?.message) {
+      setMessage(location.state.message);
+      setMessageType(location.state.success ? 'success' : 'error');
+      // Clear the state so message doesn't reappear on refresh
+      window.history.replaceState({}, document.title);
+      // Auto-clear message after 5 seconds
+      const timer = setTimeout(() => setMessage(''), 5000);
+      return () => clearTimeout(timer);
+    }
+  }, [location.state]);
 
   // Tab state - 'all', 'employees', 'managers'
   const [activeTab, setActiveTab] = useState('all');
@@ -57,8 +70,6 @@ const StaffListPage = () => {
 
   // CSV states
   const [uploading, setUploading] = useState(false);
-  const [csvConfirmation, setCsvConfirmation] = useState(null);
-  const [duplicateResolution, setDuplicateResolution] = useState(null);
 
   // Color mappings for employees
   const [roleColors, setRoleColors] = useState({});
@@ -413,6 +424,7 @@ const StaffListPage = () => {
       }
 
       const targetVenueId = venueId;
+      const venueName = allVenues.find(v => v.id === venueId)?.name;
 
       // Get existing employees for this venue
       const existingEmployees = employees.filter(emp => emp.venue_id === targetVenueId);
@@ -458,125 +470,23 @@ const StaffListPage = () => {
         }
       });
 
-      // If there are duplicates, show the resolution modal
-      if (duplicates.length > 0) {
-        setDuplicateResolution({
+      // Navigate to the review page
+      navigate('/staff/import', {
+        state: {
+          parsedEmployees,
           duplicates,
           newEmployees,
-          targetVenueId
-        });
-        setUploading(false);
-        return;
-      }
+          targetVenueId,
+          venueName
+        }
+      });
 
-      // No duplicates - just insert all new employees
-      await performBulkImport(newEmployees, [], targetVenueId);
+      setUploading(false);
 
     } catch (error) {
       setMessage(`Failed to process CSV: ${error.message}`);
       setUploading(false);
     }
-  };
-
-  // Handle duplicate resolution confirmation
-  const handleDuplicateResolution = async (emailsToOverwrite) => {
-    if (!duplicateResolution) return;
-
-    setUploading(true);
-    try {
-      const { duplicates, newEmployees, targetVenueId } = duplicateResolution;
-
-      // Get the duplicate entries that should be overwritten
-      const duplicatesToOverwrite = duplicates.filter(d => emailsToOverwrite.includes(d.email));
-
-      await performBulkImport(newEmployees, duplicatesToOverwrite, targetVenueId);
-
-    } catch (error) {
-      console.error('Error processing bulk import:', error);
-      setMessage(`Failed to import employees: ${error.message}`);
-    } finally {
-      setUploading(false);
-      setDuplicateResolution(null);
-    }
-  };
-
-  // Perform the actual bulk import
-  const performBulkImport = async (newEmployees, duplicatesToOverwrite, targetVenueId) => {
-    let insertedCount = 0;
-    let updatedCount = 0;
-
-    // Insert new employees
-    if (newEmployees.length > 0) {
-      const employeesToInsert = newEmployees.map(emp => {
-        // Remove id from new employees (database will auto-generate)
-        const { id, ...empWithoutId } = emp;
-        return {
-          ...empWithoutId,
-          venue_id: targetVenueId
-        };
-      });
-
-      const { data: insertedData, error: insertError } = await supabase
-        .from('employees')
-        .insert(employeesToInsert)
-        .select();
-
-      if (insertError) {
-        console.error('Error inserting employees:', insertError);
-
-        if (insertError.code === '23505') {
-          setMessage('Import failed: Duplicate email addresses found within your CSV file.');
-        } else {
-          setMessage(`Failed to import employees: ${insertError.message}`);
-        }
-        setUploading(false);
-        return;
-      }
-
-      insertedCount = insertedData?.length || 0;
-    }
-
-    // Update duplicate employees that user chose to overwrite
-    if (duplicatesToOverwrite.length > 0) {
-      for (const duplicate of duplicatesToOverwrite) {
-        const { error: updateError } = await supabase
-          .from('employees')
-          .update({
-            first_name: duplicate.new.first_name,
-            last_name: duplicate.new.last_name,
-            email: duplicate.new.email,
-            role: duplicate.new.role,
-            location: duplicate.new.location,
-            phone: duplicate.new.phone
-          })
-          .eq('id', duplicate.existing.id);
-
-        if (updateError) {
-          console.error('Error updating employee:', updateError);
-        } else {
-          updatedCount++;
-        }
-      }
-    }
-
-    // Build success message
-    const messageParts = [];
-    if (insertedCount > 0) {
-      messageParts.push(`${insertedCount} new employee${insertedCount !== 1 ? 's' : ''} added`);
-    }
-    if (updatedCount > 0) {
-      messageParts.push(`${updatedCount} employee${updatedCount !== 1 ? 's' : ''} updated`);
-    }
-
-    if (messageParts.length > 0) {
-      setMessage(`Successfully ${messageParts.join(' and ')}`);
-    } else {
-      setMessage('No changes made - all employees in CSV already exist');
-    }
-
-    // Refresh the staff data
-    await fetchStaffData();
-    setUploading(false);
   };
 
   // Manager handlers
@@ -711,7 +621,7 @@ const StaffListPage = () => {
         titleRight={
           message && (
             <span className={`text-sm font-medium ${
-              message.includes('success') || message.includes('recovered')
+              messageType === 'success' || message.includes('success') || message.includes('recovered')
                 ? 'text-green-600 dark:text-green-400'
                 : 'text-red-600 dark:text-red-400'
             }`}>
@@ -1248,16 +1158,6 @@ const StaffListPage = () => {
         onConfirm={confirmDeleteEmployee}
         onCancel={() => setEmployeeToDelete(null)}
         loading={deleteLoading}
-      />
-
-      {/* Bulk Add Duplicate Resolution Modal */}
-      <DuplicateResolutionModal
-        isOpen={!!duplicateResolution}
-        duplicates={duplicateResolution?.duplicates || []}
-        newEmployeesCount={duplicateResolution?.newEmployees?.length || 0}
-        onConfirm={handleDuplicateResolution}
-        onCancel={() => setDuplicateResolution(null)}
-        loading={uploading}
       />
 
       {/* Delete Manager Confirmation Modal */}

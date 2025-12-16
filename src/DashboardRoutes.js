@@ -43,6 +43,7 @@ import ReportsNPSPage from './pages/dashboard/ReportsNPS';
 import NPSInsightsPage from './pages/dashboard/NPSInsights';
 import NPSSettingsPage from './pages/dashboard/NPSSettings';
 import StaffListPage from './pages/dashboard/StaffList';
+import CSVImportReview from './pages/dashboard/CSVImportReview';
 import EmployeeDetail from './pages/dashboard/EmployeeDetail';
 import ManagerDetail from './pages/dashboard/ManagerDetail';
 import AddManager from './pages/dashboard/AddManager';
@@ -337,6 +338,11 @@ const DashboardRoutes = () => {
         <Route path="/staff/team" element={
           <ProtectedRoute permission="staff.view">
             <StaffListPage />
+          </ProtectedRoute>
+        } />
+        <Route path="/staff/import" element={
+          <ProtectedRoute permission="staff.edit">
+            <CSVImportReview />
           </ProtectedRoute>
         } />
         {/* Legacy routes - redirect to combined staff list */}
