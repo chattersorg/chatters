@@ -113,7 +113,7 @@ const EmployeesList = ({
           <PermissionGate permission="staff.edit">
             <label className="text-sm sm:text-xs bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-400 px-4 py-2 sm:px-3 sm:py-1 rounded-md hover:bg-orange-200 dark:hover:bg-orange-900/50 transition-colors duration-200 flex items-center justify-center cursor-pointer font-medium">
               <Upload className="w-4 h-4 sm:w-3 sm:h-3 mr-2 sm:mr-1" />
-              {uploading ? 'Uploading...' : 'Replace'}
+              {uploading ? 'Uploading...' : 'Bulk Add'}
               <input
                 type="file"
                 accept=".csv"

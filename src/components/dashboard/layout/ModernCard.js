@@ -21,13 +21,14 @@ const ModernCard = ({
   );
 };
 
-const MetricCard = ({ 
-  icon: Icon, 
-  title, 
-  value, 
-  subtitle, 
-  trend, 
+const MetricCard = ({
+  icon: Icon,
+  title,
+  value,
+  subtitle,
+  trend,
   trendDirection = 'up',
+  yesterdayValue,
   color = 'blue',
   comparison,
   venueBreakdowns,
@@ -49,45 +50,41 @@ const MetricCard = ({
 
   return (
     <ModernCard className={`${className}`} padding="p-4">
-      {/* Header */}
+      {/* Header with Icon and Title */}
       <div className="flex items-center gap-3 mb-3">
         <div className={`p-2 rounded-lg ${colorClasses[color]}`}>
           <Icon className="w-4 h-4" />
         </div>
-        <div>
-          <h3 className="text-sm font-medium text-gray-700 dark:text-gray-300">
-            {title}
-          </h3>
-          {subtitle && (
-            <p className="text-xs text-gray-500 dark:text-gray-400">{subtitle}</p>
-          )}
-        </div>
+        <h3 className="text-sm font-medium text-gray-700 dark:text-gray-300">
+          {title}
+        </h3>
       </div>
 
-      {/* Main Value */}
-      <div className="mb-3">
-        <div className="flex items-center gap-2">
-          <div className="text-xl font-bold text-gray-900 dark:text-white">
-            {value || '0'}
-          </div>
-          {trend && (
-            <div className={`flex items-center gap-1 text-sm font-medium ${
+      {/* Main Value and Trend Side by Side */}
+      <div className="flex items-start justify-between mb-1">
+        <div className="text-2xl font-bold text-gray-900 dark:text-white">
+          {value || '0'}
+        </div>
+        {trend && (
+          <div className="text-right">
+            <div className={`flex items-center gap-1 text-sm font-semibold ${
               trendDirection === 'up' ? 'text-green-600 dark:text-green-400' :
               trendDirection === 'down' ? 'text-red-600 dark:text-red-400' :
               'text-gray-500 dark:text-gray-400'
             }`}>
-              {trendDirection === 'up' && <TrendingUp className="w-3 h-3" />}
-              {trendDirection === 'down' && <TrendingDown className="w-3 h-3" />}
-              <span>{trend}</span>
+              {trendDirection === 'up' && <TrendingUp className="w-3.5 h-3.5" />}
+              {trendDirection === 'down' && <TrendingDown className="w-3.5 h-3.5" />}
+              <span>{trend}{yesterdayValue !== undefined ? ` (${yesterdayValue})` : ''}</span>
             </div>
-          )}
-        </div>
-        {comparison && (
-          <div className="text-sm text-gray-500 dark:text-gray-400 mt-1">
-            {comparison}
+            <p className="text-xs text-gray-500 dark:text-gray-400">vs yesterday</p>
           </div>
         )}
       </div>
+
+      {/* Subtitle for cards without trends */}
+      {subtitle && !trend && (
+        <p className="text-xs text-gray-500 dark:text-gray-400 mb-2">{subtitle}</p>
+      )}
 
       {/* Venue Breakdowns */}
       {hasBreakdowns && (
@@ -128,9 +125,9 @@ const MetricCard = ({
 const SparklineMetricCard = ({
   title,
   value,
-  subtitle,
   trend,
   trendDirection = 'up',
+  yesterdayValue,
   sparklineData = [],
   className = ''
 }) => {
@@ -147,25 +144,25 @@ const SparklineMetricCard = ({
         <h3 className="text-sm font-medium text-gray-700 dark:text-gray-300">
           {title}
         </h3>
-        {subtitle && (
-          <p className="text-xs text-gray-500 dark:text-gray-400">{subtitle}</p>
-        )}
       </div>
 
-      {/* Main Value and Trend */}
-      <div className="flex items-baseline justify-between mb-3">
+      {/* Main Value and Trend Side by Side */}
+      <div className="flex items-start justify-between mb-3">
         <div className="text-2xl font-bold text-gray-900 dark:text-white">
           {value || '0'}
         </div>
         {trend && (
-          <div className={`flex items-center gap-1 text-sm font-semibold ${
-            trendDirection === 'up' ? 'text-green-600 dark:text-green-400' :
-            trendDirection === 'down' ? 'text-red-600 dark:text-red-400' :
-            'text-gray-500 dark:text-gray-400'
-          }`}>
-            {trendDirection === 'up' && <TrendingUp className="w-3.5 h-3.5" />}
-            {trendDirection === 'down' && <TrendingDown className="w-3.5 h-3.5" />}
-            <span>{trend}</span>
+          <div className="text-right">
+            <div className={`flex items-center gap-1 text-sm font-semibold ${
+              trendDirection === 'up' ? 'text-green-600 dark:text-green-400' :
+              trendDirection === 'down' ? 'text-red-600 dark:text-red-400' :
+              'text-gray-500 dark:text-gray-400'
+            }`}>
+              {trendDirection === 'up' && <TrendingUp className="w-3.5 h-3.5" />}
+              {trendDirection === 'down' && <TrendingDown className="w-3.5 h-3.5" />}
+              <span>{trend}{yesterdayValue !== undefined ? ` (${yesterdayValue})` : ''}</span>
+            </div>
+            <p className="text-xs text-gray-500 dark:text-gray-400">vs yesterday</p>
           </div>
         )}
       </div>

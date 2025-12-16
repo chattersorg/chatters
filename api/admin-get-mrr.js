@@ -1,16 +1,23 @@
-import Stripe from 'stripe';
-import { createClient } from '@supabase/supabase-js';
+const Stripe = require('stripe');
+const { createClient } = require('@supabase/supabase-js');
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 const supabase = createClient(
-  process.env.REACT_APP_SUPABASE_URL || process.env.SUPABASE_URL,
+  process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.REACT_APP_SUPABASE_URL,
   process.env.SUPABASE_SERVICE_ROLE_KEY
 );
 
-export default async function handler(req, res) {
+module.exports = async function handler(req, res) {
   if (req.method !== 'GET') {
     return res.status(405).json({ message: 'Method not allowed' });
   }
+
+  // Check for Stripe API key
+  if (!process.env.STRIPE_SECRET_KEY) {
+    console.error('STRIPE_SECRET_KEY is not configured');
+    return res.status(500).json({ error: 'Stripe is not configured' });
+  }
+
+  const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 
   // Extract and verify authorization
   const authHeader = req.headers.authorization;
@@ -104,7 +111,7 @@ export default async function handler(req, res) {
     });
 
   } catch (error) {
-    console.error('Admin MRR fetch error:', error);
-    return res.status(500).json({ error: error.message });
+    console.error('Admin MRR fetch error:', error.message, error.stack);
+    return res.status(500).json({ error: error.message || 'Internal server error' });
   }
 }

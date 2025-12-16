@@ -109,7 +109,7 @@ function generateReminderEmail(firstName, inviterName, venueNames, inviteLink) {
           <tr>
             <td style="background-color: #000000; padding: 40px; text-align: center;">
               <img src="https://getchatters.com/img/logo/chatters-logo-white-2025.svg" alt="Chatters" style="height: 32px; width: auto; margin-bottom: 20px;" />
-              <h1 style="margin: 0; color: #ffffff; font-size: 26px; font-weight: 600; letter-spacing: -0.5px;">Friendly Reminder</h1>
+              <h1 style="margin: 0; color: #ffffff; font-size: 26px; font-weight: 600; letter-spacing: -0.5px;">You've been invited to use Chatters!</h1>
             </td>
           </tr>
 
@@ -121,7 +121,7 @@ function generateReminderEmail(firstName, inviterName, venueNames, inviteLink) {
               </p>
 
               <p style="margin: 0 0 24px; color: #4a5568; font-size: 15px; line-height: 24px;">
-                This is a friendly reminder that <strong>${inviterName}</strong> has invited you to join their team on Chatters as a venue manager.
+                <strong>${inviterName}</strong> has invited you to join their team on Chatters as a venue manager.
               </p>
 
               <!-- Venue Info Box -->
@@ -135,7 +135,7 @@ function generateReminderEmail(firstName, inviterName, venueNames, inviteLink) {
               </div>
 
               <p style="margin: 0 0 32px; color: #4a5568; font-size: 15px; line-height: 24px;">
-                Click the button below to set up your password and access your dashboard:
+                Click the button below to set up your password and start managing feedback:
               </p>
 
               <!-- CTA Button -->
@@ -162,7 +162,7 @@ function generateReminderEmail(firstName, inviterName, venueNames, inviteLink) {
               <!-- Expiry Notice -->
               <div style="margin: 28px 0; padding: 16px; background-color: #fefce8; border-left: 4px solid #facc15; border-radius: 6px;">
                 <p style="margin: 0; color: #854d0e; font-size: 14px; line-height: 22px;">
-                  This invitation expires in <strong>7 days</strong>. Please accept it before then.
+                  This invitation expires in <strong>7 days</strong>.
                 </p>
               </div>
 

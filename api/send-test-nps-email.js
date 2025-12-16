@@ -76,11 +76,6 @@ module.exports = async function handler(req, res) {
     <img src="${venue.logo}" alt="${venueName}" style="height: 60px;">
   </div>` : ''}
 
-  <div style="background: #fff3cd; border: 1px solid #ffc107; border-radius: 8px; padding: 12px 16px; margin-bottom: 20px; text-align: center;">
-    <strong style="color: #856404;">This is a test email</strong>
-    <p style="color: #856404; margin: 4px 0 0 0; font-size: 14px;">This is a preview of how your NPS survey email will look to customers.</p>
-  </div>
-
   <div style="background: #f9fafb; border-radius: 12px; padding: 30px; margin-bottom: 20px;">
     <h1 style="color: ${venue.primary_color || '#111827'}; font-size: 24px; margin-top: 0;">
       ${emailGreeting}
