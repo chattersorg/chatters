@@ -170,6 +170,29 @@ module.exports = async (req, res) => {
             console.error('Error creating tables:', tablesError);
           }
         }
+
+        // Create staff/employees if provided
+        if (venue.staff && venue.staff.length > 0) {
+          const staffToInsert = venue.staff.map(staff => ({
+            venue_id: venueData.id,
+            first_name: staff.first_name,
+            last_name: staff.last_name,
+            email: staff.email.toLowerCase(),
+            phone: staff.phone || null,
+            role: staff.role || 'employee',
+            location: staff.location || null
+          }));
+
+          const { error: staffError } = await supabase
+            .from('staff')
+            .insert(staffToInsert);
+
+          if (staffError) {
+            console.error('Error creating staff:', staffError);
+          } else {
+            console.log(`Created ${staffToInsert.length} staff members for venue ${venueData.name}`);
+          }
+        }
       }
     }
 

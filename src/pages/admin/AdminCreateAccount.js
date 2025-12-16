@@ -1,8 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import { Helmet } from 'react-helmet';
 import { supabase } from '../../utils/supabase';
+import { parseEmployeesCSV } from '../../utils/csvUtils';
 import {
   ArrowLeft,
   Building2,
@@ -15,7 +16,11 @@ import {
   Trash2,
   ChevronDown,
   ChevronUp,
-  Info
+  Info,
+  Upload,
+  Users,
+  X,
+  FileSpreadsheet
 } from 'lucide-react';
 
 // Venue types with their default feedback questions
@@ -98,12 +103,15 @@ const emptyVenue = () => ({
   city: '',
   postcode: '',
   questions: [],
+  staff: [],
+  staffErrors: [],
   _expanded: true
 });
 
 const AdminCreateAccount = () => {
   const navigate = useNavigate();
   const [creating, setCreating] = useState(false);
+  const fileInputRefs = useRef({});
   const [formData, setFormData] = useState({
     // Account info
     companyName: '',
@@ -154,6 +162,49 @@ const AdminCreateAccount = () => {
       venues.splice(index, 1);
       return { ...prev, venues: venues.length ? venues : [emptyVenue()] };
     });
+
+  const handleStaffCSVUpload = async (index, file) => {
+    if (!file) return;
+
+    try {
+      const { employees, errors } = await parseEmployeesCSV(file);
+
+      setFormData(prev => {
+        const venues = [...prev.venues];
+        venues[index] = {
+          ...venues[index],
+          staff: employees,
+          staffErrors: errors
+        };
+        return { ...prev, venues };
+      });
+
+      if (errors.length > 0) {
+        toast.error(`CSV parsed with ${errors.length} warning(s)`);
+      } else if (employees.length > 0) {
+        toast.success(`${employees.length} staff member(s) loaded`);
+      }
+    } catch (error) {
+      toast.error(`Failed to parse CSV: ${error.message}`);
+    }
+
+    // Reset file input
+    if (fileInputRefs.current[index]) {
+      fileInputRefs.current[index].value = '';
+    }
+  };
+
+  const clearStaffData = (index) => {
+    setFormData(prev => {
+      const venues = [...prev.venues];
+      venues[index] = {
+        ...venues[index],
+        staff: [],
+        staffErrors: []
+      };
+      return { ...prev, venues };
+    });
+  };
 
   const validate = () => {
     const e = {};
@@ -208,7 +259,8 @@ const AdminCreateAccount = () => {
           city: venue.city.trim(),
           postcode: venue.postcode.trim().toUpperCase()
         },
-        questions: venue.questions
+        questions: venue.questions,
+        staff: venue.staff || []
       }));
 
       const response = await fetch(apiUrl, {
@@ -633,6 +685,122 @@ const AdminCreateAccount = () => {
                           </div>
                         </div>
                       )}
+
+                      {/* Staff CSV Upload */}
+                      <div className="pt-2 border-t border-gray-100">
+                        <h4 className="text-sm font-medium text-gray-700 mb-3 flex items-center gap-2">
+                          <Users className="w-4 h-4" />
+                          Staff List (Optional)
+                        </h4>
+
+                        {venue.staff.length === 0 ? (
+                          <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-gray-400 transition-colors">
+                            <FileSpreadsheet className="w-8 h-8 text-gray-400 mx-auto mb-2" />
+                            <p className="text-sm text-gray-600 mb-2">
+                              Upload a CSV file with staff members
+                            </p>
+                            <p className="text-xs text-gray-400 mb-3">
+                              Required columns: First Name, Last Name, Email<br />
+                              Optional: Phone, Role, Location
+                            </p>
+                            <input
+                              type="file"
+                              accept=".csv"
+                              ref={(el) => fileInputRefs.current[index] = el}
+                              onChange={(e) => handleStaffCSVUpload(index, e.target.files[0])}
+                              className="hidden"
+                              id={`staff-csv-${index}`}
+                            />
+                            <label
+                              htmlFor={`staff-csv-${index}`}
+                              className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-blue-600 bg-blue-50 rounded-lg hover:bg-blue-100 cursor-pointer transition-colors"
+                            >
+                              <Upload className="w-4 h-4" />
+                              Upload CSV
+                            </label>
+                          </div>
+                        ) : (
+                          <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+                            <div className="flex items-center justify-between mb-3">
+                              <div className="flex items-center gap-2">
+                                <div className="w-8 h-8 rounded-full bg-green-100 flex items-center justify-center">
+                                  <Users className="w-4 h-4 text-green-600" />
+                                </div>
+                                <div>
+                                  <p className="text-sm font-medium text-green-900">
+                                    {venue.staff.length} staff member{venue.staff.length !== 1 ? 's' : ''} loaded
+                                  </p>
+                                  {venue.staffErrors.length > 0 && (
+                                    <p className="text-xs text-yellow-600">
+                                      {venue.staffErrors.length} row(s) skipped with errors
+                                    </p>
+                                  )}
+                                </div>
+                              </div>
+                              <button
+                                type="button"
+                                onClick={() => clearStaffData(index)}
+                                className="p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded transition-colors"
+                                title="Remove staff data"
+                              >
+                                <X className="w-4 h-4" />
+                              </button>
+                            </div>
+
+                            {/* Staff preview table */}
+                            <div className="bg-white rounded-lg border border-green-100 overflow-hidden">
+                              <div className="max-h-48 overflow-y-auto">
+                                <table className="w-full text-xs">
+                                  <thead className="bg-gray-50 sticky top-0">
+                                    <tr>
+                                      <th className="px-3 py-2 text-left text-gray-600 font-medium">Name</th>
+                                      <th className="px-3 py-2 text-left text-gray-600 font-medium">Email</th>
+                                      <th className="px-3 py-2 text-left text-gray-600 font-medium">Role</th>
+                                    </tr>
+                                  </thead>
+                                  <tbody className="divide-y divide-gray-100">
+                                    {venue.staff.slice(0, 5).map((staff, sIndex) => (
+                                      <tr key={sIndex} className="hover:bg-gray-50">
+                                        <td className="px-3 py-2 text-gray-900">
+                                          {staff.first_name} {staff.last_name}
+                                        </td>
+                                        <td className="px-3 py-2 text-gray-500">{staff.email}</td>
+                                        <td className="px-3 py-2 text-gray-500">{staff.role || 'employee'}</td>
+                                      </tr>
+                                    ))}
+                                    {venue.staff.length > 5 && (
+                                      <tr>
+                                        <td colSpan={3} className="px-3 py-2 text-center text-gray-400 italic">
+                                          ...and {venue.staff.length - 5} more
+                                        </td>
+                                      </tr>
+                                    )}
+                                  </tbody>
+                                </table>
+                              </div>
+                            </div>
+
+                            {/* Errors preview */}
+                            {venue.staffErrors.length > 0 && (
+                              <div className="mt-3 p-2 bg-yellow-50 border border-yellow-200 rounded text-xs text-yellow-700">
+                                <p className="font-medium mb-1">Skipped rows:</p>
+                                <ul className="list-disc list-inside space-y-0.5">
+                                  {venue.staffErrors.slice(0, 3).map((err, eIndex) => (
+                                    <li key={eIndex}>{err}</li>
+                                  ))}
+                                  {venue.staffErrors.length > 3 && (
+                                    <li className="italic">...and {venue.staffErrors.length - 3} more</li>
+                                  )}
+                                </ul>
+                              </div>
+                            )}
+
+                            <p className="text-xs text-green-700 mt-2">
+                              These staff members will be created when the account is set up.
+                            </p>
+                          </div>
+                        )}
+                      </div>
                     </div>
                   )}
                 </div>
