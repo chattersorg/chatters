@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { supabase } from '../../../utils/supabase';
 import { useVenue } from '../../../context/VenueContext';
-import { Settings, X, BarChart3, Star, AlertTriangle, Award, ThumbsUp, Activity, Target } from 'lucide-react';
+import { Settings, X, BarChart3, Star, AlertTriangle, Award, ThumbsUp, Activity, Target, PieChart } from 'lucide-react';
 
 const METRIC_CONFIG = {
   total_feedback: {
@@ -478,6 +478,79 @@ const METRIC_CONFIG = {
     }
   },
 
+  venue_nps_comparison: {
+    title: 'Venue NPS Comparison',
+    icon: PieChart,
+    fetchData: async (venueIds, dateRange) => {
+      const { data } = await supabase
+        .from('feedback')
+        .select('venue_id, rating')
+        .in('venue_id', venueIds)
+        .gte('created_at', dateRange.from.toISOString())
+        .lte('created_at', dateRange.to.toISOString())
+        .not('rating', 'is', null);
+
+      // Group ratings by venue
+      const venueRatings = {};
+      venueIds.forEach(id => venueRatings[id] = []);
+
+      (data || []).forEach(item => {
+        if (venueRatings[item.venue_id]) {
+          venueRatings[item.venue_id].push(item.rating);
+        }
+      });
+
+      // Calculate NPS for each venue
+      return Object.entries(venueRatings).map(([venueId, ratings]) => {
+        if (ratings.length === 0) {
+          return {
+            venueId,
+            value: 0,
+            displayValue: 'No data',
+            npsScore: null
+          };
+        }
+
+        // NPS calculation: Promoters (4-5) - Detractors (1-2), Passives (3) are neutral
+        const promoters = ratings.filter(r => r >= 4).length;
+        const detractors = ratings.filter(r => r <= 2).length;
+        const total = ratings.length;
+
+        const promoterPercent = (promoters / total) * 100;
+        const detractorPercent = (detractors / total) * 100;
+        const nps = Math.round(promoterPercent - detractorPercent);
+
+        // Determine NPS category and color
+        let npsCategory = 'Poor';
+        let npsColor = 'bg-red-500 text-white';
+
+        if (nps >= 50) {
+          npsCategory = 'Excellent';
+          npsColor = 'bg-green-500 text-white';
+        } else if (nps >= 30) {
+          npsCategory = 'Great';
+          npsColor = 'bg-green-400 text-white';
+        } else if (nps >= 0) {
+          npsCategory = 'Good';
+          npsColor = 'bg-blue-500 text-white';
+        } else if (nps >= -30) {
+          npsCategory = 'Fair';
+          npsColor = 'bg-yellow-500 text-gray-900';
+        }
+
+        return {
+          venueId,
+          value: nps,
+          displayValue: nps >= 0 ? `+${nps}` : `${nps}`,
+          npsScore: nps,
+          npsCategory,
+          npsColor,
+          totalResponses: total
+        };
+      });
+    }
+  },
+
   resolution_rate: {
     title: 'Resolution Rate',
     icon: Target,
@@ -673,6 +746,35 @@ const ConfigurableMultiVenueTile = ({ metricType, position, onRemove, onChangeMe
             </div>
           ) : (
             venueStats.map((stat) => {
+              // Special rendering for venue_nps_comparison
+              if (metricType === 'venue_nps_comparison') {
+                return (
+                  <div
+                    key={stat.venueId}
+                    className="p-3 bg-gray-50 dark:bg-gray-800 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                  >
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm font-medium text-gray-700 dark:text-gray-300">{stat.venueName}</span>
+                      <div className="flex items-center gap-2">
+                        {stat.npsCategory && (
+                          <span className={`px-2 py-1 text-xs font-medium rounded ${stat.npsColor}`}>
+                            {stat.npsCategory}
+                          </span>
+                        )}
+                        <span className="text-lg font-bold text-gray-900 dark:text-white">{stat.displayValue}</span>
+                      </div>
+                    </div>
+                    {stat.totalResponses && (
+                      <div className="mt-1">
+                        <span className="text-xs text-gray-500 dark:text-gray-400">
+                          Based on {stat.totalResponses} response{stat.totalResponses !== 1 ? 's' : ''}
+                        </span>
+                      </div>
+                    )}
+                  </div>
+                );
+              }
+
               // Special rendering for resolution_rate with progress bar
               if (metricType === 'resolution_rate') {
                 return (
