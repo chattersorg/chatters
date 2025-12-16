@@ -1,17 +1,18 @@
 // CSV utility functions for employee data
 
 export const downloadEmployeesCSV = (employees, venueName = null) => {
-  // Define CSV headers
-  const headers = ['First Name', 'Last Name', 'Email', 'Phone', 'Role', 'Created Date'];
-  
+  // Define CSV headers - ID first for re-import matching
+  const headers = ['ID', 'First Name', 'Last Name', 'Email', 'Phone', 'Role', 'Location'];
+
   // Convert employees to CSV rows
   const rows = employees.map(employee => [
+    employee.id || '',
     employee.first_name || '',
     employee.last_name || '',
     employee.email || '',
     employee.phone || '',
     employee.role || '',
-    employee.created_at ? new Date(employee.created_at).toLocaleDateString() : ''
+    employee.location || ''
   ]);
   
   // Combine headers and rows
@@ -122,12 +123,14 @@ export const parseEmployeesCSV = (file) => {
           }
           return -1;
         };
-        
+
+        const idIndex = getColumnIndex(['id', 'employee_id', 'employee id']);
         const firstNameIndex = getColumnIndex(['first name', 'firstname', 'first_name', 'fname']);
         const lastNameIndex = getColumnIndex(['last name', 'lastname', 'last_name', 'lname']);
         const emailIndex = getColumnIndex(['email', 'email address', 'e-mail']);
         const phoneIndex = getColumnIndex(['phone', 'phone number', 'mobile', 'telephone']);
         const roleIndex = getColumnIndex(['role', 'position', 'job title', 'title']);
+        const locationIndex = getColumnIndex(['location', 'area', 'department']);
         
         // Parse data rows
         const employees = [];
@@ -141,32 +144,42 @@ export const parseEmployeesCSV = (file) => {
             const fields = parseCSVLine(line);
             
             // Extract employee data
+            const id = idIndex >= 0 ? fields[idIndex]?.trim() : '';
             const firstName = fields[firstNameIndex]?.trim();
             const lastName = fields[lastNameIndex]?.trim();
             const email = fields[emailIndex]?.trim();
             const phone = phoneIndex >= 0 ? fields[phoneIndex]?.trim() : '';
             const role = roleIndex >= 0 ? fields[roleIndex]?.trim() : 'employee';
-            
+            const location = locationIndex >= 0 ? fields[locationIndex]?.trim() : '';
+
             // Validate required fields
             if (!firstName || !lastName || !email) {
               errors.push(`Row ${i + 1}: Missing required field (first name: "${firstName}", last name: "${lastName}", email: "${email}")`);
               continue;
             }
-            
+
             // Validate email format
             const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
             if (!emailRegex.test(email)) {
               errors.push(`Row ${i + 1}: Invalid email format: "${email}"`);
               continue;
             }
-            
-            employees.push({
+
+            const employee = {
               first_name: firstName,
               last_name: lastName,
               email: email.toLowerCase(),
               phone: phone || null,
-              role: role || 'employee'
-            });
+              role: role || 'employee',
+              location: location || null
+            };
+
+            // Include ID if present (for update matching)
+            if (id) {
+              employee.id = id;
+            }
+
+            employees.push(employee);
             
           } catch (rowError) {
             errors.push(`Row ${i + 1}: Failed to parse row: ${rowError.message}`);

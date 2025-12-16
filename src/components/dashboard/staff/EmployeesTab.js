@@ -264,28 +264,44 @@ const EmployeesTab = ({
       // Get existing employees for this venue
       const existingEmployees = employees.filter(emp => emp.venue_id === targetVenueIdForImport);
 
-      // Create a map of existing employees by email (lowercased for case-insensitive comparison)
+      // Create maps of existing employees by ID and email for matching
+      const existingById = {};
       const existingByEmail = {};
       existingEmployees.forEach(emp => {
+        if (emp.id) {
+          existingById[emp.id] = emp;
+        }
         if (emp.email) {
           existingByEmail[emp.email.toLowerCase()] = emp;
         }
       });
 
       // Categorize parsed employees into new and duplicates
+      // Priority: Match by ID first, then by email
       const newEmployees = [];
       const duplicates = [];
 
       parsedEmployees.forEach(emp => {
-        const emailKey = emp.email?.toLowerCase();
-        if (emailKey && existingByEmail[emailKey]) {
+        // First try to match by ID (if provided in CSV)
+        if (emp.id && existingById[emp.id]) {
           duplicates.push({
             email: emp.email,
-            existing: existingByEmail[emailKey],
+            existing: existingById[emp.id],
             new: emp
           });
-        } else {
-          newEmployees.push(emp);
+        }
+        // Then try to match by email
+        else {
+          const emailKey = emp.email?.toLowerCase();
+          if (emailKey && existingByEmail[emailKey]) {
+            duplicates.push({
+              email: emp.email,
+              existing: existingByEmail[emailKey],
+              new: emp
+            });
+          } else {
+            newEmployees.push(emp);
+          }
         }
       });
 
@@ -339,10 +355,14 @@ const EmployeesTab = ({
 
     // Insert new employees
     if (newEmployees.length > 0) {
-      const employeesToInsert = newEmployees.map(emp => ({
-        ...emp,
-        venue_id: targetVenueId
-      }));
+      const employeesToInsert = newEmployees.map(emp => {
+        // Remove id from new employees (database will auto-generate)
+        const { id, ...empWithoutId } = emp;
+        return {
+          ...empWithoutId,
+          venue_id: targetVenueId
+        };
+      });
 
       const { data: insertedData, error: insertError } = await supabase
         .from('employees')
@@ -372,6 +392,7 @@ const EmployeesTab = ({
           .update({
             first_name: duplicate.new.first_name,
             last_name: duplicate.new.last_name,
+            email: duplicate.new.email,
             role: duplicate.new.role,
             location: duplicate.new.location,
             phone: duplicate.new.phone

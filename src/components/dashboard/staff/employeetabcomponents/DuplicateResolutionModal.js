@@ -77,7 +77,7 @@ const DuplicateResolutionModal = ({
           </div>
 
           <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
-            The following employees already exist (matched by email). Select which ones you want to overwrite with the new data from your CSV:
+            The following employees already exist (matched by ID or email). Select which ones you want to overwrite with the new data from your CSV:
           </p>
 
           {/* Duplicates List */}
@@ -133,6 +133,7 @@ const DuplicateResolutionModal = ({
                             </div>
                             <div className="space-y-1">
                               <div><span className="text-gray-500 dark:text-gray-400">Name:</span> <span className="text-gray-900 dark:text-white">{duplicate.existing.first_name} {duplicate.existing.last_name}</span></div>
+                              <div><span className="text-gray-500 dark:text-gray-400">Email:</span> <span className="text-gray-900 dark:text-white">{duplicate.existing.email || '-'}</span></div>
                               <div><span className="text-gray-500 dark:text-gray-400">Role:</span> <span className="text-gray-900 dark:text-white">{duplicate.existing.role || '-'}</span></div>
                               <div><span className="text-gray-500 dark:text-gray-400">Location:</span> <span className="text-gray-900 dark:text-white">{duplicate.existing.location || '-'}</span></div>
                               <div><span className="text-gray-500 dark:text-gray-400">Phone:</span> <span className="text-gray-900 dark:text-white">{duplicate.existing.phone || '-'}</span></div>
@@ -147,6 +148,7 @@ const DuplicateResolutionModal = ({
                             </div>
                             <div className="space-y-1">
                               <div><span className="text-gray-500 dark:text-gray-400">Name:</span> <span className={`${duplicate.new.first_name !== duplicate.existing.first_name || duplicate.new.last_name !== duplicate.existing.last_name ? 'text-blue-600 dark:text-blue-400 font-medium' : 'text-gray-900 dark:text-white'}`}>{duplicate.new.first_name} {duplicate.new.last_name}</span></div>
+                              <div><span className="text-gray-500 dark:text-gray-400">Email:</span> <span className={`${duplicate.new.email?.toLowerCase() !== duplicate.existing.email?.toLowerCase() ? 'text-blue-600 dark:text-blue-400 font-medium' : 'text-gray-900 dark:text-white'}`}>{duplicate.new.email || '-'}</span></div>
                               <div><span className="text-gray-500 dark:text-gray-400">Role:</span> <span className={`${duplicate.new.role !== duplicate.existing.role ? 'text-blue-600 dark:text-blue-400 font-medium' : 'text-gray-900 dark:text-white'}`}>{duplicate.new.role || '-'}</span></div>
                               <div><span className="text-gray-500 dark:text-gray-400">Location:</span> <span className={`${duplicate.new.location !== duplicate.existing.location ? 'text-blue-600 dark:text-blue-400 font-medium' : 'text-gray-900 dark:text-white'}`}>{duplicate.new.location || '-'}</span></div>
                               <div><span className="text-gray-500 dark:text-gray-400">Phone:</span> <span className={`${duplicate.new.phone !== duplicate.existing.phone ? 'text-blue-600 dark:text-blue-400 font-medium' : 'text-gray-900 dark:text-white'}`}>{duplicate.new.phone || '-'}</span></div>
