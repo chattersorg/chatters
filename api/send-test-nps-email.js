@@ -62,7 +62,7 @@ module.exports = async function handler(req, res) {
     // Create test NPS URL (links to a preview page, not an actual submission)
     const npsUrl = `${APP_URL}/nps?preview=true`;
 
-    // Create email HTML
+    // Create email HTML - table-based layout for mobile email client compatibility
     const emailHtml = `
 <!DOCTYPE html>
 <html>
@@ -71,42 +71,83 @@ module.exports = async function handler(req, res) {
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>We'd love your feedback</title>
 </head>
-<body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px;">
-  ${venue.logo ? `<div style="text-align: center; margin-bottom: 30px;">
-    <img src="${venue.logo}" alt="${venueName}" style="height: 60px;">
-  </div>` : ''}
+<body style="margin: 0; padding: 20px 10px; background-color: #f3f4f6; font-family: Arial, Helvetica, sans-serif;">
+  <!-- Email Container -->
+  <table cellpadding="0" cellspacing="0" style="max-width: 600px; width: 100%; margin: 0 auto; background-color: #ffffff; border-radius: 8px;">
+    <tbody>
+      <!-- Header -->
+      <tr>
+        <td style="padding: 24px 20px; border-bottom: 1px solid #e5e7eb;">
+          <table cellpadding="0" cellspacing="0" style="width: 100%;">
+            <tbody>
+              <tr>
+                ${venue.logo ? `
+                <td style="width: 50px; vertical-align: middle;">
+                  <img src="${venue.logo}" alt="${venueName}" style="height: 40px; width: auto; display: block;">
+                </td>
+                ` : ''}
+                <td style="vertical-align: middle; text-align: ${venue.logo ? 'right' : 'left'}; font-size: 18px; font-weight: 600; color: #111827;">
+                  ${venueName}
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </td>
+      </tr>
 
-  <div style="background: #f9fafb; border-radius: 12px; padding: 30px; margin-bottom: 20px;">
-    <h1 style="color: ${venue.primary_color || '#111827'}; font-size: 24px; margin-top: 0;">
-      ${emailGreeting}
-    </h1>
+      <!-- Main Content -->
+      <tr>
+        <td style="padding: 32px 20px;">
+          <h1 style="color: #111827; font-size: 22px; font-weight: 700; margin-top: 0; margin-bottom: 12px; line-height: 1.3;">
+            ${emailGreeting}
+          </h1>
 
-    <p style="font-size: 16px; color: #4b5563;">
-      ${emailBody}
-    </p>
+          <p style="font-size: 15px; color: #4b5563; line-height: 1.6; margin-top: 0; margin-bottom: 28px;">
+            ${emailBody}
+          </p>
 
-    <p style="font-size: 18px; font-weight: 600; color: #1f2937; margin-top: 30px; margin-bottom: 20px;">
-      ${npsQuestion}
-    </p>
+          <!-- Question -->
+          <div style="background-color: #f9fafb; border-radius: 8px; padding: 20px; margin-bottom: 28px;">
+            <p style="font-size: 16px; font-weight: 600; color: #1f2937; margin: 0; line-height: 1.4;">
+              ${npsQuestion}
+            </p>
+          </div>
 
-    <div style="text-align: center; margin: 30px 0;">
-      <a href="${npsUrl}"
-         style="display: inline-block; background: ${venue.primary_color || '#3b82f6'}; color: white; padding: 16px 32px; text-decoration: none; border-radius: 8px; font-weight: 600; font-size: 16px;">
-        ${emailButtonText}
-      </a>
-    </div>
+          <!-- CTA Button -->
+          <table cellpadding="0" cellspacing="0" style="width: 100%;">
+            <tbody>
+              <tr>
+                <td style="text-align: center; padding-bottom: 16px;">
+                  <a href="${npsUrl}" style="display: inline-block; background-color: ${venue.primary_color || '#4E74FF'}; color: #ffffff; padding: 14px 32px; text-decoration: none; border-radius: 6px; font-weight: 600; font-size: 15px;">
+                    ${emailButtonText}
+                  </a>
+                </td>
+              </tr>
+            </tbody>
+          </table>
 
-    <p style="font-size: 14px; color: #6b7280; text-align: center;">
-      This will take less than 30 seconds
-    </p>
-  </div>
+          <p style="font-size: 13px; color: #9ca3af; text-align: center; margin: 0;">
+            Takes less than 30 seconds
+          </p>
+        </td>
+      </tr>
 
-  <div style="text-align: center; font-size: 12px; color: #9ca3af; margin-top: 30px;">
-    <p>
-      You're receiving this because you recently visited ${venueName}.<br>
-      <a href="${npsUrl}" style="color: #9ca3af;">Click here to respond</a> or ignore this email if you prefer not to participate.
-    </p>
-  </div>
+      <!-- Footer -->
+      <tr>
+        <td style="background-color: #f9fafb; padding: 20px; border-top: 1px solid #e5e7eb;">
+          <p style="text-align: center; font-size: 12px; color: #9ca3af; margin: 0; line-height: 1.6;">
+            You're receiving this because you recently visited ${venueName}.<br>
+            <a href="${npsUrl}" style="color: #6b7280; text-decoration: underline;">Click here to respond</a> or ignore this email.
+          </p>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+
+  <!-- Powered by footer -->
+  <p style="text-align: center; margin-top: 20px; font-size: 11px; color: #9ca3af;">
+    Powered by Chatters
+  </p>
 </body>
 </html>
     `;
