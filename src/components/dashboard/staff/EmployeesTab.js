@@ -230,6 +230,25 @@ const EmployeesTab = ({
         return;
       }
 
+      // Check for duplicate emails within the CSV itself
+      const csvEmailCounts = {};
+      const csvDuplicateEmails = [];
+      parsedEmployees.forEach(emp => {
+        const emailKey = emp.email?.toLowerCase();
+        if (emailKey) {
+          csvEmailCounts[emailKey] = (csvEmailCounts[emailKey] || 0) + 1;
+          if (csvEmailCounts[emailKey] === 2) {
+            csvDuplicateEmails.push(emp.email);
+          }
+        }
+      });
+
+      if (csvDuplicateEmails.length > 0) {
+        setMessage(`CSV contains duplicate emails: ${csvDuplicateEmails.join(', ')}. Please remove duplicates and try again.`);
+        setUploading(false);
+        return;
+      }
+
       // Determine venue ID for import
       let targetVenueIdForImport;
       if (userRole === 'master' && targetVenueId) {
