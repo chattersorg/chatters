@@ -172,26 +172,28 @@ module.exports = async (req, res) => {
           }
         }
 
-        // Create staff/employees if provided
+        // Create employees if provided (frontline staff who don't log in)
+        // Note: 'staff' table is for managers who log into the dashboard
+        // 'employees' table is for frontline staff (waiters, bartenders) who get recognized
         if (venue.staff && venue.staff.length > 0) {
-          const staffToInsert = venue.staff.map(staff => ({
+          const employeesToInsert = venue.staff.map(emp => ({
             venue_id: venueData.id,
-            first_name: staff.first_name,
-            last_name: staff.last_name,
-            email: staff.email.toLowerCase(),
-            phone: staff.phone || null,
-            role: staff.role || 'employee',
-            location: staff.location || null
+            first_name: emp.first_name,
+            last_name: emp.last_name,
+            email: emp.email ? emp.email.toLowerCase() : null,
+            phone: emp.phone || null,
+            role: emp.role || 'employee',
+            location: emp.location || null
           }));
 
-          const { error: staffError } = await supabase
-            .from('staff')
-            .insert(staffToInsert);
+          const { error: employeesError } = await supabase
+            .from('employees')
+            .insert(employeesToInsert);
 
-          if (staffError) {
-            console.error('Error creating staff:', staffError);
+          if (employeesError) {
+            console.error('Error creating employees:', employeesError);
           } else {
-            console.log(`Created ${staffToInsert.length} staff members for venue ${venueData.name}`);
+            console.log(`Created ${employeesToInsert.length} employees for venue ${venueData.name}`);
           }
         }
       }
