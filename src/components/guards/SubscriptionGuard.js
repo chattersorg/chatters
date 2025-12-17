@@ -99,12 +99,23 @@ const SubscriptionGuard = ({ children }) => {
 
       let account = user.accounts;
 
+      // If account wasn't fetched via join, try direct query
+      if (!account && user.account_id) {
+        const { data: accountData } = await supabase
+          .from('accounts')
+          .select('id, is_paid, trial_ends_at, demo_account')
+          .eq('id', user.account_id)
+          .single();
+        account = accountData;
+      }
+
       // For managers without direct account_id, get account through staff table
+      // Use user.id from users table (may differ from session.user.id)
       if (!account && user.role === 'manager') {
         const { data: staffRow } = await supabase
           .from('staff')
           .select('venues!inner(accounts(id, is_paid, trial_ends_at, demo_account))')
-          .eq('user_id', session.user.id)
+          .eq('user_id', user.id)
           .limit(1)
           .single();
 
@@ -113,7 +124,7 @@ const SubscriptionGuard = ({ children }) => {
 
       // No account linked - this shouldn't happen but allow access
       if (!account) {
-        console.warn('User has no account linked');
+        console.warn('User has no account linked, account_id:', user.account_id);
         setStatus('active');
         return;
       }

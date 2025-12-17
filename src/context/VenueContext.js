@@ -180,6 +180,8 @@ export const VenueProvider = ({ children }) => {
 
         const role = userRow.role;
         const accountId = userRow.account_id ?? null;
+        // Use the user's ID from the users table (may differ from session.user.id)
+        const actualUserId = userRow.id;
         setUserRole(role);
 
         // Admins should not load VenueContext at all; bail out
@@ -195,7 +197,7 @@ export const VenueProvider = ({ children }) => {
               supabase
                 .from('staff')
                 .select('venue_id, venues!inner(id, name)')
-                .eq('user_id', userId)
+                .eq('user_id', actualUserId)
                 .limit(1)
                 .single()
             );
@@ -249,7 +251,7 @@ export const VenueProvider = ({ children }) => {
                   account_id
                 )
               `)
-              .eq('user_id', userId)
+              .eq('user_id', actualUserId)
           );
           const staffRows = staffResult.data;
           const staffError = staffResult.error;
