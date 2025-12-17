@@ -93,9 +93,9 @@ const Hero = () => {
   }, []);
 
   return (
-    <section className="relative min-h-screen overflow-hidden">
+    <section className="relative min-h-screen overflow-hidden bg-gradient-to-b from-[#eef2ff] via-white to-[#dbe6ff]">
       {/* Floorplan-style background */}
-      <div className="absolute inset-0 bg-white">
+      <div className="absolute inset-0">
         {/* Grid lines */}
         <div
           className="absolute inset-0 opacity-30"
@@ -132,51 +132,82 @@ const Hero = () => {
         <Table className="bottom-[8%] left-[28%] w-14 h-14" color="yellow" shape="square" />
         <Table className="bottom-[5%] right-[25%] w-16 h-16" color="green" shape="round" />
 
+        {/* Glow accents to match brand palette */}
+        <div className="absolute -top-10 left-10 w-72 h-72 bg-[#4E74FF]/30 blur-3xl rounded-full"></div>
+        <div className="absolute bottom-0 right-0 w-96 h-96 bg-[#2F5CFF]/20 blur-3xl rounded-full"></div>
+
         {/* Center fade for better text readability */}
-        <div className="absolute inset-0 bg-gradient-to-r from-white/90 via-white/70 to-white/90"></div>
+        <div className="absolute inset-0 bg-gradient-to-r from-white/95 via-white/80 to-white/95"></div>
       </div>
 
       {/* Content */}
       <div className="relative z-10 pt-24 lg:pt-28 pb-8">
-        <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          {/* Eyebrow */}
-          <p className="text-sm font-semibold uppercase tracking-wide text-[#4E74FF] mb-4">
-            Built for UK Hospitality
-          </p>
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="relative overflow-hidden rounded-3xl border border-[#c7d4ff] bg-white/90 backdrop-blur-xl shadow-[0_24px_80px_rgba(47,92,255,0.2)] px-6 py-10 sm:px-10 sm:py-12 text-center">
+            <div className="absolute inset-0 pointer-events-none">
+              <div className="absolute -left-10 -top-10 w-52 h-52 bg-[#9DB4FF]/25 blur-3xl rounded-full"></div>
+              <div className="absolute right-[-5%] top-10 w-64 h-64 bg-[#2F5CFF]/15 blur-3xl rounded-full"></div>
+            </div>
 
-          {/* Main Headline */}
-          <h1 className="text-4xl sm:text-5xl lg:text-6xl xl:text-7xl font-bold text-gray-900 leading-tight mb-6">
-            <span className="text-[#2F5CFF]">Catch Problems</span> Before They Become{' '}
-            <span className="text-[#2F5CFF]">1-Star Reviews</span>
-          </h1>
+            {/* Eyebrow */}
+            <div className="relative inline-flex items-center gap-2 px-4 py-2 mb-5 text-xs sm:text-sm font-semibold uppercase tracking-wide text-[#1b2e87] bg-[#e8edff] border border-[#c7d4ff] rounded-full shadow-sm">
+              <span className="w-2 h-2 rounded-full bg-[#4E74FF] animate-pulse"></span>
+              Built for UK Hospitality Leaders
+            </div>
 
-          {/* Subheadline */}
-          <p className="text-lg sm:text-xl text-gray-600 mb-8 max-w-2xl mx-auto leading-relaxed">
-            Real-time guest feedback that alerts your team instantly so you can fix issues while customers are still at the table.
-          </p>
+            {/* Main Headline */}
+            <h1 className="relative text-4xl sm:text-5xl lg:text-6xl xl:text-7xl font-bold text-gray-900 leading-tight mb-6">
+              <span className="bg-gradient-to-r from-[#2F5CFF] via-[#4E74FF] to-[#2F5CFF] bg-clip-text text-transparent drop-shadow-sm">
+                Catch Problems
+              </span>{' '}
+              Before They Become{' '}
+              <span className="bg-gradient-to-r from-[#2F5CFF] to-[#12236b] bg-clip-text text-transparent">1-Star Reviews</span>
+            </h1>
 
-          {/* CTAs */}
-          <div className="flex flex-col sm:flex-row gap-4 justify-center mb-3">
-            <Link
-              to="/pricing"
-              className="inline-flex items-center justify-center px-8 py-4 text-lg font-semibold text-white bg-[#4E74FF] rounded-lg hover:bg-[#2F5CFF] transition-all duration-200 shadow-lg hover:shadow-xl group"
-            >
-              Pricing
-              <ArrowRight className="ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform" />
-            </Link>
-            <Link
-              to="/demo"
-              className="inline-flex items-center justify-center px-8 py-4 text-lg font-semibold text-gray-900 border-2 border-gray-300 rounded-lg hover:bg-gray-50 transition-all duration-200 group"
-            >
-              Book Demo
-              <ArrowRight className="ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform" />
-            </Link>
+            {/* Subheadline */}
+            <p className="relative text-lg sm:text-xl text-gray-700 mb-8 max-w-3xl mx-auto leading-relaxed">
+              Real-time guest feedback, QR-powered surveys, and instant staff alerts so restaurants, pubs, and hotels can resolve issues before guests reach TripAdvisor or Google.
+            </p>
+
+            {/* SEO-friendly proof points */}
+            <div className="relative flex flex-col sm:flex-row justify-center gap-3 sm:gap-4 mb-8 text-sm sm:text-base">
+              <div className="inline-flex items-center justify-center gap-2 px-4 py-2 rounded-2xl bg-[#f3f6ff] border border-[#d9e3ff] text-[#1b2e87] shadow-sm">
+                <Star className="w-5 h-5 text-[#2F5CFF]" />
+                Prevent Negative Reviews
+              </div>
+              <div className="inline-flex items-center justify-center gap-2 px-4 py-2 rounded-2xl bg-[#f3f6ff] border border-[#d9e3ff] text-[#1b2e87] shadow-sm">
+                <TrendingUp className="w-5 h-5 text-[#2F5CFF]" />
+                Boost NPS & repeat visits
+              </div>
+              <div className="inline-flex items-center justify-center gap-2 px-4 py-2 rounded-2xl bg-[#f3f6ff] border border-[#d9e3ff] text-[#1b2e87] shadow-sm">
+                <MessageSquare className="w-5 h-5 text-[#2F5CFF]" />
+                Instant Team Alerts
+              </div>
+            </div>
+
+            {/* CTAs */}
+            <div className="relative flex flex-col sm:flex-row gap-4 justify-center mb-4">
+              <Link
+                to="/pricing"
+                className="inline-flex items-center justify-center px-8 py-4 text-lg font-semibold text-white bg-[#2F5CFF] rounded-xl hover:bg-[#1f3fbf] transition-all duration-200 shadow-lg hover:shadow-[0_16px_40px_rgba(47,92,255,0.35)]"
+              >
+                See Pricing
+                <ArrowRight className="ml-2 w-5 h-5" />
+              </Link>
+              <Link
+                to="/demo"
+                className="inline-flex items-center justify-center px-8 py-4 text-lg font-semibold text-[#1b2e87] bg-white border-2 border-[#c7d4ff] rounded-xl hover:bg-[#f3f6ff] transition-all duration-200 shadow-md"
+              >
+                Book a Demo
+                <ArrowRight className="ml-2 w-5 h-5" />
+              </Link>
+            </div>
+
+            {/* Microcopy */}
+            <p className="relative text-sm text-gray-600 mb-4">
+              No credit card required • Go live in 5 minutes • Loved by UK hospitality teams
+            </p>
           </div>
-
-          {/* Microcopy */}
-          <p className="text-sm text-gray-500 mb-10">
-            No credit card required • Go live in 5 minutes
-          </p>
         </div>
 
         {/* Floating UI Cards - closer to text, bigger, cut off at bottom */}
