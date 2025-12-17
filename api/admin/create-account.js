@@ -117,7 +117,6 @@ module.exports = async (req, res) => {
           .insert({
             account_id: account.id,
             name: venue.name,
-            venue_type: venue.type || null,
             table_count: venue.table_count || 1,
             address: venue.address || null,
             primary_color: '#000000'
