@@ -66,36 +66,58 @@ const LandingPage = () => {
     }
   };
 
+  const webPageSchema = {
+    "@context": "https://schema.org",
+    "@type": "WebPage",
+    "name": "Catch Problems Before They Become 1-Star Reviews | Chatters",
+    "url": "https://getchatters.com/",
+    "inLanguage": "en-GB",
+    "description": "Prevent negative reviews with Chatters. Real-time guest feedback, QR code surveys, and instant staff alerts built for UK restaurants, pubs, and hotels.",
+    "isPartOf": {
+      "@type": "WebSite",
+      "name": "Chatters",
+      "url": "https://getchatters.com"
+    },
+    "primaryImageOfPage": "https://getchatters.com/img/chatters-og-image.jpg"
+  };
+
   return (
     <div className="min-h-screen bg-white pt-16">
       <Helmet>
-        <title>Restaurant Feedback Software UK | Prevent Bad Reviews | Chatters</title>
-        <meta 
-          name="description" 
-          content="Stop negative reviews before they happen. Chatters provides real-time customer feedback alerts for restaurants, pubs & hotels across the UK. Boost ratings instantly with QR code feedback collection. Free 14-day trial."
+        <title>Catch Problems Before They Become 1-Star Reviews | Chatters UK Hospitality Feedback</title>
+        <meta
+          name="description"
+          content="Catch problems before they become 1-star reviews. Chatters delivers real-time guest feedback alerts, QR code surveys, and instant staff notifications for UK restaurants, pubs, and hotels. Prevent negative TripAdvisor & Google reviews while boosting guest satisfaction."
         />
-        <meta 
-          name="keywords" 
-          content="restaurant feedback software UK, pub customer feedback system, hospitality feedback management, prevent negative reviews, real-time guest feedback, QR code feedback system, restaurant management software, pub technology UK, hotel feedback platform, customer satisfaction software"
+        <meta
+          name="keywords"
+          content="restaurant feedback software UK, prevent 1-star reviews, hospitality feedback management, real-time guest alerts, QR code surveys, UK restaurant technology, pub customer experience software, hotel review prevention, Chatters feedback platform, boost NPS, live guest messaging"
         />
-        
+        <meta name="title" content="Catch Problems Before They Become 1-Star Reviews | Chatters" />
+        <meta name="apple-mobile-web-app-title" content="Chatters Feedback" />
+
         {/* Open Graph / Facebook */}
         <meta property="og:type" content="website" />
         <meta property="og:url" content="https://getchatters.com/" />
-        <meta property="og:title" content="Restaurant Feedback Software UK | Prevent Bad Reviews | Chatters" />
-        <meta property="og:description" content="Stop negative reviews before they happen. Chatters provides real-time customer feedback alerts for restaurants, pubs & hotels across the UK. Free 14-day trial." />
+        <meta property="og:title" content="Catch Problems Before They Become 1-Star Reviews | Chatters" />
+        <meta property="og:description" content="Real-time guest feedback, QR code surveys, and instant staff alerts to prevent bad reviews across UK hospitality." />
         <meta property="og:image" content="https://getchatters.com/img/chatters-og-image.jpg" />
         <meta property="og:image:width" content="1200" />
         <meta property="og:image:height" content="630" />
         <meta property="og:site_name" content="Chatters" />
-        
+        <meta property="og:locale" content="en_GB" />
+        <meta property="article:tag" content="Hospitality Feedback" />
+        <meta property="article:tag" content="Prevent Bad Reviews" />
+
         {/* Twitter */}
         <meta property="twitter:card" content="summary_large_image" />
         <meta property="twitter:url" content="https://getchatters.com/" />
-        <meta property="twitter:title" content="Restaurant Feedback Software UK | Prevent Bad Reviews | Chatters" />
-        <meta property="twitter:description" content="Stop negative reviews before they happen. Real-time customer feedback alerts for UK restaurants, pubs & hotels. Free 14-day trial." />
+        <meta property="twitter:title" content="Catch Problems Before They Become 1-Star Reviews | Chatters" />
+        <meta property="twitter:description" content="Real-time guest feedback alerts built for UK hospitality. Prevent negative reviews before guests leave the venue." />
         <meta property="twitter:image" content="https://getchatters.com/img/chatters-twitter-image.jpg" />
-        
+        <meta name="twitter:site" content="@getchatters" />
+        <meta name="twitter:creator" content="@getchatters" />
+
         {/* Additional SEO Meta Tags */}
         <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
         <meta name="googlebot" content="index, follow" />
@@ -103,7 +125,9 @@ const LandingPage = () => {
         <meta name="author" content="Chatters Ltd" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <meta name="theme-color" content="#1A535C" />
-        
+        <meta name="rating" content="5.0" />
+        <meta name="subject" content="UK hospitality feedback and review prevention" />
+
         {/* Canonical URL */}
         <link rel="canonical" href="https://getchatters.com/" />
         
@@ -115,6 +139,11 @@ const LandingPage = () => {
         {/* Structured Data */}
         <script type="application/ld+json">
           {JSON.stringify(structuredData)}
+        </script>
+
+        {/* WebPage Structured Data */}
+        <script type="application/ld+json">
+          {JSON.stringify(webPageSchema)}
         </script>
         
         {/* Additional Structured Data for FAQ */}
