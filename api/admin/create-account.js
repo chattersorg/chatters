@@ -1,6 +1,7 @@
 const { createClient } = require('@supabase/supabase-js');
 const { Resend } = require('resend');
 const Stripe = require('stripe');
+const crypto = require('crypto');
 
 const supabase = createClient(
   process.env.REACT_APP_SUPABASE_URL,
@@ -330,7 +331,5 @@ module.exports = async (req, res) => {
 
 // Generate random token
 function generateToken() {
-  return Array.from(crypto.getRandomValues(new Uint8Array(32)))
-    .map(b => b.toString(16).padStart(2, '0'))
-    .join('');
+  return crypto.randomBytes(32).toString('hex');
 }
