@@ -40,7 +40,11 @@ const SubscriptionGuard = ({ children }) => {
       }
 
       // Get user's role and account info
-      const { data: user, error: userError } = await supabase
+      // Try by ID first, then fall back to email (for cases where auth ID differs from users table ID)
+      let user = null;
+      let userError = null;
+
+      const { data: userById, error: errorById } = await supabase
         .from('users')
         .select(`
           id,
@@ -56,8 +60,33 @@ const SubscriptionGuard = ({ children }) => {
         .eq('id', session.user.id)
         .single();
 
-      if (userError || !user) {
-        console.error('Error fetching user for subscription check:', userError);
+      if (userById) {
+        user = userById;
+      } else {
+        // Fallback: query by email
+        const { data: userByEmail, error: errorByEmail } = await supabase
+          .from('users')
+          .select(`
+            id,
+            role,
+            account_id,
+            accounts (
+              id,
+              is_paid,
+              trial_ends_at,
+              demo_account
+            )
+          `)
+          .eq('email', session.user.email)
+          .is('deleted_at', null)
+          .single();
+
+        user = userByEmail;
+        userError = errorByEmail;
+      }
+
+      if (!user) {
+        console.error('Error fetching user for subscription check:', userError || errorById);
         setStatus('error');
         return;
       }

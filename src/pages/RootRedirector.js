@@ -9,13 +9,30 @@ export default function RootRedirector() {
         setLoadingRole(false);
         return;
       }
+
+      // Try by ID first, then fall back to email
+      let userData = null;
+
       const { data, error } = await supabase
         .from('users')
         .select('role')
         .eq('id', session.user.id)
         .single();
 
-      if (!error) setRole(data?.role || null);
+      if (data) {
+        userData = data;
+      } else {
+        // Fallback: query by email
+        const { data: dataByEmail } = await supabase
+          .from('users')
+          .select('role')
+          .eq('email', session.user.email)
+          .is('deleted_at', null)
+          .single();
+        userData = dataByEmail;
+      }
+
+      if (userData) setRole(userData.role || null);
       setLoadingRole(false);
     };
     fetchRole();
