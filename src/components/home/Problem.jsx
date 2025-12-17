@@ -49,7 +49,7 @@ const Problem = () => {
                 </div>
                 <div className="p-4 rounded-xl border border-white/10 bg-white/5">
                   <p className="text-xs text-slate-400 uppercase tracking-wide">Review lift</p>
-                  <p className="text-3xl font-bold text-white mt-1">+1.2★</p>
+                  <p className="text-3xl font-bold text-white mt-1">+1.2<span className="text-xl align-middle">★</span></p>
                   <p className="text-xs text-emerald-300 mt-1">From feedback-first guests</p>
                 </div>
               </div>

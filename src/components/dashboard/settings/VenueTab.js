@@ -5,12 +5,28 @@ import { supabase } from '../../../utils/supabase';
 import { PermissionGate } from '../../../context/PermissionsContext';
 import { GripVertical, Plus, Trash2, ExternalLink, Eye, EyeOff, Link, FileText, Utensils, ChevronDown, ChevronUp, Upload, X } from 'lucide-react';
 import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
+import FilterSelect from '../../ui/FilterSelect';
+
+const COUNTRIES = [
+  { code: 'GB', name: 'United Kingdom' },
+  { code: 'RO', name: 'Romania' }
+];
+
+const ROMANIAN_COUNTIES = [
+  'Alba', 'Arad', 'Argeș', 'Bacău', 'Bihor', 'Bistrița-Năsăud', 'Botoșani',
+  'Brăila', 'Brașov', 'București', 'Buzău', 'Călărași', 'Caraș-Severin',
+  'Cluj', 'Constanța', 'Covasna', 'Dâmbovița', 'Dolj', 'Galați', 'Giurgiu',
+  'Gorj', 'Harghita', 'Hunedoara', 'Ialomița', 'Iași', 'Ilfov', 'Maramureș',
+  'Mehedinți', 'Mureș', 'Neamț', 'Olt', 'Prahova', 'Sălaj', 'Satu Mare',
+  'Sibiu', 'Suceava', 'Teleorman', 'Timiș', 'Tulcea', 'Vâlcea', 'Vaslui', 'Vrancea'
+];
 
 const VenueTab = ({
   name, setName,
   address, setAddress,
   phone, setPhone,
   website, setWebsite,
+  country, setCountry,
   saveSettings,
   loading,
   message,
@@ -265,6 +281,30 @@ const VenueTab = ({
               </div>
             </div>
 
+            {/* Country */}
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 items-start">
+              <div className="lg:col-span-1">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Country</label>
+                <p className="text-xs text-gray-500 dark:text-gray-400">Country where your venue is located</p>
+              </div>
+              <div className="lg:col-span-2">
+                <FilterSelect
+                  value={country || 'GB'}
+                  onChange={(e) => {
+                    setCountry(e.target.value);
+                    // Clear county when switching away from Romania
+                    if (e.target.value !== 'RO') {
+                      setAddress({...address, county: ''});
+                    }
+                  }}
+                  options={COUNTRIES.map(c => ({
+                    value: c.code,
+                    label: c.name
+                  }))}
+                />
+              </div>
+            </div>
+
             {/* Address Section */}
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 items-start">
               <div className="lg:col-span-1">
@@ -274,14 +314,14 @@ const VenueTab = ({
               <div className="lg:col-span-2 space-y-3">
                 <input
                   type="text"
-                  placeholder="Address Line 1"
+                  placeholder={country === 'RO' ? 'Strada (Street)' : 'Address Line 1'}
                   value={address.line1}
                   onChange={(e) => setAddress({...address, line1: e.target.value})}
                   className="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500"
                 />
                 <input
                   type="text"
-                  placeholder="Address Line 2 (Optional)"
+                  placeholder={country === 'RO' ? 'Nr., Bloc, Scara, Apt (Optional)' : 'Address Line 2 (Optional)'}
                   value={address.line2}
                   onChange={(e) => setAddress({...address, line2: e.target.value})}
                   className="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500"
@@ -289,19 +329,40 @@ const VenueTab = ({
                 <div className="grid grid-cols-2 gap-3">
                   <input
                     type="text"
-                    placeholder="City"
+                    placeholder={country === 'RO' ? 'Oraș (City)' : 'City'}
                     value={address.city}
                     onChange={(e) => setAddress({...address, city: e.target.value})}
                     className="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500"
                   />
                   <input
                     type="text"
-                    placeholder="Postal Code"
+                    placeholder={country === 'RO' ? 'Cod Poștal' : 'Postal Code'}
                     value={address.postalCode}
                     onChange={(e) => setAddress({...address, postalCode: e.target.value})}
                     className="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500"
                   />
                 </div>
+                {/* County field - different for Romania vs UK */}
+                {country === 'RO' ? (
+                  <select
+                    value={address.county || ''}
+                    onChange={(e) => setAddress({...address, county: e.target.value})}
+                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
+                  >
+                    <option value="">Select Județ (County)</option>
+                    {ROMANIAN_COUNTIES.map(county => (
+                      <option key={county} value={county}>{county}</option>
+                    ))}
+                  </select>
+                ) : (
+                  <input
+                    type="text"
+                    placeholder="County (Optional)"
+                    value={address.county || ''}
+                    onChange={(e) => setAddress({...address, county: e.target.value})}
+                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500"
+                  />
+                )}
               </div>
             </div>
 

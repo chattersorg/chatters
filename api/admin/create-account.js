@@ -24,6 +24,7 @@ module.exports = async (req, res) => {
     phone,
     accountPhone,
     billingEmail,
+    country,
     startTrial,
     trialDays,
     venues
@@ -82,6 +83,7 @@ module.exports = async (req, res) => {
         name: companyName,
         phone: accountPhone || phone || null,
         billing_email: customerEmail,
+        country: country || 'GB',
         is_paid: false,
         trial_ends_at: trialEndsAt,
         demo_account: false,
@@ -119,6 +121,7 @@ module.exports = async (req, res) => {
             name: venue.name,
             table_count: venue.table_count || 1,
             address: venue.address || null,
+            country: venue.country || country || 'GB',
             primary_color: '#000000'
           })
           .select()

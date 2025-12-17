@@ -21,8 +21,25 @@ import {
   FileSpreadsheet,
   Check,
   Clock,
-  CreditCard
+  CreditCard,
+  Globe
 } from 'lucide-react';
+
+// Country configurations
+const COUNTRIES = [
+  { code: 'GB', name: 'United Kingdom', flag: '🇬🇧' },
+  { code: 'RO', name: 'Romania', flag: '🇷🇴' }
+];
+
+// Romanian counties (județe)
+const ROMANIAN_COUNTIES = [
+  'Alba', 'Arad', 'Argeș', 'Bacău', 'Bihor', 'Bistrița-Năsăud', 'Botoșani',
+  'Brăila', 'Brașov', 'București', 'Buzău', 'Călărași', 'Caraș-Severin',
+  'Cluj', 'Constanța', 'Covasna', 'Dâmbovița', 'Dolj', 'Galați', 'Giurgiu',
+  'Gorj', 'Harghita', 'Hunedoara', 'Ialomița', 'Iași', 'Ilfov', 'Maramureș',
+  'Mehedinți', 'Mureș', 'Neamț', 'Olt', 'Prahova', 'Sălaj', 'Satu Mare',
+  'Sibiu', 'Suceava', 'Teleorman', 'Timiș', 'Tulcea', 'Vâlcea', 'Vaslui', 'Vrancea'
+];
 
 // Venue types with their default feedback questions
 const VENUE_TYPES = [
@@ -96,12 +113,14 @@ const DEFAULT_QUESTIONS = {
   ]
 };
 
-const emptyVenue = () => ({
+const emptyVenue = (inheritCountry = 'GB') => ({
   name: '',
   type: '',
+  country: inheritCountry, // Inherit from account by default
   addressLine1: '',
   addressLine2: '',
   city: '',
+  county: '', // For Romanian addresses (județ)
   postcode: '',
   questions: [],
   staff: [],
@@ -118,6 +137,7 @@ const AdminCreateAccount = () => {
     companyName: '',
     billingEmail: '',
     accountPhone: '',
+    country: 'GB', // Account-level country (default for venues)
     // Master user info
     firstName: '',
     lastName: '',
@@ -127,12 +147,27 @@ const AdminCreateAccount = () => {
     startTrial: true,
     trialDays: 14,
     // Venues
-    venues: [emptyVenue()]
+    venues: [emptyVenue('GB')]
   });
   const [errors, setErrors] = useState({});
 
-  const setField = (name, value) =>
-    setFormData(prev => ({ ...prev, [name]: value }));
+  const setField = (name, value) => {
+    setFormData(prev => {
+      const updated = { ...prev, [name]: value };
+
+      // When account country changes, update all venues that haven't been explicitly set
+      if (name === 'country') {
+        updated.venues = prev.venues.map(v => ({
+          ...v,
+          country: value,
+          // Clear county field if switching away from Romania
+          county: value === 'RO' ? v.county : ''
+        }));
+      }
+
+      return updated;
+    });
+  };
 
   const setVenueField = (index, name, value) =>
     setFormData(prev => {
@@ -142,6 +177,11 @@ const AdminCreateAccount = () => {
       // If venue type changes, pre-populate questions
       if (name === 'type' && value) {
         venues[index].questions = DEFAULT_QUESTIONS[value] || [];
+      }
+
+      // If venue country changes, clear county if not Romania
+      if (name === 'country' && value !== 'RO') {
+        venues[index].county = '';
       }
 
       return { ...prev, venues };
@@ -155,7 +195,7 @@ const AdminCreateAccount = () => {
     });
 
   const addVenue = () =>
-    setFormData(prev => ({ ...prev, venues: [...prev.venues, emptyVenue()] }));
+    setFormData(prev => ({ ...prev, venues: [...prev.venues, emptyVenue(prev.country)] }));
 
   const removeVenue = (index) =>
     setFormData(prev => {
@@ -223,9 +263,11 @@ const AdminCreateAccount = () => {
     formData.venues.forEach((v, i) => {
       if (!v.name?.trim()) e[`venue_${i}_name`] = 'Venue name is required';
       if (!v.type) e[`venue_${i}_type`] = 'Venue type is required';
-      if (!v.postcode?.trim()) e[`venue_${i}_postcode`] = 'Postcode is required';
-      if (!v.city?.trim()) e[`venue_${i}_city`] = 'City is required';
-      if (!v.addressLine1?.trim()) e[`venue_${i}_addressLine1`] = 'Address is required';
+      if (!v.postcode?.trim()) e[`venue_${i}_postcode`] = v.country === 'RO' ? 'Cod poștal is required' : 'Postcode is required';
+      if (!v.city?.trim()) e[`venue_${i}_city`] = v.country === 'RO' ? 'Oraș is required' : 'City is required';
+      if (!v.addressLine1?.trim()) e[`venue_${i}_addressLine1`] = v.country === 'RO' ? 'Strada is required' : 'Address is required';
+      // Require county for Romanian addresses
+      if (v.country === 'RO' && !v.county?.trim()) e[`venue_${i}_county`] = 'Județ is required';
     });
 
     setErrors(e);
@@ -254,11 +296,14 @@ const AdminCreateAccount = () => {
       const venuesPayload = formData.venues.map(venue => ({
         name: venue.name.trim(),
         type: venue.type,
+        country: venue.country,
         address: {
           line1: venue.addressLine1.trim(),
           line2: venue.addressLine2?.trim() || '',
           city: venue.city.trim(),
-          postcode: venue.postcode.trim().toUpperCase()
+          county: venue.county?.trim() || '',
+          postcode: venue.postcode.trim().toUpperCase(),
+          country: venue.country
         },
         questions: venue.questions,
         staff: venue.staff || []
@@ -278,6 +323,7 @@ const AdminCreateAccount = () => {
           phone: formData.phone?.trim() || null,
           accountPhone: formData.accountPhone?.trim() || null,
           billingEmail: formData.billingEmail?.trim()?.toLowerCase() || formData.email.trim().toLowerCase(),
+          country: formData.country,
           startTrial: formData.startTrial,
           trialDays: formData.trialDays,
           venues: venuesPayload
@@ -419,6 +465,24 @@ const AdminCreateAccount = () => {
                       className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                       placeholder="+44 20 1234 5678"
                     />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1.5">
+                      Country <span className="text-red-500">*</span>
+                    </label>
+                    <select
+                      value={formData.country}
+                      onChange={(e) => setField('country', e.target.value)}
+                      className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    >
+                      {COUNTRIES.map(c => (
+                        <option key={c.code} value={c.code}>
+                          {c.flag} {c.name}
+                        </option>
+                      ))}
+                    </select>
+                    <p className="text-xs text-gray-400 mt-1">Default country for venues</p>
                   </div>
                 </div>
               </div>
@@ -702,11 +766,29 @@ const AdminCreateAccount = () => {
                             </div>
                           </div>
 
-                          {/* Address */}
+                          {/* Country & Address */}
                           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            {/* Country selector */}
                             <div className="md:col-span-2">
                               <label className="block text-sm font-medium text-gray-700 mb-1.5">
-                                Address <span className="text-red-500">*</span>
+                                Country <span className="text-red-500">*</span>
+                              </label>
+                              <select
+                                value={venue.country}
+                                onChange={(e) => setVenueField(index, 'country', e.target.value)}
+                                className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                              >
+                                {COUNTRIES.map(c => (
+                                  <option key={c.code} value={c.code}>
+                                    {c.flag} {c.name}
+                                  </option>
+                                ))}
+                              </select>
+                            </div>
+
+                            <div className="md:col-span-2">
+                              <label className="block text-sm font-medium text-gray-700 mb-1.5">
+                                {venue.country === 'RO' ? 'Strada (Street)' : 'Address'} <span className="text-red-500">*</span>
                               </label>
                               <input
                                 type="text"
@@ -714,7 +796,7 @@ const AdminCreateAccount = () => {
                                 onChange={(e) => setVenueField(index, 'addressLine1', e.target.value)}
                                 className={`w-full px-3 py-2 text-sm border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${errors[`venue_${index}_addressLine1`] ? 'border-red-500' : 'border-gray-300'}`}
                                 data-error={!!errors[`venue_${index}_addressLine1`]}
-                                placeholder="123 High Street"
+                                placeholder={venue.country === 'RO' ? 'Strada Victoriei 123' : '123 High Street'}
                               />
                               {errors[`venue_${index}_addressLine1`] && <p className="text-xs text-red-600 mt-1">{errors[`venue_${index}_addressLine1`]}</p>}
                             </div>
@@ -725,13 +807,13 @@ const AdminCreateAccount = () => {
                                 value={venue.addressLine2}
                                 onChange={(e) => setVenueField(index, 'addressLine2', e.target.value)}
                                 className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                                placeholder="Address line 2 (optional)"
+                                placeholder={venue.country === 'RO' ? 'Bloc, Scara, Apartament (optional)' : 'Address line 2 (optional)'}
                               />
                             </div>
 
                             <div>
                               <label className="block text-sm font-medium text-gray-700 mb-1.5">
-                                City <span className="text-red-500">*</span>
+                                {venue.country === 'RO' ? 'Oraș (City)' : 'City'} <span className="text-red-500">*</span>
                               </label>
                               <input
                                 type="text"
@@ -739,22 +821,43 @@ const AdminCreateAccount = () => {
                                 onChange={(e) => setVenueField(index, 'city', e.target.value)}
                                 className={`w-full px-3 py-2 text-sm border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${errors[`venue_${index}_city`] ? 'border-red-500' : 'border-gray-300'}`}
                                 data-error={!!errors[`venue_${index}_city`]}
-                                placeholder="London"
+                                placeholder={venue.country === 'RO' ? 'București' : 'London'}
                               />
                               {errors[`venue_${index}_city`] && <p className="text-xs text-red-600 mt-1">{errors[`venue_${index}_city`]}</p>}
                             </div>
 
+                            {/* County/Județ - shown for Romania */}
+                            {venue.country === 'RO' && (
+                              <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1.5">
+                                  Județ (County) <span className="text-red-500">*</span>
+                                </label>
+                                <select
+                                  value={venue.county}
+                                  onChange={(e) => setVenueField(index, 'county', e.target.value)}
+                                  className={`w-full px-3 py-2 text-sm border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${errors[`venue_${index}_county`] ? 'border-red-500' : 'border-gray-300'}`}
+                                  data-error={!!errors[`venue_${index}_county`]}
+                                >
+                                  <option value="">Select județ...</option>
+                                  {ROMANIAN_COUNTIES.map(county => (
+                                    <option key={county} value={county}>{county}</option>
+                                  ))}
+                                </select>
+                                {errors[`venue_${index}_county`] && <p className="text-xs text-red-600 mt-1">{errors[`venue_${index}_county`]}</p>}
+                              </div>
+                            )}
+
                             <div>
                               <label className="block text-sm font-medium text-gray-700 mb-1.5">
-                                Postcode <span className="text-red-500">*</span>
+                                {venue.country === 'RO' ? 'Cod Poștal' : 'Postcode'} <span className="text-red-500">*</span>
                               </label>
                               <input
                                 type="text"
                                 value={venue.postcode}
-                                onChange={(e) => setVenueField(index, 'postcode', e.target.value.toUpperCase())}
+                                onChange={(e) => setVenueField(index, 'postcode', venue.country === 'GB' ? e.target.value.toUpperCase() : e.target.value)}
                                 className={`w-full px-3 py-2 text-sm border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${errors[`venue_${index}_postcode`] ? 'border-red-500' : 'border-gray-300'}`}
                                 data-error={!!errors[`venue_${index}_postcode`]}
-                                placeholder="SW1A 1AA"
+                                placeholder={venue.country === 'RO' ? '010101' : 'SW1A 1AA'}
                               />
                               {errors[`venue_${index}_postcode`] && <p className="text-xs text-red-600 mt-1">{errors[`venue_${index}_postcode`]}</p>}
                             </div>
