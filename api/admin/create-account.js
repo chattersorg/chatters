@@ -120,8 +120,7 @@ module.exports = async (req, res) => {
             venue_type: venue.type || null,
             table_count: venue.table_count || 1,
             address: venue.address || null,
-            primary_color: '#000000',
-            secondary_color: '#ffffff'
+            primary_color: '#000000'
           })
           .select()
           .single();
@@ -205,13 +204,14 @@ module.exports = async (req, res) => {
     expiresAt.setDate(expiresAt.getDate() + 7); // 7 days expiry
 
     // Store invitation (reuse manager_invitations table for simplicity)
+    // Use the newly created user's ID as invited_by since that column is NOT NULL
     const { error: invitationError } = await supabase
       .from('manager_invitations')
       .insert({
         email: email.toLowerCase(),
         first_name: firstName,
         last_name: lastName,
-        invited_by: null, // Admin created
+        invited_by: user.id, // Use the master user's own ID (required, NOT NULL)
         account_id: account.id,
         venue_ids: [], // Master users don't need specific venue access
         token: token,
