@@ -188,11 +188,11 @@ const BillingTab = ({ allowExpiredAccess = false }) => {
   // Show loading state while data is being fetched
   if (!accountData && userRole !== 'admin') {
     return (
-      <div className="bg-white border border-gray-200 rounded-xl overflow-hidden">
+      <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl overflow-hidden">
         <div className="p-6">
           <div className="text-center py-12">
-            <div className="w-12 h-12 border-4 border-gray-200 border-t-blue-600 rounded-full animate-spin mx-auto mb-4"></div>
-            <p className="text-gray-600">Loading billing information...</p>
+            <div className="w-12 h-12 border-4 border-gray-200 dark:border-gray-700 border-t-blue-600 rounded-full animate-spin mx-auto mb-4"></div>
+            <p className="text-gray-600 dark:text-gray-400">Loading billing information...</p>
           </div>
         </div>
       </div>
@@ -202,17 +202,17 @@ const BillingTab = ({ allowExpiredAccess = false }) => {
   // Only masters can access
   if (userRole !== 'master' && !accountData?.isExpired) {
     return (
-      <div className="bg-white border border-gray-200 rounded-xl overflow-hidden">
+      <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl overflow-hidden">
         <div className="p-6">
           <div className="text-center py-12">
-            <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
-              <AlertCircle className="w-8 h-8 text-red-600" />
+            <div className="w-16 h-16 bg-red-100 dark:bg-red-900/30 rounded-full flex items-center justify-center mx-auto mb-4">
+              <AlertCircle className="w-8 h-8 text-red-600 dark:text-red-400" />
             </div>
-            <h3 className="text-lg font-medium text-gray-900 mb-2">Access Restricted</h3>
-            <p className="text-gray-600 mb-4">
+            <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">Access Restricted</h3>
+            <p className="text-gray-600 dark:text-gray-400 mb-4">
               Only account owners can view billing information.
             </p>
-            <p className="text-sm text-gray-500">
+            <p className="text-sm text-gray-500 dark:text-gray-500">
               Contact your account owner if you need access to billing details.
             </p>
           </div>
@@ -224,21 +224,21 @@ const BillingTab = ({ allowExpiredAccess = false }) => {
   // Demo account - show special message and disable billing
   if (accountData?.demo_account) {
     return (
-      <div className="bg-white border border-gray-200 rounded-xl overflow-hidden">
-        <div className="px-6 py-4 border-b border-gray-100">
-          <h3 className="text-base font-semibold text-gray-900">Demo Account</h3>
-          <p className="text-sm text-gray-500 mt-1">This is a demonstration account</p>
+      <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl overflow-hidden">
+        <div className="px-6 py-4 border-b border-gray-100 dark:border-gray-800">
+          <h3 className="text-base font-semibold text-gray-900 dark:text-white">Demo Account</h3>
+          <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">This is a demonstration account</p>
         </div>
         <div className="p-6">
-          <p className="text-gray-600 mb-6">
+          <p className="text-gray-600 dark:text-gray-400 mb-6">
             This is a demonstration account with full access to all features. Billing is disabled for demo accounts.
           </p>
-          <ul className="space-y-2 text-sm text-gray-600 mb-6">
+          <ul className="space-y-2 text-sm text-gray-600 dark:text-gray-400 mb-6">
             <li>• Unlimited venue access</li>
             <li>• All premium features enabled</li>
             <li>• No billing or payment required</li>
           </ul>
-          <p className="text-sm text-gray-500 pt-4 border-t border-gray-100">
+          <p className="text-sm text-gray-500 dark:text-gray-500 pt-4 border-t border-gray-100 dark:border-gray-800">
             For questions about your demo account, please contact support.
           </p>
         </div>
@@ -250,18 +250,18 @@ const BillingTab = ({ allowExpiredAccess = false }) => {
     <div className="space-y-6">
       {/* Status Banners */}
       {accountData?.isExpired && (
-        <div className="p-3 bg-red-50 border border-red-200 rounded-lg flex items-center gap-2">
-          <AlertCircle className="w-4 h-4 text-red-600 flex-shrink-0" />
-          <p className="text-red-800 text-sm">
+        <div className="p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg flex items-center gap-2">
+          <AlertCircle className="w-4 h-4 text-red-600 dark:text-red-400 flex-shrink-0" />
+          <p className="text-red-800 dark:text-red-300 text-sm">
             <span className="font-medium">Trial expired.</span> Upgrade to continue using Chatters.
           </p>
         </div>
       )}
 
       {accountData && !accountData.isExpired && accountData.daysLeft !== null && !accountData.is_paid && (
-        <div className="p-3 bg-yellow-50 border border-yellow-200 rounded-lg flex items-center gap-2">
-          <Calendar className="w-4 h-4 text-yellow-600 flex-shrink-0" />
-          <p className="text-yellow-800 text-sm">
+        <div className="p-3 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg flex items-center gap-2">
+          <Calendar className="w-4 h-4 text-yellow-600 dark:text-yellow-400 flex-shrink-0" />
+          <p className="text-yellow-800 dark:text-yellow-300 text-sm">
             Trial ends in <strong>{accountData.daysLeft}</strong> day{accountData.daysLeft !== 1 ? 's' : ''}. Add payment details for uninterrupted access.
           </p>
         </div>
@@ -269,12 +269,12 @@ const BillingTab = ({ allowExpiredAccess = false }) => {
 
       {/* Pricing Plans Card */}
       {!accountData?.is_paid && (
-        <div className="bg-white border border-gray-200 rounded-xl overflow-hidden">
-          <div className="px-6 py-4 border-b border-gray-100">
-            <h3 className="text-base font-semibold text-gray-900">
+        <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl overflow-hidden">
+          <div className="px-6 py-4 border-b border-gray-100 dark:border-gray-800">
+            <h3 className="text-base font-semibold text-gray-900 dark:text-white">
               {!accountData?.isExpired ? 'Add Payment Details' : 'Choose Your Plan'}
             </h3>
-            <p className="text-sm text-gray-500 mt-1">
+            <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
               {!accountData?.isExpired
                 ? `No charge until your trial ends. Cancel anytime before ${new Date(accountData?.trial_ends_at).toLocaleDateString()}.`
                 : 'Select a subscription plan to continue using Chatters'
@@ -287,7 +287,7 @@ const BillingTab = ({ allowExpiredAccess = false }) => {
             <div className="space-y-3">
               {/* Monthly Plan */}
               <label className={`flex items-center justify-between border rounded-lg p-4 cursor-pointer transition
-                ${subscriptionType === 'monthly' ? 'border-blue-600 bg-blue-50' : 'border-gray-200 hover:border-gray-400'}`}>
+                ${subscriptionType === 'monthly' ? 'border-blue-600 bg-blue-50 dark:bg-blue-900/20' : 'border-gray-200 dark:border-gray-700 hover:border-gray-400 dark:hover:border-gray-600'}`}>
                 <div className="flex items-center gap-3">
                   <input
                     type="radio"
@@ -297,19 +297,19 @@ const BillingTab = ({ allowExpiredAccess = false }) => {
                     className="h-4 w-4 text-blue-600 focus:ring-blue-500"
                   />
                   <div>
-                    <span className="font-medium text-gray-900">Monthly</span>
-                    <span className="text-gray-500 text-sm ml-2">£{PRICE_PER_VENUE_MONTHLY}/venue/mo</span>
+                    <span className="font-medium text-gray-900 dark:text-white">Monthly</span>
+                    <span className="text-gray-500 dark:text-gray-400 text-sm ml-2">£{PRICE_PER_VENUE_MONTHLY}/venue/mo</span>
                   </div>
                 </div>
                 <div className="text-right">
-                  <span className="text-lg font-bold text-gray-900">£{monthlySubtotal.toLocaleString()}</span>
-                  <span className="text-gray-500 text-sm">/mo</span>
+                  <span className="text-lg font-bold text-gray-900 dark:text-white">£{monthlySubtotal.toLocaleString()}</span>
+                  <span className="text-gray-500 dark:text-gray-400 text-sm">/mo</span>
                 </div>
               </label>
 
               {/* Yearly Plan */}
               <label className={`flex items-center justify-between border rounded-lg p-4 cursor-pointer transition relative
-                ${subscriptionType === 'yearly' ? 'border-green-600 bg-green-50' : 'border-gray-200 hover:border-gray-400'}`}>
+                ${subscriptionType === 'yearly' ? 'border-green-600 bg-green-50 dark:bg-green-900/20' : 'border-gray-200 dark:border-gray-700 hover:border-gray-400 dark:hover:border-gray-600'}`}>
                 <span className="absolute -top-2 left-3 bg-green-600 text-white text-xs font-medium px-2 py-0.5 rounded">
                   Save {yearlyDiscount}%
                 </span>
@@ -322,26 +322,26 @@ const BillingTab = ({ allowExpiredAccess = false }) => {
                     className="h-4 w-4 text-green-600 focus:ring-green-500"
                   />
                   <div>
-                    <span className="font-medium text-gray-900">Yearly</span>
-                    <span className="text-gray-500 text-sm ml-2">£{PRICE_PER_VENUE_YEARLY.toLocaleString()}/venue/yr</span>
+                    <span className="font-medium text-gray-900 dark:text-white">Yearly</span>
+                    <span className="text-gray-500 dark:text-gray-400 text-sm ml-2">£{PRICE_PER_VENUE_YEARLY.toLocaleString()}/venue/yr</span>
                   </div>
                 </div>
                 <div className="text-right">
-                  <span className="text-lg font-bold text-gray-900">£{yearlySubtotal.toLocaleString()}</span>
-                  <span className="text-gray-500 text-sm">/yr</span>
+                  <span className="text-lg font-bold text-gray-900 dark:text-white">£{yearlySubtotal.toLocaleString()}</span>
+                  <span className="text-gray-500 dark:text-gray-400 text-sm">/yr</span>
                 </div>
               </label>
             </div>
 
-            <p className="text-xs text-gray-500 mt-3">
+            <p className="text-xs text-gray-500 dark:text-gray-400 mt-3">
               {venueCount} venue{venueCount !== 1 ? 's' : ''} • Prices exclude VAT • Secured by Stripe
             </p>
           </div>
 
           {/* Footer */}
-          <div className="px-6 py-4 border-t border-gray-100">
+          <div className="px-6 py-4 border-t border-gray-100 dark:border-gray-800">
             <div className="flex items-center justify-between">
-              <div className="text-xs text-gray-500">
+              <div className="text-xs text-gray-500 dark:text-gray-400">
                 {!accountData?.isExpired ? 'No charge today' : 'Billed immediately'}
               </div>
               <PermissionGate permission="billing.manage">
@@ -363,10 +363,10 @@ const BillingTab = ({ allowExpiredAccess = false }) => {
 
       {/* Active Subscription Management */}
       {accountData?.is_paid && accountData.stripe_customer_id && accountId && (
-        <div className="bg-white border border-gray-200 rounded-xl overflow-hidden">
-          <div className="px-6 py-4 border-b border-gray-100">
-            <h3 className="text-base font-semibold text-gray-900">Subscription Details</h3>
-            <p className="text-sm text-gray-500 mt-1">Manage your active subscription and billing</p>
+        <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl overflow-hidden">
+          <div className="px-6 py-4 border-b border-gray-100 dark:border-gray-800">
+            <h3 className="text-base font-semibold text-gray-900 dark:text-white">Subscription Details</h3>
+            <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">Manage your active subscription and billing</p>
           </div>
           <div className="p-6">
             <SubscriptionManagement
