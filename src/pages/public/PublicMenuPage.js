@@ -2,13 +2,16 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { supabase } from '../../utils/supabase';
 import { ArrowLeft, Loader2, Search, X } from 'lucide-react';
+import { LanguageProvider, useLanguage } from '../../context/LanguageContext';
+import LanguageSelector from '../../components/ui/LanguageSelector';
 
+// Dietary tags - labels will be translated in the component
 const DIETARY_TAGS = {
-  V: { label: 'Vegetarian', color: 'bg-green-100 text-green-700', dot: 'bg-green-500' },
-  VG: { label: 'Vegan', color: 'bg-emerald-100 text-emerald-700', dot: 'bg-emerald-500' },
-  GF: { label: 'Gluten Free', color: 'bg-amber-100 text-amber-700', dot: 'bg-amber-500' },
-  DF: { label: 'Dairy Free', color: 'bg-blue-100 text-blue-700', dot: 'bg-blue-500' },
-  N: { label: 'Contains Nuts', color: 'bg-red-100 text-red-700', dot: 'bg-red-500' }
+  V: { labelKey: 'vegetarian', color: 'bg-green-100 text-green-700', dot: 'bg-green-500' },
+  VG: { labelKey: 'vegan', color: 'bg-emerald-100 text-emerald-700', dot: 'bg-emerald-500' },
+  GF: { labelKey: 'glutenFree', color: 'bg-amber-100 text-amber-700', dot: 'bg-amber-500' },
+  DF: { labelKey: 'dairyFree', color: 'bg-blue-100 text-blue-700', dot: 'bg-blue-500' },
+  N: { labelKey: 'containsNuts', color: 'bg-red-100 text-red-700', dot: 'bg-red-500' }
 };
 
 const CURRENCY_SYMBOLS = {
@@ -26,7 +29,7 @@ const CURRENCY_SYMBOLS = {
 };
 
 // Item Detail Modal Component
-const ItemDetailModal = ({ item, onClose, currencySymbol = '£' }) => {
+const ItemDetailModal = ({ item, onClose, currencySymbol = '£', t }) => {
   if (!item) return null;
 
   return (
@@ -81,7 +84,7 @@ const ItemDetailModal = ({ item, onClose, currencySymbol = '£' }) => {
                   key={tag}
                   className={`px-2 py-1 rounded-full text-xs font-medium ${DIETARY_TAGS[tag]?.color || 'bg-gray-100 text-gray-600'}`}
                 >
-                  {DIETARY_TAGS[tag]?.label || tag}
+                  {t(DIETARY_TAGS[tag]?.labelKey) || tag}
                 </span>
               ))}
             </div>
@@ -104,9 +107,10 @@ const ItemDetailModal = ({ item, onClose, currencySymbol = '£' }) => {
   );
 };
 
-const PublicMenuPage = () => {
+const PublicMenuContent = () => {
   const { venueId } = useParams();
   const navigate = useNavigate();
+  const { t } = useLanguage();
   const [venue, setVenue] = useState(null);
   const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -145,7 +149,7 @@ const PublicMenuPage = () => {
       .single();
 
     if (venueError || !venueData) {
-      setError('Menu not found');
+      setError(t('menuNotFound'));
       setLoading(false);
       return;
     }
@@ -182,7 +186,7 @@ const PublicMenuPage = () => {
 
       if (categoriesError) {
         console.error('Error loading menu:', categoriesError);
-        setError('Failed to load menu');
+        setError(t('failedToLoadMenu'));
         setLoading(false);
         return;
       }
@@ -236,7 +240,10 @@ const PublicMenuPage = () => {
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-100">
-        <Loader2 className="w-8 h-8 animate-spin text-gray-400" />
+        <div className="text-center">
+          <Loader2 className="w-8 h-8 animate-spin text-gray-400 mx-auto" />
+          <p className="mt-4 text-gray-600">{t('loading')}</p>
+        </div>
       </div>
     );
   }
@@ -244,13 +251,18 @@ const PublicMenuPage = () => {
   if (error) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-100">
+        {/* Language Selector - Top Right */}
+        <div className="absolute top-4 right-4">
+          <LanguageSelector />
+        </div>
+
         <div className="text-center">
           <p className="text-gray-600 mb-4">{error}</p>
           <button
             onClick={goBack}
             className="text-gray-900 hover:text-gray-700 font-medium"
           >
-            Go back
+            {t('goBack')}
           </button>
         </div>
       </div>
@@ -260,13 +272,18 @@ const PublicMenuPage = () => {
   if (!venue || venue.menu_type === 'none') {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-100">
+        {/* Language Selector - Top Right */}
+        <div className="absolute top-4 right-4">
+          <LanguageSelector />
+        </div>
+
         <div className="text-center">
-          <p className="text-gray-600 mb-4">No menu available</p>
+          <p className="text-gray-600 mb-4">{t('noMenuAvailable')}</p>
           <button
             onClick={goBack}
             className="text-gray-900 hover:text-gray-700 font-medium"
           >
-            Go back
+            {t('goBack')}
           </button>
         </div>
       </div>
@@ -277,6 +294,11 @@ const PublicMenuPage = () => {
 
   return (
     <div className="min-h-screen bg-gray-100">
+      {/* Language Selector - Top Right */}
+      <div className="fixed top-4 right-4 z-30">
+        <LanguageSelector />
+      </div>
+
       {/* Header */}
       <div className="bg-white sticky top-0 z-20 shadow-sm">
         <div className="max-w-2xl mx-auto px-4">
@@ -290,7 +312,7 @@ const PublicMenuPage = () => {
                 <ArrowLeft className="w-5 h-5 text-gray-700" />
               </button>
               <div>
-                <h1 className="text-2xl font-bold text-gray-900">Menu</h1>
+                <h1 className="text-2xl font-bold text-gray-900">{t('menu')}</h1>
               </div>
             </div>
             {venue.logo && (
@@ -309,7 +331,7 @@ const PublicMenuPage = () => {
               <input
                 ref={searchInputRef}
                 type="text"
-                placeholder="Search"
+                placeholder={t('search')}
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="w-full pl-10 pr-10 py-3 bg-gray-100 rounded-xl text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-gray-900 transition-all"
@@ -339,7 +361,7 @@ const PublicMenuPage = () => {
                   : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
               }`}
             >
-              All
+              {t('all')}
             </button>
             {categories.map(category => (
               <button
@@ -374,7 +396,7 @@ const PublicMenuPage = () => {
         {filteredItems.length === 0 ? (
           <div className="text-center py-12">
             <p className="text-gray-500">
-              {searchQuery ? 'No items match your search' : 'No menu items available'}
+              {searchQuery ? t('noItemsMatchSearch') : t('noMenuItemsAvailable')}
             </p>
           </div>
         ) : (
@@ -416,7 +438,7 @@ const PublicMenuPage = () => {
                         <span
                           key={tag}
                           className={`w-2 h-2 rounded-full ${DIETARY_TAGS[tag]?.dot || 'bg-gray-400'}`}
-                          title={DIETARY_TAGS[tag]?.label}
+                          title={t(DIETARY_TAGS[tag]?.labelKey)}
                         />
                       ))}
                     </div>
@@ -437,7 +459,7 @@ const PublicMenuPage = () => {
         {/* Footer */}
         <div className="mt-12 text-center pb-8">
           <p className="text-xs text-gray-400">
-            Powered by Chatters
+            {t('poweredBy')}
           </p>
         </div>
       </div>
@@ -448,10 +470,18 @@ const PublicMenuPage = () => {
           item={selectedItem}
           onClose={() => setSelectedItem(null)}
           currencySymbol={currencySymbol}
+          t={t}
         />
       )}
     </div>
   );
 };
+
+// Wrap with LanguageProvider
+const PublicMenuPage = () => (
+  <LanguageProvider>
+    <PublicMenuContent />
+  </LanguageProvider>
+);
 
 export default PublicMenuPage;
