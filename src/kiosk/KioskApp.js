@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { KioskProvider, useKiosk } from './context/KioskContext';
 import PairingScreen from './screens/PairingScreen';
 import IdleScreen from './screens/IdleScreen';
-import FeedbackFlow from './screens/FeedbackFlow';
 import { Loader2, Settings, RefreshCw } from 'lucide-react';
 
 // Secret tap pattern for admin access: tap 5 times in corner
@@ -10,8 +9,7 @@ const ADMIN_TAP_COUNT = 5;
 const ADMIN_TAP_TIMEOUT = 3000;
 
 const KioskContent = () => {
-  const { isPaired, isLoading, error, clearPairing, refreshConfig } = useKiosk();
-  const [screen, setScreen] = useState('idle'); // idle | feedback | admin
+  const { isPaired, isLoading, clearPairing, refreshConfig } = useKiosk();
   const [adminTaps, setAdminTaps] = useState(0);
   const [lastTapTime, setLastTapTime] = useState(0);
   const [showAdminMenu, setShowAdminMenu] = useState(false);
@@ -42,18 +40,6 @@ const KioskContent = () => {
         setAdminTaps(0);
       }
     }
-  };
-
-  const handleStartFeedback = () => {
-    setScreen('feedback');
-  };
-
-  const handleFeedbackComplete = () => {
-    setScreen('idle');
-  };
-
-  const handleFeedbackCancel = () => {
-    setScreen('idle');
   };
 
   const handleUnpair = () => {
@@ -137,22 +123,13 @@ const KioskContent = () => {
     );
   }
 
-  // Main kiosk screens
+  // Main staff view screen
   return (
     <div
       className="min-h-screen"
       onClick={handleAdminTap}
     >
-      {screen === 'idle' && (
-        <IdleScreen onStart={handleStartFeedback} />
-      )}
-
-      {screen === 'feedback' && (
-        <FeedbackFlow
-          onComplete={handleFeedbackComplete}
-          onCancel={handleFeedbackCancel}
-        />
-      )}
+      <IdleScreen />
     </div>
   );
 };
@@ -186,8 +163,9 @@ const KioskApp = () => {
 
   // Lock orientation to landscape (when running as native app)
   useEffect(() => {
-    if (screen.orientation && screen.orientation.lock) {
-      screen.orientation.lock('landscape').catch(() => {
+    const screenOrientation = window.screen?.orientation;
+    if (screenOrientation && screenOrientation.lock) {
+      screenOrientation.lock('landscape').catch(() => {
         // Orientation lock not supported or not allowed
       });
     }

@@ -3,9 +3,19 @@ import { useNavigate } from 'react-router-dom';
 import { Button } from '../../ui/button';
 import { supabase } from '../../../utils/supabase';
 import { PermissionGate } from '../../../context/PermissionsContext';
-import { GripVertical, Plus, Trash2, ExternalLink, Eye, EyeOff, Link, FileText, Utensils, ChevronDown, ChevronUp, Upload, X } from 'lucide-react';
+import { GripVertical, Plus, Trash2, ExternalLink, Eye, EyeOff, Link, FileText, Utensils, ChevronDown, ChevronUp, Upload, X, Tablet, Copy, Check, Loader2, AlertCircle, Settings, MapPin } from 'lucide-react';
 import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
 import FilterSelect from '../../ui/FilterSelect';
+
+// Generate a random 6-character pairing code
+const generatePairingCode = () => {
+  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'; // Excluded confusing chars: I, O, 0, 1
+  let code = '';
+  for (let i = 0; i < 6; i++) {
+    code += chars.charAt(Math.floor(Math.random() * chars.length));
+  }
+  return code;
+};
 
 const COUNTRIES = [
   { code: 'GB', name: 'United Kingdom' },
@@ -46,6 +56,20 @@ const VenueTab = ({
   const [menuCurrency, setMenuCurrency] = useState('GBP');
   const [uploadingPdf, setUploadingPdf] = useState(false);
   const navigate = useNavigate();
+
+  // Kiosk devices state
+  const [kioskDevices, setKioskDevices] = useState([]);
+  const [kioskLoading, setKioskLoading] = useState(true);
+  const [generatingCode, setGeneratingCode] = useState(false);
+  const [newPairingCode, setNewPairingCode] = useState(null);
+  const [codeCopied, setCodeCopied] = useState(false);
+  const [kioskError, setKioskError] = useState(null);
+  const [deletingDeviceId, setDeletingDeviceId] = useState(null);
+  const [editingDevice, setEditingDevice] = useState(null);
+  const [deviceFormName, setDeviceFormName] = useState('');
+  const [deviceFormZones, setDeviceFormZones] = useState([]);
+  const [savingDevice, setSavingDevice] = useState(false);
+  const [zones, setZones] = useState([]);
 
   const CURRENCY_OPTIONS = [
     { code: 'GBP', symbol: '£', name: 'British Pound' },
@@ -246,6 +270,174 @@ const VenueTab = ({
   };
 
   const isMenuEnabled = menuType !== 'none';
+
+  // Fetch zones for the venue
+  const fetchZones = useCallback(async () => {
+    if (!venueId) return;
+
+    try {
+      const { data, error } = await supabase
+        .from('zones')
+        .select('id, name')
+        .eq('venue_id', venueId)
+        .order('order');
+
+      if (error) throw error;
+      setZones(data || []);
+    } catch (err) {
+      console.error('Error fetching zones:', err);
+    }
+  }, [venueId]);
+
+  // Kiosk device functions
+  const fetchKioskDevices = useCallback(async () => {
+    if (!venueId) return;
+
+    try {
+      const { data, error: fetchError } = await supabase
+        .from('kiosk_pairings')
+        .select('*')
+        .eq('venue_id', venueId)
+        .eq('is_active', true)
+        .order('created_at', { ascending: false });
+
+      if (fetchError) throw fetchError;
+      setKioskDevices(data || []);
+    } catch (err) {
+      console.error('Error fetching kiosk devices:', err);
+      setKioskError('Failed to load devices');
+    } finally {
+      setKioskLoading(false);
+    }
+  }, [venueId]);
+
+  useEffect(() => {
+    fetchKioskDevices();
+    fetchZones();
+  }, [fetchKioskDevices, fetchZones]);
+
+  const handleGeneratePairingCode = async () => {
+    if (!venueId) return;
+
+    setGeneratingCode(true);
+    setKioskError(null);
+
+    try {
+      const code = generatePairingCode();
+
+      const { error: insertError } = await supabase
+        .from('kiosk_pairings')
+        .insert({
+          venue_id: venueId,
+          pairing_code: code,
+          device_id: `pending_${Date.now()}`,
+          is_active: true,
+        });
+
+      if (insertError) throw insertError;
+
+      setNewPairingCode(code);
+      fetchKioskDevices();
+    } catch (err) {
+      console.error('Error generating pairing code:', err);
+      setKioskError('Failed to generate code. Please try again.');
+    } finally {
+      setGeneratingCode(false);
+    }
+  };
+
+  const handleCopyPairingCode = async () => {
+    if (!newPairingCode) return;
+
+    try {
+      await navigator.clipboard.writeText(newPairingCode);
+      setCodeCopied(true);
+      setTimeout(() => setCodeCopied(false), 2000);
+    } catch (err) {
+      console.error('Failed to copy:', err);
+    }
+  };
+
+  const handleDeleteKioskDevice = async (deviceId) => {
+    setDeletingDeviceId(deviceId);
+
+    try {
+      const { error: deleteError } = await supabase
+        .from('kiosk_pairings')
+        .update({ is_active: false })
+        .eq('id', deviceId);
+
+      if (deleteError) throw deleteError;
+
+      setKioskDevices(kioskDevices.filter(d => d.id !== deviceId));
+    } catch (err) {
+      console.error('Error deleting device:', err);
+      setKioskError('Failed to remove device');
+    } finally {
+      setDeletingDeviceId(null);
+    }
+  };
+
+  const handleEditDevice = (device) => {
+    setEditingDevice(device);
+    setDeviceFormName(device.device_name || '');
+    setDeviceFormZones(device.zone_ids || []);
+  };
+
+  const handleSaveDevice = async () => {
+    if (!editingDevice) return;
+
+    setSavingDevice(true);
+
+    try {
+      const { error: updateError } = await supabase
+        .from('kiosk_pairings')
+        .update({
+          device_name: deviceFormName || null,
+          zone_ids: deviceFormZones.length > 0 ? deviceFormZones : null,
+        })
+        .eq('id', editingDevice.id);
+
+      if (updateError) throw updateError;
+
+      // Update local state
+      setKioskDevices(kioskDevices.map(d =>
+        d.id === editingDevice.id
+          ? { ...d, device_name: deviceFormName || null, zone_ids: deviceFormZones.length > 0 ? deviceFormZones : null }
+          : d
+      ));
+
+      setEditingDevice(null);
+    } catch (err) {
+      console.error('Error saving device:', err);
+      setKioskError('Failed to save device settings');
+    } finally {
+      setSavingDevice(false);
+    }
+  };
+
+  const toggleDeviceZone = (zoneId) => {
+    setDeviceFormZones(prev =>
+      prev.includes(zoneId)
+        ? prev.filter(id => id !== zoneId)
+        : [...prev, zoneId]
+    );
+  };
+
+  const formatKioskDate = (dateStr) => {
+    if (!dateStr) return 'Never';
+    return new Date(dateStr).toLocaleDateString('en-GB', {
+      day: 'numeric',
+      month: 'short',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+    });
+  };
+
+  const isDevicePending = (device) => {
+    return device.device_id?.startsWith('pending_');
+  };
 
   return (
     <div className="w-full">
@@ -812,6 +1004,302 @@ const VenueTab = ({
               >
                 {linksMessage.text}
               </div>
+            )}
+          </div>
+        </div>
+
+        {/* Section 3: Kiosk Devices Card */}
+        <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl overflow-hidden">
+          {/* Section Header */}
+          <div className="px-6 py-4 border-b border-gray-100 dark:border-gray-800">
+            <h3 className="text-base font-semibold text-gray-900 dark:text-gray-100">Kiosk Devices</h3>
+            <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">Pair tablets to collect feedback at your venue</p>
+          </div>
+
+          {/* Section Content */}
+          <div className="p-6">
+            {kioskLoading ? (
+              <div className="flex items-center justify-center py-8">
+                <Loader2 className="w-6 h-6 text-gray-400 animate-spin" />
+                <span className="ml-2 text-gray-600 dark:text-gray-400">Loading devices...</span>
+              </div>
+            ) : (
+              <>
+                {/* Generate Code Button */}
+                <div className="mb-6">
+                  <button
+                    onClick={handleGeneratePairingCode}
+                    disabled={generatingCode}
+                    className="inline-flex items-center gap-2 px-4 py-2 bg-gray-900 dark:bg-white text-white dark:text-gray-900 rounded-lg hover:bg-gray-800 dark:hover:bg-gray-100 transition-colors disabled:opacity-50"
+                  >
+                    {generatingCode ? (
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                    ) : (
+                      <Plus className="w-4 h-4" />
+                    )}
+                    Generate Pairing Code
+                  </button>
+                </div>
+
+                {/* New Code Display */}
+                {newPairingCode && (
+                  <div className="mb-6 p-4 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg">
+                    <p className="text-sm text-green-800 dark:text-green-300 mb-2">
+                      Enter this code on your tablet to pair it:
+                    </p>
+                    <div className="flex items-center gap-3">
+                      <code className="text-2xl font-mono font-bold tracking-widest text-green-900 dark:text-green-100">
+                        {newPairingCode}
+                      </code>
+                      <button
+                        onClick={handleCopyPairingCode}
+                        className="p-2 hover:bg-green-100 dark:hover:bg-green-800 rounded-lg transition-colors"
+                        title="Copy code"
+                      >
+                        {codeCopied ? (
+                          <Check className="w-5 h-5 text-green-600 dark:text-green-400" />
+                        ) : (
+                          <Copy className="w-5 h-5 text-green-600 dark:text-green-400" />
+                        )}
+                      </button>
+                    </div>
+                    <p className="text-xs text-green-600 dark:text-green-400 mt-2">
+                      Code expires in 15 minutes if not used
+                    </p>
+                  </div>
+                )}
+
+                {kioskError && (
+                  <div className="mb-6 p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg flex items-center gap-2">
+                    <AlertCircle className="w-4 h-4 text-red-600 dark:text-red-400" />
+                    <span className="text-sm text-red-800 dark:text-red-300">{kioskError}</span>
+                  </div>
+                )}
+
+                {/* Devices List */}
+                {kioskDevices.length === 0 ? (
+                  <div className="text-center py-8 border-2 border-dashed border-gray-200 dark:border-gray-700 rounded-xl">
+                    <Tablet className="w-12 h-12 text-gray-300 dark:text-gray-600 mx-auto mb-3" />
+                    <p className="text-gray-500 dark:text-gray-400 mb-1">No kiosk devices paired</p>
+                    <p className="text-sm text-gray-400 dark:text-gray-500">
+                      Generate a pairing code to connect a tablet
+                    </p>
+                  </div>
+                ) : (
+                  <div className="space-y-3">
+                    {kioskDevices.map((device) => {
+                      const deviceZoneNames = device.zone_ids?.length > 0
+                        ? zones.filter(z => device.zone_ids.includes(z.id)).map(z => z.name)
+                        : [];
+
+                      return (
+                        <div
+                          key={device.id}
+                          className={`flex items-center justify-between p-4 rounded-lg border ${
+                            isDevicePending(device)
+                              ? 'border-yellow-200 dark:border-yellow-800 bg-yellow-50 dark:bg-yellow-900/20'
+                              : 'border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800'
+                          }`}
+                        >
+                          <div className="flex items-center gap-3">
+                            <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${
+                              isDevicePending(device)
+                                ? 'bg-yellow-100 dark:bg-yellow-800'
+                                : 'bg-gray-200 dark:bg-gray-700'
+                            }`}>
+                              <Tablet className={`w-5 h-5 ${
+                                isDevicePending(device)
+                                  ? 'text-yellow-600 dark:text-yellow-400'
+                                  : 'text-gray-600 dark:text-gray-400'
+                              }`} />
+                            </div>
+                            <div>
+                              {isDevicePending(device) ? (
+                                <>
+                                  <p className="font-medium text-yellow-800 dark:text-yellow-300">
+                                    Awaiting pairing...
+                                  </p>
+                                  <p className="text-sm text-yellow-600 dark:text-yellow-400">
+                                    Code: <span className="font-mono">{device.pairing_code}</span>
+                                  </p>
+                                </>
+                              ) : (
+                                <>
+                                  <p className="font-medium text-gray-900 dark:text-white">
+                                    {device.device_name || 'Kiosk Device'}
+                                  </p>
+                                  <div className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
+                                    {deviceZoneNames.length > 0 ? (
+                                      <span className="flex items-center gap-1">
+                                        <MapPin className="w-3 h-3" />
+                                        {deviceZoneNames.join(', ')}
+                                      </span>
+                                    ) : (
+                                      <span>All zones</span>
+                                    )}
+                                    <span className="text-gray-300 dark:text-gray-600">•</span>
+                                    <span>Paired {formatKioskDate(device.paired_at)}</span>
+                                  </div>
+                                </>
+                              )}
+                            </div>
+                          </div>
+
+                          <div className="flex items-center gap-2">
+                            {!isDevicePending(device) && (
+                              <>
+                                <span className="text-xs text-gray-400 dark:text-gray-500">
+                                  Last seen: {formatKioskDate(device.last_seen_at)}
+                                </span>
+                                <button
+                                  onClick={() => handleEditDevice(device)}
+                                  className="p-2 text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition-colors"
+                                  title="Edit device settings"
+                                >
+                                  <Settings className="w-4 h-4" />
+                                </button>
+                              </>
+                            )}
+                            <button
+                              onClick={() => handleDeleteKioskDevice(device.id)}
+                              disabled={deletingDeviceId === device.id}
+                              className="p-2 text-gray-400 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors disabled:opacity-50"
+                              title="Remove device"
+                            >
+                              {deletingDeviceId === device.id ? (
+                                <Loader2 className="w-4 h-4 animate-spin" />
+                              ) : (
+                                <Trash2 className="w-4 h-4" />
+                              )}
+                            </button>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+
+                {/* Edit Device Modal */}
+                {editingDevice && (
+                  <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+                    <div className="bg-white dark:bg-gray-900 rounded-xl shadow-xl max-w-md w-full mx-4">
+                      <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between">
+                        <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+                          Device Settings
+                        </h3>
+                        <button
+                          onClick={() => setEditingDevice(null)}
+                          className="p-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 rounded"
+                        >
+                          <X className="w-5 h-5" />
+                        </button>
+                      </div>
+
+                      <div className="p-6 space-y-4">
+                        {/* Device Name */}
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                            Device Name
+                          </label>
+                          <input
+                            type="text"
+                            value={deviceFormName}
+                            onChange={(e) => setDeviceFormName(e.target.value)}
+                            placeholder="e.g., Outside Tablet, Bar Station"
+                            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
+                          />
+                          <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                            Give your device a friendly name for easy identification
+                          </p>
+                        </div>
+
+                        {/* Zone Selection */}
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                            Visible Zones
+                          </label>
+                          <p className="text-xs text-gray-500 dark:text-gray-400 mb-3">
+                            Select which zones this device can see. Leave empty to show all zones.
+                          </p>
+
+                          {zones.length === 0 ? (
+                            <p className="text-sm text-gray-400 dark:text-gray-500 italic">
+                              No zones configured for this venue
+                            </p>
+                          ) : (
+                            <div className="space-y-2">
+                              {zones.map((zone) => (
+                                <label
+                                  key={zone.id}
+                                  className={`flex items-center gap-3 p-3 rounded-lg border cursor-pointer transition-colors ${
+                                    deviceFormZones.includes(zone.id)
+                                      ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20'
+                                      : 'border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600'
+                                  }`}
+                                >
+                                  <input
+                                    type="checkbox"
+                                    checked={deviceFormZones.includes(zone.id)}
+                                    onChange={() => toggleDeviceZone(zone.id)}
+                                    className="w-4 h-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                                  />
+                                  <span className="text-gray-900 dark:text-white">{zone.name}</span>
+                                </label>
+                              ))}
+                            </div>
+                          )}
+
+                          {deviceFormZones.length === 0 && zones.length > 0 && (
+                            <p className="text-xs text-blue-600 dark:text-blue-400 mt-2">
+                              No zones selected — device will show all zones
+                            </p>
+                          )}
+                        </div>
+                      </div>
+
+                      <div className="px-6 py-4 border-t border-gray-200 dark:border-gray-700 flex justify-end gap-3">
+                        <button
+                          onClick={() => setEditingDevice(null)}
+                          className="px-4 py-2 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors"
+                        >
+                          Cancel
+                        </button>
+                        <button
+                          onClick={handleSaveDevice}
+                          disabled={savingDevice}
+                          className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 flex items-center gap-2"
+                        >
+                          {savingDevice && <Loader2 className="w-4 h-4 animate-spin" />}
+                          Save Changes
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* Setup Instructions */}
+                <div className="mt-6 pt-6 border-t border-gray-100 dark:border-gray-800">
+                  <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">How to Set Up</h4>
+                  <ol className="space-y-2 text-sm text-gray-600 dark:text-gray-400">
+                    <li className="flex gap-3">
+                      <span className="flex-shrink-0 w-5 h-5 bg-gray-100 dark:bg-gray-800 rounded-full flex items-center justify-center text-xs font-medium text-gray-700 dark:text-gray-300">1</span>
+                      <span>Download the <strong className="text-gray-900 dark:text-white">Chatters Kiosk</strong> app on your tablet</span>
+                    </li>
+                    <li className="flex gap-3">
+                      <span className="flex-shrink-0 w-5 h-5 bg-gray-100 dark:bg-gray-800 rounded-full flex items-center justify-center text-xs font-medium text-gray-700 dark:text-gray-300">2</span>
+                      <span>Generate a pairing code above</span>
+                    </li>
+                    <li className="flex gap-3">
+                      <span className="flex-shrink-0 w-5 h-5 bg-gray-100 dark:bg-gray-800 rounded-full flex items-center justify-center text-xs font-medium text-gray-700 dark:text-gray-300">3</span>
+                      <span>Enter the 6-character code in the app</span>
+                    </li>
+                    <li className="flex gap-3">
+                      <span className="flex-shrink-0 w-5 h-5 bg-gray-100 dark:bg-gray-800 rounded-full flex items-center justify-center text-xs font-medium text-gray-700 dark:text-gray-300">4</span>
+                      <span>Place the tablet in a visible location for customers</span>
+                    </li>
+                  </ol>
+                </div>
+              </>
             )}
           </div>
         </div>

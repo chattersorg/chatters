@@ -18,14 +18,11 @@ module.exports = async function handler(req, res) {
   const testUserId = req.query.userId;
 
   // For production cron, verify the secret
+  // Vercel cron jobs use GET requests with Authorization header
   if (!isTestMode) {
     const authHeader = req.headers.authorization;
     if (authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
       return res.status(401).json({ error: 'Unauthorized' });
-    }
-
-    if (req.method !== 'POST') {
-      return res.status(405).json({ error: 'Method not allowed' });
     }
   }
 

@@ -12,7 +12,6 @@ import { SpeedInsights } from '@vercel/speed-insights/react';
 import * as Sentry from "@sentry/react";
 import MarketingRoutes from './MarketingRoutes';
 import AppRoutes from './AppRoutes'; // ✅ now controls dashboard vs admin
-import KioskApp from './kiosk/KioskApp';
 import { supabase } from './utils/supabase';
 
 Sentry.init({
@@ -51,15 +50,9 @@ Sentry.init({
 
 function App() {
   const [isDashboardDomain, setIsDashboardDomain] = useState(false);
-  const [isKioskMode, setIsKioskMode] = useState(false);
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
-      // Check if it's kiosk mode (kiosk. subdomain or /kiosk path)
-      const isKiosk = window.location.hostname.startsWith('kiosk.') ||
-        window.location.pathname.startsWith('/kiosk');
-      setIsKioskMode(isKiosk);
-
       // Check if it's a dashboard domain (my. subdomain) or Vercel preview URL
       const isVercelPreview = window.location.hostname.includes('vercel.app');
       setIsDashboardDomain(
@@ -117,9 +110,7 @@ function App() {
             <ModalProvider>
               <Toaster position="top-right" toastOptions={{ duration: 3000 }} />
               <Sentry.ErrorBoundary fallback={<p>Something went wrong!</p>} showDialog>
-                {isKioskMode ? (
-                  <KioskApp />
-                ) : isDashboardDomain ? (
+                {isDashboardDomain ? (
                   <AppRoutes />
                 ) : (
                   <MarketingRoutes />

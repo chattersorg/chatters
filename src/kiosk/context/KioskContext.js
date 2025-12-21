@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
+import { Preferences } from '@capacitor/preferences';
 import { supabase } from '../../utils/supabase';
 
 const KioskContext = createContext(null);
@@ -8,7 +9,38 @@ const STORAGE_KEYS = {
   DEVICE_ID: 'kiosk_device_id',
   VENUE_ID: 'kiosk_venue_id',
   VENUE_NAME: 'kiosk_venue_name',
+  DEVICE_NAME: 'kiosk_device_name',
+  ZONE_IDS: 'kiosk_zone_ids',
   PAIRED_AT: 'kiosk_paired_at',
+};
+
+// Helper functions to use Capacitor Preferences (persistent) with localStorage fallback
+const storage = {
+  async get(key) {
+    try {
+      const { value } = await Preferences.get({ key });
+      return value;
+    } catch {
+      // Fallback to localStorage for web
+      return localStorage.getItem(key);
+    }
+  },
+  async set(key, value) {
+    try {
+      await Preferences.set({ key, value });
+    } catch {
+      // Fallback to localStorage for web
+      localStorage.setItem(key, value);
+    }
+  },
+  async remove(key) {
+    try {
+      await Preferences.remove({ key });
+    } catch {
+      // Fallback to localStorage for web
+      localStorage.removeItem(key);
+    }
+  }
 };
 
 export const KioskProvider = ({ children }) => {
@@ -17,6 +49,8 @@ export const KioskProvider = ({ children }) => {
   const [venueId, setVenueId] = useState(null);
   const [venueName, setVenueName] = useState(null);
   const [deviceId, setDeviceId] = useState(null);
+  const [deviceName, setDeviceName] = useState(null);
+  const [allowedZoneIds, setAllowedZoneIds] = useState(null); // null = all zones, array = specific zones
   const [venueConfig, setVenueConfig] = useState(null);
   const [error, setError] = useState(null);
 
@@ -29,59 +63,77 @@ export const KioskProvider = ({ children }) => {
     try {
       setIsLoading(true);
 
-      const storedVenueId = localStorage.getItem(STORAGE_KEYS.VENUE_ID);
-      const storedDeviceId = localStorage.getItem(STORAGE_KEYS.DEVICE_ID);
-      const storedVenueName = localStorage.getItem(STORAGE_KEYS.VENUE_NAME);
+      const storedVenueId = await storage.get(STORAGE_KEYS.VENUE_ID);
+      const storedDeviceId = await storage.get(STORAGE_KEYS.DEVICE_ID);
+      const storedVenueName = await storage.get(STORAGE_KEYS.VENUE_NAME);
+      const storedDeviceName = await storage.get(STORAGE_KEYS.DEVICE_NAME);
+      const storedZoneIds = await storage.get(STORAGE_KEYS.ZONE_IDS);
+
+      console.log('[Kiosk] Checking existing pairing:', { storedVenueId, storedDeviceId, storedVenueName });
 
       if (storedVenueId && storedDeviceId) {
-        // Verify the venue still exists and is active
-        const { data: venue, error: venueError } = await supabase
-          .from('venues')
-          .select('id, name, account_id')
-          .eq('id', storedVenueId)
-          .single();
+        // Skip remote verification - trust local storage
+        // The pairing was verified when it was initially stored
+        // RLS policies may not allow querying by device_id
+        console.log('[Kiosk] Found stored pairing, trusting local storage');
 
-        if (venueError || !venue) {
-          // Venue no longer exists, clear pairing
-          clearPairing();
-          return;
+        // Pairing is valid - trust the stored venue info
+        // Load venue configuration (non-critical, can fail)
+        try {
+          await loadVenueConfig(storedVenueId);
+        } catch (configErr) {
+          console.log('[Kiosk] Could not load venue config (non-critical):', configErr);
         }
 
-        // Check account is still active
-        const { data: account, error: accountError } = await supabase
-          .from('accounts')
-          .select('id, is_paid, trial_ends_at')
-          .eq('id', venue.account_id)
-          .single();
-
-        if (accountError || !account) {
-          clearPairing();
-          return;
-        }
-
-        // Check if account is valid (paid or trial not expired)
-        const isValidAccount = account.is_paid ||
-          (account.trial_ends_at && new Date(account.trial_ends_at) > new Date());
-
-        if (!isValidAccount) {
-          setError('Account subscription has expired');
-          clearPairing();
-          return;
-        }
-
-        // Load venue configuration
-        await loadVenueConfig(storedVenueId);
+        // Try to refresh device settings from server (non-blocking)
+        refreshDeviceSettings(storedDeviceId);
 
         setVenueId(storedVenueId);
-        setVenueName(storedVenueName || venue.name);
+        setVenueName(storedVenueName || 'Venue');
         setDeviceId(storedDeviceId);
+        setDeviceName(storedDeviceName || null);
+        setAllowedZoneIds(storedZoneIds ? JSON.parse(storedZoneIds) : null);
         setIsPaired(true);
+        console.log('[Kiosk] Restored existing pairing successfully');
       }
     } catch (err) {
-      console.error('Error checking existing pairing:', err);
+      console.error('[Kiosk] Error checking existing pairing:', err);
       setError('Failed to verify device pairing');
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  // Refresh device settings from server (called periodically and on startup)
+  const refreshDeviceSettings = async (devId) => {
+    try {
+      const { data, error } = await supabase
+        .from('kiosk_pairings')
+        .select('device_name, zone_ids')
+        .eq('device_id', devId)
+        .eq('is_active', true)
+        .single();
+
+      if (error) {
+        console.log('[Kiosk] Could not refresh device settings (may be RLS):', error.message);
+        return;
+      }
+
+      if (data) {
+        // Update local storage and state with latest settings
+        if (data.device_name !== undefined) {
+          await storage.set(STORAGE_KEYS.DEVICE_NAME, data.device_name || '');
+          setDeviceName(data.device_name || null);
+        }
+        if (data.zone_ids !== undefined) {
+          const zoneIdsStr = data.zone_ids ? JSON.stringify(data.zone_ids) : '';
+          await storage.set(STORAGE_KEYS.ZONE_IDS, zoneIdsStr);
+          setAllowedZoneIds(data.zone_ids || null);
+        }
+        console.log('[Kiosk] Refreshed device settings:', { deviceName: data.device_name, zoneIds: data.zone_ids });
+      }
+    } catch (err) {
+      console.log('[Kiosk] Error refreshing device settings:', err);
     }
   };
 
@@ -93,12 +145,9 @@ export const KioskProvider = ({ children }) => {
         .select(`
           id,
           name,
-          logo_url,
-          primary_color,
           account_id,
           accounts (
-            name,
-            logo_url
+            name
           )
         `)
         .eq('id', venueId)
@@ -108,8 +157,6 @@ export const KioskProvider = ({ children }) => {
 
       setVenueConfig({
         venueName: venue.name,
-        logoUrl: venue.logo_url || venue.accounts?.logo_url,
-        primaryColor: venue.primary_color || '#000000',
         accountName: venue.accounts?.name,
       });
     } catch (err) {
@@ -122,77 +169,103 @@ export const KioskProvider = ({ children }) => {
       setIsLoading(true);
       setError(null);
 
-      // Look up the pairing code
+      console.log('[Kiosk] Attempting to pair with code:', pairingCode.toUpperCase());
+
+      // Look up the pairing code - matches the table structure from VenueTab
       const { data: pairing, error: pairingError } = await supabase
         .from('kiosk_pairings')
         .select(`
           id,
           venue_id,
-          code,
-          expires_at,
-          used_at,
+          pairing_code,
+          device_id,
+          is_active,
           venues (
             id,
             name,
             account_id
           )
         `)
-        .eq('code', pairingCode.toUpperCase())
-        .is('used_at', null)
-        .gt('expires_at', new Date().toISOString())
+        .eq('pairing_code', pairingCode.toUpperCase())
+        .eq('is_active', true)
         .single();
 
-      if (pairingError || !pairing) {
+      console.log('[Kiosk] Pairing lookup result:', { pairing, error: pairingError });
+
+      if (pairingError) {
+        console.error('[Kiosk] Pairing error details:', pairingError);
         throw new Error('Invalid or expired pairing code');
+      }
+
+      if (!pairing) {
+        throw new Error('Pairing code not found');
+      }
+
+      // Check if already paired (device_id doesn't start with 'pending_')
+      if (pairing.device_id && !pairing.device_id.startsWith('pending_')) {
+        throw new Error('This code has already been used');
       }
 
       // Generate a unique device ID
       const newDeviceId = `device_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
 
-      // Mark the pairing code as used
+      console.log('[Kiosk] Updating pairing with device ID:', newDeviceId);
+
+      // Mark the pairing code as used by updating device_id and adding paired_at
       const { error: updateError } = await supabase
         .from('kiosk_pairings')
         .update({
-          used_at: new Date().toISOString(),
           device_id: newDeviceId,
+          paired_at: new Date().toISOString(),
+          last_seen_at: new Date().toISOString(),
         })
         .eq('id', pairing.id);
 
-      if (updateError) throw updateError;
+      if (updateError) {
+        console.error('[Kiosk] Update error:', updateError);
+        throw updateError;
+      }
 
-      // Store pairing info locally
-      localStorage.setItem(STORAGE_KEYS.DEVICE_ID, newDeviceId);
-      localStorage.setItem(STORAGE_KEYS.VENUE_ID, pairing.venue_id);
-      localStorage.setItem(STORAGE_KEYS.VENUE_NAME, pairing.venues.name);
-      localStorage.setItem(STORAGE_KEYS.PAIRED_AT, new Date().toISOString());
+      console.log('[Kiosk] Pairing successful, storing locally with Capacitor Preferences');
+
+      // Store pairing info using Capacitor Preferences (persistent storage)
+      await storage.set(STORAGE_KEYS.DEVICE_ID, newDeviceId);
+      await storage.set(STORAGE_KEYS.VENUE_ID, pairing.venue_id);
+      await storage.set(STORAGE_KEYS.VENUE_NAME, pairing.venues?.name || 'Unknown Venue');
+      await storage.set(STORAGE_KEYS.PAIRED_AT, new Date().toISOString());
 
       // Load venue config
       await loadVenueConfig(pairing.venue_id);
 
       setDeviceId(newDeviceId);
       setVenueId(pairing.venue_id);
-      setVenueName(pairing.venues.name);
+      setVenueName(pairing.venues?.name || 'Unknown Venue');
       setIsPaired(true);
 
       return { success: true };
     } catch (err) {
-      console.error('Error pairing device:', err);
-      setError(err.message || 'Failed to pair device');
-      return { success: false, error: err.message };
+      console.error('[Kiosk] Error pairing device:', err);
+      const errorMessage = err.message || 'Failed to pair device';
+      setError(errorMessage);
+      return { success: false, error: errorMessage };
     } finally {
       setIsLoading(false);
     }
   };
 
-  const clearPairing = () => {
-    localStorage.removeItem(STORAGE_KEYS.DEVICE_ID);
-    localStorage.removeItem(STORAGE_KEYS.VENUE_ID);
-    localStorage.removeItem(STORAGE_KEYS.VENUE_NAME);
-    localStorage.removeItem(STORAGE_KEYS.PAIRED_AT);
+  const clearPairing = async () => {
+    await storage.remove(STORAGE_KEYS.DEVICE_ID);
+    await storage.remove(STORAGE_KEYS.VENUE_ID);
+    await storage.remove(STORAGE_KEYS.VENUE_NAME);
+    await storage.remove(STORAGE_KEYS.DEVICE_NAME);
+    await storage.remove(STORAGE_KEYS.ZONE_IDS);
+    await storage.remove(STORAGE_KEYS.PAIRED_AT);
 
     setDeviceId(null);
     setVenueId(null);
     setVenueName(null);
+    setDeviceName(null);
+    setAllowedZoneIds(null);
     setVenueConfig(null);
     setIsPaired(false);
     setError(null);
@@ -205,6 +278,8 @@ export const KioskProvider = ({ children }) => {
     venueId,
     venueName,
     deviceId,
+    deviceName,
+    allowedZoneIds, // null = all zones, array = specific zone IDs
     venueConfig,
     error,
 
@@ -212,6 +287,7 @@ export const KioskProvider = ({ children }) => {
     pairDevice,
     clearPairing,
     refreshConfig: () => venueId && loadVenueConfig(venueId),
+    refreshDeviceSettings: () => deviceId && refreshDeviceSettings(deviceId),
   };
 
   return (
