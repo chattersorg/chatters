@@ -254,6 +254,30 @@ export const KioskProvider = ({ children }) => {
   };
 
   const clearPairing = async () => {
+    // Get current device ID before clearing
+    const currentDeviceId = deviceId || await storage.get(STORAGE_KEYS.DEVICE_ID);
+
+    // Mark pairing as inactive in database
+    if (currentDeviceId) {
+      try {
+        const { error: updateError } = await supabase
+          .from('kiosk_pairings')
+          .update({ is_active: false })
+          .eq('device_id', currentDeviceId);
+
+        if (updateError) {
+          console.error('[Kiosk] Error marking pairing as inactive:', updateError);
+          // Continue with local clear even if DB update fails
+        } else {
+          console.log('[Kiosk] Pairing marked as inactive in database');
+        }
+      } catch (err) {
+        console.error('[Kiosk] Failed to update pairing status:', err);
+        // Continue with local clear even if DB update fails
+      }
+    }
+
+    // Clear local storage
     await storage.remove(STORAGE_KEYS.DEVICE_ID);
     await storage.remove(STORAGE_KEYS.VENUE_ID);
     await storage.remove(STORAGE_KEYS.VENUE_NAME);
