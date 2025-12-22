@@ -13,7 +13,8 @@ import {
   Menu,
   Sparkles,
   Bell,
-  HelpCircle
+  HelpCircle,
+  BookOpen
 } from 'lucide-react';
 import { Button } from '../../ui/button';
 
@@ -330,6 +331,17 @@ const ModernHeader = ({ sidebarCollapsed, setSidebarCollapsed, trialInfo }) => {
             <ExternalLink className="w-4 h-4" />
           </Button>
 
+          {/* Help Centre Button */}
+          <a
+            href="https://getchatters.com/help"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="p-2 text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors"
+            title="Help Centre"
+          >
+            <BookOpen className="w-5 h-5" />
+          </a>
+
           {/* What's New / Changelog Button */}
           <button
             ref={changelogButtonRef}
@@ -337,7 +349,7 @@ const ModernHeader = ({ sidebarCollapsed, setSidebarCollapsed, trialInfo }) => {
             className="relative p-2 text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors"
             title="What's New"
           >
-            <HelpCircle className="w-5 h-5" />
+            <Bell className="w-5 h-5" />
           </button>
         </div>
       </div>
