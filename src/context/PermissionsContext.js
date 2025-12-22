@@ -13,11 +13,14 @@ export const usePermissions = () => {
 };
 
 export const PermissionsProvider = ({ children }) => {
-  const { userRole } = useVenue();
+  const { userRole, actualUserRole, isImpersonating } = useVenue();
   const [permissions, setPermissions] = useState([]);
   const [roleTemplate, setRoleTemplate] = useState(null);
   const [loading, setLoading] = useState(true);
   const [initialized, setInitialized] = useState(false);
+
+  // Use actualUserRole for permission checks (handles impersonation)
+  const effectiveRole = actualUserRole || userRole;
 
   // Fetch user permissions
   const fetchPermissions = useCallback(async () => {
@@ -33,8 +36,9 @@ export const PermissionsProvider = ({ children }) => {
 
       const userId = session.user.id;
 
-      // Admin users get all permissions
-      if (userRole === 'admin') {
+      // Admin users get all permissions (including when impersonating)
+      // Also check actualUserRole for impersonation case
+      if (effectiveRole === 'admin' || isImpersonating) {
         const { data: allPerms } = await supabase
           .from('permissions')
           .select('code');
@@ -44,7 +48,7 @@ export const PermissionsProvider = ({ children }) => {
       }
 
       // Master users get admin-level permissions
-      if (userRole === 'master') {
+      if (effectiveRole === 'master') {
         const { data: adminPerms } = await supabase
           .from('role_templates')
           .select(`
@@ -128,31 +132,31 @@ export const PermissionsProvider = ({ children }) => {
       setLoading(false);
       setInitialized(true);
     }
-  }, [userRole]);
+  }, [effectiveRole, isImpersonating]);
 
   useEffect(() => {
-    if (userRole !== null) {
+    if (effectiveRole !== null || isImpersonating) {
       fetchPermissions();
     }
-  }, [fetchPermissions, userRole]);
+  }, [fetchPermissions, effectiveRole, isImpersonating]);
 
   // Check single permission
   const hasPermission = useCallback((permissionCode) => {
-    if (userRole === 'admin' || userRole === 'master') return true;
+    if (effectiveRole === 'admin' || effectiveRole === 'master' || isImpersonating) return true;
     return permissions.includes(permissionCode);
-  }, [permissions, userRole]);
+  }, [permissions, effectiveRole, isImpersonating]);
 
   // Check any of permissions
   const hasAnyPermission = useCallback((permissionCodes) => {
-    if (userRole === 'admin' || userRole === 'master') return true;
+    if (effectiveRole === 'admin' || effectiveRole === 'master' || isImpersonating) return true;
     return permissionCodes.some(code => permissions.includes(code));
-  }, [permissions, userRole]);
+  }, [permissions, effectiveRole, isImpersonating]);
 
   // Check all permissions
   const hasAllPermissions = useCallback((permissionCodes) => {
-    if (userRole === 'admin' || userRole === 'master') return true;
+    if (effectiveRole === 'admin' || effectiveRole === 'master' || isImpersonating) return true;
     return permissionCodes.every(code => permissions.includes(code));
-  }, [permissions, userRole]);
+  }, [permissions, effectiveRole, isImpersonating]);
 
   // Permissions grouped by category
   const permissionsByCategory = useMemo(() => {

@@ -50,7 +50,7 @@ const categoryLabels = {
 const ManagerDetail = () => {
   const { managerId } = useParams();
   const navigate = useNavigate();
-  const { allVenues } = useVenue();
+  const { allVenues, isImpersonating, impersonatedAccountId } = useVenue();
 
   const [manager, setManager] = useState(null);
   const [managerVenues, setManagerVenues] = useState([]);
@@ -135,13 +135,18 @@ const ManagerDetail = () => {
     try {
       setPermissionsLoading(true);
 
-      // Get current user's account
-      const { data: { user } } = await supabase.auth.getUser();
-      const { data: userData } = await supabase
-        .from('users')
-        .select('account_id')
-        .eq('id', user.id)
-        .single();
+      // Get account_id - use impersonated account if impersonating
+      let accountId = impersonatedAccountId;
+
+      // If not impersonating, get from venues
+      if (!accountId && allVenues && allVenues.length > 0) {
+        const { data: venueData } = await supabase
+          .from('venues')
+          .select('account_id')
+          .eq('id', allVenues[0].id)
+          .single();
+        accountId = venueData?.account_id;
+      }
 
       // Fetch all permissions
       const { data: perms } = await supabase
@@ -158,7 +163,7 @@ const ManagerDetail = () => {
             permissions (code)
           )
         `)
-        .or(`is_system.eq.true,account_id.eq.${userData?.account_id}`)
+        .or(`is_system.eq.true,account_id.eq.${accountId}`)
         .order('is_system', { ascending: false })
         .order('name', { ascending: true });
 
@@ -367,19 +372,26 @@ const ManagerDetail = () => {
       const { data: { session } } = await supabase.auth.getSession();
       const currentUserId = session?.user?.id;
 
-      const { data: userData } = await supabase
-        .from('users')
-        .select('account_id')
-        .eq('id', currentUserId)
-        .single();
+      // Get account_id - use impersonated account if impersonating
+      let accountId = impersonatedAccountId;
 
-      if (!userData?.account_id) {
+      // If not impersonating, get from venues
+      if (!accountId && allVenues && allVenues.length > 0) {
+        const { data: venueData } = await supabase
+          .from('venues')
+          .select('account_id')
+          .eq('id', allVenues[0].id)
+          .single();
+        accountId = venueData?.account_id;
+      }
+
+      if (!accountId) {
         throw new Error('Could not determine account');
       }
 
       const permissionData = {
         user_id: managerId,
-        account_id: userData.account_id,
+        account_id: accountId,
         role_template_id: selectedTemplate || null,
         custom_permissions: selectedTemplate ? [] : customPermissions,
         created_by: currentUserId
