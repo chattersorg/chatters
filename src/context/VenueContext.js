@@ -146,6 +146,9 @@ export const VenueProvider = ({ children }) => {
           }
         }
 
+        // Try by ID first, then fall back to email (for cases where auth ID differs from users table ID)
+        let userRow = null;
+
         const userResult = await logQuery(
           'users:fetch_role',
           supabase
@@ -154,15 +157,31 @@ export const VenueProvider = ({ children }) => {
             .eq('id', userId)
             .single()
         );
-        const userRow = userResult.data;
-        const userFetchError = userResult.error;
 
-        if (userFetchError || !userRow) {
+        if (userResult.data) {
+          userRow = userResult.data;
+        } else {
+          // Fallback: query by email
+          const userByEmailResult = await logQuery(
+            'users:fetch_role_by_email',
+            supabase
+              .from('users')
+              .select('id, role, account_id')
+              .eq('email', session.user.email)
+              .is('deleted_at', null)
+              .single()
+          );
+          userRow = userByEmailResult.data;
+        }
+
+        if (!userRow) {
           return;
         }
 
         const role = userRow.role;
         const accountId = userRow.account_id ?? null;
+        // Use the user's ID from the users table (may differ from session.user.id)
+        const actualUserId = userRow.id;
         setUserRole(role);
 
         // Admins should not load VenueContext at all; bail out
@@ -178,7 +197,7 @@ export const VenueProvider = ({ children }) => {
               supabase
                 .from('staff')
                 .select('venue_id, venues!inner(id, name)')
-                .eq('user_id', userId)
+                .eq('user_id', actualUserId)
                 .limit(1)
                 .single()
             );
@@ -232,7 +251,7 @@ export const VenueProvider = ({ children }) => {
                   account_id
                 )
               `)
-              .eq('user_id', userId)
+              .eq('user_id', actualUserId)
           );
           const staffRows = staffResult.data;
           const staffError = staffResult.error;

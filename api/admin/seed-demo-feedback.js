@@ -306,10 +306,18 @@ module.exports = async function handler(req, res) {
       return res.status(403).json({ error: 'Admin access required' });
     }
 
-    const { accountId, date } = req.body;
+    const { accountId, date, dates } = req.body;
 
-    if (!accountId || !date) {
-      return res.status(400).json({ error: 'Account ID and date are required' });
+    // Support both single date and multiple dates
+    const datesToProcess = dates || (date ? [date] : []);
+
+    if (!accountId || datesToProcess.length === 0) {
+      return res.status(400).json({ error: 'Account ID and date(s) are required' });
+    }
+
+    // Limit to 5 days per request to avoid timeouts
+    if (datesToProcess.length > 5) {
+      return res.status(400).json({ error: 'Maximum 5 days per request' });
     }
 
     // Get venues for this account
@@ -345,24 +353,27 @@ module.exports = async function handler(req, res) {
       };
     }
 
-    // Process each venue for this single day
+    // Process each venue for all requested dates
     let totalFeedback = 0;
     let totalAssistance = 0;
 
-    for (const venue of venues) {
-      const config = venueConfigs[venue.id];
-      const { feedbackCount, assistanceCount } = await processSingleDay(venue, config, date);
-      totalFeedback += feedbackCount;
-      totalAssistance += assistanceCount;
+    for (const dateStr of datesToProcess) {
+      for (const venue of venues) {
+        const config = venueConfigs[venue.id];
+        const { feedbackCount, assistanceCount } = await processSingleDay(venue, config, dateStr);
+        totalFeedback += feedbackCount;
+        totalAssistance += assistanceCount;
+      }
     }
 
     return res.status(200).json({
       success: true,
-      date: date,
+      dates: datesToProcess,
       stats: {
         feedbackCreated: totalFeedback,
         assistanceCreated: totalAssistance,
-        venuesProcessed: venues.length
+        venuesProcessed: venues.length,
+        daysProcessed: datesToProcess.length
       }
     });
 

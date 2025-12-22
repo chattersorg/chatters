@@ -38,13 +38,15 @@ const DashboardNew = () => {
   const [userTiles, setUserTiles] = useState([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingTilePosition, setEditingTilePosition] = useState(null);
-  const [dateRangePreset, setDateRangePreset] = useState('today');
+  const [dateRangePreset, setDateRangePreset] = useState('last7');
   const [dateRange, setDateRange] = useState(() => {
     const now = new Date();
     const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-    const endOfDay = new Date(today);
+    const sixDaysAgo = new Date(today);
+    sixDaysAgo.setDate(sixDaysAgo.getDate() - 6); // -6 gives us 7 days including today
+    const endOfDay = new Date(now);
     endOfDay.setHours(23, 59, 59, 999);
-    return { from: today, to: endOfDay };
+    return { from: sixDaysAgo, to: endOfDay };
   });
 
   useEffect(() => {

@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">Chatters Kiosk</string>
+    <string name="title_activity_main">Chatters Kiosk</string>
+    <string name="package_name">com.chatters.kiosk</string>
+    <string name="custom_url_scheme">com.chatters.kiosk</string>
+</resources>

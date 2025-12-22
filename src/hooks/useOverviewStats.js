@@ -125,18 +125,48 @@ const useOverviewStats = (venueId) => {
         ? yesterdayRatings.reduce((a, b) => a + b, 0) / yesterdayRatings.length
         : null;
 
-      // Response time calculation - include both feedback and assistance
+      // Response time calculation - use sessions (not individual feedback items)
+      // Group feedback by session to get earliest created_at and latest resolved_at per session
       const resolvedAssistanceToday = todayAssistance?.filter(a => a.resolved_at) || [];
-      const resolvedFeedbackToday = todayFeedback?.filter(f => f.resolved_at && f.is_actioned) || [];
-      const allResolvedToday = [...resolvedAssistanceToday, ...resolvedFeedbackToday];
+
+      const resolvedFeedbackSessionsMap = {};
+      (todayFeedback?.filter(f => f.resolved_at && f.is_actioned) || []).forEach(f => {
+        if (!resolvedFeedbackSessionsMap[f.session_id]) {
+          resolvedFeedbackSessionsMap[f.session_id] = { created_at: f.created_at, resolved_at: f.resolved_at };
+        } else {
+          // Use earliest created_at and latest resolved_at for the session
+          if (new Date(f.created_at) < new Date(resolvedFeedbackSessionsMap[f.session_id].created_at)) {
+            resolvedFeedbackSessionsMap[f.session_id].created_at = f.created_at;
+          }
+          if (new Date(f.resolved_at) > new Date(resolvedFeedbackSessionsMap[f.session_id].resolved_at)) {
+            resolvedFeedbackSessionsMap[f.session_id].resolved_at = f.resolved_at;
+          }
+        }
+      });
+      const resolvedFeedbackSessionsForResponseTime = Object.values(resolvedFeedbackSessionsMap);
+      const allResolvedToday = [...resolvedAssistanceToday, ...resolvedFeedbackSessionsForResponseTime];
 
       const avgResponseTime = allResolvedToday.length > 0
         ? calculateAverageResponseTime(allResolvedToday)
         : null;
 
       const resolvedAssistanceYesterday = yesterdayAssistance?.filter(a => a.resolved_at) || [];
-      const resolvedFeedbackYesterday = yesterdayFeedback?.filter(f => f.resolved_at && f.is_actioned) || [];
-      const allResolvedYesterday = [...resolvedAssistanceYesterday, ...resolvedFeedbackYesterday];
+
+      const resolvedFeedbackSessionsMapYesterday = {};
+      (yesterdayFeedback?.filter(f => f.resolved_at && f.is_actioned) || []).forEach(f => {
+        if (!resolvedFeedbackSessionsMapYesterday[f.session_id]) {
+          resolvedFeedbackSessionsMapYesterday[f.session_id] = { created_at: f.created_at, resolved_at: f.resolved_at };
+        } else {
+          if (new Date(f.created_at) < new Date(resolvedFeedbackSessionsMapYesterday[f.session_id].created_at)) {
+            resolvedFeedbackSessionsMapYesterday[f.session_id].created_at = f.created_at;
+          }
+          if (new Date(f.resolved_at) > new Date(resolvedFeedbackSessionsMapYesterday[f.session_id].resolved_at)) {
+            resolvedFeedbackSessionsMapYesterday[f.session_id].resolved_at = f.resolved_at;
+          }
+        }
+      });
+      const resolvedFeedbackSessionsForResponseTimeYesterday = Object.values(resolvedFeedbackSessionsMapYesterday);
+      const allResolvedYesterday = [...resolvedAssistanceYesterday, ...resolvedFeedbackSessionsForResponseTimeYesterday];
 
       const yesterdayAvgResponseTime = allResolvedYesterday.length > 0
         ? calculateAverageResponseTimeMs(allResolvedYesterday)

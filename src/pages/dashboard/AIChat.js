@@ -515,6 +515,50 @@ const AIChat = () => {
     return date.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' });
   };
 
+  const formatMessageTime = (dateStr) => {
+    if (!dateStr) return '';
+    const date = new Date(dateStr);
+    return date.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
+  };
+
+  // Check if we should show a timestamp divider before this message
+  // Show if: first message, or more than 5 minutes since previous message
+  const shouldShowTimestamp = (messages, currentIndex) => {
+    if (currentIndex === 0) return true;
+
+    const currentMsg = messages[currentIndex];
+    const prevMsg = messages[currentIndex - 1];
+
+    if (!currentMsg.timestamp || !prevMsg.timestamp) return false;
+
+    const currentTime = new Date(currentMsg.timestamp);
+    const prevTime = new Date(prevMsg.timestamp);
+    const diffMinutes = (currentTime - prevTime) / (1000 * 60);
+
+    return diffMinutes >= 5;
+  };
+
+  const formatTimestampDivider = (dateStr) => {
+    if (!dateStr) return '';
+    const date = new Date(dateStr);
+    const now = new Date();
+    const isToday = date.toDateString() === now.toDateString();
+    const yesterday = new Date(now);
+    yesterday.setDate(yesterday.getDate() - 1);
+    const isYesterday = date.toDateString() === yesterday.toDateString();
+
+    const time = date.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
+
+    if (isToday) {
+      return `Today at ${time}`;
+    } else if (isYesterday) {
+      return `Yesterday at ${time}`;
+    } else {
+      const dateFormatted = date.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' });
+      return `${dateFormatted} at ${time}`;
+    }
+  };
+
   // Apply overflow hidden to body when this component mounts to prevent page scroll
   useEffect(() => {
     // Store original overflow value
@@ -648,65 +692,76 @@ const AIChat = () => {
                 ) : (
                   <div className="space-y-4 max-w-3xl mx-auto">
                     {messages.map((message, idx) => (
-                      <div
-                        key={message.id || idx}
-                        className={`flex gap-3 ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}
-                      >
-                        {message.role === 'assistant' && (
-                          <div className="w-8 h-8 rounded-lg bg-gray-100 dark:bg-gray-800 flex items-center justify-center flex-shrink-0">
-                            <ChattersLogo className="w-5 h-5" />
+                      <div key={message.id || idx}>
+                        {/* Timestamp divider - Slack style */}
+                        {shouldShowTimestamp(messages, idx) && message.timestamp && (
+                          <div className="flex items-center justify-center my-4">
+                            <div className="flex-1 border-t border-gray-200 dark:border-gray-700"></div>
+                            <span className="px-3 text-xs text-gray-500 dark:text-gray-400 font-medium">
+                              {formatTimestampDivider(message.timestamp)}
+                            </span>
+                            <div className="flex-1 border-t border-gray-200 dark:border-gray-700"></div>
                           </div>
                         )}
                         <div
-                          className={`max-w-[75%] px-4 py-3 rounded-lg ${
-                            message.role === 'user'
-                              ? 'bg-gray-900 dark:bg-gray-700 text-white'
-                              : 'bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-gray-100'
-                          }`}
+                          className={`flex gap-3 ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}
                         >
-                          {message.role === 'assistant' ? (
-                            (() => {
-                              const { text, chart } = parseChartFromMessage(message.content);
-                              return (
-                                <div className="text-sm leading-relaxed">
-                                  {typingMessageId === message.id ? (
-                                    <TypewriterText
-                                      content={text}
-                                      speed={8}
-                                      onComplete={() => setTypingMessageId(null)}
-                                    />
-                                  ) : (
-                                    <FormattedMessage content={text} />
-                                  )}
-                                  {chart && !typingMessageId && (
-                                    <AIChartVisualisation chartData={chart} />
-                                  )}
-                                </div>
-                              );
-                            })()
-                          ) : (
-                            <p className="text-sm whitespace-pre-wrap">{message.content}</p>
+                          {message.role === 'assistant' && (
+                            <div className="w-8 h-8 rounded-lg bg-gray-100 dark:bg-gray-800 flex items-center justify-center flex-shrink-0">
+                              <ChattersLogo className="w-5 h-5" />
+                            </div>
                           )}
-                          {message.stats && !typingMessageId && (
-                            <p className="text-xs mt-3 pt-2 border-t border-gray-200 dark:border-gray-600 opacity-60">
-                              {message.stats.dataSource === 'nps' ? (
-                                `Based on ${message.stats.npsCount} NPS responses`
-                              ) : message.stats.dataSource === 'feedback' ? (
-                                `Based on ${message.stats.feedbackCount} feedback items`
-                              ) : (
-                                <>
-                                  Based on {message.stats.feedbackCount} feedback items
-                                  {message.stats.npsCount > 0 && ` and ${message.stats.npsCount} NPS responses`}
-                                </>
-                              )}
-                            </p>
+                          <div
+                            className={`max-w-[75%] px-4 py-3 rounded-lg ${
+                              message.role === 'user'
+                                ? 'bg-gray-900 dark:bg-gray-700 text-white'
+                                : 'bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-gray-100'
+                            }`}
+                          >
+                            {message.role === 'assistant' ? (
+                              (() => {
+                                const { text, chart } = parseChartFromMessage(message.content);
+                                return (
+                                  <div className="text-sm leading-relaxed">
+                                    {typingMessageId === message.id ? (
+                                      <TypewriterText
+                                        content={text}
+                                        speed={8}
+                                        onComplete={() => setTypingMessageId(null)}
+                                      />
+                                    ) : (
+                                      <FormattedMessage content={text} />
+                                    )}
+                                    {chart && !typingMessageId && (
+                                      <AIChartVisualisation chartData={chart} />
+                                    )}
+                                  </div>
+                                );
+                              })()
+                            ) : (
+                              <p className="text-sm whitespace-pre-wrap">{message.content}</p>
+                            )}
+                            {message.stats && !typingMessageId && (
+                              <p className="text-xs mt-3 pt-2 border-t border-gray-200 dark:border-gray-600 opacity-60">
+                                {message.stats.dataSource === 'nps' ? (
+                                  `Based on ${message.stats.npsCount} NPS responses`
+                                ) : message.stats.dataSource === 'feedback' ? (
+                                  `Based on ${message.stats.feedbackCount} feedback items`
+                                ) : (
+                                  <>
+                                    Based on {message.stats.feedbackCount} feedback items
+                                    {message.stats.npsCount > 0 && ` and ${message.stats.npsCount} NPS responses`}
+                                  </>
+                                )}
+                              </p>
+                            )}
+                          </div>
+                          {message.role === 'user' && (
+                            <div className="w-8 h-8 rounded-lg bg-gray-900 dark:bg-gray-700 flex items-center justify-center flex-shrink-0">
+                              <span className="text-xs font-medium text-white">You</span>
+                            </div>
                           )}
                         </div>
-                        {message.role === 'user' && (
-                          <div className="w-8 h-8 rounded-lg bg-gray-900 dark:bg-gray-700 flex items-center justify-center flex-shrink-0">
-                            <span className="text-xs font-medium text-white">You</span>
-                          </div>
-                        )}
                       </div>
                     ))}
 

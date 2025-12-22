@@ -43,6 +43,7 @@ import ReportsNPSPage from './pages/dashboard/ReportsNPS';
 import NPSInsightsPage from './pages/dashboard/NPSInsights';
 import NPSSettingsPage from './pages/dashboard/NPSSettings';
 import StaffListPage from './pages/dashboard/StaffList';
+import CSVImportReview from './pages/dashboard/CSVImportReview';
 import EmployeeDetail from './pages/dashboard/EmployeeDetail';
 import ManagerDetail from './pages/dashboard/ManagerDetail';
 import AddManager from './pages/dashboard/AddManager';
@@ -78,6 +79,9 @@ import PublicMenuPage from './pages/public/PublicMenuPage';
 
 // Testing (outside venue context unless you need it)
 import TestDashboardPage from './pages/admin/TestDashboardPage';
+
+// Tablet Kiosk App (for web testing)
+import KioskApp from './kiosk/KioskApp';
 
 // Frames & context
 import ModernDashboardFrame from './components/dashboard/layout/ModernDashboardFrame';
@@ -164,6 +168,9 @@ const DashboardRoutes = () => {
       <Route path="/feedback/:venueId/form" element={<CustomerFeedbackPage />} />
       <Route path="/menu/:venueId" element={<PublicMenuPage />} />
       <Route path="/nps" element={<NPSResponsePage />} />
+
+      {/* Tablet Kiosk App (web testing mode - no auth required, uses pairing code) */}
+      <Route path="/tablet_app" element={<KioskApp />} />
 
       {/* Kiosk: venue context, no dashboard frame */}
       <Route element={<KioskShell />}>
@@ -337,6 +344,11 @@ const DashboardRoutes = () => {
         <Route path="/staff/team" element={
           <ProtectedRoute permission="staff.view">
             <StaffListPage />
+          </ProtectedRoute>
+        } />
+        <Route path="/staff/import" element={
+          <ProtectedRoute permission="staff.edit">
+            <CSVImportReview />
           </ProtectedRoute>
         } />
         {/* Legacy routes - redirect to combined staff list */}

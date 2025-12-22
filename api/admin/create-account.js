@@ -1,6 +1,7 @@
 const { createClient } = require('@supabase/supabase-js');
 const { Resend } = require('resend');
 const Stripe = require('stripe');
+const crypto = require('crypto');
 
 const supabase = createClient(
   process.env.REACT_APP_SUPABASE_URL,
@@ -23,6 +24,7 @@ module.exports = async (req, res) => {
     phone,
     accountPhone,
     billingEmail,
+    country,
     startTrial,
     trialDays,
     venues
@@ -81,6 +83,7 @@ module.exports = async (req, res) => {
         name: companyName,
         phone: accountPhone || phone || null,
         billing_email: customerEmail,
+        country: country || 'GB',
         is_paid: false,
         trial_ends_at: trialEndsAt,
         demo_account: false,
@@ -116,11 +119,10 @@ module.exports = async (req, res) => {
           .insert({
             account_id: account.id,
             name: venue.name,
-            venue_type: venue.type || null,
             table_count: venue.table_count || 1,
             address: venue.address || null,
-            primary_color: '#000000',
-            secondary_color: '#ffffff'
+            country: venue.country || country || 'GB',
+            primary_color: '#000000'
           })
           .select()
           .single();
@@ -170,6 +172,31 @@ module.exports = async (req, res) => {
             console.error('Error creating tables:', tablesError);
           }
         }
+
+        // Create employees if provided (frontline staff who don't log in)
+        // Note: 'staff' table is for managers who log into the dashboard
+        // 'employees' table is for frontline staff (waiters, bartenders) who get recognized
+        if (venue.staff && venue.staff.length > 0) {
+          const employeesToInsert = venue.staff.map(emp => ({
+            venue_id: venueData.id,
+            first_name: emp.first_name,
+            last_name: emp.last_name,
+            email: emp.email ? emp.email.toLowerCase() : null,
+            phone: emp.phone || null,
+            role: emp.role || 'employee',
+            location: emp.location || null
+          }));
+
+          const { error: employeesError } = await supabase
+            .from('employees')
+            .insert(employeesToInsert);
+
+          if (employeesError) {
+            console.error('Error creating employees:', employeesError);
+          } else {
+            console.log(`Created ${employeesToInsert.length} employees for venue ${venueData.name}`);
+          }
+        }
       }
     }
 
@@ -179,13 +206,14 @@ module.exports = async (req, res) => {
     expiresAt.setDate(expiresAt.getDate() + 7); // 7 days expiry
 
     // Store invitation (reuse manager_invitations table for simplicity)
+    // Use the newly created user's ID as invited_by since that column is NOT NULL
     const { error: invitationError } = await supabase
       .from('manager_invitations')
       .insert({
         email: email.toLowerCase(),
         first_name: firstName,
         last_name: lastName,
-        invited_by: null, // Admin created
+        invited_by: user.id, // Use the master user's own ID (required, NOT NULL)
         account_id: account.id,
         venue_ids: [], // Master users don't need specific venue access
         token: token,
@@ -307,7 +335,5 @@ module.exports = async (req, res) => {
 
 // Generate random token
 function generateToken() {
-  return Array.from(crypto.getRandomValues(new Uint8Array(32)))
-    .map(b => b.toString(16).padStart(2, '0'))
-    .join('');
+  return crypto.randomBytes(32).toString('hex');
 }

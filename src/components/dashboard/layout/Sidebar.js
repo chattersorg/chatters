@@ -94,15 +94,16 @@ const venueNavItems = [
       { label: 'Settings', path: '/nps/settings', icon: Settings, permission: 'nps.edit' }
     ]
   },
-  {
-    id: 'reviews',
-    label: 'Reviews',
-    icon: MessageCircle,
-    path: '/reviews',
-    color: 'text-yellow-600',
-    badge: 'BETA',
-    permission: 'reviews.view'
-  },
+  // Reviews BETA - hidden for now
+  // {
+  //   id: 'reviews',
+  //   label: 'Reviews',
+  //   icon: MessageCircle,
+  //   path: '/reviews',
+  //   color: 'text-yellow-600',
+  //   badge: 'BETA',
+  //   permission: 'reviews.view'
+  // },
   {
     id: 'reports',
     label: 'Reports',

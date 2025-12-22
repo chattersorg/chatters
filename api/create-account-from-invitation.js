@@ -69,18 +69,27 @@ module.exports = async function handler(req, res) {
     }
 
     // Check if user already exists (excluding soft-deleted users)
+    // Note: For master users created via admin panel, the user record exists but has no auth user yet
     const { data: existingUser } = await supabaseAdmin
       .from('users')
-      .select('id')
+      .select('id, role')
       .eq('email', invitation.email)
       .is('deleted_at', null)
       .single();
 
-    if (existingUser) {
-      return res.status(400).json({
-        success: false,
-        message: 'A user with this email already exists'
-      });
+    // If user exists and is a master user (created via admin), allow them to set password
+    // If user exists and is already a manager with auth, block them
+    if (existingUser && existingUser.role !== 'master') {
+      // Check if this user already has an auth account (can sign in)
+      const { data: listData } = await supabaseAdmin.auth.admin.listUsers();
+      const hasAuthAccount = listData?.users?.some(u => u.email === invitation.email);
+
+      if (hasAuthAccount) {
+        return res.status(400).json({
+          success: false,
+          message: 'A user with this email already exists'
+        });
+      }
     }
 
     // Check if there's a soft-deleted user with this email that we can restore
@@ -139,59 +148,63 @@ module.exports = async function handler(req, res) {
 
       authUserId = softDeletedUser.id;
     } else {
-      // Create new user account in Supabase Auth
-      const { data: authData, error: authError } = await supabaseAdmin.auth.admin.createUser({
-        email: invitation.email,
-        password: password,
-        email_confirm: true, // Auto-confirm email
-        user_metadata: {
-          first_name: invitation.first_name,
-          last_name: invitation.last_name
-        }
-      });
+      // Check if there's an existing user record by email (master users created via admin panel)
+      // We need to check this BEFORE creating auth user so we can use the same ID
+      const { data: existingUserByEmail } = await supabaseAdmin
+        .from('users')
+        .select('id, role, first_name, last_name')
+        .eq('email', invitation.email)
+        .is('deleted_at', null)
+        .single();
 
-      if (authError) {
-        // Check if the error is because the user already exists in Supabase Auth
-        // This can happen if auth user exists but users table record was hard-deleted
-        if (authError.message?.includes('already been registered') || authError.message?.includes('already exists')) {
-          console.log('Auth user already exists, attempting to find and update existing user');
-
-          // List users by email to find the existing auth user
-          const { data: listData, error: listError } = await supabaseAdmin.auth.admin.listUsers();
-
-          if (listError) {
-            console.error('Error listing users:', listError);
-            return res.status(500).json({
-              success: false,
-              message: 'Failed to create user account: ' + authError.message
-            });
+      if (existingUserByEmail) {
+        // Master user exists - create auth user with the SAME ID as the existing user record
+        // This avoids foreign key constraint issues
+        const { data: authData, error: authError } = await supabaseAdmin.auth.admin.createUser({
+          id: existingUserByEmail.id, // Use the existing user's ID!
+          email: invitation.email,
+          password: password,
+          email_confirm: true,
+          user_metadata: {
+            first_name: invitation.first_name || existingUserByEmail.first_name,
+            last_name: invitation.last_name || existingUserByEmail.last_name
           }
+        });
 
-          const existingAuthUser = listData.users.find(u => u.email === invitation.email);
+        if (authError) {
+          // If auth user already exists with different ID, try to update it
+          if (authError.message?.includes('already been registered') || authError.message?.includes('already exists')) {
+            const { data: listData } = await supabaseAdmin.auth.admin.listUsers();
+            const existingAuthUser = listData?.users?.find(u => u.email === invitation.email);
 
-          if (existingAuthUser) {
-            // Update the existing auth user's password and metadata
-            const { error: updateError } = await supabaseAdmin.auth.admin.updateUserById(
-              existingAuthUser.id,
-              {
-                password: password,
-                email_confirm: true,
-                user_metadata: {
-                  first_name: invitation.first_name,
-                  last_name: invitation.last_name
+            if (existingAuthUser) {
+              const { error: updateError } = await supabaseAdmin.auth.admin.updateUserById(
+                existingAuthUser.id,
+                {
+                  password: password,
+                  email_confirm: true,
+                  user_metadata: {
+                    first_name: invitation.first_name || existingUserByEmail.first_name,
+                    last_name: invitation.last_name || existingUserByEmail.last_name
+                  }
                 }
-              }
-            );
+              );
 
-            if (updateError) {
-              console.error('Error updating existing auth user:', updateError);
+              if (updateError) {
+                console.error('Error updating existing auth user:', updateError);
+                return res.status(500).json({
+                  success: false,
+                  message: 'Failed to update user account: ' + updateError.message
+                });
+              }
+              authUserId = existingAuthUser.id;
+            } else {
+              console.error('Auth user creation error:', authError);
               return res.status(500).json({
                 success: false,
-                message: 'Failed to update user account: ' + updateError.message
+                message: 'Failed to create user account: ' + authError.message
               });
             }
-
-            authUserId = existingAuthUser.id;
           } else {
             console.error('Auth user creation error:', authError);
             return res.status(500).json({
@@ -200,38 +213,21 @@ module.exports = async function handler(req, res) {
             });
           }
         } else {
-          console.error('Auth user creation error:', authError);
-          return res.status(500).json({
-            success: false,
-            message: 'Failed to create user account: ' + authError.message
-          });
+          authUserId = authData.user.id;
         }
-      } else {
-        authUserId = authData.user.id;
-      }
 
-      // Create or update user record in users table
-      const { data: existingUserRecord } = await supabaseAdmin
-        .from('users')
-        .select('id')
-        .eq('id', authUserId)
-        .single();
-
-      if (existingUserRecord) {
-        // Update existing record (might have been hard-deleted and we're reusing the auth user)
+        // Update the user record (don't change ID, just update other fields)
         const { error: updateError } = await supabaseAdmin
           .from('users')
           .update({
-            email: invitation.email,
-            first_name: invitation.first_name,
-            last_name: invitation.last_name,
+            first_name: invitation.first_name || existingUserByEmail.first_name,
+            last_name: invitation.last_name || existingUserByEmail.last_name,
             phone: invitation.phone || null,
             date_of_birth: invitation.date_of_birth || null,
-            role: 'manager',
-            account_id: invitation.account_id,
             deleted_at: null
+            // Preserve the existing role (master/manager)
           })
-          .eq('id', authUserId);
+          .eq('id', existingUserByEmail.id);
 
         if (updateError) {
           console.error('User table update error:', updateError);
@@ -240,53 +236,145 @@ module.exports = async function handler(req, res) {
             message: 'Failed to update user record: ' + updateError.message
           });
         }
-      } else {
-        // Create new record
-        const { error: userError } = await supabaseAdmin
-          .from('users')
-          .insert({
-            id: authUserId,
-            email: invitation.email,
-            first_name: invitation.first_name,
-            last_name: invitation.last_name,
-            phone: invitation.phone || null,
-            date_of_birth: invitation.date_of_birth || null,
-            role: 'manager',
-            account_id: invitation.account_id
-          });
 
-        if (userError) {
-          console.error('User table insertion error:', userError);
-          // Try to delete the auth user since we failed to create the database record
-          await supabaseAdmin.auth.admin.deleteUser(authUserId);
-          return res.status(500).json({
-            success: false,
-            message: 'Failed to create user record: ' + userError.message
-          });
+        authUserId = existingUserByEmail.id;
+      } else {
+        // No existing user - create new auth user with auto-generated ID
+        const { data: authData, error: authError } = await supabaseAdmin.auth.admin.createUser({
+          email: invitation.email,
+          password: password,
+          email_confirm: true,
+          user_metadata: {
+            first_name: invitation.first_name,
+            last_name: invitation.last_name
+          }
+        });
+
+        if (authError) {
+          if (authError.message?.includes('already been registered') || authError.message?.includes('already exists')) {
+            const { data: listData } = await supabaseAdmin.auth.admin.listUsers();
+            const existingAuthUser = listData?.users?.find(u => u.email === invitation.email);
+
+            if (existingAuthUser) {
+              const { error: updateError } = await supabaseAdmin.auth.admin.updateUserById(
+                existingAuthUser.id,
+                {
+                  password: password,
+                  email_confirm: true,
+                  user_metadata: {
+                    first_name: invitation.first_name,
+                    last_name: invitation.last_name
+                  }
+                }
+              );
+
+              if (updateError) {
+                console.error('Error updating existing auth user:', updateError);
+                return res.status(500).json({
+                  success: false,
+                  message: 'Failed to update user account: ' + updateError.message
+                });
+              }
+              authUserId = existingAuthUser.id;
+            } else {
+              console.error('Auth user creation error:', authError);
+              return res.status(500).json({
+                success: false,
+                message: 'Failed to create user account: ' + authError.message
+              });
+            }
+          } else {
+            console.error('Auth user creation error:', authError);
+            return res.status(500).json({
+              success: false,
+              message: 'Failed to create user account: ' + authError.message
+            });
+          }
+        } else {
+          authUserId = authData.user.id;
+        }
+        // Check if record exists by auth user ID
+        const { data: existingUserRecord } = await supabaseAdmin
+          .from('users')
+          .select('id')
+          .eq('id', authUserId)
+          .single();
+
+        if (existingUserRecord) {
+          // Update existing record (might have been hard-deleted and we're reusing the auth user)
+          const { error: updateError } = await supabaseAdmin
+            .from('users')
+            .update({
+              email: invitation.email,
+              first_name: invitation.first_name,
+              last_name: invitation.last_name,
+              phone: invitation.phone || null,
+              date_of_birth: invitation.date_of_birth || null,
+              role: 'manager',
+              account_id: invitation.account_id,
+              deleted_at: null
+            })
+            .eq('id', authUserId);
+
+          if (updateError) {
+            console.error('User table update error:', updateError);
+            return res.status(500).json({
+              success: false,
+              message: 'Failed to update user record: ' + updateError.message
+            });
+          }
+        } else {
+          // Create new record
+          const { error: userError } = await supabaseAdmin
+            .from('users')
+            .insert({
+              id: authUserId,
+              email: invitation.email,
+              first_name: invitation.first_name,
+              last_name: invitation.last_name,
+              phone: invitation.phone || null,
+              date_of_birth: invitation.date_of_birth || null,
+              role: 'manager',
+              account_id: invitation.account_id
+            });
+
+          if (userError) {
+            console.error('User table insertion error:', userError);
+            // Try to delete the auth user since we failed to create the database record
+            await supabaseAdmin.auth.admin.deleteUser(authUserId);
+            return res.status(500).json({
+              success: false,
+              message: 'Failed to create user record: ' + userError.message
+            });
+          }
         }
       }
     }
 
-    // Delete any existing staff records for this user (in case they were soft-deleted)
-    await supabaseAdmin
-      .from('staff')
-      .delete()
-      .eq('user_id', authUserId);
+    // Only create staff records for manager invitations (not master users)
+    // Master users created via admin panel have empty venue_ids array
+    if (invitation.venue_ids && invitation.venue_ids.length > 0) {
+      // Delete any existing staff records for this user (in case they were soft-deleted)
+      await supabaseAdmin
+        .from('staff')
+        .delete()
+        .eq('user_id', authUserId);
 
-    // Create staff records for each venue
-    const staffRecords = invitation.venue_ids.map(venueId => ({
-      user_id: authUserId,
-      venue_id: venueId,
-      role: 'manager'
-    }));
+      // Create staff records for each venue
+      const staffRecords = invitation.venue_ids.map(venueId => ({
+        user_id: authUserId,
+        venue_id: venueId,
+        role: 'manager'
+      }));
 
-    const { error: staffError } = await supabaseAdmin
-      .from('staff')
-      .insert(staffRecords);
+      const { error: staffError } = await supabaseAdmin
+        .from('staff')
+        .insert(staffRecords);
 
-    if (staffError) {
-      console.error('Staff records creation error:', staffError);
-      // Don't fail the whole request, but log it
+      if (staffError) {
+        console.error('Staff records creation error:', staffError);
+        // Don't fail the whole request, but log it
+      }
     }
 
     // Delete any existing user permissions (in case they were soft-deleted)

@@ -2,10 +2,13 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { supabase } from '../../utils/supabase';
 import { MessageSquare, ExternalLink as ExternalLinkIcon, Utensils } from 'lucide-react';
+import { LanguageProvider, useLanguage } from '../../context/LanguageContext';
+import LanguageSelector from '../../components/ui/LanguageSelector';
 
-const FeedbackSplashPage = () => {
+const FeedbackSplashContent = () => {
   const { venueId } = useParams();
   const navigate = useNavigate();
+  const { t } = useLanguage();
   const [venue, setVenue] = useState(null);
   const [loading, setLoading] = useState(true);
 
@@ -73,7 +76,10 @@ const FeedbackSplashPage = () => {
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900"></div>
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900 mx-auto"></div>
+          <p className="mt-4 text-gray-600">{t('loading')}</p>
+        </div>
       </div>
     );
   }
@@ -100,6 +106,11 @@ const FeedbackSplashPage = () => {
       className="min-h-screen flex items-center justify-center p-4"
       style={backgroundStyle}
     >
+      {/* Language Selector - Top Right */}
+      <div className="absolute top-4 right-4">
+        <LanguageSelector />
+      </div>
+
       <div className="w-full max-w-md">
         <div className="bg-white rounded-2xl shadow-xl p-8 space-y-6">
           {/* Venue Logo and Name */}
@@ -112,10 +123,10 @@ const FeedbackSplashPage = () => {
               />
             )}
             <h1 className="text-2xl font-bold" style={{ color: textColor }}>
-              Welcome to {venue.name}
+              {t('welcomeTo')} {venue.name}
             </h1>
             <p className="text-sm text-gray-600">
-              What would you like to do?
+              {t('whatWouldYouLikeToDo')}
             </p>
           </div>
 
@@ -131,7 +142,7 @@ const FeedbackSplashPage = () => {
               }}
             >
               <MessageSquare className="w-6 h-6" />
-              Leave Feedback
+              {t('leaveFeedback')}
             </button>
 
             {/* View Menu Button */}
@@ -145,7 +156,7 @@ const FeedbackSplashPage = () => {
                 }}
               >
                 <Utensils className="w-6 h-6" />
-                View Menu
+                {t('viewMenu')}
                 {(venue.menu_type === 'link' || venue.menu_type === 'pdf') && (
                   <ExternalLinkIcon className="w-5 h-5 opacity-70" />
                 )}
@@ -174,7 +185,7 @@ const FeedbackSplashPage = () => {
           {/* Footer */}
           <div className="text-center pt-4">
             <p className="text-xs text-gray-500">
-              Powered by Chatters
+              {t('poweredBy')}
             </p>
           </div>
         </div>
@@ -182,5 +193,12 @@ const FeedbackSplashPage = () => {
     </div>
   );
 };
+
+// Wrap with LanguageProvider
+const FeedbackSplashPage = () => (
+  <LanguageProvider>
+    <FeedbackSplashContent />
+  </LanguageProvider>
+);
 
 export default FeedbackSplashPage;

@@ -130,12 +130,12 @@ const UpdatePaymentMethodForm = ({ onSuccess, onCancel }) => {
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
-      <div className="bg-gray-50 rounded-lg p-4">
+      <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-4">
         <PaymentElement />
       </div>
 
       {errorMessage && (
-        <div className="p-3 bg-red-50 border border-red-200 rounded-lg text-sm text-red-700 flex items-start gap-2">
+        <div className="p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg text-sm text-red-700 dark:text-red-300 flex items-start gap-2">
           <AlertCircle className="w-4 h-4 mt-0.5 flex-shrink-0" />
           <span>{errorMessage}</span>
         </div>
@@ -381,8 +381,8 @@ const SubscriptionManagement = ({ accountId, userEmail }) => {
   if (loading) {
     return (
       <div className="text-center py-16">
-        <div className="w-12 h-12 border-4 border-gray-200 border-t-blue-600 rounded-full animate-spin mx-auto mb-4"></div>
-        <p className="text-gray-600 text-sm">Loading subscription details...</p>
+        <div className="w-12 h-12 border-4 border-gray-200 dark:border-gray-700 border-t-blue-600 rounded-full animate-spin mx-auto mb-4"></div>
+        <p className="text-gray-600 dark:text-gray-400 text-sm">Loading subscription details...</p>
       </div>
     );
   }
@@ -395,10 +395,10 @@ const SubscriptionManagement = ({ accountId, userEmail }) => {
     <div className="space-y-4">
       {/* Unpaid Invoice Warning */}
       {hasUnpaidInvoices && (
-        <div className="p-3 bg-red-50 border border-red-200 rounded-lg flex items-center justify-between">
+        <div className="p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <AlertCircle className="w-4 h-4 text-red-600" />
-            <span className="text-sm text-red-800">
+            <AlertCircle className="w-4 h-4 text-red-600 dark:text-red-400" />
+            <span className="text-sm text-red-800 dark:text-red-300">
               <strong>Payment required:</strong> £{(unpaidInvoices.reduce((sum, inv) => sum + inv.amount_due, 0) / 100).toFixed(2)} overdue
             </span>
           </div>
@@ -417,21 +417,21 @@ const SubscriptionManagement = ({ accountId, userEmail }) => {
 
       {/* Subscription Summary Row */}
       {subscription && (
-        <div className="flex flex-wrap items-center gap-x-6 gap-y-2 py-3 border-b border-gray-100">
+        <div className="flex flex-wrap items-center gap-x-6 gap-y-2 py-3 border-b border-gray-100 dark:border-gray-800">
           <div className="flex items-center gap-2">
-            <span className="text-sm text-gray-500">Plan:</span>
-            <span className="text-sm font-medium text-gray-900">
+            <span className="text-sm text-gray-500 dark:text-gray-400">Plan:</span>
+            <span className="text-sm font-medium text-gray-900 dark:text-white">
               £{(subscription.amount / 100).toFixed(2)}/{subscription.interval === 'month' ? 'mo' : 'yr'}
             </span>
             <span className={`px-1.5 py-0.5 rounded text-xs font-medium ${
-              subscription.status === 'active' ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'
+              subscription.status === 'active' ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400' : 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-400'
             }`}>
               {subscription.status === 'active' ? 'Active' : 'Past Due'}
             </span>
           </div>
           <div className="flex items-center gap-2">
-            <span className="text-sm text-gray-500">Next bill:</span>
-            <span className="text-sm font-medium text-gray-900">
+            <span className="text-sm text-gray-500 dark:text-gray-400">Next bill:</span>
+            <span className="text-sm font-medium text-gray-900 dark:text-white">
               {new Date(subscription.current_period_end * 1000).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}
             </span>
           </div>
@@ -439,21 +439,21 @@ const SubscriptionManagement = ({ accountId, userEmail }) => {
             <div className="flex items-center gap-2 ml-auto">
               <button
                 onClick={() => setShowChangePlan(true)}
-                className="text-sm text-blue-600 hover:text-blue-700 font-medium"
+                className="text-sm text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 font-medium"
               >
                 Change
               </button>
-              <span className="text-gray-300">|</span>
+              <span className="text-gray-300 dark:text-gray-600">|</span>
               <button
                 onClick={() => setShowCancelConfirm(true)}
-                className="text-sm text-gray-500 hover:text-red-600"
+                className="text-sm text-gray-500 dark:text-gray-400 hover:text-red-600 dark:hover:text-red-400"
               >
                 Cancel
               </button>
             </div>
           )}
           {subscription.cancel_at_period_end && (
-            <span className="text-xs text-red-600 ml-auto">
+            <span className="text-xs text-red-600 dark:text-red-400 ml-auto">
               Cancels {new Date(subscription.current_period_end * 1000).toLocaleDateString('en-GB')}
             </span>
           )}
@@ -462,18 +462,18 @@ const SubscriptionManagement = ({ accountId, userEmail }) => {
 
       {/* Payment Method Row */}
       {paymentMethod && !showUpdatePayment && (
-        <div className="flex items-center justify-between py-3 border-b border-gray-100">
+        <div className="flex items-center justify-between py-3 border-b border-gray-100 dark:border-gray-800">
           <div className="flex items-center gap-3">
             <CardBrandLogo brand={paymentMethod.brand} />
             <div>
-              <span className="text-sm font-medium text-gray-900 capitalize">{paymentMethod.brand}</span>
-              <span className="text-sm text-gray-500"> •••• {paymentMethod.last4}</span>
-              <span className="text-sm text-gray-400 ml-2">Exp {paymentMethod.exp_month.toString().padStart(2, '0')}/{paymentMethod.exp_year}</span>
+              <span className="text-sm font-medium text-gray-900 dark:text-white capitalize">{paymentMethod.brand}</span>
+              <span className="text-sm text-gray-500 dark:text-gray-400"> •••• {paymentMethod.last4}</span>
+              <span className="text-sm text-gray-400 dark:text-gray-500 ml-2">Exp {paymentMethod.exp_month.toString().padStart(2, '0')}/{paymentMethod.exp_year}</span>
             </div>
           </div>
           <button
             onClick={handleUpdatePaymentMethod}
-            className="text-sm text-blue-600 hover:text-blue-700 font-medium"
+            className="text-sm text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 font-medium"
           >
             Update
           </button>
@@ -482,8 +482,8 @@ const SubscriptionManagement = ({ accountId, userEmail }) => {
 
       {/* Update Payment Method Form */}
       {showUpdatePayment && setupSecret && (
-        <div className="py-4 border-b border-gray-100">
-          <h4 className="text-sm font-medium text-gray-900 mb-3">Update Payment Method</h4>
+        <div className="py-4 border-b border-gray-100 dark:border-gray-800">
+          <h4 className="text-sm font-medium text-gray-900 dark:text-white mb-3">Update Payment Method</h4>
           <Elements stripe={stripePromise} options={{ clientSecret: setupSecret }}>
             <UpdatePaymentMethodForm
               onSuccess={handlePaymentUpdateSuccess}
@@ -499,25 +499,25 @@ const SubscriptionManagement = ({ accountId, userEmail }) => {
       {/* Billing History - Compact */}
       {invoices.length > 0 && (
         <div className="pt-2">
-          <h4 className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-2">Recent Invoices</h4>
+          <h4 className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-2">Recent Invoices</h4>
           <div className="space-y-1">
             {invoices.slice(0, 3).map((invoice) => {
               const isUnpaid = invoice.status === 'open';
               return (
                 <div
                   key={invoice.id}
-                  className={`flex items-center justify-between py-2 px-3 rounded-lg ${isUnpaid ? 'bg-red-50' : 'hover:bg-gray-50'}`}
+                  className={`flex items-center justify-between py-2 px-3 rounded-lg ${isUnpaid ? 'bg-red-50 dark:bg-red-900/20' : 'hover:bg-gray-50 dark:hover:bg-gray-800'}`}
                 >
                   <div className="flex items-center gap-3">
-                    <span className="text-sm font-medium text-gray-900">
+                    <span className="text-sm font-medium text-gray-900 dark:text-white">
                       £{((isUnpaid ? invoice.amount_due : invoice.amount_paid) / 100).toFixed(2)}
                     </span>
                     <span className={`px-1.5 py-0.5 rounded text-xs font-medium ${
-                      isUnpaid ? 'bg-red-100 text-red-700' : 'bg-green-100 text-green-700'
+                      isUnpaid ? 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400' : 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400'
                     }`}>
                       {isUnpaid ? 'Due' : 'Paid'}
                     </span>
-                    <span className="text-sm text-gray-500">
+                    <span className="text-sm text-gray-500 dark:text-gray-400">
                       {new Date(invoice.created * 1000).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}
                     </span>
                   </div>
@@ -527,14 +527,14 @@ const SubscriptionManagement = ({ accountId, userEmail }) => {
                         href={invoice.hosted_invoice_url}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="text-xs text-red-600 font-medium hover:text-red-700"
+                        className="text-xs text-red-600 dark:text-red-400 font-medium hover:text-red-700 dark:hover:text-red-300"
                       >
                         Pay
                       </a>
                     )}
                     <button
                       onClick={() => downloadInvoice(invoice.id)}
-                      className="p-1 hover:bg-gray-100 rounded transition-colors"
+                      className="p-1 hover:bg-gray-100 dark:hover:bg-gray-700 rounded transition-colors"
                       title="Download"
                     >
                       <Download className="w-3.5 h-3.5 text-gray-400" />
@@ -550,16 +550,16 @@ const SubscriptionManagement = ({ accountId, userEmail }) => {
       {/* Cancel Confirmation Modal */}
       {showCancelConfirm && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-xl p-6 max-w-md w-full shadow-2xl">
+          <div className="bg-white dark:bg-gray-900 rounded-xl p-6 max-w-md w-full shadow-2xl border border-gray-200 dark:border-gray-800">
             <div className="flex items-center gap-3 mb-4">
-              <div className="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center flex-shrink-0">
-                <AlertCircle className="w-6 h-6 text-red-600" />
+              <div className="w-12 h-12 bg-red-100 dark:bg-red-900/30 rounded-full flex items-center justify-center flex-shrink-0">
+                <AlertCircle className="w-6 h-6 text-red-600 dark:text-red-400" />
               </div>
-              <h3 className="text-xl font-bold text-gray-900">Cancel Subscription?</h3>
+              <h3 className="text-xl font-bold text-gray-900 dark:text-white">Cancel Subscription?</h3>
             </div>
 
-            <p className="text-gray-600 mb-6 leading-relaxed">
-              You'll continue to have access until <strong>{subscription ? new Date(subscription.current_period_end * 1000).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' }) : ''}</strong>.
+            <p className="text-gray-600 dark:text-gray-400 mb-6 leading-relaxed">
+              You'll continue to have access until <strong className="text-gray-900 dark:text-white">{subscription ? new Date(subscription.current_period_end * 1000).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' }) : ''}</strong>.
               After that, your subscription will end.
             </p>
 
@@ -573,7 +573,7 @@ const SubscriptionManagement = ({ accountId, userEmail }) => {
               </button>
               <button
                 onClick={() => setShowCancelConfirm(false)}
-                className="px-6 py-2.5 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors font-medium"
+                className="px-6 py-2.5 bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors font-medium"
               >
                 Keep Plan
               </button>
@@ -585,25 +585,25 @@ const SubscriptionManagement = ({ accountId, userEmail }) => {
       {/* Change Plan Modal */}
       {showChangePlan && subscription && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-xl p-6 max-w-lg w-full shadow-2xl">
+          <div className="bg-white dark:bg-gray-900 rounded-xl p-6 max-w-lg w-full shadow-2xl border border-gray-200 dark:border-gray-800">
             <div className="flex items-center justify-between mb-6">
-              <h3 className="text-xl font-bold text-gray-900">Change Your Plan</h3>
+              <h3 className="text-xl font-bold text-gray-900 dark:text-white">Change Your Plan</h3>
               <button
                 onClick={() => setShowChangePlan(false)}
-                className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+                className="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors"
               >
-                <X className="w-5 h-5 text-gray-500" />
+                <X className="w-5 h-5 text-gray-500 dark:text-gray-400" />
               </button>
             </div>
 
-            <p className="text-gray-600 mb-6">
+            <p className="text-gray-600 dark:text-gray-400 mb-6">
               Switch between monthly and yearly billing. Changes are prorated automatically.
             </p>
 
             {/* Current Plan Info */}
-            <div className="bg-gray-50 rounded-lg p-4 mb-6">
-              <p className="text-sm text-gray-500 mb-1">Current Plan</p>
-              <p className="font-semibold text-gray-900">
+            <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-4 mb-6">
+              <p className="text-sm text-gray-500 dark:text-gray-400 mb-1">Current Plan</p>
+              <p className="font-semibold text-gray-900 dark:text-white">
                 {subscription.interval === 'month' ? 'Monthly' : 'Yearly'} - £{(subscription.amount / 100).toFixed(2)}/{subscription.interval === 'month' ? 'mo' : 'yr'}
               </p>
             </div>
@@ -616,23 +616,23 @@ const SubscriptionManagement = ({ accountId, userEmail }) => {
                 disabled={subscription.interval === 'month' || changePlanLoading}
                 className={`w-full p-4 rounded-xl border-2 text-left transition-all ${
                   subscription.interval === 'month'
-                    ? 'border-gray-200 bg-gray-50 opacity-60 cursor-not-allowed'
-                    : 'border-blue-200 hover:border-blue-400 hover:bg-blue-50'
+                    ? 'border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 opacity-60 cursor-not-allowed'
+                    : 'border-blue-200 dark:border-blue-800 hover:border-blue-400 dark:hover:border-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20'
                 }`}
               >
                 <div className="flex justify-between items-center">
                   <div>
-                    <p className="font-semibold text-gray-900">Monthly Plan</p>
-                    <p className="text-sm text-gray-600">
+                    <p className="font-semibold text-gray-900 dark:text-white">Monthly Plan</p>
+                    <p className="text-sm text-gray-600 dark:text-gray-400">
                       £{PRICE_PER_VENUE_MONTHLY} per venue/month
                     </p>
                   </div>
                   <div className="text-right">
-                    <p className="font-bold text-gray-900">
+                    <p className="font-bold text-gray-900 dark:text-white">
                       £{(venueCount * PRICE_PER_VENUE_MONTHLY).toLocaleString()}/mo
                     </p>
                     {subscription.interval === 'month' && (
-                      <span className="text-xs text-gray-500">Current</span>
+                      <span className="text-xs text-gray-500 dark:text-gray-400">Current</span>
                     )}
                   </div>
                 </div>
@@ -644,8 +644,8 @@ const SubscriptionManagement = ({ accountId, userEmail }) => {
                 disabled={subscription.interval === 'year' || changePlanLoading}
                 className={`w-full p-4 rounded-xl border-2 text-left transition-all relative ${
                   subscription.interval === 'year'
-                    ? 'border-gray-200 bg-gray-50 opacity-60 cursor-not-allowed'
-                    : 'border-green-200 hover:border-green-400 hover:bg-green-50'
+                    ? 'border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 opacity-60 cursor-not-allowed'
+                    : 'border-green-200 dark:border-green-800 hover:border-green-400 dark:hover:border-green-600 hover:bg-green-50 dark:hover:bg-green-900/20'
                 }`}
               >
                 <div className="absolute -top-2 left-4 bg-green-600 text-white text-xs font-bold px-2 py-0.5 rounded-full">
@@ -653,17 +653,17 @@ const SubscriptionManagement = ({ accountId, userEmail }) => {
                 </div>
                 <div className="flex justify-between items-center">
                   <div>
-                    <p className="font-semibold text-gray-900">Yearly Plan</p>
-                    <p className="text-sm text-gray-600">
+                    <p className="font-semibold text-gray-900 dark:text-white">Yearly Plan</p>
+                    <p className="text-sm text-gray-600 dark:text-gray-400">
                       £{PRICE_PER_VENUE_YEARLY} per venue/year
                     </p>
                   </div>
                   <div className="text-right">
-                    <p className="font-bold text-gray-900">
+                    <p className="font-bold text-gray-900 dark:text-white">
                       £{(venueCount * PRICE_PER_VENUE_YEARLY).toLocaleString()}/yr
                     </p>
                     {subscription.interval === 'year' && (
-                      <span className="text-xs text-gray-500">Current</span>
+                      <span className="text-xs text-gray-500 dark:text-gray-400">Current</span>
                     )}
                   </div>
                 </div>
@@ -672,12 +672,12 @@ const SubscriptionManagement = ({ accountId, userEmail }) => {
 
             {changePlanLoading && (
               <div className="text-center py-4">
-                <div className="w-8 h-8 border-4 border-gray-200 border-t-blue-600 rounded-full animate-spin mx-auto mb-2"></div>
-                <p className="text-sm text-gray-600">Updating your plan...</p>
+                <div className="w-8 h-8 border-4 border-gray-200 dark:border-gray-700 border-t-blue-600 rounded-full animate-spin mx-auto mb-2"></div>
+                <p className="text-sm text-gray-600 dark:text-gray-400">Updating your plan...</p>
               </div>
             )}
 
-            <p className="text-xs text-gray-500 text-center">
+            <p className="text-xs text-gray-500 dark:text-gray-400 text-center">
               Plan changes are prorated. You'll be charged or credited the difference.
             </p>
           </div>

@@ -40,7 +40,11 @@ const SubscriptionGuard = ({ children }) => {
       }
 
       // Get user's role and account info
-      const { data: user, error: userError } = await supabase
+      // Try by ID first, then fall back to email (for cases where auth ID differs from users table ID)
+      let user = null;
+      let userError = null;
+
+      const { data: userById, error: errorById } = await supabase
         .from('users')
         .select(`
           id,
@@ -56,8 +60,33 @@ const SubscriptionGuard = ({ children }) => {
         .eq('id', session.user.id)
         .single();
 
-      if (userError || !user) {
-        console.error('Error fetching user for subscription check:', userError);
+      if (userById) {
+        user = userById;
+      } else {
+        // Fallback: query by email
+        const { data: userByEmail, error: errorByEmail } = await supabase
+          .from('users')
+          .select(`
+            id,
+            role,
+            account_id,
+            accounts (
+              id,
+              is_paid,
+              trial_ends_at,
+              demo_account
+            )
+          `)
+          .eq('email', session.user.email)
+          .is('deleted_at', null)
+          .single();
+
+        user = userByEmail;
+        userError = errorByEmail;
+      }
+
+      if (!user) {
+        console.error('Error fetching user for subscription check:', userError || errorById);
         setStatus('error');
         return;
       }
@@ -70,12 +99,23 @@ const SubscriptionGuard = ({ children }) => {
 
       let account = user.accounts;
 
+      // If account wasn't fetched via join, try direct query
+      if (!account && user.account_id) {
+        const { data: accountData } = await supabase
+          .from('accounts')
+          .select('id, is_paid, trial_ends_at, demo_account')
+          .eq('id', user.account_id)
+          .single();
+        account = accountData;
+      }
+
       // For managers without direct account_id, get account through staff table
+      // Use user.id from users table (may differ from session.user.id)
       if (!account && user.role === 'manager') {
         const { data: staffRow } = await supabase
           .from('staff')
           .select('venues!inner(accounts(id, is_paid, trial_ends_at, demo_account))')
-          .eq('user_id', session.user.id)
+          .eq('user_id', user.id)
           .limit(1)
           .single();
 
@@ -84,7 +124,7 @@ const SubscriptionGuard = ({ children }) => {
 
       // No account linked - this shouldn't happen but allow access
       if (!account) {
-        console.warn('User has no account linked');
+        console.warn('User has no account linked, account_id:', user.account_id);
         setStatus('active');
         return;
       }

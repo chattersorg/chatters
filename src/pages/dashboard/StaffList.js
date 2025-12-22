@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { supabase } from '../../utils/supabase';
 import { ChartCard } from '../../components/dashboard/layout/ModernCard';
 import usePageTitle from '../../hooks/usePageTitle';
@@ -9,7 +9,6 @@ import { Button } from '../../components/ui/button';
 import AddEmployeeModal from '../../components/dashboard/staff/employeetabcomponents/AddEmployeeModal';
 import EditEmployeeModal from '../../components/dashboard/staff/employeetabcomponents/EditEmployeeModal';
 import DeleteEmployeeModal from '../../components/dashboard/staff/employeetabcomponents/DeleteEmployeeModal';
-import ConfirmationModal from '../../components/ui/ConfirmationModal';
 import { downloadEmployeesCSV, parseEmployeesCSV } from '../../utils/csvUtils';
 import {
   Search, X, Download, Upload, Eye,
@@ -19,6 +18,7 @@ import {
 const StaffListPage = () => {
   usePageTitle('Staff List');
   const navigate = useNavigate();
+  const location = useLocation();
   const { venueId, userRole, allVenues, loading: venueLoading } = useVenue();
 
   // Data states
@@ -26,6 +26,20 @@ const StaffListPage = () => {
   const [employees, setEmployees] = useState([]);
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState('');
+  const [messageType, setMessageType] = useState('success');
+
+  // Handle success message from CSV import page
+  useEffect(() => {
+    if (location.state?.message) {
+      setMessage(location.state.message);
+      setMessageType(location.state.success ? 'success' : 'error');
+      // Clear the state so message doesn't reappear on refresh
+      window.history.replaceState({}, document.title);
+      // Auto-clear message after 5 seconds
+      const timer = setTimeout(() => setMessage(''), 5000);
+      return () => clearTimeout(timer);
+    }
+  }, [location.state]);
 
   // Tab state - 'all', 'employees', 'managers'
   const [activeTab, setActiveTab] = useState('all');
@@ -56,7 +70,6 @@ const StaffListPage = () => {
 
   // CSV states
   const [uploading, setUploading] = useState(false);
-  const [csvConfirmation, setCsvConfirmation] = useState(null);
 
   // Color mappings for employees
   const [roleColors, setRoleColors] = useState({});
@@ -382,61 +395,96 @@ const StaffListPage = () => {
       const { employees: parsedEmployees, errors } = await parseEmployeesCSV(file);
       if (errors.length > 0) {
         setMessage(`CSV parsing errors: ${errors.join('; ')}`);
+        setUploading(false);
         return;
       }
       if (parsedEmployees.length === 0) {
         setMessage('No valid employee data found in CSV file');
+        setUploading(false);
+        return;
+      }
+
+      // Check for duplicate emails within the CSV itself
+      const csvEmailCounts = {};
+      const csvDuplicateEmails = [];
+      parsedEmployees.forEach(emp => {
+        const emailKey = emp.email?.toLowerCase();
+        if (emailKey) {
+          csvEmailCounts[emailKey] = (csvEmailCounts[emailKey] || 0) + 1;
+          if (csvEmailCounts[emailKey] === 2) {
+            csvDuplicateEmails.push(emp.email);
+          }
+        }
+      });
+
+      if (csvDuplicateEmails.length > 0) {
+        setMessage(`CSV contains duplicate emails: ${csvDuplicateEmails.join(', ')}. Please remove duplicates and try again.`);
+        setUploading(false);
         return;
       }
 
       const targetVenueId = venueId;
-      const venueName = allVenues.find(v => v.id === targetVenueId)?.name || 'this venue';
-      const existingCount = visibleEmployees.length;
+      const venueName = allVenues.find(v => v.id === venueId)?.name;
 
-      if (existingCount > 0) {
-        await new Promise((resolve) => {
-          setCsvConfirmation({
-            message: (
-              <div>
-                <p className="mb-4 dark:text-gray-300">
-                  This will replace all <strong>{existingCount}</strong> existing employees at <strong>{venueName}</strong> with <strong>{parsedEmployees.length}</strong> new employees from your CSV.
-                </p>
-                <div className="bg-yellow-50 dark:bg-yellow-900/30 border border-yellow-200 dark:border-yellow-800 rounded-lg p-3">
-                  <p className="text-sm text-custom-yellow dark:text-yellow-400">
-                    <strong>Warning:</strong> This action cannot be undone. All existing employee data will be permanently deleted.
-                  </p>
-                </div>
-              </div>
-            ),
-            onConfirm: () => { setCsvConfirmation(null); resolve(true); },
-            onCancel: () => { setCsvConfirmation(null); setUploading(false); resolve(false); }
-          });
-        }).then(confirmed => { if (!confirmed) return; });
-      }
+      // Get existing employees for this venue
+      const existingEmployees = employees.filter(emp => emp.venue_id === targetVenueId);
 
-      const { error: deleteError } = await supabase.from('employees').delete().eq('venue_id', targetVenueId);
-      if (deleteError) {
-        setMessage('Failed to remove existing employees');
-        return;
-      }
-
-      const employeesToInsert = parsedEmployees.map(emp => ({ ...emp, venue_id: targetVenueId }));
-      const { data, error } = await supabase.from('employees').insert(employeesToInsert).select();
-
-      if (error) {
-        if (error.code === '23505') {
-          setMessage('Import failed: Duplicate email addresses found within your CSV file.');
-        } else {
-          setMessage(`Failed to import employees: ${error.message}`);
+      // Create maps of existing employees by ID and email for matching
+      const existingById = {};
+      const existingByEmail = {};
+      existingEmployees.forEach(emp => {
+        if (emp.id) {
+          existingById[emp.id] = emp;
         }
-        return;
-      }
+        if (emp.email) {
+          existingByEmail[emp.email.toLowerCase()] = emp;
+        }
+      });
 
-      setMessage(`Successfully replaced all employees with ${data.length} new employee${data.length !== 1 ? 's' : ''} from CSV`);
-      await fetchStaffData();
+      // Categorize parsed employees into new and duplicates
+      // Priority: Match by ID first, then by email
+      const newEmployees = [];
+      const duplicates = [];
+
+      parsedEmployees.forEach(emp => {
+        // First try to match by ID (if provided in CSV)
+        if (emp.id && existingById[emp.id]) {
+          duplicates.push({
+            email: emp.email,
+            existing: existingById[emp.id],
+            new: emp
+          });
+        }
+        // Then try to match by email
+        else {
+          const emailKey = emp.email?.toLowerCase();
+          if (emailKey && existingByEmail[emailKey]) {
+            duplicates.push({
+              email: emp.email,
+              existing: existingByEmail[emailKey],
+              new: emp
+            });
+          } else {
+            newEmployees.push(emp);
+          }
+        }
+      });
+
+      // Navigate to the review page
+      navigate('/staff/import', {
+        state: {
+          parsedEmployees,
+          duplicates,
+          newEmployees,
+          targetVenueId,
+          venueName
+        }
+      });
+
+      setUploading(false);
+
     } catch (error) {
       setMessage(`Failed to process CSV: ${error.message}`);
-    } finally {
       setUploading(false);
     }
   };
@@ -573,7 +621,7 @@ const StaffListPage = () => {
         titleRight={
           message && (
             <span className={`text-sm font-medium ${
-              message.includes('success') || message.includes('recovered')
+              messageType === 'success' || message.includes('success') || message.includes('recovered')
                 ? 'text-green-600 dark:text-green-400'
                 : 'text-red-600 dark:text-red-400'
             }`}>
@@ -1110,20 +1158,6 @@ const StaffListPage = () => {
         onConfirm={confirmDeleteEmployee}
         onCancel={() => setEmployeeToDelete(null)}
         loading={deleteLoading}
-      />
-
-      {/* CSV Confirmation Modal */}
-      <ConfirmationModal
-        isOpen={!!csvConfirmation}
-        onConfirm={csvConfirmation?.onConfirm}
-        onCancel={csvConfirmation?.onCancel}
-        title="Replace All Employees"
-        message={csvConfirmation?.message}
-        confirmText="Replace Employees"
-        cancelText="Cancel Upload"
-        confirmButtonStyle="warning"
-        icon="warning"
-        loading={uploading}
       />
 
       {/* Delete Manager Confirmation Modal */}

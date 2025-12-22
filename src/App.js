@@ -110,7 +110,11 @@ function App() {
             <ModalProvider>
               <Toaster position="top-right" toastOptions={{ duration: 3000 }} />
               <Sentry.ErrorBoundary fallback={<p>Something went wrong!</p>} showDialog>
-                {isDashboardDomain ? <AppRoutes /> : <MarketingRoutes />}
+                {isDashboardDomain ? (
+                  <AppRoutes />
+                ) : (
+                  <MarketingRoutes />
+                )}
               </Sentry.ErrorBoundary>
               <Analytics />
               <SpeedInsights />

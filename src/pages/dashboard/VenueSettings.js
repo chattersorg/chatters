@@ -29,6 +29,7 @@ const VenueSettingsPage = () => {
   const [loading, setLoading] = useState(false);
   const [phone, setPhone] = useState('');
   const [website, setWebsite] = useState('');
+  const [country, setCountry] = useState('GB');
   const [address, setAddress] = useState({
     line1: '',
     line2: '',
@@ -149,7 +150,7 @@ const VenueSettingsPage = () => {
       // Fetch venue data
       const { data: venueData, error: venueError } = await supabase
         .from('venues')
-        .select('id, name, address, phone, website')
+        .select('id, name, address, phone, website, country')
         .eq('id', venueId)
         .single();
 
@@ -162,6 +163,7 @@ const VenueSettingsPage = () => {
       setName(venueData.name || '');
       setPhone(venueData.phone || '');
       setWebsite(venueData.website || '');
+      setCountry(venueData.country || 'GB');
       setAddress(venueData.address || {
         line1: '',
         line2: '',
@@ -189,6 +191,7 @@ const VenueSettingsPage = () => {
         address,
         phone,
         website,
+        country,
       };
 
       const { error: venueError } = await supabase
@@ -846,6 +849,8 @@ const VenueSettingsPage = () => {
         setPhone={setPhone}
         website={website}
         setWebsite={setWebsite}
+        country={country}
+        setCountry={setCountry}
         saveSettings={saveSettings}
         loading={loading}
         message={message}

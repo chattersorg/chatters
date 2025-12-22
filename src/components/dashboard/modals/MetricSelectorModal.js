@@ -1,32 +1,19 @@
 import React, { useState } from 'react';
 import {
   X, BarChart3, ThumbsUp, Star, AlertTriangle, Award, PieChart, MessageSquare,
-  TrendingUp, TrendingDown, Clock, Users, Building2, Target, Zap,
-  Activity, Calendar, CheckCircle, XCircle, Timer, DollarSign,
-  UserCheck, Trophy, Heart, Frown, Smile, Meh, Filter, MapPin
+  Clock, Building2, Target,
+  Activity, Calendar, CheckCircle, Timer,
+  Trophy, Heart
 } from 'lucide-react';
 
+// Only include metrics that are implemented in ConfigurableMultiVenueTile
 const AVAILABLE_METRICS = [
   // NPS & Satisfaction Metrics
-  {
-    value: 'nps_chart',
-    label: 'NPS Score Chart',
-    description: 'Net Promoter Score with breakdown by category (configurable)',
-    icon: PieChart,
-    category: 'NPS & Satisfaction'
-  },
-  {
-    value: 'nps_trend',
-    label: 'NPS Trend Over Time',
-    description: 'Track NPS score changes across selected time period',
-    icon: TrendingUp,
-    category: 'NPS & Satisfaction'
-  },
   {
     value: 'venue_nps_comparison',
     label: 'Venue NPS Comparison',
     description: 'Compare NPS scores across multiple venues',
-    icon: Building2,
+    icon: PieChart,
     category: 'NPS & Satisfaction'
   },
   {
@@ -53,24 +40,10 @@ const AVAILABLE_METRICS = [
     category: 'Feedback Volume'
   },
   {
-    value: 'feedback_chart',
-    label: 'Overall Feedback Chart',
-    description: 'Comprehensive feedback metrics with multiple chart views',
-    icon: BarChart3,
-    category: 'Feedback Volume'
-  },
-  {
     value: 'feedback_by_venue',
     label: 'Feedback by Venue',
     description: 'Compare total feedback volume across venues',
     icon: Building2,
-    category: 'Feedback Volume'
-  },
-  {
-    value: 'feedback_trend',
-    label: 'Feedback Trend',
-    description: 'Track feedback volume over time',
-    icon: TrendingUp,
     category: 'Feedback Volume'
   },
   {
@@ -104,13 +77,6 @@ const AVAILABLE_METRICS = [
     category: 'Resolution'
   },
   {
-    value: 'resolution_by_venue',
-    label: 'Resolution by Venue',
-    description: 'Compare resolution rates across venues',
-    icon: Building2,
-    category: 'Resolution'
-  },
-  {
     value: 'unresolved_alerts',
     label: 'Unresolved Alerts',
     description: 'Urgent feedback & assistance requiring immediate attention',
@@ -129,59 +95,31 @@ const AVAILABLE_METRICS = [
   {
     value: 'best_staff',
     label: 'Top Staff Member',
-    description: 'Staff member with most resolutions',
+    description: 'Staff member with most resolutions per venue',
     icon: Award,
     category: 'Staff Performance'
   },
   {
     value: 'staff_leaderboard',
     label: 'Staff Leaderboard',
-    description: 'Top 5 staff members by resolution count',
+    description: 'Top 5 staff members by resolution count across all venues',
     icon: Trophy,
-    category: 'Staff Performance'
-  },
-  {
-    value: 'staff_by_venue',
-    label: 'Staff Performance by Venue',
-    description: 'Compare staff activity across venues',
-    icon: UserCheck,
     category: 'Staff Performance'
   },
   {
     value: 'recognition_count',
     label: 'Staff Recognition Count',
-    description: 'Number of positive staff mentions',
+    description: 'Number of staff mentions per venue',
     icon: Heart,
-    category: 'Staff Performance'
-  },
-  {
-    value: 'avg_staff_rating',
-    label: 'Average Staff Rating',
-    description: 'Overall staff performance rating',
-    icon: Star,
     category: 'Staff Performance'
   },
 
   // Venue Performance
   {
-    value: 'venue_comparison',
-    label: 'Multi-Venue Overview',
-    description: 'Side-by-side performance comparison of all venues',
-    icon: Building2,
-    category: 'Venue Performance'
-  },
-  {
     value: 'top_performing_venue',
     label: 'Top Performing Venue',
-    description: 'Venue with highest satisfaction score',
+    description: 'Venues ranked by highest satisfaction score',
     icon: Trophy,
-    category: 'Venue Performance'
-  },
-  {
-    value: 'venue_trend_comparison',
-    label: 'Venue Trend Comparison',
-    description: 'Compare performance trends across venues over time',
-    icon: TrendingUp,
     category: 'Venue Performance'
   },
   {
@@ -196,75 +134,31 @@ const AVAILABLE_METRICS = [
   {
     value: 'peak_hours',
     label: 'Peak Feedback Hours',
-    description: 'Busiest times for customer feedback',
+    description: 'Busiest times for customer feedback per venue',
     icon: Clock,
     category: 'Time Analytics'
   },
   {
     value: 'day_comparison',
     label: 'Day-by-Day Comparison',
-    description: 'Compare performance across days of the week',
+    description: 'Busiest day of the week per venue',
     icon: Calendar,
     category: 'Time Analytics'
-  },
-  {
-    value: 'hourly_breakdown',
-    label: 'Hourly Breakdown',
-    description: 'Feedback and satisfaction by hour',
-    icon: Activity,
-    category: 'Time Analytics'
-  },
-
-  // Sentiment & Issues
-  {
-    value: 'sentiment_analysis',
-    label: 'Sentiment Analysis',
-    description: 'Breakdown of positive, neutral, and negative feedback',
-    icon: Smile,
-    category: 'Sentiment'
-  },
-  {
-    value: 'top_issues',
-    label: 'Top Issues',
-    description: 'Most common feedback topics or complaints',
-    icon: Filter,
-    category: 'Sentiment'
-  },
-  {
-    value: 'improvement_areas',
-    label: 'Areas for Improvement',
-    description: 'Venues or categories needing attention',
-    icon: Target,
-    category: 'Sentiment'
-  },
-  {
-    value: 'positive_highlights',
-    label: 'Positive Highlights',
-    description: 'Most praised aspects across venues',
-    icon: ThumbsUp,
-    category: 'Sentiment'
   },
 
   // External Reviews
   {
     value: 'google_rating',
-    label: 'Google Rating',
-    description: 'Current Google review rating for selected venue',
+    label: 'Google Rating Change',
+    description: 'Google review rating change over selected period',
     icon: Star,
     category: 'External Reviews'
   },
   {
     value: 'tripadvisor_rating',
-    label: 'TripAdvisor Rating',
-    description: 'Current TripAdvisor review rating for selected venue',
+    label: 'TripAdvisor Rating Change',
+    description: 'TripAdvisor review rating change over selected period',
     icon: Star,
-    category: 'External Reviews'
-  },
-  {
-    value: 'review_comparison',
-    label: 'External Review Comparison',
-    description: 'Compare Google & TripAdvisor ratings across venues',
-    icon: BarChart3,
     category: 'External Reviews'
   }
 ];

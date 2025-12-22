@@ -4,9 +4,12 @@ import { supabase } from '../../utils/supabase';
 import { v4 as uuidv4 } from 'uuid';
 import { Star } from 'lucide-react';
 import AlertModal from '../../components/ui/AlertModal';
+import { LanguageProvider, useLanguage } from '../../context/LanguageContext';
+import LanguageSelector from '../../components/ui/LanguageSelector';
 
-const CustomerFeedbackPage = () => {
+const CustomerFeedbackContent = () => {
   const { venueId } = useParams();
+  const { t } = useLanguage();
   const [questions, setQuestions] = useState([]);
   const [venue, setVenue] = useState(null);
   const [activeTables, setActiveTables] = useState([]);
@@ -244,8 +247,8 @@ const CustomerFeedbackPage = () => {
         console.error('Error submitting feedback:', error);
         setAlertModal({
           type: 'error',
-          title: 'Submission Failed',
-          message: 'Failed to submit feedback. Please try again.'
+          title: t('submissionFailed'),
+          message: t('failedToSubmitFeedback')
         });
         return;
       }
@@ -255,8 +258,8 @@ const CustomerFeedbackPage = () => {
       console.error('Error submitting feedback:', err);
       setAlertModal({
         type: 'error',
-        title: 'Submission Failed',
-        message: 'Failed to submit feedback. Please try again.'
+        title: t('submissionFailed'),
+        message: t('failedToSubmitFeedback')
       });
     } finally {
       setIsSubmitting(false);
@@ -302,8 +305,8 @@ const CustomerFeedbackPage = () => {
       if (error) {
         setAlertModal({
           type: 'error',
-          title: 'Assistance Request Failed',
-          message: `Failed to request assistance: ${error.message}. Please try again.`
+          title: t('assistanceRequestFailed'),
+          message: `${error.message}`
         });
         return;
       }
@@ -312,8 +315,8 @@ const CustomerFeedbackPage = () => {
     } catch (err) {
       setAlertModal({
         type: 'error',
-        title: 'Assistance Request Failed',
-        message: `Failed to request assistance: ${err.message}. Please try again.`
+        title: t('assistanceRequestFailed'),
+        message: `${err.message}`
       });
     } finally {
       setAssistanceLoading(false);
@@ -341,8 +344,7 @@ const CustomerFeedbackPage = () => {
     return (
       <div className="flex flex-col justify-center items-center min-h-screen text-gray-600 text-lg space-y-4">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-600"></div>
-        <div>Loading feedback form...</div>
-        <div className="text-sm text-gray-400">Venue ID: {venueId}</div>
+        <div>{t('loading')}</div>
       </div>
     );
   }
@@ -353,6 +355,11 @@ const CustomerFeedbackPage = () => {
 
     return (
       <div className="min-h-screen flex items-center justify-center p-6" style={getBackgroundStyle()}>
+        {/* Language Selector - Top Right */}
+        <div className="absolute top-4 right-4">
+          <LanguageSelector />
+        </div>
+
         <div className="w-full max-w-md p-8 bg-white rounded-2xl shadow-xl text-center">
           {venue?.logo && (
             <div className="mb-8">
@@ -361,13 +368,13 @@ const CustomerFeedbackPage = () => {
           )}
 
           <div className="text-6xl mb-6">🕒</div>
-          <h2 className="text-2xl font-bold mb-4" style={{ color: textColor }}>Feedback Currently Unavailable</h2>
+          <h2 className="text-2xl font-bold mb-4" style={{ color: textColor }}>{t('feedbackUnavailable')}</h2>
           <p className="text-base mb-8" style={{ color: textColor, opacity: 0.8 }}>
-            We're not accepting feedback at the moment. Please try again during our service hours.
+            {t('feedbackUnavailableMessage')}
           </p>
 
           <div className="text-sm" style={{ color: textColor, opacity: 0.6 }}>
-            Thank you for your interest in providing feedback!
+            {t('thankYouForInterest')}
           </div>
         </div>
       </div>
@@ -378,17 +385,22 @@ const CustomerFeedbackPage = () => {
   if (error) {
     return (
       <div className="min-h-screen flex items-center justify-center p-6" style={getBackgroundStyle()}>
+        {/* Language Selector - Top Right */}
+        <div className="absolute top-4 right-4">
+          <LanguageSelector />
+        </div>
+
         <div className="w-full max-w-md p-8 bg-white rounded-2xl shadow-xl text-center space-y-4">
           <div className="text-4xl">⚠️</div>
           <div>
-            <div className="font-semibold mb-2 text-lg text-custom-red">Unable to load feedback form</div>
+            <div className="font-semibold mb-2 text-lg text-custom-red">{t('unableToLoadFeedbackForm')}</div>
             <div className="text-sm text-gray-600 mb-4">{error}</div>
           </div>
           <button
             onClick={() => window.location.reload()}
             className="px-6 py-3 bg-custom-blue text-white rounded-lg hover:bg-custom-blue-hover transition-colors"
           >
-            Retry
+            {t('retry')}
           </button>
         </div>
       </div>
@@ -407,6 +419,11 @@ const CustomerFeedbackPage = () => {
     if (showReviewPrompt) {
       return (
         <div className="min-h-screen flex items-center justify-center p-6" style={getBackgroundStyle()}>
+          {/* Language Selector - Top Right */}
+          <div className="absolute top-4 right-4">
+            <LanguageSelector />
+          </div>
+
           <div className="w-full max-w-md p-8 bg-white rounded-2xl shadow-xl text-center">
             {venue?.logo && (
               <div className="mb-8">
@@ -415,9 +432,9 @@ const CustomerFeedbackPage = () => {
             )}
 
             <div className="text-6xl mb-6">🎉</div>
-            <h2 className="text-2xl font-bold mb-4" style={{ color: textColor }}>Thanks for your positive feedback!</h2>
+            <h2 className="text-2xl font-bold mb-4" style={{ color: textColor }}>{t('thanksPositiveFeedback')}</h2>
             <p className="text-base mb-8" style={{ color: textColor, opacity: 0.8 }}>
-              We're so glad you had a great experience! Would you mind sharing your positive experience with others?
+              {t('gladYouHadGreatExperience')}
             </p>
 
             <div className="space-y-4">
@@ -429,7 +446,7 @@ const CustomerFeedbackPage = () => {
                   className="block w-full py-4 px-4 rounded-xl font-bold hover:opacity-90 transition-all shadow-lg"
                   style={{ backgroundColor: primary, color: buttonTextColor }}
                 >
-                  Leave a Google Review
+                  {t('leaveGoogleReview')}
                 </a>
               )}
 
@@ -441,7 +458,7 @@ const CustomerFeedbackPage = () => {
                   className="block w-full py-4 px-4 rounded-xl font-bold hover:opacity-90 transition-all shadow-lg"
                   style={{ backgroundColor: primary, color: buttonTextColor }}
                 >
-                  Review on TripAdvisor
+                  {t('reviewOnTripAdvisor')}
                 </a>
               )}
 
@@ -454,7 +471,7 @@ const CustomerFeedbackPage = () => {
                   opacity: 0.7,
                 }}
               >
-                No thanks, close
+                {t('noThanksClose')}
               </button>
             </div>
           </div>
@@ -464,11 +481,16 @@ const CustomerFeedbackPage = () => {
 
     // Default success state for non-positive feedback or no review links
     const thankYouEmoji = venue?.thank_you_icon || '✅';
-    const thankYouTitle = venue?.thank_you_title || 'Thanks for your feedback!';
-    const thankYouMessage = venue?.thank_you_message || 'Your response has been submitted successfully.';
+    const thankYouTitle = venue?.thank_you_title || t('defaultThankYouTitle');
+    const thankYouMessage = venue?.thank_you_message || t('defaultThankYouMessage');
 
     return (
       <div className="min-h-screen flex items-center justify-center p-6" style={getBackgroundStyle()}>
+        {/* Language Selector - Top Right */}
+        <div className="absolute top-4 right-4">
+          <LanguageSelector />
+        </div>
+
         <div className="w-full max-w-md p-8 bg-white rounded-2xl shadow-xl text-center space-y-6">
           <div className="text-6xl">{thankYouEmoji}</div>
           <div className="text-2xl font-bold" style={{ color: textColor }}>{thankYouTitle}</div>
@@ -484,8 +506,8 @@ const CustomerFeedbackPage = () => {
     const textColor = venue?.text_color || '#111827';
 
     // Get custom assistance message settings with defaults
-    const assistanceTitle = venue?.assistance_title || 'Help is on the way!';
-    const assistanceMessage = venue?.assistance_message || 'We\'ve notified our team that you need assistance. Someone will be with you shortly.';
+    const assistanceTitle = venue?.assistance_title || t('defaultAssistanceTitle');
+    const assistanceMessage = venue?.assistance_message || t('defaultAssistanceMessage');
     const assistanceEmoji = venue?.assistance_icon || '🙋';
 
     // Replace {table} placeholder with actual table number in both title and message
@@ -494,6 +516,11 @@ const CustomerFeedbackPage = () => {
 
     return (
       <div className="min-h-screen flex items-center justify-center p-6" style={getBackgroundStyle()}>
+        {/* Language Selector - Top Right */}
+        <div className="absolute top-4 right-4">
+          <LanguageSelector />
+        </div>
+
         <div className="w-full max-w-md p-8 bg-white rounded-2xl shadow-xl text-center">
           {venue?.logo && (
             <div className="mb-8">
@@ -511,7 +538,7 @@ const CustomerFeedbackPage = () => {
           </p>
 
           <div className="text-sm" style={{ color: textColor, opacity: 0.6 }}>
-            You can close this page now.
+            {t('youCanCloseThisPage')}
           </div>
         </div>
       </div>
@@ -525,6 +552,11 @@ const CustomerFeedbackPage = () => {
 
   return (
     <div className="min-h-screen flex items-center justify-center p-6" style={getBackgroundStyle()}>
+      {/* Language Selector - Top Right */}
+      <div className="absolute top-4 right-4">
+        <LanguageSelector />
+      </div>
+
       <div className="w-full max-w-md p-8 bg-white rounded-2xl shadow-xl">
         {venue.logo && (
           <div className="mb-8">
@@ -535,19 +567,19 @@ const CustomerFeedbackPage = () => {
         <div className="text-center">
         {!hasStarted ? (
           <div>
-            <h2 className="text-2xl font-bold mb-6" style={{ color: textColor }}>Welcome!</h2>
+            <h2 className="text-2xl font-bold mb-6" style={{ color: textColor }}>{t('welcome')}</h2>
 
             {/* Email input - optional but prominent - only show if NPS is enabled */}
             {venue?.nps_enabled && (
               <div className="mb-6 text-left">
                 <label className="block text-sm font-medium mb-2" style={{ color: textColor }}>
-                  Email <span style={{ color: textColor, opacity: 0.6 }}>(optional)</span>
+                  {t('email')} <span style={{ color: textColor, opacity: 0.6 }}>({t('optional')})</span>
                 </label>
                 <input
                   type="email"
                   value={customerEmail}
                   onChange={(e) => setCustomerEmail(e.target.value)}
-                  placeholder="your@email.com"
+                  placeholder={t('emailPlaceholder')}
                   className="w-full border-2 px-4 py-3 rounded-xl text-base focus:outline-none focus:ring-2 focus:ring-offset-2 transition-all"
                   style={{
                     borderColor: primary,
@@ -556,14 +588,14 @@ const CustomerFeedbackPage = () => {
                   }}
                 />
                 <p className="text-xs mt-2" style={{ color: textColor, opacity: 0.7 }}>
-                  Share your email to help us follow up and improve your experience
+                  {t('emailHelperText')}
                 </p>
               </div>
             )}
 
             <div className="mb-8 text-left">
               <label className="block text-sm font-medium mb-2" style={{ color: textColor }}>
-                Table Number {activeTables.length === 0 && <span style={{ color: textColor, opacity: 0.6 }}>(optional)</span>}
+                {t('tableNumber')} {activeTables.length === 0 && <span style={{ color: textColor, opacity: 0.6 }}>({t('optional')})</span>}
               </label>
               {activeTables.length > 0 ? (
                 <select
@@ -577,7 +609,7 @@ const CustomerFeedbackPage = () => {
                     opacity: tableNumber ? 1 : 0.85,
                   }}
                 >
-                  <option value="" style={{ color: '#9ca3af', opacity: 0.7 }}>Choose your table</option>
+                  <option value="" style={{ color: '#9ca3af', opacity: 0.7 }}>{t('chooseYourTable')}</option>
                   {activeTables.map((tableNum) => (
                     <option key={tableNum} value={tableNum} style={{ color: textColor, backgroundColor: '#ffffff' }}>
                       {tableNum}
@@ -589,7 +621,7 @@ const CustomerFeedbackPage = () => {
                   type="text"
                   value={tableNumber}
                   onChange={(e) => setTableNumber(e.target.value)}
-                  placeholder="Enter your table number"
+                  placeholder={t('enterTableNumber')}
                   className="w-full border-2 px-4 py-3 rounded-xl text-base focus:outline-none focus:ring-2 focus:ring-offset-2 transition-all"
                   style={{
                     borderColor: primary,
@@ -606,14 +638,14 @@ const CustomerFeedbackPage = () => {
               className="w-full py-4 rounded-xl font-bold text-lg transition-all hover:opacity-90 hover:scale-105 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg"
               style={{ backgroundColor: primary, color: buttonTextColor }}
             >
-              Continue
+              {t('continue')}
             </button>
           </div>
         ) : current >= 0 ? (
           <div>
             <div className="mb-6">
               <div className="text-sm mb-2 font-medium" style={{ color: textColor, opacity: 0.7 }}>
-                Question {current + 1} of {questions.length}
+                {t('questionOf', { current: current + 1, total: questions.length })}
               </div>
               <div className="w-full rounded-full h-3" style={{ backgroundColor: `${textColor}20` }}>
                 <div
@@ -629,7 +661,7 @@ const CustomerFeedbackPage = () => {
             {/* Show selected table */}
             {tableNumber && (
               <div className="mb-4 text-sm font-medium" style={{ color: textColor, opacity: 0.8 }}>
-                Feedback for Table {tableNumber}
+                {t('feedbackForTable')} {tableNumber}
               </div>
             )}
 
@@ -661,16 +693,16 @@ const CustomerFeedbackPage = () => {
               </div>
 
               <div className="text-center">
-                <p className="text-sm mb-2 font-medium" style={{ color: textColor, opacity: 0.8 }}>Tap a star to rate</p>
+                <p className="text-sm mb-2 font-medium" style={{ color: textColor, opacity: 0.8 }}>{t('tapStarToRate')}</p>
                 <div className="flex justify-center space-x-6 text-xs" style={{ color: textColor, opacity: 0.6 }}>
-                  <span>1 = Poor</span>
-                  <span>5 = Excellent</span>
+                  <span>1 = {t('poor')}</span>
+                  <span>5 = {t('excellent')}</span>
                 </div>
               </div>
 
               {/* Assistance Request Button */}
               <div className="pt-6 mt-6" style={{ borderTop: `2px solid ${textColor}20` }}>
-                <p className="text-sm mb-3 text-center" style={{ color: textColor, opacity: 0.8 }}>Don't want to leave feedback right now?</p>
+                <p className="text-sm mb-3 text-center" style={{ color: textColor, opacity: 0.8 }}>{t('dontWantFeedback')}</p>
                 <button
                   onClick={handleAssistanceRequest}
                   disabled={assistanceLoading}
@@ -684,12 +716,12 @@ const CustomerFeedbackPage = () => {
                   {assistanceLoading ? (
                     <div className="flex items-center justify-center">
                       <div className="animate-spin rounded-full h-4 w-4 border-b-2 mr-2" style={{ borderColor: primary }}></div>
-                      Requesting...
+                      {t('requesting')}
                     </div>
                   ) : (
                     <div className="text-center">
-                      <div className="font-bold">Just need assistance?</div>
-                      <div className="text-xs opacity-80">Our team will be right with you</div>
+                      <div className="font-bold">{t('justNeedAssistance')}</div>
+                      <div className="text-xs opacity-80">{t('ourTeamWillBeRightWithYou')}</div>
                     </div>
                   )}
                 </button>
@@ -699,13 +731,13 @@ const CustomerFeedbackPage = () => {
         ) : (
           <div>
             <h2 className="text-xl font-bold mb-4" style={{ color: textColor }}>
-              Anything else you'd like to tell us? <span className="text-sm font-normal" style={{ opacity: 0.6 }}>(Optional)</span>
+              {t('anythingElse')} <span className="text-sm font-normal" style={{ opacity: 0.6 }}>({t('optional')})</span>
             </h2>
             <textarea
               value={freeText}
               onChange={(e) => setFreeText(e.target.value)}
               rows={5}
-              placeholder="Leave any additional comments (optional)..."
+              placeholder={t('additionalCommentsPlaceholder')}
               className="w-full p-4 border-2 rounded-xl text-base mb-6 focus:outline-none focus:ring-2 focus:ring-offset-2 transition-all"
               style={{
                 borderColor: primary,
@@ -725,10 +757,10 @@ const CustomerFeedbackPage = () => {
                     <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                     <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                   </svg>
-                  Submitting...
+                  {t('submitting')}
                 </>
               ) : (
-                'Submit Feedback'
+                t('submitFeedback')
               )}
             </button>
           </div>
@@ -747,5 +779,12 @@ const CustomerFeedbackPage = () => {
     </div>
   );
 };
+
+// Wrap with LanguageProvider
+const CustomerFeedbackPage = () => (
+  <LanguageProvider>
+    <CustomerFeedbackContent />
+  </LanguageProvider>
+);
 
 export default CustomerFeedbackPage;
