@@ -125,16 +125,10 @@ const StaffListPage = () => {
       const userId = auth?.user?.id;
       if (!userId) return;
 
-      const { data: userData } = await supabase
-        .from('users')
-        .select('account_id')
-        .eq('id', userId)
-        .single();
-
-      if (!userData?.account_id) return;
-
+      // For master users (including impersonation), use allVenues from context
+      // This handles impersonation correctly since VenueContext populates allVenues
       if (userRole === 'master') {
-        await fetchAllStaffForAccount(userData.account_id);
+        await fetchAllStaffForAccount();
       } else {
         await fetchStaffForManager(userId);
       }
