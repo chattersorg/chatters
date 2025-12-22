@@ -160,7 +160,7 @@ const Hero = () => {
                 Catch Problems
               </span>{' '}
               Before They Become{' '}
-              <span className="text-sky-400">1-Star Reviews</span>
+              <span className="text-sky-400">1 Star Reviews</span>
             </h1>
 
             {/* Subheadline */}
