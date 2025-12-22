@@ -15,10 +15,23 @@ module.exports = async function handler(req, res) {
   try {
     const userData = await requireMasterRole(req);
 
+    // For admin users impersonating, get account_id from query param
+    // For master users, use their own account_id
+    let accountId = userData.account_id;
+
+    if (!accountId && req.query.accountId) {
+      // Admin user impersonating - use the provided account_id
+      accountId = req.query.accountId;
+    }
+
+    if (!accountId) {
+      return res.status(200).json({ invitations: [] });
+    }
+
     const { data: invitations, error } = await supabaseAdmin
       .from('manager_invitations')
       .select('*')
-      .eq('account_id', userData.account_id)
+      .eq('account_id', accountId)
       .eq('status', 'pending')
       .gt('expires_at', new Date().toISOString())
       .order('created_at', { ascending: false });

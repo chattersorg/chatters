@@ -44,8 +44,9 @@ async function authenticateAdmin(req) {
 
 async function requireMasterRole(req) {
   const userData = await authenticateAdmin(req);
-  
-  if (userData.role !== 'master') {
+
+  // Allow both master and admin roles (admins can impersonate)
+  if (!['master', 'admin'].includes(userData.role)) {
     throw new Error('Insufficient permissions. Master role required.');
   }
 
