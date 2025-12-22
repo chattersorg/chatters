@@ -6,6 +6,12 @@ const supabaseClient = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || process.env.REACT_APP_SUPABASE_ANON_KEY
 );
 
+// Service role client for admin queries after user is authenticated
+const supabaseAdmin = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.REACT_APP_SUPABASE_URL,
+  process.env.SUPABASE_SERVICE_ROLE_KEY
+);
+
 async function authenticateAdmin(req) {
   // Extract JWT token from Authorization header
   const authHeader = req.headers.authorization;
@@ -21,8 +27,9 @@ async function authenticateAdmin(req) {
     throw new Error('Invalid authorization token');
   }
 
-  // Check user permissions using RLS-protected query
-  const { data: userData, error: userError } = await supabaseClient
+  // Use service role to query users table (bypasses RLS)
+  // This is safe because we've already verified the user's identity above
+  const { data: userData, error: userError } = await supabaseAdmin
     .from('users')
     .select('id, role, account_id')
     .eq('id', user.id)
@@ -57,7 +64,7 @@ async function requireAdminRole(req) {
 
 async function authenticateVenueAccess(req, venueId) {
   const userData = await authenticateAdmin(req);
-  
+
   // Admin users have access to all venues
   if (userData.role === 'admin') {
     return userData;
@@ -65,7 +72,7 @@ async function authenticateVenueAccess(req, venueId) {
 
   // Master users have access to venues in their account
   if (userData.role === 'master') {
-    const { data: venue, error } = await supabaseClient
+    const { data: venue, error } = await supabaseAdmin
       .from('venues')
       .select('account_id')
       .eq('id', venueId)
@@ -84,7 +91,7 @@ async function authenticateVenueAccess(req, venueId) {
 
   // Manager users have access to venues they're assigned to via staff table
   if (userData.role === 'manager') {
-    const { data: staffRecord, error } = await supabaseClient
+    const { data: staffRecord, error } = await supabaseAdmin
       .from('staff')
       .select('venue_id')
       .eq('user_id', userData.id)
