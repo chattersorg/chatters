@@ -15,39 +15,48 @@ import {
 const ManagerPermissions = () => {
   usePageTitle('Manager Access');
   const navigate = useNavigate();
-  const { allVenues, userRole } = useVenue();
+  const { allVenues, userRole, isImpersonating, impersonatedAccountId } = useVenue();
 
   const [managers, setManagers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
 
   useEffect(() => {
-    if (userRole !== 'master') {
+    // Allow both master role and impersonating admins
+    if (userRole !== 'master' && !isImpersonating) {
       navigate('/dashboard');
       return;
     }
     fetchManagers();
-  }, [userRole, navigate]);
+  }, [userRole, isImpersonating, navigate, allVenues, impersonatedAccountId]);
 
   const fetchManagers = async () => {
     try {
       setLoading(true);
 
-      // Get current user's account
-      const { data: { user } } = await supabase.auth.getUser();
-      const { data: userData } = await supabase
-        .from('users')
-        .select('account_id')
-        .eq('id', user.id)
-        .single();
+      // Get account_id - use impersonated account if impersonating
+      let accountId = impersonatedAccountId;
 
-      if (!userData?.account_id) return;
+      // If not impersonating, get from venues
+      if (!accountId && allVenues && allVenues.length > 0) {
+        const { data: venueData } = await supabase
+          .from('venues')
+          .select('account_id')
+          .eq('id', allVenues[0].id)
+          .single();
+        accountId = venueData?.account_id;
+      }
+
+      if (!accountId) {
+        setManagers([]);
+        return;
+      }
 
       // Get all venues for this account
       const { data: venues } = await supabase
         .from('venues')
         .select('id, name')
-        .eq('account_id', userData.account_id);
+        .eq('account_id', accountId);
 
       const venueIds = venues?.map(v => v.id) || [];
 
@@ -118,7 +127,7 @@ const ManagerPermissions = () => {
     return fullName.includes(searchLower) || manager.email?.toLowerCase().includes(searchLower);
   });
 
-  if (userRole !== 'master') {
+  if (userRole !== 'master' && !isImpersonating) {
     return null;
   }
 

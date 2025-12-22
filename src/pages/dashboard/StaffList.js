@@ -125,16 +125,10 @@ const StaffListPage = () => {
       const userId = auth?.user?.id;
       if (!userId) return;
 
-      const { data: userData } = await supabase
-        .from('users')
-        .select('account_id')
-        .eq('id', userId)
-        .single();
-
-      if (!userData?.account_id) return;
-
+      // For master users (including impersonation), use allVenues from context
+      // This handles impersonation correctly since VenueContext populates allVenues
       if (userRole === 'master') {
-        await fetchAllStaffForAccount(userData.account_id);
+        await fetchAllStaffForAccount();
       } else {
         await fetchStaffForManager(userId);
       }
@@ -159,28 +153,31 @@ const StaffListPage = () => {
       .select(`id, user_id, venue_id, role, created_at`)
       .in('venue_id', venueIds);
 
-    if (staffError || !staffData) return;
-
-    const userIds = [...new Set(staffData.map(s => s.user_id))].filter(id => id !== null && id !== undefined);
-
-    if (userIds.length === 0) {
-      setManagers([]);
-      setEmployees([]);
-      return;
+    if (staffError || !staffData) {
+      // Staff query failed, but continue to fetch employees
     }
 
-    const { data: usersData } = await supabase
-      .from('users')
-      .select('id, email, role, first_name, last_name, password_hash, created_at')
-      .in('id', userIds)
-      .is('deleted_at', null);
+    const userIds = [...new Set((staffData || []).map(s => s.user_id))].filter(id => id !== null && id !== undefined);
 
-    const { data: venuesData } = await supabase
+    let usersData = [];
+    let venuesData = [];
+
+    if (userIds.length > 0) {
+      const { data: users } = await supabase
+        .from('users')
+        .select('id, email, role, first_name, last_name, password_hash, created_at')
+        .in('id', userIds)
+        .is('deleted_at', null);
+      usersData = users || [];
+    }
+
+    const { data: venues } = await supabase
       .from('venues')
       .select('id, name')
       .in('id', venueIds);
+    venuesData = venues || [];
 
-    const staffWithJoins = staffData.map(staff => {
+    const staffWithJoins = (staffData || []).map(staff => {
       const foundUser = usersData?.find(u => u.id === staff.user_id);
       const foundVenue = venuesData?.find(v => v.id === staff.venue_id);
       return {
@@ -198,6 +195,7 @@ const StaffListPage = () => {
       .in('venue_id', venueIds);
 
     const managersData = activeStaffWithJoins?.filter(staff => staff.role === 'manager') || [];
+
     setManagers(managersData);
     setEmployees(employeesData || []);
   };
@@ -225,7 +223,22 @@ const StaffListPage = () => {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) return;
 
-      const response = await fetch('/api/admin/get-pending-invitations', {
+      // Get account_id from venues for impersonation support
+      let accountId = '';
+      if (allVenues && allVenues.length > 0) {
+        const { data: venueData } = await supabase
+          .from('venues')
+          .select('account_id')
+          .eq('id', allVenues[0].id)
+          .single();
+        accountId = venueData?.account_id || '';
+      }
+
+      const url = accountId
+        ? `/api/admin/get-pending-invitations?accountId=${accountId}`
+        : '/api/admin/get-pending-invitations';
+
+      const response = await fetch(url, {
         method: 'GET',
         headers: {
           'Authorization': `Bearer ${session.access_token}`,
@@ -246,12 +259,23 @@ const StaffListPage = () => {
 
   const fetchDeletedManagers = async () => {
     try {
-      const { data: authUser } = await supabase.auth.getUser();
-      const { data: userData } = await supabase
-        .from('users')
+      // Get account_id from allVenues (handles impersonation correctly)
+      if (!allVenues || allVenues.length === 0) {
+        setDeletedManagers([]);
+        return;
+      }
+
+      // Get account_id from first venue
+      const { data: venueData } = await supabase
+        .from('venues')
         .select('account_id')
-        .eq('id', authUser.user.id)
+        .eq('id', allVenues[0].id)
         .single();
+
+      if (!venueData?.account_id) {
+        setDeletedManagers([]);
+        return;
+      }
 
       const fourteenDaysAgo = new Date();
       fourteenDaysAgo.setDate(fourteenDaysAgo.getDate() - 14);
@@ -259,7 +283,7 @@ const StaffListPage = () => {
       const { data: deleted } = await supabase
         .from('users')
         .select('id, email, first_name, last_name, deleted_at, deleted_by')
-        .eq('account_id', userData.account_id)
+        .eq('account_id', venueData.account_id)
         .eq('role', 'manager')
         .not('deleted_at', 'is', null)
         .gt('deleted_at', fourteenDaysAgo.toISOString())

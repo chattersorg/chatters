@@ -237,6 +237,14 @@ const Sidebar = ({ collapsed, setCollapsed }) => {
     return hasPermission(item.permission);
   }, [userRole, hasPermission]);
 
+  // Helper to resolve path - handles both static paths and dynamic path functions
+  const resolvePath = useCallback((path) => {
+    if (typeof path === 'function') {
+      return path(venueId);
+    }
+    return path;
+  }, [venueId]);
+
   // Filter nav items based on permissions - memoized to prevent unnecessary re-renders
   const filterNavItems = useCallback((items) => {
     return items
@@ -271,10 +279,11 @@ const Sidebar = ({ collapsed, setCollapsed }) => {
   }, [location.pathname]);
 
   const hasActiveSubitem = useCallback((subItems) => {
-    return subItems?.some(subItem =>
-      location.pathname === subItem.path || location.pathname.startsWith(subItem.path + '/')
-    );
-  }, [location.pathname]);
+    return subItems?.some(subItem => {
+      const resolvedSubPath = typeof subItem.path === 'function' ? subItem.path(venueId) : subItem.path;
+      return location.pathname === resolvedSubPath || location.pathname.startsWith(resolvedSubPath + '/');
+    });
+  }, [location.pathname, venueId]);
 
   // Fetch trial information for billing access control
   React.useEffect(() => {
@@ -474,7 +483,8 @@ const Sidebar = ({ collapsed, setCollapsed }) => {
           {/* Render Venue Management Section */}
           {filteredVenueNavItems.map((item) => {
             const Icon = item.icon;
-            const itemActive = isActive(item.path) || hasActiveSubitem(item.subItems);
+            const resolvedPath = resolvePath(item.path);
+            const itemActive = isActive(resolvedPath) || hasActiveSubitem(item.subItems);
             const showSubmenu = !collapsed && activeSubmenu === item.id && item.subItems;
 
             return (
@@ -505,7 +515,7 @@ const Sidebar = ({ collapsed, setCollapsed }) => {
                   </button>
                 ) : (
                   <Link
-                    to={item.path}
+                    to={resolvedPath}
                     onClick={handleMobileLinkClick}
                     className={`flex items-center justify-between px-3 py-2 rounded-lg transition-all duration-200 group ${
                       itemActive
@@ -533,17 +543,19 @@ const Sidebar = ({ collapsed, setCollapsed }) => {
                   <div className="ml-2 mt-1 space-y-1 border-l-2 border-gray-100 dark:border-gray-800 pl-4">
                     {item.subItems.map((subItem, idx) => {
                       const SubIcon = subItem.icon;
+                      const resolvedSubPath = resolvePath(subItem.path);
                       // Check if any sibling path starts with this path - if so, use exact match
-                      const hasSiblingPrefix = item.subItems.some((other, otherIdx) =>
-                        otherIdx !== idx && other.path.startsWith(subItem.path + '/')
-                      );
+                      const hasSiblingPrefix = item.subItems.some((other, otherIdx) => {
+                        const otherPath = resolvePath(other.path);
+                        return otherIdx !== idx && typeof otherPath === 'string' && typeof resolvedSubPath === 'string' && otherPath.startsWith(resolvedSubPath + '/');
+                      });
                       const subItemActive = hasSiblingPrefix
-                        ? isActive(subItem.path, true)
-                        : isActive(subItem.path);
+                        ? isActive(resolvedSubPath, true)
+                        : isActive(resolvedSubPath);
                       return (
                         <Link
-                          key={subItem.path}
-                          to={subItem.path}
+                          key={resolvedSubPath}
+                          to={resolvedSubPath}
                           onClick={handleMobileLinkClick}
                           className={`flex items-center justify-between px-3 py-2 text-sm rounded-md transition-colors group ${
                             subItemActive

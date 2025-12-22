@@ -16,6 +16,8 @@ export const VenueProvider = ({ children }) => {
 
   const [allVenues, setAllVenues] = useState([]);
   const [userRole, setUserRole] = useState(null);
+  const [actualUserRole, setActualUserRole] = useState(null); // The real role (not impersonated)
+  const [isImpersonating, setIsImpersonating] = useState(false);
   const [loading, setLoading] = useState(true);
   const [initialized, setInitialized] = useState(false);
   const isInitializingRef = useRef(false);
@@ -138,6 +140,8 @@ export const VenueProvider = ({ children }) => {
 
           if (!venueError && venues && venues.length > 0) {
             setUserRole('master'); // Impersonate as master
+            setActualUserRole('admin'); // But actual role is admin
+            setIsImpersonating(true);
             setAllVenues(venues || []);
 
             // Initialize multi-venue selection
@@ -183,6 +187,8 @@ export const VenueProvider = ({ children }) => {
         // Use the user's ID from the users table (may differ from session.user.id)
         const actualUserId = userRow.id;
         setUserRole(role);
+        setActualUserRole(role); // Same as userRole when not impersonating
+        setIsImpersonating(false);
 
         // Admins should not load VenueContext at all; bail out
         if (role === 'admin') {
@@ -327,6 +333,8 @@ export const VenueProvider = ({ children }) => {
           setVenueName('');
           setAllVenues([]);
           setUserRole(null);
+          setActualUserRole(null);
+          setIsImpersonating(false);
           setInitialized(false);
           setLoading(false);
         }
@@ -420,6 +428,12 @@ export const VenueProvider = ({ children }) => {
         // Common values
         allVenues,
         userRole,
+        actualUserRole, // The real role (admin when impersonating)
+        isImpersonating,
+        // Helper to get the impersonated account ID (from localStorage)
+        impersonatedAccountId: isImpersonating
+          ? JSON.parse(localStorage.getItem('impersonation') || '{}').accountId
+          : null,
         loading,
       }}
     >
