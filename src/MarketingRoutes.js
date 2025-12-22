@@ -10,6 +10,7 @@ import ContactPage from './pages/marketing/ContactPage';
 import SecurityPage from './pages/marketing/SecurityPage';
 import HelpPage from './pages/marketing/HelpPage';
 import HelpNewPage from './pages/marketing/HelpNewPage';
+import HelpPageNew from './pages/marketing/HelpPageNew';
 import HelpArticleRoute from './pages/marketing/help/HelpArticleRoute';
 import TermsAndConditionsPage from './pages/marketing/Terms';
 import PrivacyPolicyPage from './pages/marketing/Privacy';
@@ -59,9 +60,12 @@ const MarketingRoutes = () => {
       <Route path="/features" element={<FeaturesPage />} />
       <Route path="/contact" element={<ContactPage />} />
       <Route path="/security" element={<SecurityPage />} />
-      <Route path="/help" element={<HelpPage />} />
+      {/* Help Center with category and article slugs */}
+      <Route path="/help" element={<HelpPageNew />} />
+      <Route path="/help/:categorySlug" element={<HelpPageNew />} />
+      <Route path="/help/:categorySlug/:articleSlug" element={<HelpPageNew />} />
+      <Route path="/help-old" element={<HelpPage />} />
       <Route path="/help-new" element={<HelpNewPage />} />
-      <Route path="/help/:slug" element={<HelpArticleRoute />} />
       <Route path="/terms" element={<TermsAndConditionsPage />} />
       <Route path="/privacy" element={<PrivacyPolicyPage />} />
       <Route path="/about" element={<AboutPage />} />

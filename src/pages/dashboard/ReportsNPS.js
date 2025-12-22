@@ -29,16 +29,14 @@ const ReportsNPS = () => {
   const [dateRange, setDateRange] = useState('30'); // days
   const [venueNPSData, setVenueNPSData] = useState({});
 
-  const isMultiVenue = selectedVenueIds.length > 1;
+  // Always show single venue view - /nps/score shows current venue only
+  // Multi-venue view is available via /multi-venue routes
+  const isMultiVenue = false;
 
   useEffect(() => {
     if (!venueId) return;
-    if (isMultiVenue) {
-      loadMultiVenueNPSData();
-    } else {
-      loadNPSData();
-    }
-  }, [venueId, dateRange, isMultiVenue, selectedVenueIds]);
+    loadNPSData();
+  }, [venueId, dateRange]);
 
   const loadNPSData = async () => {
     try {
