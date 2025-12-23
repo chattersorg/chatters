@@ -385,9 +385,6 @@ const CheckoutForm = ({ onSuccess, onCancel, subtotal = 0, billingPeriod, venueC
                 },
                 fields: {
                   phone: 'never'
-                },
-                autocomplete: {
-                  mode: 'disabled'
                 }
               }}
               onChange={handleAddressChange}
@@ -543,7 +540,7 @@ const StripeCheckoutModal = ({ isOpen, onClose, onSuccess, clientSecret, subtota
         borderRadius: '8px',
       },
     },
-    paymentMethodOrder: ['card', 'bacs_debit'],
+    paymentMethodOrder: ['card', 'apple_pay', 'google_pay'],
   };
 
   return (
