@@ -591,12 +591,13 @@ const KioskPage = () => {
   };
 
   const handleTableClick = (tableNumber) => {
+    const tableNumStr = String(tableNumber);
     const feedbackItems = feedbackList.items || [];
-    const tableFeedback = feedbackItems.filter((f) => String(f.table_number) === String(tableNumber));
+    const tableFeedback = feedbackItems.filter((f) => String(f.table_number) === tableNumStr);
 
     // Check for assistance request first (higher priority)
     const tableAssistance = assistanceRequests.find(
-      (r) => String(r.table_number) === String(tableNumber) && (r.status === 'pending' || r.status === 'acknowledged')
+      (r) => String(r.table_number) === tableNumStr && (r.status === 'pending' || r.status === 'acknowledged')
     );
 
     if (tableAssistance) {
@@ -608,7 +609,10 @@ const KioskPage = () => {
         session_id: `assistance-${tableAssistance.id}`,
         type: 'assistance'
       });
-    } else if (tableFeedback.length > 0) {
+      return; // Exit early - assistance takes priority
+    }
+
+    if (tableFeedback.length > 0) {
       // Group feedback by session for this table
       const sessionMap = new Map();
       for (const item of tableFeedback) {
@@ -817,6 +821,7 @@ const KioskPage = () => {
                 feedbackList={feedbackList.items || []}
                 assistanceMap={assistanceMap}
                 onZoneSelect={handleZoneSelect}
+                onTableClick={handleTableClick}
               />
             ) : (
               <KioskFloorPlan
@@ -891,8 +896,8 @@ const KioskPage = () => {
       {/* Assistance Resolve Modal (triggered by table click) */}
       {showTableAssistanceModal && tableModalAssistance && (
         <AssistanceResolveModal
-          isOpen={showTableAssistanceModal}
-          onClose={handleTableAssistanceModalClose}
+          isVisible={showTableAssistanceModal}
+          onCancel={handleTableAssistanceModalClose}
           request={tableModalAssistance}
           onResolve={handleTableAssistanceResolve}
           onAcknowledge={handleTableAssistanceAcknowledge}

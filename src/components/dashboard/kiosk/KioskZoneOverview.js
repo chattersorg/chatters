@@ -66,7 +66,7 @@ const groupBySession = (rows) => {
 };
 
 /* ---------- main ---------- */
-const KioskZoneOverview = ({ zones, tables, feedbackMap, feedbackList, assistanceMap, onZoneSelect }) => {
+const KioskZoneOverview = ({ zones, tables, feedbackMap, feedbackList, assistanceMap, onZoneSelect, onTableClick }) => {
   const sessions = React.useMemo(() => groupBySession(feedbackList), [feedbackList]);
 
   // Attach meta + priority and sort
@@ -169,10 +169,25 @@ const KioskZoneOverview = ({ zones, tables, feedbackMap, feedbackList, assistanc
         ? 'Table Unhappy'
         : 'No Feedback Submitted';
 
+    // Check if table has actionable items (assistance or feedback)
+    const hasAssistance = assistanceMap?.[table.table_number] === 'pending' || assistanceMap?.[table.table_number] === 'acknowledged';
+    const hasFeedback = avg != null;
+    const hasActionableItems = hasAssistance || hasFeedback;
+
+    const handleClick = () => {
+      if (hasActionableItems && onTableClick) {
+        // Open modal for tables with feedback/assistance
+        onTableClick(table.table_number);
+      } else {
+        // Navigate to zone for tables without actionable items
+        onZoneSelect(table.zone_id);
+      }
+    };
+
     return (
       <button
         key={table.id}
-        onClick={() => onZoneSelect(table.zone_id)}
+        onClick={handleClick}
         className="relative focus:outline-none"
         title={`Table ${table.table_number} — ${statusText}`}
       >
