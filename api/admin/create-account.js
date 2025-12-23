@@ -282,7 +282,7 @@ module.exports = async (req, res) => {
                 <hr style="border: none; border-top: 1px solid #e5e7eb; margin: 30px 0;">
 
                 <p style="color: #6b7280; font-size: 14px; margin: 10px 0;">
-                  Need help getting started? Check out our <a href="https://chatters.canny.io/changelog" style="color: #10b981; text-decoration: none;">documentation</a> or reply to this email.
+                  Need help getting started? Check out our <a href="https://getchatters.com/help" style="color: #10b981; text-decoration: none;">help guides</a> or reply to this email.
                 </p>
 
                 <p style="color: #9ca3af; font-size: 12px; margin: 20px 0 0 0;">

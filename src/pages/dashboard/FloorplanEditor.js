@@ -65,23 +65,66 @@ const FloorplanEditor = () => {
 
   // Data loading functions
   const loadZones = async (venueId) => {
-    const { data } = await supabase
+    console.log('🗺️ [Editor] Loading zones for venue:', venueId);
+    const { data, error } = await supabase
       .from('zones')
       .select('*')
       .eq('venue_id', venueId)
       .order('order');
-    setZones(data || []);
-    if (data && data.length > 0) setSelectedZoneId(data[0].id);
+
+    if (error) {
+      console.error('❌ [Editor] Error loading zones:', error);
+    }
+
+    console.log('🗺️ [Editor] Zones loaded:', data?.length || 0, 'zones');
+    console.log('🗺️ [Editor] Zone details:', data?.map(z => ({ id: z.id, name: z.name })));
+
+    if (data && data.length > 0) {
+      setZones(data);
+      console.log('🗺️ [Editor] Setting selected zone to first zone:', data[0].id, data[0].name);
+      setSelectedZoneId(data[0].id);
+    } else {
+      // Auto-create a default zone if none exist
+      console.log('🗺️ [Editor] No zones found - creating default zone...');
+      const { data: newZone, error: createError } = await supabase
+        .from('zones')
+        .insert({ name: 'Main Floor', venue_id: venueId, order: 1 })
+        .select('*')
+        .single();
+
+      if (createError) {
+        console.error('❌ [Editor] Failed to create default zone:', createError);
+        setZones([]);
+      } else {
+        console.log('✅ [Editor] Default zone created:', newZone.id, newZone.name);
+        setZones([newZone]);
+        setSelectedZoneId(newZone.id);
+      }
+    }
   };
 
   const loadTables = async (venueId) => {
-    const { data } = await supabase
+    console.log('🪑 [Editor] Loading tables for venue:', venueId);
+    const { data, error } = await supabase
       .from('table_positions')
       .select('*')
-      .eq('venue_id', venueId);
+      .eq('venue_id', venueId)
+      .is('deleted_at', null);
+
+    if (error) {
+      console.error('❌ [Editor] Error loading tables:', error);
+    }
+
+    console.log('🪑 [Editor] Tables loaded:', data?.length || 0, 'tables');
+    data?.forEach(t => {
+      console.log(`   Table #${t.table_number} - zone_id: ${t.zone_id || 'NULL/UNASSIGNED'}`);
+    });
 
     const container = layoutRef.current;
-    if (!container) return;
+    if (!container) {
+      console.warn('⚠️ [Editor] Container not ready when loading tables');
+      return;
+    }
     const { width, height } = container.getBoundingClientRect();
 
     setTables(
@@ -114,8 +157,19 @@ const FloorplanEditor = () => {
   };
 
   const handleAddTable = (tableNumber, shape) => {
+    console.log('➕ [Editor] Adding table:', tableNumber, 'shape:', shape);
+    console.log('➕ [Editor] Current selectedZoneId:', selectedZoneId);
+    console.log('➕ [Editor] Current zones state:', zones.map(z => ({ id: z.id, name: z.name })));
+
+    if (!selectedZoneId) {
+      console.error('❌ [Editor] CRITICAL: No zone selected! Table will be created without zone_id!');
+    }
+
     const container = layoutRef.current;
-    if (!container) return;
+    if (!container) {
+      console.error('❌ [Editor] Container not available');
+      return;
+    }
 
     const { width, height } = container.getBoundingClientRect();
 
@@ -127,20 +181,21 @@ const FloorplanEditor = () => {
 
     const dims = defaultDimensions[shape] || defaultDimensions.square;
 
-    setTables((prev) => [
-      ...prev,
-      {
-        id: `temp-${Date.now()}`,
-        table_number: tableNumber,
-        x_px: Math.round(width / 2),
-        y_px: Math.round(height / 2),
-        shape,
-        width: dims.width,
-        height: dims.height,
-        venue_id: venueId,
-        zone_id: selectedZoneId,
-      },
-    ]);
+    const newTable = {
+      id: `temp-${Date.now()}`,
+      table_number: tableNumber,
+      x_px: Math.round(width / 2),
+      y_px: Math.round(height / 2),
+      shape,
+      width: dims.width,
+      height: dims.height,
+      venue_id: venueId,
+      zone_id: selectedZoneId,
+    };
+
+    console.log('➕ [Editor] New table object:', newTable);
+
+    setTables((prev) => [...prev, newTable]);
     setHasUnsavedChanges(true);
   };
 
@@ -209,17 +264,21 @@ const FloorplanEditor = () => {
 
     const isTemp = id.startsWith('temp-');
     if (!isTemp) {
-      await supabase.from('table_positions').delete().match({
-        venue_id: venueId,
-        table_number: table.table_number,
-      });
+      // Soft delete - set deleted_at timestamp instead of removing
+      await supabase.from('table_positions').update({
+        deleted_at: new Date().toISOString()
+      }).eq('id', id);
     }
 
     setHasUnsavedChanges(true);
   };
 
   const handleSaveLayout = async () => {
-    if (!venueId || !layoutRef.current) return;
+    console.log('💾 [Editor] Saving layout...');
+    if (!venueId || !layoutRef.current) {
+      console.error('❌ [Editor] Cannot save - venueId or container missing');
+      return;
+    }
     setSaving(true);
 
     const { width, height } = layoutRef.current.getBoundingClientRect();
@@ -236,17 +295,33 @@ const FloorplanEditor = () => {
       zone_id: t.zone_id ?? null,
     }));
 
+    console.log('💾 [Editor] Payload to save:', payload.length, 'tables');
+    payload.forEach(t => {
+      console.log(`   Saving table #${t.table_number} - zone_id: ${t.zone_id || 'NULL'}`);
+    });
+
+    // Check for tables without zone_id
+    const nullZoneTables = payload.filter(t => !t.zone_id);
+    if (nullZoneTables.length > 0) {
+      console.warn('⚠️ [Editor] WARNING: Saving tables with NULL zone_id:', nullZoneTables.map(t => t.table_number));
+    }
+
     const { data: existing } = await supabase
       .from('table_positions')
       .select('id')
-      .eq('venue_id', venueId);
+      .eq('venue_id', venueId)
+      .is('deleted_at', null);
 
     const existingIds = new Set((existing || []).map((t) => t.id));
     const currentIds = new Set(payload.filter((t) => typeof t.id === 'string' && !t.id.startsWith('temp-')).map((t) => t.id));
     const idsToDelete = [...existingIds].filter((id) => !currentIds.has(id));
 
     if (idsToDelete.length > 0) {
-      await supabase.from('table_positions').delete().in('id', idsToDelete);
+      console.log('🗑️ [Editor] Soft-deleting removed tables:', idsToDelete);
+      // Soft delete - set deleted_at timestamp instead of removing
+      await supabase.from('table_positions').update({
+        deleted_at: new Date().toISOString()
+      }).in('id', idsToDelete);
     }
 
     const { error } = await supabase.from('table_positions').upsert(payload, { onConflict: 'id' });
@@ -257,8 +332,9 @@ const FloorplanEditor = () => {
         title: 'Save Error',
         message: 'Error saving layout. Please check the console for details.'
       });
-      console.error(error);
+      console.error('❌ [Editor] Save error:', error);
     } else {
+      console.log('✅ [Editor] Layout saved successfully');
       setHasUnsavedChanges(false);
       await loadTables(venueId);
     }
@@ -279,7 +355,10 @@ const FloorplanEditor = () => {
   };
 
   const confirmClearAllTables = async () => {
-    await supabase.from('table_positions').delete().eq('venue_id', venueId);
+    // Soft delete - set deleted_at timestamp instead of removing
+    await supabase.from('table_positions').update({
+      deleted_at: new Date().toISOString()
+    }).eq('venue_id', venueId).is('deleted_at', null);
     setTables([]);
     setHasUnsavedChanges(false);
     setClearAllConfirmation(false);
@@ -299,7 +378,10 @@ const FloorplanEditor = () => {
   };
 
   const confirmZoneDelete = async (zoneId) => {
-    await supabase.from('table_positions').delete().eq('zone_id', zoneId);
+    // Soft delete tables in this zone
+    await supabase.from('table_positions').update({
+      deleted_at: new Date().toISOString()
+    }).eq('zone_id', zoneId).is('deleted_at', null);
     await supabase.from('zones').delete().eq('id', zoneId);
     await loadZones(venueId);
     await loadTables(venueId);
