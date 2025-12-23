@@ -351,7 +351,7 @@ const MenuBuilderPage = () => {
   };
 
   const goBack = () => {
-    navigate('/venue-settings/details');
+    navigate('/settings/venue');
   };
 
   const activeCategoryData = categories.find(cat => cat.id === activeCategory);

@@ -1008,8 +1008,8 @@ const VenueTab = ({
           </div>
         </div>
 
-        {/* Section 3: Kiosk Devices Card */}
-        <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl overflow-hidden">
+        {/* Section 3: Kiosk Devices Card - Hidden for now */}
+        {false && <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl overflow-hidden">
           {/* Section Header */}
           <div className="px-6 py-4 border-b border-gray-100 dark:border-gray-800">
             <h3 className="text-base font-semibold text-gray-900 dark:text-gray-100">Kiosk Devices</h3>
@@ -1302,7 +1302,7 @@ const VenueTab = ({
               </>
             )}
           </div>
-        </div>
+        </div>}
       </div>
     </div>
   );
