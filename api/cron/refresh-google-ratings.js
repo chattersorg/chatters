@@ -75,15 +75,16 @@ export default async function handler(req, res) {
             // Refresh Google if venue has place_id
             if (venue.place_id) {
               console.log(`🔵 Refreshing Google for ${venue.name} (${venue.place_id})`);
-              
+
               const googleData = await fetchGooglePlaceDetails(venue.place_id);
               googleProcessedCount++;
 
-              // Insert daily rating snapshot into venue_google_ratings
+              // Insert daily rating snapshot into historical_ratings
               const { error: insertError } = await supabaseAdmin
-                .from('venue_google_ratings')
+                .from('historical_ratings')
                 .insert({
                   venue_id: venue.id,
+                  source: 'google',
                   rating: googleData.rating,
                   ratings_count: googleData.user_ratings_total,
                   is_initial: false,
@@ -94,21 +95,36 @@ export default async function handler(req, res) {
                 throw new Error(`Google database insert failed: ${insertError.message}`);
               }
 
+              // Update cache in external_ratings
+              await supabaseAdmin
+                .from('external_ratings')
+                .upsert({
+                  venue_id: venue.id,
+                  source: 'google',
+                  rating: googleData.rating,
+                  ratings_count: googleData.user_ratings_total,
+                  attributions: googleData.attributions || ['Data © Google'],
+                  fetched_at: new Date().toISOString()
+                }, {
+                  onConflict: 'venue_id,source'
+                });
+
               console.log(`✅ Stored daily Google rating for ${venue.name}: ${googleData.rating} ⭐ (${googleData.user_ratings_total} reviews)`);
             }
 
             // Refresh TripAdvisor if venue has tripadvisor_location_id
             if (venue.tripadvisor_location_id) {
               console.log(`🟢 Refreshing TripAdvisor for ${venue.name} (${venue.tripadvisor_location_id})`);
-              
+
               const tripadvisorData = await fetchTripAdvisorLocationDetails(venue.tripadvisor_location_id);
               tripadvisorProcessedCount++;
 
-              // Insert daily rating snapshot into venue_tripadvisor_ratings
+              // Insert daily rating snapshot into historical_ratings
               const { error: insertError } = await supabaseAdmin
-                .from('venue_tripadvisor_ratings')
+                .from('historical_ratings')
                 .insert({
                   venue_id: venue.id,
+                  source: 'tripadvisor',
                   rating: tripadvisorData.rating,
                   ratings_count: tripadvisorData.num_reviews,
                   is_initial: false,
@@ -118,6 +134,19 @@ export default async function handler(req, res) {
               if (insertError) {
                 throw new Error(`TripAdvisor database insert failed: ${insertError.message}`);
               }
+
+              // Update cache in external_ratings
+              await supabaseAdmin
+                .from('external_ratings')
+                .upsert({
+                  venue_id: venue.id,
+                  source: 'tripadvisor',
+                  rating: tripadvisorData.rating,
+                  ratings_count: tripadvisorData.num_reviews,
+                  fetched_at: new Date().toISOString()
+                }, {
+                  onConflict: 'venue_id,source'
+                });
 
               console.log(`✅ Stored daily TripAdvisor rating for ${venue.name}: ${tripadvisorData.rating} ⭐ (${tripadvisorData.num_reviews} reviews)`);
             }

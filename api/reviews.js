@@ -1,8 +1,15 @@
 // /api/reviews.js
 // Consolidated review platform APIs (Google, TripAdvisor, Unified Search)
-// Force deployment update
-import { createClient } from '@supabase/supabase-js';
-import { authenticateVenueAccess, authenticateAdmin } from './auth-helper.js';
+// Force deployment update v2 - added logging
+const { createClient } = require('@supabase/supabase-js');
+const { authenticateVenueAccess, authenticateAdmin } = require('./auth-helper');
+
+console.log('🚀 Reviews API module loading...');
+console.log('🔑 GOOGLE_MAPS_API_KEY exists:', !!process.env.GOOGLE_MAPS_API_KEY);
+console.log('🔑 TRIPADVISOR_API_KEY exists:', !!process.env.TRIPADVISOR_API_KEY);
+console.log('🔑 SUPABASE_URL exists:', !!(process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.REACT_APP_SUPABASE_URL));
+console.log('🔑 SUPABASE_ANON_KEY exists:', !!(process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || process.env.REACT_APP_SUPABASE_ANON_KEY));
+console.log('🔑 SUPABASE_SERVICE_ROLE_KEY exists:', !!process.env.SUPABASE_SERVICE_ROLE_KEY);
 
 // Config constants
 const GOOGLE_RATINGS_TTL_HOURS = 24;
@@ -12,6 +19,7 @@ const GOOGLE_VENUE_DETAILS_FIELDS = 'place_id,name,formatted_address,formatted_p
 const GOOGLE_API_KEY = process.env.GOOGLE_MAPS_API_KEY;
 const TRIPADVISOR_API_KEY = process.env.TRIPADVISOR_API_KEY;
 
+console.log('📦 Creating Supabase clients...');
 
 // Create Supabase clients
 const supabaseAdmin = createClient(
@@ -24,7 +32,10 @@ const supabaseClient = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || process.env.REACT_APP_SUPABASE_ANON_KEY
 );
 
-export default async function handler(req, res) {
+console.log('✅ Reviews API module loaded successfully');
+
+module.exports = async function handler(req, res) {
+  console.log('🔧 Reviews API handler invoked');
   console.log('🔧 Reviews API called:', req.method, req.url);
   console.log('🔧 Query params:', req.query);
 
@@ -189,29 +200,46 @@ async function handleGoogleRatings(req, res) {
 }
 
 async function handleGooglePlacesSearch(req, res) {
+  console.log('🔍 [Google] handleGooglePlacesSearch called');
+
   if (req.method !== 'GET') {
+    console.log('❌ [Google] Invalid method:', req.method);
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
-  await authenticateAdmin(req);
+  console.log('🔐 [Google] Authenticating user...');
+  try {
+    await authenticateAdmin(req);
+    console.log('✅ [Google] Authentication successful');
+  } catch (authError) {
+    console.error('❌ [Google] Authentication failed:', authError.message);
+    return res.status(401).json({ error: 'Authentication failed', details: authError.message });
+  }
 
   const { query, type = 'autocomplete' } = req.query;
+  console.log('🔍 [Google] Search query:', query, 'type:', type);
+
   if (!query) {
+    console.log('❌ [Google] Missing query parameter');
     return res.status(400).json({ error: 'query parameter is required' });
   }
 
+  console.log('🔑 [Google] Checking API key... exists:', !!GOOGLE_API_KEY);
   if (!GOOGLE_API_KEY) {
-    return res.status(503).json({ 
-      status: 'temporary_unavailable', 
-      reason: 'google_api_not_configured' 
+    console.log('❌ [Google] API key not configured');
+    return res.status(503).json({
+      status: 'temporary_unavailable',
+      reason: 'google_api_not_configured'
     });
   }
 
+  console.log('📡 [Google] Making API request, type:', type);
   if (type === 'autocomplete') {
     return await handleGoogleAutocomplete(req, res, query, GOOGLE_API_KEY);
   } else if (type === 'findplace') {
     return await handleGoogleFindPlace(req, res, query, GOOGLE_API_KEY);
   } else {
+    console.log('❌ [Google] Invalid type:', type);
     return res.status(400).json({ error: 'Invalid type. Use "autocomplete" or "findplace"' });
   }
 }
@@ -356,12 +384,15 @@ async function handleGoogleUpdateVenue(req, res) {
   }
 
   // Store initial rating
+  console.log('💾 [Google] Fetching and storing initial rating for place_id:', place_id);
   try {
     const googleData = await fetchGooglePlaceDetails(place_id);
-    
+    console.log('✅ [Google] Fetched rating data:', googleData);
+
     if (googleData.rating) {
+      console.log('💾 [Google] Inserting into historical_ratings...');
       // Historical ratings
-      await supabaseAdmin
+      const { error: histError } = await supabaseAdmin
         .from('historical_ratings')
         .insert({
           venue_id: venueId,
@@ -372,8 +403,15 @@ async function handleGoogleUpdateVenue(req, res) {
           recorded_at: new Date().toISOString()
         });
 
+      if (histError) {
+        console.error('❌ [Google] Failed to insert historical_ratings:', histError);
+      } else {
+        console.log('✅ [Google] Historical rating inserted successfully');
+      }
+
       // Cache
-      await supabaseAdmin
+      console.log('💾 [Google] Upserting into external_ratings...');
+      const { error: cacheError } = await supabaseAdmin
         .from('external_ratings')
         .upsert({
           venue_id: venueId,
@@ -385,9 +423,17 @@ async function handleGoogleUpdateVenue(req, res) {
         }, {
           onConflict: 'venue_id,source'
         });
+
+      if (cacheError) {
+        console.error('❌ [Google] Failed to upsert external_ratings:', cacheError);
+      } else {
+        console.log('✅ [Google] External rating cached successfully');
+      }
+    } else {
+      console.log('⚠️ [Google] No rating found in Google data, skipping storage');
     }
   } catch (ratingError) {
-    console.error('Failed to fetch initial rating:', ratingError);
+    console.error('💥 [Google] Failed to fetch initial rating:', ratingError.message, ratingError.stack);
   }
 
   return res.status(200).json({
