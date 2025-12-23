@@ -154,7 +154,11 @@ const KioskFloorPlan = ({
         pulse: false
       };
     }
-    if (feedbackAvg <= 2) {
+    // Rating thresholds aligned with priority queue:
+    // < 3 (1-2 stars) = URGENT (red)
+    // 3-4 stars = ATTENTION (yellow)
+    // 5 stars = POSITIVE (green)
+    if (feedbackAvg < 3) {
       return {
         borderColor: 'border-red-500',
         bgColor: 'bg-red-500/20',
@@ -162,19 +166,11 @@ const KioskFloorPlan = ({
         pulse: true
       };
     }
-    if (feedbackAvg <= 3) {
+    if (feedbackAvg <= 4) {
       return {
         borderColor: 'border-yellow-500',
         bgColor: 'bg-yellow-500/20',
         status: 'attention',
-        pulse: false
-      };
-    }
-    if (feedbackAvg <= 4) {
-      return {
-        borderColor: 'border-blue-500',
-        bgColor: 'bg-blue-500/10',
-        status: 'mid-rating',
         pulse: false
       };
     }

@@ -62,14 +62,23 @@ const groupBySession = (feedbackItems) => {
       // Use the LOWEST individual rating for urgency (not the average)
       // This ensures any single bad rating triggers appropriate urgency
       const minRating = ratings.length > 0 ? Math.min(...ratings) : null;
+      const urgency = minRating !== null && minRating < 3 ? 3 : (minRating !== null && minRating <= 4) ? 2 : 1;
+
+      // Debug logging
+      console.log('Session urgency:', {
+        table: session.table_number,
+        ratings,
+        avgRating,
+        minRating,
+        urgency
+      });
 
       return {
         ...session,
         type: 'feedback',
         avg_rating: avgRating,
         min_rating: minRating,
-        // Urgency based on lowest individual rating
-        urgency: minRating !== null && minRating < 3 ? 3 : (minRating !== null && minRating <= 4) ? 2 : 1,
+        urgency,
       };
     });
 };
@@ -377,15 +386,17 @@ const IdleScreen = () => {
     return tables.filter(t => t.zone_id && allowedZoneIds.includes(t.zone_id));
   }, [tables, allowedZoneIds]);
 
-  // Build feedback map for floorplan (table_number -> avg rating)
+  // Build feedback map for floorplan (table_number -> min rating for urgency)
   const feedbackMap = useMemo(() => {
     const map = {};
     const sessions = groupBySession(feedbackList.items || []);
     for (const session of sessions) {
-      if (session.table_number && session.avg_rating != null) {
+      // Use min_rating (lowest individual rating) for urgency coloring
+      const ratingForUrgency = session.min_rating ?? session.avg_rating;
+      if (session.table_number && ratingForUrgency != null) {
         // If multiple sessions for same table, use lowest rating (most urgent)
-        if (map[session.table_number] == null || session.avg_rating < map[session.table_number]) {
-          map[session.table_number] = session.avg_rating;
+        if (map[session.table_number] == null || ratingForUrgency < map[session.table_number]) {
+          map[session.table_number] = ratingForUrgency;
         }
       }
     }

@@ -15,13 +15,14 @@ const getRowRating = (row) => {
 };
 
 // Group feedback items by session
+// Uses MIN rating (lowest individual response) to determine urgency
 const groupBySession = (feedbackItems) => {
   const sessionMap = new Map();
-  
+
   for (const item of feedbackItems) {
     const sessionId = item.session_id;
     if (!sessionId) continue;
-    
+
     if (!sessionMap.has(sessionId)) {
       sessionMap.set(sessionId, {
         session_id: sessionId,
@@ -31,25 +32,28 @@ const groupBySession = (feedbackItems) => {
         venue_id: item.venue_id,
       });
     }
-    
+
     sessionMap.get(sessionId).items.push(item);
   }
-  
+
   return Array.from(sessionMap.values())
     .map(session => {
       // Calculate session-level metrics
       const ratings = session.items
         .map(item => getRowRating(item))
         .filter(rating => rating !== null);
-      
-      const avgRating = ratings.length > 0 
-        ? ratings.reduce((sum, rating) => sum + rating, 0) / ratings.length 
+
+      const avgRating = ratings.length > 0
+        ? ratings.reduce((sum, rating) => sum + rating, 0) / ratings.length
         : null;
-      
-      const hasComments = session.items.some(item => 
+
+      // Use MIN rating for urgency - any single bad rating triggers urgent status
+      const minRating = ratings.length > 0 ? Math.min(...ratings) : null;
+
+      const hasComments = session.items.some(item =>
         item.additional_feedback && item.additional_feedback.trim()
       );
-      
+
       // Sort items by question order or creation time
       session.items.sort((a, b) => {
         const aOrder = a.questions?.order || 0;
@@ -57,10 +61,11 @@ const groupBySession = (feedbackItems) => {
         if (aOrder !== bOrder) return aOrder - bOrder;
         return new Date(a.created_at) - new Date(b.created_at);
       });
-      
+
       return {
         ...session,
         avg_rating: avgRating,
+        min_rating: minRating,
         has_comments: hasComments,
       };
     })
@@ -417,13 +422,14 @@ const FeedbackDetailModal = ({
     }
   };
   
-  const urgencyLevel = session.avg_rating !== null && session.avg_rating < 3 ? 'urgent' :
-                      session.avg_rating !== null && session.avg_rating <= 4 ? 'attention' : 'info';
+  // Use MIN rating for urgency: <3 = urgent, 3-4 = attention, >4 = positive
+  const urgencyLevel = session.min_rating !== null && session.min_rating < 3 ? 'urgent' :
+                      session.min_rating !== null && session.min_rating <= 4 ? 'attention' : 'positive';
   
   const urgencyConfig = {
-    urgent: { 
-      label: 'URGENT', 
-      color: 'bg-red-600 text-white', 
+    urgent: {
+      label: 'URGENT',
+      color: 'bg-red-600 text-white',
       bgColor: 'bg-red-50',
       borderColor: 'border-red-200',
       icon: (
@@ -432,9 +438,9 @@ const FeedbackDetailModal = ({
         </svg>
       )
     },
-    attention: { 
-      label: 'ATTENTION', 
-      color: 'bg-amber-600 text-white', 
+    attention: {
+      label: 'ATTENTION',
+      color: 'bg-amber-600 text-white',
       bgColor: 'bg-amber-50',
       borderColor: 'border-amber-200',
       icon: (
@@ -443,14 +449,14 @@ const FeedbackDetailModal = ({
         </svg>
       )
     },
-    info: { 
-      label: 'INFORMATIONAL', 
-      color: 'bg-blue-600 text-white', 
-      bgColor: 'bg-blue-50',
-      borderColor: 'border-blue-200',
+    positive: {
+      label: 'POSITIVE',
+      color: 'bg-green-600 text-white',
+      bgColor: 'bg-green-50',
+      borderColor: 'border-green-200',
       icon: (
         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
         </svg>
       )
     }

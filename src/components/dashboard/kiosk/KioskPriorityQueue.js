@@ -15,13 +15,14 @@ const getRowRating = (row) => {
 };
 
 // Group feedback items by session
+// Uses MIN rating (lowest individual response) to determine urgency
 const groupBySession = (feedbackItems) => {
   const sessionMap = new Map();
-  
+
   for (const item of feedbackItems) {
     const sessionId = item.session_id;
     if (!sessionId) continue;
-    
+
     if (!sessionMap.has(sessionId)) {
       sessionMap.set(sessionId, {
         session_id: sessionId,
@@ -31,31 +32,38 @@ const groupBySession = (feedbackItems) => {
         venue_id: item.venue_id,
       });
     }
-    
+
     sessionMap.get(sessionId).items.push(item);
   }
-  
+
   return Array.from(sessionMap.values())
     .map(session => {
       // Calculate session-level metrics
       const ratings = session.items
         .map(item => getRowRating(item))
         .filter(rating => rating !== null);
-      
-      const avgRating = ratings.length > 0 
-        ? ratings.reduce((sum, rating) => sum + rating, 0) / ratings.length 
+
+      const avgRating = ratings.length > 0
+        ? ratings.reduce((sum, rating) => sum + rating, 0) / ratings.length
         : null;
-      
-      const hasComments = session.items.some(item => 
+
+      // Use MIN rating for urgency - any single bad rating triggers urgent status
+      const minRating = ratings.length > 0 ? Math.min(...ratings) : null;
+
+      const hasComments = session.items.some(item =>
         item.additional_feedback && item.additional_feedback.trim()
       );
-      
+
+      // Urgency based on MINIMUM rating: <3 = urgent (3), 3-4 = attention (2), >4 = good (1)
+      const urgency = minRating !== null && minRating < 3 ? 3 : (minRating !== null && minRating <= 4) ? 2 : 1;
+
       return {
         ...session,
         type: 'feedback',
         avg_rating: avgRating,
+        min_rating: minRating,
         has_comments: hasComments,
-        urgency: avgRating < 3 ? 3 : (avgRating <= 4) ? 2 : 1, // 3=urgent (<3), 2=attention (3-4), 1=good (>4)
+        urgency: urgency,
       };
     });
 };
@@ -143,10 +151,10 @@ const KioskPriorityQueue = ({
         default: return 'border-green-300 bg-green-50';
       }
     } else {
-      // Feedback - color by rating
-      if (item.urgency === 3) return 'border-red-500 bg-red-100 border-2'; // Rating <3: Red
-      if (item.urgency === 2) return 'border-yellow-500 bg-yellow-100 border-2'; // Rating 3-4: Amber
-      return 'border-green-500 bg-green-100 border-2'; // Rating >4: Green
+      // Feedback - color by min rating (urgency level)
+      if (item.urgency === 3) return 'border-red-500 bg-red-100 border-2'; // Min rating <3: Red URGENT
+      if (item.urgency === 2) return 'border-yellow-500 bg-yellow-100 border-2'; // Min rating 3-4: Amber ATTENTION
+      return 'border-green-500 bg-green-100 border-2'; // Min rating >4: Green POSITIVE
     }
   };
 
@@ -162,10 +170,10 @@ const KioskPriorityQueue = ({
         className: colors[item.status] || 'bg-gray-500 text-white'
       };
     } else {
-      // Feedback
-      if (item.urgency === 3) return { text: 'URGENT', className: 'bg-red-500 text-white' };
-      if (item.urgency === 2) return { text: 'ATTENTION', className: 'bg-yellow-500 text-white' };
-      return { text: 'FEEDBACK', className: 'bg-blue-500 text-white' };
+      // Feedback - based on min rating (urgency level)
+      if (item.urgency === 3) return { text: 'URGENT', className: 'bg-red-500 text-white' }; // Min <3
+      if (item.urgency === 2) return { text: 'ATTENTION', className: 'bg-yellow-500 text-white' }; // Min 3-4
+      return { text: 'POSITIVE', className: 'bg-green-500 text-white' }; // Min >4
     }
   };
 
