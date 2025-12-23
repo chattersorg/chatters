@@ -551,7 +551,18 @@ const StaffLeaderboardPage = () => {
         <meta property="og:title" content="Staff Leaderboard | Chatters" />
         <meta property="og:description" content="Real-time leaderboard that ranks staff by guest feedback. See who's crushing it." />
         <meta property="og:type" content="website" />
-        <link rel="canonical" href="https://getchatters.com/product/staff-leaderboard" />
+        <link rel="canonical" href="https://www.getchatters.com/product/staff-leaderboard" />
+        <script type="application/ld+json">
+          {JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "BreadcrumbList",
+            "itemListElement": [
+              { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://www.getchatters.com/" },
+              { "@type": "ListItem", "position": 2, "name": "Product", "item": "https://www.getchatters.com/features" },
+              { "@type": "ListItem", "position": 3, "name": "Staff Leaderboard", "item": "https://www.getchatters.com/product/staff-leaderboard" }
+            ]
+          })}
+        </script>
       </Helmet>
 
       <Navbar />

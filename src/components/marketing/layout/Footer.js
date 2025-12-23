@@ -98,18 +98,10 @@ const Footer = () => {
               </li>
               <li>
                 <a
-                  href="/solutions/retail"
+                  href="/solutions/pubs-bars"
                   className="hover:text-white transition-colors"
                 >
-                  Retail
-                </a>
-              </li>
-              <li>
-                <a
-                  href="/solutions/events"
-                  className="hover:text-white transition-colors"
-                >
-                  Events
+                  Pubs & Bars
                 </a>
               </li>
             </ul>

@@ -24,6 +24,7 @@ const getRowRating = (row) => {
 };
 
 // Group feedback by session and calculate priority
+// Uses MIN rating (lowest individual response) to determine urgency
 const groupBySession = (feedbackItems) => {
   const sessionMap = new Map();
 
@@ -54,11 +55,18 @@ const groupBySession = (feedbackItems) => {
         ? ratings.reduce((sum, rating) => sum + rating, 0) / ratings.length
         : null;
 
+      // Use MIN rating for urgency - any single bad rating triggers urgent status
+      const minRating = ratings.length > 0 ? Math.min(...ratings) : null;
+
+      // Urgency based on MINIMUM rating: <3 = urgent (3), 3-4 = attention (2), >4 = good (1)
+      const urgency = minRating !== null && minRating < 3 ? 3 : (minRating !== null && minRating <= 4) ? 2 : 1;
+
       return {
         ...session,
         type: 'feedback',
         avg_rating: avgRating,
-        urgency: avgRating !== null && avgRating < 3 ? 3 : (avgRating !== null && avgRating <= 4) ? 2 : 1,
+        min_rating: minRating,
+        urgency: urgency,
       };
     });
 };
@@ -398,11 +406,16 @@ const KioskPage = () => {
       }
     }
 
-    // Average rating per table (visual indicator on floorplan)
+    // MIN rating per table (visual indicator on floorplan)
+    // Uses minimum rating so any bad response triggers urgent coloring
     for (const table in sessionMap) {
       const valid = sessionMap[table].filter((e) => e.rating !== null && e.rating !== undefined);
-      ratings[table] =
-        valid.length > 0 ? valid.reduce((a, b) => a + Number(b.rating || 0), 0) / valid.length : null;
+      if (valid.length > 0) {
+        const tableRatings = valid.map(e => Number(e.rating || 0));
+        ratings[table] = Math.min(...tableRatings);
+      } else {
+        ratings[table] = null;
+      }
     }
 
     setFeedbackMap(ratings);

@@ -597,7 +597,18 @@ const KioskModePage = () => {
         <meta property="og:title" content="Kiosk Mode | Chatters" />
         <meta property="og:description" content="One screen. Every table. Nothing missed. Live dashboard for front-of-house teams." />
         <meta property="og:type" content="website" />
-        <link rel="canonical" href="https://getchatters.com/product/kiosk-mode" />
+        <link rel="canonical" href="https://www.getchatters.com/product/kiosk-mode" />
+        <script type="application/ld+json">
+          {JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "BreadcrumbList",
+            "itemListElement": [
+              { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://www.getchatters.com/" },
+              { "@type": "ListItem", "position": 2, "name": "Product", "item": "https://www.getchatters.com/features" },
+              { "@type": "ListItem", "position": 3, "name": "Kiosk Mode", "item": "https://www.getchatters.com/product/kiosk-mode" }
+            ]
+          })}
+        </script>
       </Helmet>
 
       <Navbar />

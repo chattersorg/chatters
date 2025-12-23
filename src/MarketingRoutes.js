@@ -8,10 +8,7 @@ import PricingPage from './pages/marketing/Pricing';
 import FeaturesPage from './pages/marketing/Features';
 import ContactPage from './pages/marketing/ContactPage';
 import SecurityPage from './pages/marketing/SecurityPage';
-import HelpPage from './pages/marketing/HelpPage';
-import HelpNewPage from './pages/marketing/HelpNewPage';
 import HelpPageNew from './pages/marketing/HelpPageNew';
-import HelpArticleRoute from './pages/marketing/help/HelpArticleRoute';
 import TermsAndConditionsPage from './pages/marketing/Terms';
 import PrivacyPolicyPage from './pages/marketing/Privacy';
 import AboutPage from './pages/marketing/AboutPage';
@@ -38,16 +35,8 @@ import CustomerTrendsPage from './pages/marketing/product/Customer-Trends';
 
 import RestaurantSolution from './pages/marketing/solutions/RestaurantSolution';
 import HotelSolution from './pages/marketing/solutions/HotelSolution';
-import RetailSolution from './pages/marketing/solutions/RetailSolution';
-import EventSolution from './pages/marketing/solutions/EventSolution';
 import PubsBarsSolution from './pages/marketing/solutions/PubsBarsSolution';
-
-import RestaurantsIndustry from './pages/marketing/industries/Restaurants';
-import HotelsIndustry from './pages/marketing/industries/Hotels';
-import RetailIndustry from './pages/marketing/industries/Retail';
-import EventsIndustry from './pages/marketing/industries/Events';
-
-import NewSite from './pages/marketing/NewSite';
+import NotFoundPage from './pages/marketing/NotFoundPage';
 
 const MarketingRoutes = () => {
   return (
@@ -64,8 +53,6 @@ const MarketingRoutes = () => {
       <Route path="/help" element={<HelpPageNew />} />
       <Route path="/help/:categorySlug" element={<HelpPageNew />} />
       <Route path="/help/:categorySlug/:articleSlug" element={<HelpPageNew />} />
-      <Route path="/help-old" element={<HelpPage />} />
-      <Route path="/help-new" element={<HelpNewPage />} />
       <Route path="/terms" element={<TermsAndConditionsPage />} />
       <Route path="/privacy" element={<PrivacyPolicyPage />} />
       <Route path="/about" element={<AboutPage />} />
@@ -96,17 +83,9 @@ const MarketingRoutes = () => {
       <Route path="/solutions/restaurants" element={<RestaurantSolution />} />
       <Route path="/solutions/hotels" element={<HotelSolution />} />
       <Route path="/solutions/pubs-bars" element={<PubsBarsSolution />} />
-      <Route path="/solutions/retail" element={<RetailSolution />} />
-      <Route path="/solutions/events" element={<EventSolution />} />
 
-      {/* 🏭 Industry Pages */}
-      <Route path="/industries/restaurants" element={<RestaurantsIndustry />} />
-      <Route path="/industries/hotels" element={<HotelsIndustry />} />
-      <Route path="/industries/retail" element={<RetailIndustry />} />
-      <Route path="/industries/events" element={<EventsIndustry />} />
-
-      {/* 🆕 New Site (Rebrand Test) */}
-      <Route path="/new-site" element={<NewSite />} />
+      {/* 404 - Must be last */}
+      <Route path="*" element={<NotFoundPage />} />
 
       </Routes>
 

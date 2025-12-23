@@ -558,7 +558,18 @@ const QuestionManagementPage = () => {
         <meta property="og:title" content="Question Management | Chatters" />
         <meta property="og:description" content="Design feedback forms that guests actually complete. Custom questions, smart logic, proven templates." />
         <meta property="og:type" content="website" />
-        <link rel="canonical" href="https://getchatters.com/product/question-management" />
+        <link rel="canonical" href="https://www.getchatters.com/product/question-management" />
+        <script type="application/ld+json">
+          {JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "BreadcrumbList",
+            "itemListElement": [
+              { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://www.getchatters.com/" },
+              { "@type": "ListItem", "position": 2, "name": "Product", "item": "https://www.getchatters.com/features" },
+              { "@type": "ListItem", "position": 3, "name": "Question Management", "item": "https://www.getchatters.com/product/question-management" }
+            ]
+          })}
+        </script>
       </Helmet>
 
       <Navbar />

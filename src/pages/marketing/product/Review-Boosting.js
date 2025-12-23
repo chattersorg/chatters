@@ -509,7 +509,18 @@ const ReviewBoostingPage = () => {
         <meta property="og:title" content="Review Boosting | Chatters" />
         <meta property="og:description" content="Turn happy guests into 5-star reviews. Automatic prompts at the perfect moment." />
         <meta property="og:type" content="website" />
-        <link rel="canonical" href="https://getchatters.com/product/review-boosting" />
+        <link rel="canonical" href="https://www.getchatters.com/product/review-boosting" />
+        <script type="application/ld+json">
+          {JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "BreadcrumbList",
+            "itemListElement": [
+              { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://www.getchatters.com/" },
+              { "@type": "ListItem", "position": 2, "name": "Product", "item": "https://www.getchatters.com/features" },
+              { "@type": "ListItem", "position": 3, "name": "Review Boosting", "item": "https://www.getchatters.com/product/review-boosting" }
+            ]
+          })}
+        </script>
       </Helmet>
 
       <Navbar />

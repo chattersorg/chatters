@@ -584,7 +584,18 @@ const MultiLocationControlPage = () => {
         <meta property="og:title" content="Multi-Location Control | Chatters" />
         <meta property="og:description" content="One dashboard. Every venue. Complete control across your hospitality group." />
         <meta property="og:type" content="website" />
-        <link rel="canonical" href="https://getchatters.com/multi-venue/control" />
+        <link rel="canonical" href="https://www.getchatters.com/product/multi-location-control" />
+        <script type="application/ld+json">
+          {JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "BreadcrumbList",
+            "itemListElement": [
+              { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://www.getchatters.com/" },
+              { "@type": "ListItem", "position": 2, "name": "Product", "item": "https://www.getchatters.com/features" },
+              { "@type": "ListItem", "position": 3, "name": "Multi-Location Control", "item": "https://www.getchatters.com/product/multi-location-control" }
+            ]
+          })}
+        </script>
       </Helmet>
 
       <Navbar />

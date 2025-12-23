@@ -557,7 +557,18 @@ const NPSScoringPage = () => {
           content="Know which guests will return and why. Track NPS automatically and turn satisfied guests into loyal advocates."
         />
         <meta property="og:type" content="website" />
-        <link rel="canonical" href="https://getchatters.com/analytics/nps" />
+        <link rel="canonical" href="https://www.getchatters.com/product/nps-scoring" />
+        <script type="application/ld+json">
+          {JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "BreadcrumbList",
+            "itemListElement": [
+              { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://www.getchatters.com/" },
+              { "@type": "ListItem", "position": 2, "name": "Product", "item": "https://www.getchatters.com/features" },
+              { "@type": "ListItem", "position": 3, "name": "NPS Scoring", "item": "https://www.getchatters.com/product/nps-scoring" }
+            ]
+          })}
+        </script>
       </Helmet>
 
       <Navbar />
