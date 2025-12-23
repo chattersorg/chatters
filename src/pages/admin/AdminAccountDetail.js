@@ -33,6 +33,8 @@ const AdminAccountDetail = () => {
   const [editingAccount, setEditingAccount] = useState(null);
   const [saving, setSaving] = useState(false);
   const [extendDays, setExtendDays] = useState('');
+  const [trialEndDate, setTrialEndDate] = useState('');
+  const [trialExtendMode, setTrialExtendMode] = useState('days'); // 'days' or 'date'
   const [extending, setExtending] = useState(false);
   const [showFeedbackDemoPicker, setShowFeedbackDemoPicker] = useState(false);
   const [feedbackDemoDateRange, setFeedbackDemoDateRange] = useState({ startDate: '', endDate: '' });
@@ -179,18 +181,29 @@ const AdminAccountDetail = () => {
   };
 
   const handleExtendTrial = async () => {
-    if (!extendDays || parseInt(extendDays) <= 0) {
-      toast.error('Please enter a valid number of days');
-      return;
+    let newTrialEnd;
+
+    if (trialExtendMode === 'days') {
+      if (!extendDays || parseInt(extendDays) <= 0) {
+        toast.error('Please enter a valid number of days');
+        return;
+      }
+      // Calculate new trial end date from current trial end
+      const currentTrialEnd = account.trial_ends_at ? new Date(account.trial_ends_at) : new Date();
+      newTrialEnd = new Date(currentTrialEnd);
+      newTrialEnd.setDate(newTrialEnd.getDate() + parseInt(extendDays));
+    } else {
+      if (!trialEndDate) {
+        toast.error('Please select a date');
+        return;
+      }
+      newTrialEnd = new Date(trialEndDate);
+      // Set to end of day
+      newTrialEnd.setHours(23, 59, 59, 999);
     }
 
     setExtending(true);
     try {
-      // Calculate new trial end date
-      const currentTrialEnd = account.trial_ends_at ? new Date(account.trial_ends_at) : new Date();
-      const newTrialEnd = new Date(currentTrialEnd);
-      newTrialEnd.setDate(newTrialEnd.getDate() + parseInt(extendDays));
-
       const { error } = await supabase
         .from('accounts')
         .update({
@@ -202,7 +215,13 @@ const AdminAccountDetail = () => {
 
       setAccount({ ...account, trial_ends_at: newTrialEnd.toISOString() });
       setExtendDays('');
-      toast.success(`Trial extended by ${extendDays} days!`);
+      setTrialEndDate('');
+
+      if (trialExtendMode === 'days') {
+        toast.success(`Trial extended by ${extendDays} days!`);
+      } else {
+        toast.success(`Trial end date set to ${newTrialEnd.toLocaleDateString()}`);
+      }
     } catch (error) {
       console.error('Error extending trial:', error);
       toast.error('Failed to extend trial');
@@ -926,34 +945,76 @@ const AdminAccountDetail = () => {
                 <div className="border-t border-gray-200 pt-6">
                   <h3 className="text-lg font-medium text-gray-900 mb-4">Extend Trial</h3>
                   <div className="max-w-sm space-y-3">
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1.5">
-                        Add Days to Trial
-                      </label>
-                      <input
-                        type="number"
-                        min="1"
-                        value={extendDays}
-                        onChange={(e) => setExtendDays(e.target.value)}
-                        placeholder="Enter number of days"
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                      />
+                    {/* Mode Toggle */}
+                    <div className="flex rounded-lg border border-gray-300 overflow-hidden">
+                      <button
+                        type="button"
+                        onClick={() => setTrialExtendMode('days')}
+                        className={`flex-1 px-3 py-2 text-sm font-medium transition-colors ${
+                          trialExtendMode === 'days'
+                            ? 'bg-blue-600 text-white'
+                            : 'bg-white text-gray-700 hover:bg-gray-50'
+                        }`}
+                      >
+                        Add Days
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setTrialExtendMode('date')}
+                        className={`flex-1 px-3 py-2 text-sm font-medium transition-colors border-l border-gray-300 ${
+                          trialExtendMode === 'date'
+                            ? 'bg-blue-600 text-white'
+                            : 'bg-white text-gray-700 hover:bg-gray-50'
+                        }`}
+                      >
+                        Set End Date
+                      </button>
                     </div>
+
+                    {/* Input based on mode */}
+                    {trialExtendMode === 'days' ? (
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1.5">
+                          Number of Days
+                        </label>
+                        <input
+                          type="number"
+                          min="1"
+                          value={extendDays}
+                          onChange={(e) => setExtendDays(e.target.value)}
+                          placeholder="Enter number of days"
+                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                        />
+                      </div>
+                    ) : (
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1.5">
+                          Trial End Date
+                        </label>
+                        <input
+                          type="date"
+                          value={trialEndDate}
+                          onChange={(e) => setTrialEndDate(e.target.value)}
+                          min={new Date().toISOString().split('T')[0]}
+                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                        />
+                      </div>
+                    )}
 
                     <button
                       onClick={handleExtendTrial}
-                      disabled={!extendDays || extending}
+                      disabled={(trialExtendMode === 'days' ? !extendDays : !trialEndDate) || extending}
                       className="w-full px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                     >
                       {extending ? (
                         <>
                           <Loader2 className="w-4 h-4 animate-spin" />
-                          Extending...
+                          {trialExtendMode === 'days' ? 'Extending...' : 'Setting...'}
                         </>
                       ) : (
                         <>
                           <Clock className="w-4 h-4" />
-                          Extend Trial
+                          {trialExtendMode === 'days' ? 'Extend Trial' : 'Set Trial End'}
                         </>
                       )}
                     </button>

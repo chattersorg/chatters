@@ -98,7 +98,7 @@ export default async function handler(req, res) {
         .eq('id', user.account_id);
     }
 
-    // Create the subscription with payment pending
+    // Create the subscription with payment pending and automatic tax
     const subscription = await stripe.subscriptions.create({
       customer: customerId,
       items: [
@@ -112,10 +112,13 @@ export default async function handler(req, res) {
         payment_method_types: ['card', 'bacs_debit'],
         save_default_payment_method: 'on_subscription',
       },
+      automatic_tax: {
+        enabled: true,
+      },
       metadata: {
         chatters_account_id: user.account_id
       },
-      expand: ['latest_invoice.payment_intent'],
+      expand: ['latest_invoice.payment_intent', 'latest_invoice'],
     });
 
     const paymentIntent = subscription.latest_invoice.payment_intent;
@@ -125,22 +128,21 @@ export default async function handler(req, res) {
       try {
         const isMonthly = priceId === process.env.REACT_APP_STRIPE_PRICE_MONTHLY;
         const planType = isMonthly ? 'Monthly' : 'Annual';
-
-        // Calculate pricing (must match frontend)
-        const PRICE_PER_VENUE_MONTHLY = 149;
-        const PRICE_PER_VENUE_YEARLY = 1430;
-        const VAT_RATE = 0.20;
-
-        const subtotal = quantity * (isMonthly ? PRICE_PER_VENUE_MONTHLY : PRICE_PER_VENUE_YEARLY);
-        const vat = Math.round(subtotal * VAT_RATE);
-        const total = subtotal + vat;
         const period = isMonthly ? 'mo' : 'yr';
+
+        // Get actual amounts from the invoice (includes Stripe Tax calculation)
+        const invoice = subscription.latest_invoice;
+        const subtotal = invoice.subtotal / 100; // Convert from cents
+        const tax = invoice.tax ? invoice.tax / 100 : 0;
+        const total = invoice.total / 100;
+
+        const taxLine = tax > 0 ? `\nTax: *£${tax.toLocaleString()}*` : '\nTax: *Calculated at checkout*';
 
         await fetch(process.env.SLACK_WEBHOOK_URL, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            text: `Checkout started for: *${account.name || 'Unknown'}*\nPlan: *${planType}*\nVenues: *${quantity}*\nSubtotal: *£${subtotal.toLocaleString()}/${period}*\nVAT (20%): *£${vat.toLocaleString()}*\nTotal: *£${total.toLocaleString()}/${period}*\n\nAwaiting card details...`
+            text: `Checkout started for: *${account.name || 'Unknown'}*\nPlan: *${planType}*\nVenues: *${quantity}*\nSubtotal: *£${subtotal.toLocaleString()}/${period}*${taxLine}\nTotal: *£${total.toLocaleString()}/${period}*\n\nAwaiting card details...`
           })
         });
       } catch (slackError) {
