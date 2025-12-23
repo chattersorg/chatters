@@ -384,12 +384,15 @@ async function handleGoogleUpdateVenue(req, res) {
   }
 
   // Store initial rating
+  console.log('💾 [Google] Fetching and storing initial rating for place_id:', place_id);
   try {
     const googleData = await fetchGooglePlaceDetails(place_id);
-    
+    console.log('✅ [Google] Fetched rating data:', googleData);
+
     if (googleData.rating) {
+      console.log('💾 [Google] Inserting into historical_ratings...');
       // Historical ratings
-      await supabaseAdmin
+      const { error: histError } = await supabaseAdmin
         .from('historical_ratings')
         .insert({
           venue_id: venueId,
@@ -400,8 +403,15 @@ async function handleGoogleUpdateVenue(req, res) {
           recorded_at: new Date().toISOString()
         });
 
+      if (histError) {
+        console.error('❌ [Google] Failed to insert historical_ratings:', histError);
+      } else {
+        console.log('✅ [Google] Historical rating inserted successfully');
+      }
+
       // Cache
-      await supabaseAdmin
+      console.log('💾 [Google] Upserting into external_ratings...');
+      const { error: cacheError } = await supabaseAdmin
         .from('external_ratings')
         .upsert({
           venue_id: venueId,
@@ -413,9 +423,17 @@ async function handleGoogleUpdateVenue(req, res) {
         }, {
           onConflict: 'venue_id,source'
         });
+
+      if (cacheError) {
+        console.error('❌ [Google] Failed to upsert external_ratings:', cacheError);
+      } else {
+        console.log('✅ [Google] External rating cached successfully');
+      }
+    } else {
+      console.log('⚠️ [Google] No rating found in Google data, skipping storage');
     }
   } catch (ratingError) {
-    console.error('Failed to fetch initial rating:', ratingError);
+    console.error('💥 [Google] Failed to fetch initial rating:', ratingError.message, ratingError.stack);
   }
 
   return res.status(200).json({
