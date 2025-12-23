@@ -546,7 +546,18 @@ const HotelSolutionPage = () => {
         <meta property="og:title" content="Hotel Feedback Software | Chatters" />
         <meta property="og:description" content="Turn guest concerns into 5-star stays. Real-time feedback for hotels." />
         <meta property="og:type" content="website" />
-        <link rel="canonical" href="https://getchatters.com/solutions/hotels" />
+        <link rel="canonical" href="https://www.getchatters.com/solutions/hotels" />
+        <script type="application/ld+json">
+          {JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "BreadcrumbList",
+            "itemListElement": [
+              { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://www.getchatters.com/" },
+              { "@type": "ListItem", "position": 2, "name": "Solutions", "item": "https://www.getchatters.com/features" },
+              { "@type": "ListItem", "position": 3, "name": "Hotels", "item": "https://www.getchatters.com/solutions/hotels" }
+            ]
+          })}
+        </script>
       </Helmet>
 
       <Navbar />

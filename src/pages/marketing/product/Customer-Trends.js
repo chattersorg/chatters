@@ -509,7 +509,18 @@ const CustomerTrendsPage = () => {
         <meta property="og:title" content="Customer Trends | Chatters" />
         <meta property="og:description" content="See patterns before they become problems. Feedback trend analysis for hospitality." />
         <meta property="og:type" content="website" />
-        <link rel="canonical" href="https://getchatters.com/product/customer-trends" />
+        <link rel="canonical" href="https://www.getchatters.com/product/customer-trends" />
+        <script type="application/ld+json">
+          {JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "BreadcrumbList",
+            "itemListElement": [
+              { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://www.getchatters.com/" },
+              { "@type": "ListItem", "position": 2, "name": "Product", "item": "https://www.getchatters.com/features" },
+              { "@type": "ListItem", "position": 3, "name": "Customer Trends", "item": "https://www.getchatters.com/product/customer-trends" }
+            ]
+          })}
+        </script>
       </Helmet>
 
       <Navbar />

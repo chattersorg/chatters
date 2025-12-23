@@ -560,7 +560,18 @@ const MultiVenueAnalyticsPage = () => {
         <meta property="og:title" content="Multi-Venue Analytics | Chatters" />
         <meta property="og:description" content="Turn group data into group decisions. Cross-location patterns and performance insights." />
         <meta property="og:type" content="website" />
-        <link rel="canonical" href="https://getchatters.com/multi-venue/analytics" />
+        <link rel="canonical" href="https://www.getchatters.com/product/multi-venue-analytics" />
+        <script type="application/ld+json">
+          {JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "BreadcrumbList",
+            "itemListElement": [
+              { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://www.getchatters.com/" },
+              { "@type": "ListItem", "position": 2, "name": "Product", "item": "https://www.getchatters.com/features" },
+              { "@type": "ListItem", "position": 3, "name": "Multi-Venue Analytics", "item": "https://www.getchatters.com/product/multi-venue-analytics" }
+            ]
+          })}
+        </script>
       </Helmet>
 
       <Navbar />

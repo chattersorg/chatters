@@ -16,6 +16,125 @@ import {
 import Navbar from '../../../components/marketing/layout/Navbar';
 import Footer from '../../../components/marketing/layout/Footer';
 
+// AI Insights Dashboard Mockup
+const AIInsightsMockup = () => {
+  return (
+    <div className="bg-slate-900 rounded-xl p-4 shadow-2xl">
+      {/* Header with week navigator */}
+      <div className="flex items-center justify-between mb-4 pb-3 border-b border-slate-700">
+        <div className="flex items-center gap-2">
+          <Sparkles className="w-4 h-4 text-[#4E74FF]" />
+          <span className="text-white text-sm font-medium">AI Insights</span>
+        </div>
+        <div className="flex items-center gap-2 text-slate-400 text-xs">
+          <span>16 Dec - 22 Dec 2024</span>
+        </div>
+      </div>
+
+      {/* Top Row: AI Score + Stats */}
+      <div className="grid grid-cols-5 gap-3 mb-4">
+        {/* AI Score Card */}
+        <div className="col-span-2 bg-emerald-900/30 border border-emerald-700/50 rounded-lg p-3">
+          <div className="flex items-center gap-1.5 mb-2">
+            <Sparkles className="w-3 h-3 text-[#4E74FF]" />
+            <span className="text-slate-300 text-[10px] font-medium">AI Score</span>
+          </div>
+          <div className="text-center">
+            <div className="text-3xl font-bold text-emerald-400">8.4</div>
+            <p className="text-slate-500 text-[9px]">out of 10</p>
+            <div className="inline-flex items-center gap-1 mt-1 px-2 py-0.5 rounded-full text-[9px] font-medium bg-emerald-900/50 text-emerald-400">
+              <span>↑</span>
+              <span>+0.6 vs last week</span>
+            </div>
+          </div>
+        </div>
+
+        {/* Stats Grid */}
+        <div className="col-span-3 grid grid-cols-2 gap-2">
+          <div className="bg-slate-800 rounded-lg p-2">
+            <div className="flex items-center gap-1 mb-1">
+              <MessageSquare className="w-2.5 h-2.5 text-[#4E74FF]" />
+              <span className="text-slate-400 text-[9px]">Feedback</span>
+            </div>
+            <div className="text-lg font-bold text-white">127</div>
+          </div>
+          <div className="bg-slate-800 rounded-lg p-2">
+            <div className="flex items-center gap-1 mb-1">
+              <Star className="w-2.5 h-2.5 text-amber-400" />
+              <span className="text-slate-400 text-[9px]">NPS Score</span>
+            </div>
+            <div className="text-lg font-bold text-emerald-400">+62</div>
+          </div>
+          <div className="bg-slate-800 rounded-lg p-2">
+            <div className="flex items-center gap-1 mb-1">
+              <Heart className="w-2.5 h-2.5 text-emerald-400" />
+              <span className="text-slate-400 text-[9px]">Strengths</span>
+            </div>
+            <div className="text-lg font-bold text-white">4</div>
+          </div>
+          <div className="bg-slate-800 rounded-lg p-2">
+            <div className="flex items-center gap-1 mb-1">
+              <AlertTriangle className="w-2.5 h-2.5 text-amber-400" />
+              <span className="text-slate-400 text-[9px]">Opportunities</span>
+            </div>
+            <div className="text-lg font-bold text-white">2</div>
+          </div>
+        </div>
+      </div>
+
+      {/* AI Summary */}
+      <div className="bg-slate-800 rounded-lg p-3 mb-3">
+        <div className="flex items-center gap-1.5 mb-2">
+          <FileText className="w-3 h-3 text-[#4E74FF]" />
+          <span className="text-slate-300 text-[10px] font-medium">AI Summary</span>
+        </div>
+        <p className="text-slate-400 text-[10px] leading-relaxed">
+          Strong week with service quality leading feedback. Guests praised Emma and James for attentiveness. Wait times improved vs last week. Consider reviewing weekend kitchen staffing.
+        </p>
+      </div>
+
+      {/* Strengths & Opportunities Row */}
+      <div className="grid grid-cols-2 gap-3">
+        {/* Strengths */}
+        <div className="bg-emerald-900/20 border border-emerald-800/30 rounded-lg p-2">
+          <div className="flex items-center gap-1 mb-2">
+            <Heart className="w-3 h-3 text-emerald-400" />
+            <span className="text-emerald-400 text-[9px] font-medium">Strengths</span>
+          </div>
+          <div className="space-y-1">
+            <div className="flex items-start gap-1.5">
+              <div className="w-1 h-1 bg-emerald-400 rounded-full mt-1.5 flex-shrink-0"></div>
+              <span className="text-slate-300 text-[9px]">Service quality excellent</span>
+            </div>
+            <div className="flex items-start gap-1.5">
+              <div className="w-1 h-1 bg-emerald-400 rounded-full mt-1.5 flex-shrink-0"></div>
+              <span className="text-slate-300 text-[9px]">Staff praised by name</span>
+            </div>
+          </div>
+        </div>
+
+        {/* Opportunities */}
+        <div className="bg-amber-900/20 border border-amber-800/30 rounded-lg p-2">
+          <div className="flex items-center gap-1 mb-2">
+            <AlertTriangle className="w-3 h-3 text-amber-400" />
+            <span className="text-amber-400 text-[9px] font-medium">Opportunities</span>
+          </div>
+          <div className="space-y-1">
+            <div className="flex items-start gap-1.5">
+              <div className="w-1 h-1 bg-amber-400 rounded-full mt-1.5 flex-shrink-0"></div>
+              <span className="text-slate-300 text-[9px]">Weekend wait times</span>
+            </div>
+            <div className="flex items-start gap-1.5">
+              <div className="w-1 h-1 bg-amber-400 rounded-full mt-1.5 flex-shrink-0"></div>
+              <span className="text-slate-300 text-[9px]">Kitchen consistency</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
 // SECTION 1, HERO
 const Hero = () => {
   return (
@@ -62,73 +181,8 @@ const Hero = () => {
                     <div className="w-3 h-3 rounded-full bg-blue-500"></div>
                   </div>
                 </div>
-                {/* Intelligence/Sentiment Analysis Mockup */}
-                <div className="bg-white rounded-lg p-4">
-                  {/* Header */}
-                  <div className="flex items-center justify-between mb-4 pb-3 border-b border-gray-100">
-                    <div className="flex items-center gap-2">
-                      <Brain className="w-4 h-4 text-[#4E74FF]" />
-                      <span className="text-gray-900 text-sm font-medium">Sentiment Analysis</span>
-                    </div>
-                    <span className="text-gray-400 text-xs">Live</span>
-                  </div>
-
-                  {/* Analyzed Feedback */}
-                  <div className="space-y-3">
-                    <div className="bg-gray-50 rounded-lg p-3">
-                      <div className="flex items-center justify-between mb-2">
-                        <span className="text-gray-900 text-xs font-medium">Table 6</span>
-                        <div className="flex items-center gap-1">
-                          {[1,2,3,4].map(s => <Star key={s} className="w-3 h-3 fill-yellow-400 text-yellow-400" />)}
-                          <Star className="w-3 h-3 text-gray-200" />
-                        </div>
-                      </div>
-                      <p className="text-gray-600 text-xs mb-2">"Food was delicious but we waited ages for our mains"</p>
-                      <div className="flex flex-wrap gap-1">
-                        <span className="bg-emerald-100 text-emerald-700 text-[10px] px-2 py-0.5 rounded-full flex items-center gap-1">
-                          <Heart className="w-2.5 h-2.5" /> Food quality
-                        </span>
-                        <span className="bg-red-100 text-red-700 text-[10px] px-2 py-0.5 rounded-full flex items-center gap-1">
-                          <AlertTriangle className="w-2.5 h-2.5" /> Wait time
-                        </span>
-                      </div>
-                    </div>
-
-                    <div className="bg-gray-50 rounded-lg p-3">
-                      <div className="flex items-center justify-between mb-2">
-                        <span className="text-gray-900 text-xs font-medium">Table 2</span>
-                        <div className="flex items-center gap-1">
-                          {[1,2,3,4,5].map(s => <Star key={s} className="w-3 h-3 fill-yellow-400 text-yellow-400" />)}
-                        </div>
-                      </div>
-                      <p className="text-gray-600 text-xs mb-2">"Emma was fantastic, best service we've had!"</p>
-                      <div className="flex flex-wrap gap-1">
-                        <span className="bg-emerald-100 text-emerald-700 text-[10px] px-2 py-0.5 rounded-full flex items-center gap-1">
-                          <Sparkles className="w-2.5 h-2.5" /> Staff mention
-                        </span>
-                        <span className="bg-emerald-100 text-emerald-700 text-[10px] px-2 py-0.5 rounded-full flex items-center gap-1">
-                          <Heart className="w-2.5 h-2.5" /> Service
-                        </span>
-                      </div>
-                    </div>
-
-                    {/* Sentiment Summary */}
-                    <div className="grid grid-cols-3 gap-2 pt-2">
-                      <div className="text-center">
-                        <p className="text-emerald-600 text-lg font-bold">72%</p>
-                        <p className="text-gray-400 text-[10px]">Positive</p>
-                      </div>
-                      <div className="text-center">
-                        <p className="text-gray-500 text-lg font-bold">18%</p>
-                        <p className="text-gray-400 text-[10px]">Neutral</p>
-                      </div>
-                      <div className="text-center">
-                        <p className="text-red-500 text-lg font-bold">10%</p>
-                        <p className="text-gray-400 text-[10px]">Negative</p>
-                      </div>
-                    </div>
-                  </div>
-                </div>
+                {/* AI Insights Dashboard Mockup */}
+                <AIInsightsMockup />
               </div>
             </div>
           </div>
@@ -568,7 +622,18 @@ const IntelligencePage = () => {
         <meta property="og:title" content="Chatters Intelligence | Chatters" />
         <meta property="og:description" content="Understand what guests mean, not just what they rate. Real-time sentiment analysis." />
         <meta property="og:type" content="website" />
-        <link rel="canonical" href="https://getchatters.com/analytics/intelligence" />
+        <link rel="canonical" href="https://www.getchatters.com/product/intelligence" />
+        <script type="application/ld+json">
+          {JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "BreadcrumbList",
+            "itemListElement": [
+              { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://www.getchatters.com/" },
+              { "@type": "ListItem", "position": 2, "name": "Product", "item": "https://www.getchatters.com/features" },
+              { "@type": "ListItem", "position": 3, "name": "Intelligence", "item": "https://www.getchatters.com/product/intelligence" }
+            ]
+          })}
+        </script>
       </Helmet>
 
       <Navbar />

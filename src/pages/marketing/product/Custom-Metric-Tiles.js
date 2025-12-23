@@ -506,7 +506,18 @@ const CustomMetricTilesPage = () => {
         <meta property="og:title" content="Custom Metric Tiles | Chatters" />
         <meta property="og:description" content="Build the dashboard that matches how you operate. Track what matters most." />
         <meta property="og:type" content="website" />
-        <link rel="canonical" href="https://getchatters.com/multi-venue/metrics" />
+        <link rel="canonical" href="https://www.getchatters.com/product/custom-metric-tiles" />
+        <script type="application/ld+json">
+          {JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "BreadcrumbList",
+            "itemListElement": [
+              { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://www.getchatters.com/" },
+              { "@type": "ListItem", "position": 2, "name": "Product", "item": "https://www.getchatters.com/features" },
+              { "@type": "ListItem", "position": 3, "name": "Custom Metric Tiles", "item": "https://www.getchatters.com/product/custom-metric-tiles" }
+            ]
+          })}
+        </script>
       </Helmet>
 
       <Navbar />

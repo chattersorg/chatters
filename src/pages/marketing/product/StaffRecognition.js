@@ -26,7 +26,18 @@ const StaffRecognitionPage = () => {
         <meta property="og:title" content="Staff Recognition System | Chatters" />
         <meta property="og:description" content="Automatically recognise and reward your top-performing staff with personalised emails based on customer feedback resolution and performance metrics." />
         <meta property="og:type" content="website" />
-        <link rel="canonical" href="https://getchatters.com/product/staff-recognition" />
+        <link rel="canonical" href="https://www.getchatters.com/product/staff-recognition" />
+        <script type="application/ld+json">
+          {JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "BreadcrumbList",
+            "itemListElement": [
+              { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://www.getchatters.com/" },
+              { "@type": "ListItem", "position": 2, "name": "Product", "item": "https://www.getchatters.com/features" },
+              { "@type": "ListItem", "position": 3, "name": "Staff Recognition", "item": "https://www.getchatters.com/product/staff-recognition" }
+            ]
+          })}
+        </script>
       </Helmet>
 
       <Navbar overlay />

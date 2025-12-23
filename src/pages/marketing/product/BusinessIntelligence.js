@@ -544,7 +544,18 @@ const BusinessIntelligencePage = () => {
         <meta property="og:title" content="Business Intelligence | Chatters" />
         <meta property="og:description" content="Turn service data into strategic decisions. Historical trends and long-term insights." />
         <meta property="og:type" content="website" />
-        <link rel="canonical" href="https://getchatters.com/analytics/business-intelligence" />
+        <link rel="canonical" href="https://www.getchatters.com/product/business-intelligence" />
+        <script type="application/ld+json">
+          {JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "BreadcrumbList",
+            "itemListElement": [
+              { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://www.getchatters.com/" },
+              { "@type": "ListItem", "position": 2, "name": "Product", "item": "https://www.getchatters.com/features" },
+              { "@type": "ListItem", "position": 3, "name": "Business Intelligence", "item": "https://www.getchatters.com/product/business-intelligence" }
+            ]
+          })}
+        </script>
       </Helmet>
 
       <Navbar />

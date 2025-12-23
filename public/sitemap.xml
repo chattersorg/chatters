@@ -34,6 +34,13 @@
     <priority>0.9</priority>
   </url>
 
+  <url>
+    <loc>https://www.getchatters.com/try</loc>
+    <lastmod>2025-12-23</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
+  </url>
+
   <!-- Product Pages (High Priority) -->
   <url>
     <loc>https://www.getchatters.com/product/question-management</loc>
@@ -77,6 +84,62 @@
     <priority>0.8</priority>
   </url>
 
+  <url>
+    <loc>https://www.getchatters.com/product/staff-recognition</loc>
+    <lastmod>2025-12-23</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <url>
+    <loc>https://www.getchatters.com/product/staff-metrics</loc>
+    <lastmod>2025-12-23</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <url>
+    <loc>https://www.getchatters.com/product/intelligence</loc>
+    <lastmod>2025-12-23</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <url>
+    <loc>https://www.getchatters.com/product/live-feedback-dashboard</loc>
+    <lastmod>2025-12-23</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <url>
+    <loc>https://www.getchatters.com/product/review-boosting</loc>
+    <lastmod>2025-12-23</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <url>
+    <loc>https://www.getchatters.com/product/nps-scoring</loc>
+    <lastmod>2025-12-23</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <url>
+    <loc>https://www.getchatters.com/product/customer-trends</loc>
+    <lastmod>2025-12-23</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <url>
+    <loc>https://www.getchatters.com/product/multi-venue-analytics</loc>
+    <lastmod>2025-12-23</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
   <!-- Solutions Pages (High Priority) -->
   <url>
     <loc>https://www.getchatters.com/solutions/restaurants</loc>
@@ -93,15 +156,8 @@
   </url>
 
   <url>
-    <loc>https://www.getchatters.com/solutions/retail</loc>
-    <lastmod>2025-09-16</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-
-  <url>
-    <loc>https://www.getchatters.com/solutions/events</loc>
-    <lastmod>2025-09-16</lastmod>
+    <loc>https://www.getchatters.com/solutions/pubs-bars</loc>
+    <lastmod>2025-12-23</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>

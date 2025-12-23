@@ -637,7 +637,18 @@ const RealTimeAlertsPage = () => {
         <meta property="og:title" content="Real-Time Alerts | Chatters" />
         <meta property="og:description" content="Know the moment a guest is unhappy. Real-time alerts notify your team instantly." />
         <meta property="og:type" content="website" />
-        <link rel="canonical" href="https://getchatters.com/product/real-time-alerts" />
+        <link rel="canonical" href="https://www.getchatters.com/product/real-time-alerts" />
+        <script type="application/ld+json">
+          {JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "BreadcrumbList",
+            "itemListElement": [
+              { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://www.getchatters.com/" },
+              { "@type": "ListItem", "position": 2, "name": "Product", "item": "https://www.getchatters.com/features" },
+              { "@type": "ListItem", "position": 3, "name": "Real-Time Alerts", "item": "https://www.getchatters.com/product/real-time-alerts" }
+            ]
+          })}
+        </script>
       </Helmet>
 
       <Navbar />

@@ -545,7 +545,18 @@ const PubsBarsSolutionPage = () => {
         <meta property="og:title" content="Pubs & Bars Feedback Software | Chatters" />
         <meta property="og:description" content="Keep punters happy. Keep reviews positive. Real-time feedback for busy pubs and bars." />
         <meta property="og:type" content="website" />
-        <link rel="canonical" href="https://getchatters.com/solutions/pubs-bars" />
+        <link rel="canonical" href="https://www.getchatters.com/solutions/pubs-bars" />
+        <script type="application/ld+json">
+          {JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "BreadcrumbList",
+            "itemListElement": [
+              { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://www.getchatters.com/" },
+              { "@type": "ListItem", "position": 2, "name": "Solutions", "item": "https://www.getchatters.com/features" },
+              { "@type": "ListItem", "position": 3, "name": "Pubs & Bars", "item": "https://www.getchatters.com/solutions/pubs-bars" }
+            ]
+          })}
+        </script>
       </Helmet>
 
       <Navbar />

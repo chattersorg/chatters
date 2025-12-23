@@ -544,7 +544,18 @@ const RestaurantSolutionPage = () => {
         <meta property="og:title" content="Restaurant Feedback Software | Chatters" />
         <meta property="og:description" content="Fix issues before diners reach for their phone. Real-time feedback for restaurants." />
         <meta property="og:type" content="website" />
-        <link rel="canonical" href="https://getchatters.com/solutions/restaurants" />
+        <link rel="canonical" href="https://www.getchatters.com/solutions/restaurants" />
+        <script type="application/ld+json">
+          {JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "BreadcrumbList",
+            "itemListElement": [
+              { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://www.getchatters.com/" },
+              { "@type": "ListItem", "position": 2, "name": "Solutions", "item": "https://www.getchatters.com/features" },
+              { "@type": "ListItem", "position": 3, "name": "Restaurants", "item": "https://www.getchatters.com/solutions/restaurants" }
+            ]
+          })}
+        </script>
       </Helmet>
 
       <Navbar />

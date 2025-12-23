@@ -261,14 +261,6 @@ const HelpPageNew = () => {
               <li>Click "Download"</li>
             </ol>
 
-            <h4>QR Code Types</h4>
-
-            <strong>Standard QR Code:</strong>
-            <p>Links directly to your feedback form. Best for table tents, receipts, and general use.</p>
-
-            <strong>Table-Specific QR Codes:</strong>
-            <p>Each code is pre-assigned to a specific table number. Best for permanent installations.</p>
-
             <h4>Download Formats</h4>
             <ul>
               <li><strong>PNG:</strong> Best for digital displays and screens</li>
@@ -298,15 +290,8 @@ const HelpPageNew = () => {
               <li>Format: PNG with transparent background works best</li>
             </ul>
 
-            <strong>Colour Customisation:</strong>
-            <ul>
-              <li>Change QR code colours to match your brand</li>
-              <li>Maintain good contrast for scanability</li>
-              <li>Dark colours on light backgrounds work best</li>
-            </ul>
-
-            <div class="warning-box">
-              <strong>Warning:</strong> Excessive customisation can affect scanability. Always test your customised QR codes before printing large quantities.
+            <div class="tip-box">
+              <strong>Tip:</strong> Always test your QR codes before printing large quantities to ensure they scan correctly.
             </div>
           `
         },
@@ -806,23 +791,54 @@ const HelpPageNew = () => {
           id: 'adding-team-members',
           title: 'Adding Team Members',
           content: `
-            <h3>Inviting Team Members</h3>
-            <p>Collaborate with your team by inviting them to your Chatters account.</p>
+            <h3>Understanding Team Member Types</h3>
+            <p>Chatters has two types of team members you can add to your venue, each serving a different purpose.</p>
 
-            <h4>How to Invite Team Members</h4>
-            <ol>
-              <li>Navigate to <strong>Staff > Team</strong> in the sidebar</li>
-              <li>Click "Invite User"</li>
-              <li>Enter their email address</li>
-              <li>Select their role (Admin/Manager/Staff)</li>
-              <li>Choose which venues they can access</li>
-              <li>Click "Send Invitation"</li>
-            </ol>
+            <h4>Employees</h4>
+            <p>Front-line staff members who interact with customers and can receive recognition.</p>
+            <ul>
+              <li><strong>No login account required</strong> - Employees don't need to log in to Chatters</li>
+              <li><strong>Recognition emails</strong> - Their email address is used to send recognition emails when a manager sends them recognition for great work</li>
+              <li><strong>Appear on leaderboard</strong> - They show up on the staff leaderboard and can be tracked for performance</li>
+              <li><strong>Feedback resolution</strong> - Can be assigned to resolve feedback in kiosk mode</li>
+            </ul>
 
-            <p>They'll receive an email with instructions to create their password and log in.</p>
+            <h4>Managers</h4>
+            <p>Team leaders who need access to the Chatters dashboard to view and manage feedback.</p>
+            <ul>
+              <li><strong>Have their own login account</strong> - Managers get full dashboard access</li>
+              <li><strong>Receive invitation email</strong> - They'll get an email with instructions to set up their password and log in</li>
+              <li><strong>View feedback and analytics</strong> - Can see customer feedback, reports, and trends</li>
+              <li><strong>Customisable permissions</strong> - You can control exactly what each manager can see and do</li>
+            </ul>
 
             <div class="tip-box">
-              <strong>Security Tip:</strong> Always use the principle of least privilege - give team members the minimum access they need.
+              <strong>Tip:</strong> Add all your front-of-house staff as Employees so they can receive recognition emails. Only add Managers for team leaders who need dashboard access.
+            </div>
+
+            <h4>How to Add Employees</h4>
+            <ol>
+              <li>Navigate to <strong>Staff > Team</strong> in the sidebar, then select the <strong>Employees</strong> tab</li>
+              <li>Click "Add Employee"</li>
+              <li>Enter their first name, last name, and email address</li>
+              <li>Assign a role (required) and optionally a location</li>
+              <li>Click "Save" - they're added immediately</li>
+            </ol>
+            <p>No invitation is sent - they'll simply start receiving recognition emails when a manager sends them recognition.</p>
+
+            <h4>How to Add Managers</h4>
+            <ol>
+              <li>Navigate to <strong>Staff > Team</strong> in the sidebar, then select the <strong>Managers</strong> tab</li>
+              <li>Click "Add Manager"</li>
+              <li>Enter their first name, last name, and email address</li>
+              <li>Select which venues they can access (you can choose multiple)</li>
+              <li>Assign their permissions</li>
+              <li>Click "Save" to send the invitation email</li>
+            </ol>
+            <p>They'll receive an email with a link to set up their password and access the dashboard.</p>
+
+            <div class="warning-box">
+              <strong>Important:</strong> If a manager doesn't receive their invitation email, check their spam/junk folder. You can resend the invitation from the Managers tab.
             </div>
           `
         },
@@ -865,6 +881,83 @@ const HelpPageNew = () => {
 
             <div class="tip-box">
               <strong>Note:</strong> Only account owners can manage permissions for managers.
+            </div>
+          `
+        },
+        {
+          id: 'permission-templates',
+          title: 'Permission Templates',
+          content: `
+            <h3>Understanding Permission Templates</h3>
+            <p>Permission templates are predefined sets of permissions that make it easy to assign consistent access levels to managers across your venues.</p>
+
+            <h4>Available Templates</h4>
+            <p>Chatters provides several built-in templates:</p>
+            <ul>
+              <li><strong>Admin:</strong> Full access to all features including billing, manager management, and venue settings</li>
+              <li><strong>Manager:</strong> Access to feedback, reports, staff management, and day-to-day operations - but not billing or system settings</li>
+              <li><strong>Viewer:</strong> Read-only access to view feedback and reports without the ability to make changes</li>
+            </ul>
+
+            <h4>How to Use Templates</h4>
+            <p>When assigning permissions to a manager:</p>
+            <ol>
+              <li>Go to <strong>Staff > Team</strong> and select the <strong>Managers</strong> tab</li>
+              <li>Find the manager and click "Manage Permissions"</li>
+              <li>Select a role template from the available options</li>
+              <li>The permissions will automatically be applied based on the template</li>
+              <li>Click "Save Permissions"</li>
+            </ol>
+
+            <h4>Managing Templates (Master Users Only)</h4>
+            <p>Account owners can view and manage permission templates:</p>
+            <ol>
+              <li>Go to <strong>Administration > Permission Templates</strong> in the sidebar</li>
+              <li>View all available templates and their included permissions</li>
+              <li>Create custom templates for your organisation's specific needs</li>
+            </ol>
+
+            <h4>Customising Permissions</h4>
+            <p>If the templates don't quite fit your needs, you can create custom permission sets:</p>
+            <ol>
+              <li>Select a template as a starting point, or start from scratch</li>
+              <li>Click "Customise" to unlock individual permission toggles</li>
+              <li>Expand each category to see available permissions</li>
+              <li>Toggle individual permissions on or off</li>
+              <li>Save your custom permission set</li>
+            </ol>
+
+            <h4>Permission Categories</h4>
+            <p>Permissions are organised into categories:</p>
+            <ul>
+              <li><strong>Feedback:</strong> View, respond to, delete, and export feedback</li>
+              <li><strong>Questions:</strong> View and edit feedback questions</li>
+              <li><strong>Reports:</strong> Access analytics and export data</li>
+              <li><strong>NPS:</strong> View and export NPS scores</li>
+              <li><strong>Staff:</strong> Manage employees, leaderboard, and recognition</li>
+              <li><strong>Managers:</strong> View, invite, remove managers and change permissions</li>
+              <li><strong>Venue Settings:</strong> Edit branding and integrations</li>
+              <li><strong>Floor Plan:</strong> View and edit the floor layout</li>
+              <li><strong>QR Codes:</strong> View and generate QR codes</li>
+              <li><strong>AI Features:</strong> Access AI insights and chat</li>
+              <li><strong>Reviews:</strong> View and respond to external reviews</li>
+              <li><strong>Billing:</strong> View and manage subscription</li>
+              <li><strong>Multi-Venue:</strong> Access multi-venue overview and comparisons</li>
+            </ul>
+
+            <h4>Permission Scope</h4>
+            <p>You can set permissions at two levels:</p>
+            <ul>
+              <li><strong>Account-wide:</strong> The same permissions apply across all venues the manager has access to</li>
+              <li><strong>Venue-specific:</strong> Different permissions for different venues - useful when a manager has different responsibilities at each location</li>
+            </ul>
+
+            <div class="tip-box">
+              <strong>Best Practice:</strong> Start with a template that closely matches the manager's role, then customise individual permissions as needed. This ensures consistency while allowing flexibility.
+            </div>
+
+            <div class="warning-box">
+              <strong>Important:</strong> Only account owners (Master users) can manage permissions for managers. Managers cannot change their own permissions or those of other managers.
             </div>
           `
         },
@@ -993,25 +1086,37 @@ const HelpPageNew = () => {
             <h3>Customising Your Brand</h3>
             <p>Make your feedback forms match your venue's identity.</p>
 
-            <h4>Branding Options</h4>
-            <ul>
-              <li><strong>Logo:</strong> Upload your venue logo</li>
-              <li><strong>Primary colour:</strong> Set your brand colour</li>
-              <li><strong>Welcome message:</strong> Customise the greeting</li>
-              <li><strong>Thank you message:</strong> Personalise post-feedback</li>
-            </ul>
-
             <h4>How to Update Branding</h4>
             <ol>
               <li>Go to <strong>Settings > Branding</strong> in the sidebar</li>
-              <li>Upload your logo (PNG or JPG)</li>
-              <li>Select your primary colour</li>
+              <li>Upload your assets and configure colours</li>
               <li>Preview your changes</li>
               <li>Save</li>
             </ol>
 
+            <h4>Branding Assets</h4>
+            <ul>
+              <li><strong>Logo:</strong> Square image, minimum 100x100px (PNG, JPG, or any image format)</li>
+              <li><strong>Splash Page Background:</strong> Landscape image, 1920x1080px recommended</li>
+            </ul>
+
+            <h4>Brand Colours</h4>
+            <ul>
+              <li><strong>Primary colour:</strong> Used for buttons and accents</li>
+              <li><strong>Background colour:</strong> Page background (if no background image)</li>
+              <li><strong>Text colour:</strong> Main text on feedback forms</li>
+              <li><strong>Button text colour:</strong> Text displayed on buttons</li>
+            </ul>
+
+            <h4>Confirmation Messages</h4>
+            <p>Customise the messages customers see after actions:</p>
+            <ul>
+              <li><strong>Assistance Request:</strong> Shown when a customer requests help - includes emoji, title, and message. Use {'{table}'} to insert the table number dynamically.</li>
+              <li><strong>Thank You:</strong> Shown after feedback is submitted - includes emoji, title, and message.</li>
+            </ul>
+
             <div class="tip-box">
-              <strong>Best Practice:</strong> Use high-quality images and consistent colours across all touchpoints.
+              <strong>Best Practice:</strong> Use high-quality images and consistent colours across all touchpoints. Images are saved automatically when uploaded.
             </div>
           `
         },
@@ -1020,7 +1125,7 @@ const HelpPageNew = () => {
           title: 'Setting Feedback Hours',
           content: `
             <h3>Configuring Feedback Hours</h3>
-            <p>Control when customers can submit feedback.</p>
+            <p>Control when customers can submit feedback by setting your venue's operating hours.</p>
 
             <h4>Why Set Feedback Hours?</h4>
             <ul>
@@ -1036,6 +1141,16 @@ const HelpPageNew = () => {
               <li>Set start and end times for each day</li>
               <li>Save your settings</li>
             </ol>
+
+            <h4>Multiple Time Slots</h4>
+            <p>If your venue has a break during the day (e.g. closed between lunch and dinner service), you can add multiple time slots for each day.</p>
+            <p><strong>Example:</strong> A restaurant open for lunch and dinner might set:</p>
+            <ul>
+              <li>9:00am - 11:00am (breakfast)</li>
+              <li>1:00pm - 4:00pm (lunch)</li>
+              <li>6:00pm - 10:00pm (dinner)</li>
+            </ul>
+            <p>Feedback will only be accepted during these time windows.</p>
           `
         }
       ]
@@ -1050,27 +1165,21 @@ const HelpPageNew = () => {
           title: 'Google Business Profile',
           content: `
             <h3>Connecting Google Business Profile</h3>
-            <p>Connect your Google Business Profile to import and monitor your Google Reviews within Chatters.</p>
-
-            <h4>Benefits</h4>
-            <ul>
-              <li>View your Google Reviews alongside customer feedback</li>
-              <li>Track your Google rating over time</li>
-              <li>See review trends in your analytics</li>
-            </ul>
+            <p>Link your Google Business Profile to track your ratings alongside customer feedback.</p>
 
             <h4>How to Connect</h4>
             <ol>
               <li>Go to <strong>Settings > Integrations</strong> in the sidebar</li>
-              <li>Click "Connect" under Google Business Profile</li>
-              <li>Sign in with the Google account that manages your business</li>
-              <li>Select your business listing</li>
-              <li>Confirm the connection</li>
+              <li>Search for your venue in the Google Business section</li>
+              <li>Select your listing from the search results</li>
+              <li>The connection is saved automatically</li>
             </ol>
 
-            <div class="tip-box">
-              <strong>Note:</strong> You'll need to be an owner or manager of the Google Business Profile to connect it.
-            </div>
+            <h4>What You'll See</h4>
+            <ul>
+              <li>Your Google rating displayed in your dashboard</li>
+              <li>Rating trends over time</li>
+            </ul>
           `
         },
         {
@@ -1280,7 +1389,6 @@ const HelpPageNew = () => {
             <h4>Your Responsibilities</h4>
             <ul>
               <li>Use strong, unique passwords</li>
-              <li>Enable two-factor authentication</li>
               <li>Review team access regularly</li>
               <li>Report suspicious activity</li>
             </ul>
