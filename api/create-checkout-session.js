@@ -68,7 +68,7 @@ export default async function handler(req, res) {
 
     const quantity = Math.max(venueCount || 1, 1); // At least 1 venue
 
-    // Create a Stripe checkout session
+    // Create a Stripe checkout session with automatic tax
     const session = await stripe.checkout.sessions.create({
       payment_method_types: ['card'],
       line_items: [
@@ -81,6 +81,13 @@ export default async function handler(req, res) {
       success_url: `${process.env.APP_URL || 'https://my.getchatters.com'}/dashboard`,
       cancel_url: `${process.env.APP_URL || 'https://my.getchatters.com'}/account/billing`,
       customer_email: user.email,
+      automatic_tax: {
+        enabled: true,
+      },
+      tax_id_collection: {
+        enabled: true,
+      },
+      billing_address_collection: 'required',
       metadata: {
         chatters_account_id: user.account_id
       }

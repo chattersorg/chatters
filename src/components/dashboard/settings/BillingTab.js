@@ -7,10 +7,9 @@ import StripeCheckoutModal from './StripeCheckoutModal';
 import SubscriptionManagement from './SubscriptionManagement';
 import { Button } from '../../ui/button';
 
-// Pricing configuration
+// Pricing configuration (tax calculated by Stripe based on customer location)
 const PRICE_PER_VENUE_MONTHLY = 149; // £149 per venue per month
 const PRICE_PER_VENUE_YEARLY = 1430; // £1,430 per venue per year (20% discount)
-const VAT_RATE = 0.20; // 20% UK VAT
 
 const BillingTab = ({ allowExpiredAccess = false }) => {
   const { userRole } = useVenue();
@@ -176,13 +175,9 @@ const BillingTab = ({ allowExpiredAccess = false }) => {
     setLoading(false);
   };
 
-  // Calculate total pricing based on venue count
+  // Calculate pricing based on venue count (tax calculated by Stripe)
   const monthlySubtotal = venueCount * PRICE_PER_VENUE_MONTHLY;
   const yearlySubtotal = venueCount * PRICE_PER_VENUE_YEARLY;
-  const monthlyVat = monthlySubtotal * VAT_RATE;
-  const yearlyVat = yearlySubtotal * VAT_RATE;
-  const monthlyTotal = monthlySubtotal + monthlyVat;
-  const yearlyTotal = yearlySubtotal + yearlyVat;
   const yearlyDiscount = ((monthlySubtotal * 12 - yearlySubtotal) / (monthlySubtotal * 12) * 100).toFixed(0);
 
   // Show loading state while data is being fetched
@@ -334,7 +329,7 @@ const BillingTab = ({ allowExpiredAccess = false }) => {
             </div>
 
             <p className="text-xs text-gray-500 dark:text-gray-400 mt-3">
-              {venueCount} venue{venueCount !== 1 ? 's' : ''} • Prices exclude VAT • Secured by Stripe
+              {venueCount} venue{venueCount !== 1 ? 's' : ''} • Tax calculated based on your location • Secured by Stripe
             </p>
           </div>
 
@@ -352,7 +347,7 @@ const BillingTab = ({ allowExpiredAccess = false }) => {
                 >
                   {loading ? 'Processing...' : !accountData?.isExpired
                     ? 'Add Payment Details'
-                    : `Subscribe - £${subscriptionType === 'monthly' ? monthlySubtotal.toLocaleString() : yearlySubtotal.toLocaleString()}${subscriptionType === 'monthly' ? '/mo' : '/yr'} + VAT`
+                    : `Subscribe - £${subscriptionType === 'monthly' ? monthlySubtotal.toLocaleString() : yearlySubtotal.toLocaleString()}${subscriptionType === 'monthly' ? '/mo' : '/yr'} + tax`
                   }
                 </Button>
               </PermissionGate>
@@ -384,8 +379,6 @@ const BillingTab = ({ allowExpiredAccess = false }) => {
         onSuccess={handlePaymentSuccess}
         clientSecret={clientSecret}
         subtotal={subscriptionType === 'monthly' ? monthlySubtotal : yearlySubtotal}
-        vat={subscriptionType === 'monthly' ? monthlyVat : yearlyVat}
-        total={subscriptionType === 'monthly' ? monthlyTotal : yearlyTotal}
         billingPeriod={subscriptionType}
         venueCount={venueCount}
         isSetupMode={!accountData?.isExpired}

@@ -12,10 +12,9 @@ import {
 } from 'lucide-react';
 import StripeCheckoutModal from '../../components/dashboard/settings/StripeCheckoutModal';
 
-// Pricing configuration (must match BillingTab)
+// Pricing configuration (must match BillingTab) - tax calculated by Stripe
 const PRICE_PER_VENUE_MONTHLY = 149;
 const PRICE_PER_VENUE_YEARLY = 1430;
-const VAT_RATE = 0.20; // 20% UK VAT
 
 const TrialExpired = () => {
   const navigate = useNavigate();
@@ -183,15 +182,9 @@ const TrialExpired = () => {
     });
   };
 
-  // Calculate totals (matching BillingTab structure)
+  // Calculate pricing (tax calculated by Stripe based on location)
   const monthlySubtotal = venueCount * PRICE_PER_VENUE_MONTHLY;
-  const monthlyVat = Math.round(monthlySubtotal * VAT_RATE);
-  const monthlyTotal = monthlySubtotal + monthlyVat;
-
   const yearlySubtotal = venueCount * PRICE_PER_VENUE_YEARLY;
-  const yearlyVat = Math.round(yearlySubtotal * VAT_RATE);
-  const yearlyTotal = yearlySubtotal + yearlyVat;
-
   const yearlyMonthlyEquivalent = yearlySubtotal / 12;
   const yearlyDiscount = ((monthlySubtotal * 12 - yearlySubtotal) / (monthlySubtotal * 12) * 100).toFixed(0);
 
@@ -370,9 +363,9 @@ const TrialExpired = () => {
                   </div>
                 </label>
 
-                {/* VAT note */}
+                {/* Tax note */}
                 <p className="text-xs text-gray-500 text-center">
-                  {venueCount} venue{venueCount !== 1 ? 's' : ''} · Prices exclude VAT · Secured by Stripe
+                  {venueCount} venue{venueCount !== 1 ? 's' : ''} · Tax calculated based on your location · Secured by Stripe
                 </p>
               </div>
 
@@ -391,7 +384,7 @@ const TrialExpired = () => {
                   ) : (
                     <>
                       <CreditCard className="w-5 h-5" />
-                      Subscribe - £{subscriptionType === 'monthly' ? monthlySubtotal.toLocaleString() : yearlySubtotal.toLocaleString()}{subscriptionType === 'monthly' ? '/mo' : '/yr'} + VAT
+                      Subscribe - £{subscriptionType === 'monthly' ? monthlySubtotal.toLocaleString() : yearlySubtotal.toLocaleString()}{subscriptionType === 'monthly' ? '/mo' : '/yr'} + tax
                     </>
                   )}
                 </button>
@@ -425,8 +418,6 @@ const TrialExpired = () => {
           onSuccess={handlePaymentSuccess}
           clientSecret={clientSecret}
           subtotal={subscriptionType === 'monthly' ? monthlySubtotal : yearlySubtotal}
-          vat={subscriptionType === 'monthly' ? monthlyVat : yearlyVat}
-          total={subscriptionType === 'monthly' ? monthlyTotal : yearlyTotal}
           billingPeriod={subscriptionType}
           venueCount={venueCount}
           isSetupMode={false}

@@ -104,11 +104,14 @@ module.exports = async (req, res) => {
       }
     });
 
-    // Create the subscription with correct venue quantity
+    // Create the subscription with correct venue quantity and automatic tax
     const subscription = await stripe.subscriptions.create({
       customer: account.stripe_customer_id,
       items: [{ price: priceId, quantity: quantity }],
       default_payment_method: defaultPaymentMethod,
+      automatic_tax: {
+        enabled: true,
+      },
       metadata: {
         chatters_account_id: user.account_id
       }
