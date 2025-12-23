@@ -509,7 +509,7 @@ const IntegrationsTab = () => {
         </div>
 
         {/* TripAdvisor Card */}
-        <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-shadow">
+        <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl shadow-sm hover:shadow-md transition-shadow">
           {/* Card Header */}
           <div className="px-6 py-5 border-b border-gray-100 dark:border-gray-800 bg-gradient-to-r from-gray-50 to-white dark:from-gray-900 dark:to-gray-900">
             <div className="flex items-center justify-between">
@@ -633,7 +633,7 @@ const IntegrationsTab = () => {
                     </div>
 
                     {showTripadvisorDropdown && (
-                      <div className="absolute z-10 w-full mt-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl shadow-lg max-h-64 overflow-y-auto">
+                      <div className="absolute z-50 w-full mt-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl shadow-xl max-h-64 overflow-y-auto">
                         {isSearchingTripadvisor ? (
                           <div className="flex items-center gap-2 px-4 py-3 text-sm text-gray-500 dark:text-gray-400">
                             <div className="w-4 h-4 border-2 border-gray-300 border-t-green-500 rounded-full animate-spin" />
