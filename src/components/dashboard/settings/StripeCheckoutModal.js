@@ -139,11 +139,6 @@ const CheckoutForm = ({ onSuccess, onCancel, subtotal = 0, billingPeriod, venueC
             mode: 'billing',
             fields: {
               phone: 'never'
-            },
-            validation: {
-              phone: {
-                required: 'never'
-              }
             }
           }}
         />
