@@ -106,6 +106,17 @@ const AdminAccountsList = () => {
         }, {});
       }
 
+      // Load actual table counts from table_positions (excluding soft-deleted)
+      const { data: tablePositionsData } = await supabase
+        .from('table_positions')
+        .select('venue_id')
+        .is('deleted_at', null);
+
+      const tableCounts = (tablePositionsData || []).reduce((acc, item) => {
+        acc[item.venue_id] = (acc[item.venue_id] || 0) + 1;
+        return acc;
+      }, {});
+
       // Process accounts to include venue count and feedback
       const processedAccounts = accountsData?.map(account => {
         // Find master user - prefer ones with complete profile (first_name and last_name)
@@ -115,8 +126,8 @@ const AdminAccountsList = () => {
         // Calculate total feedback for this account
         const accountFeedback = account.venues?.reduce((sum, v) => sum + (feedbackCounts[v.id] || 0), 0) || 0;
 
-        // Calculate total tables
-        const totalTables = account.venues?.reduce((sum, v) => sum + (v.table_count || 0), 0) || 0;
+        // Calculate total tables from actual table_positions
+        const totalTables = account.venues?.reduce((sum, v) => sum + (tableCounts[v.id] || 0), 0) || 0;
 
         const venueCount = account.venues?.length || 0;
 

@@ -22,6 +22,7 @@ const CustomerFeedbackContent = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [feedbackUnavailable, setFeedbackUnavailable] = useState(false);
+  const [feedbackDisabled, setFeedbackDisabled] = useState(false);
   const [assistanceLoading, setAssistanceLoading] = useState(false);
   const [assistanceRequested, setAssistanceRequested] = useState(false);
   const [alertModal, setAlertModal] = useState(null);
@@ -68,7 +69,7 @@ const CustomerFeedbackContent = () => {
         // Load venue data first (including feedback_hours, review links, NPS settings, branding colors, assistance message, and thank you message)
         const { data: venueData, error: venueError } = await supabase
           .from('venues')
-          .select('logo, primary_color, background_color, background_image, text_color, button_text_color, feedback_hours, google_review_link, tripadvisor_link, nps_enabled, assistance_title, assistance_message, assistance_icon, thank_you_title, thank_you_message, thank_you_icon, feedback_review_threshold')
+          .select('name, logo, primary_color, background_color, background_image, text_color, button_text_color, feedback_hours, google_review_link, tripadvisor_link, nps_enabled, assistance_title, assistance_message, assistance_icon, thank_you_title, thank_you_message, thank_you_icon, feedback_review_threshold')
           .eq('id', venueId);
 
         if (venueError) {
@@ -112,7 +113,11 @@ const CustomerFeedbackContent = () => {
           .order('table_number');
 
         if (!questionsData || questionsData.length === 0) {
-          throw new Error('No active questions found for this venue');
+          // No questions = feedback is disabled for this venue
+          setFeedbackDisabled(true);
+          setVenue(venue);
+          setLoading(false);
+          return;
         }
 
         setQuestions(questionsData);
@@ -376,6 +381,34 @@ const CustomerFeedbackContent = () => {
           <div className="text-sm" style={{ color: textColor, opacity: 0.6 }}>
             {t('thankYouForInterest')}
           </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Feedback disabled state (no questions configured)
+  if (feedbackDisabled) {
+    const textColor = venue?.text_color || '#111827';
+
+    return (
+      <div className="min-h-screen flex items-center justify-center p-6" style={getBackgroundStyle()}>
+        {/* Language Selector - Top Right */}
+        <div className="absolute top-4 right-4">
+          <LanguageSelector />
+        </div>
+
+        <div className="w-full max-w-md p-8 bg-white rounded-2xl shadow-xl text-center">
+          {venue?.logo && (
+            <div className="mb-8">
+              <img src={venue.logo} alt="Venue Logo" className="h-16 mx-auto" />
+            </div>
+          )}
+
+          <div className="text-6xl mb-6">💬</div>
+          <h2 className="text-2xl font-bold mb-4" style={{ color: textColor }}>{t('feedbackDisabledTitle')}</h2>
+          <p className="text-base" style={{ color: textColor, opacity: 0.8 }}>
+            {t('feedbackDisabledMessage', { venueName: venue?.name || 'this venue' })}
+          </p>
         </div>
       </div>
     );

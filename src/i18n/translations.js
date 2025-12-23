@@ -72,6 +72,10 @@ const translations = {
     feedbackUnavailableMessage: "We're not accepting feedback at the moment. Please try again during our service hours.",
     thankYouForInterest: 'Thank you for your interest in providing feedback!',
 
+    // Feedback disabled (no questions)
+    feedbackDisabledTitle: 'Feedback Currently Disabled',
+    feedbackDisabledMessage: 'Feedback is currently disabled for {venueName}.',
+
     // Menu page
     menu: 'Menu',
     search: 'Search',
@@ -166,6 +170,10 @@ const translations = {
     feedbackUnavailableMessage: 'Nu acceptăm feedback în acest moment. Vă rugăm să încercați din nou în timpul orelor de serviciu.',
     thankYouForInterest: 'Vă mulțumim pentru interesul acordat pentru a oferi feedback!',
 
+    // Feedback disabled (no questions)
+    feedbackDisabledTitle: 'Feedback dezactivat',
+    feedbackDisabledMessage: 'Feedback-ul este momentan dezactivat pentru {venueName}.',
+
     // Menu page
     menu: 'Meniu',
     search: 'Caută',
@@ -259,6 +267,10 @@ const translations = {
     feedbackUnavailable: 'Comentarios no disponibles actualmente',
     feedbackUnavailableMessage: 'No estamos aceptando comentarios en este momento. Por favor, inténtalo de nuevo durante nuestras horas de servicio.',
     thankYouForInterest: '¡Gracias por tu interés en proporcionar comentarios!',
+
+    // Feedback disabled (no questions)
+    feedbackDisabledTitle: 'Comentarios desactivados',
+    feedbackDisabledMessage: 'Los comentarios están actualmente desactivados para {venueName}.',
 
     // Menu page
     menu: 'Menú',
