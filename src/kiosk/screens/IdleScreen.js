@@ -426,17 +426,17 @@ const IdleScreen = () => {
   };
 
   const getUrgencyColor = (urgency) => {
-    if (urgency >= 4) return 'bg-red-500';
-    if (urgency >= 3) return 'bg-orange-500';
-    if (urgency >= 2) return 'bg-yellow-500';
-    return 'bg-blue-500';
+    if (urgency >= 4) return 'bg-red-500';      // Assistance pending
+    if (urgency >= 3) return 'bg-red-500';      // Low rating (1-2 stars) - URGENT
+    if (urgency >= 2) return 'bg-yellow-500';   // Medium rating (3-4 stars) - ATTENTION
+    return 'bg-green-500';                       // High rating (5 stars) - POSITIVE
   };
 
   const getUrgencyBg = (urgency) => {
     if (urgency >= 4) return 'bg-red-500/10 border-red-500/30';
-    if (urgency >= 3) return 'bg-orange-500/10 border-orange-500/30';
+    if (urgency >= 3) return 'bg-red-500/10 border-red-500/30';
     if (urgency >= 2) return 'bg-yellow-500/10 border-yellow-500/30';
-    return 'bg-blue-500/10 border-blue-500/30';
+    return 'bg-green-500/10 border-green-500/30';
   };
 
   const formatTime = (date) => date.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
