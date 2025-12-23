@@ -1,10 +1,24 @@
 import React from 'react';
 
-// Subtle pulse for unhappy tables
-const slowPulseStyle = { animation: 'slow-pulse 3s cubic-bezier(0.4,0,0.6,1) infinite' };
+// Pulse animations for different urgency colors - only pulses outward, no opacity change
 const pulseKeyframes = `
-@keyframes slow-pulse { 0%,100%{opacity:1} 50%{opacity:.3} }
+@keyframes pulse-red{0%{box-shadow:0 0 0 0 rgba(239,68,68,0.7)}100%{box-shadow:0 0 0 8px rgba(239,68,68,0)}}
+@keyframes pulse-yellow{0%{box-shadow:0 0 0 0 rgba(234,179,8,0.7)}100%{box-shadow:0 0 0 8px rgba(234,179,8,0)}}
+@keyframes pulse-orange{0%{box-shadow:0 0 0 0 rgba(249,115,22,0.7)}100%{box-shadow:0 0 0 8px rgba(249,115,22,0)}}
 `;
+
+const getPulseStyle = (status) => {
+  switch (status) {
+    case 'unhappy':
+      return { animation: 'pulse-red 1s ease-out infinite' };
+    case 'attention':
+      return { animation: 'pulse-yellow 1s ease-out infinite' };
+    case 'assistance-pending':
+      return { animation: 'pulse-orange 1s ease-out infinite' };
+    default:
+      return {};
+  }
+};
 
 /* ---------- helpers: match sidebar semantics ---------- */
 const getRowRating = (row) => {
@@ -45,6 +59,8 @@ const groupBySession = (rows) => {
     items_count: e.items_count,
     session_rating:
       e.ratings.length > 0 ? e.ratings.reduce((a, b) => a + b, 0) / e.ratings.length : null,
+    // Use MIN rating for urgency - any single bad rating triggers urgent status
+    min_rating: e.ratings.length > 0 ? Math.min(...e.ratings) : null,
     has_comment: e.has_comment,
   }));
 };
@@ -61,11 +77,20 @@ const KioskZoneOverview = ({ zones, tables, feedbackMap, feedbackList, assistanc
         const tableNumbers = new Set(zoneTables.map((t) => t.table_number));
         const zoneSessions = sessions.filter((s) => tableNumbers.has(s.table_number));
 
-        const urgentCount = zoneSessions.filter((s) => s.session_rating != null && s.session_rating <= 2).length;
+        // Count pending assistance requests in this zone
+        const pendingAssistanceCount = zoneTables.filter(
+          (t) => assistanceMap?.[t.table_number] === 'pending'
+        ).length;
+
+        // Use MIN rating for urgency: <3 = urgent (matches sidebar/floorplan logic)
+        const urgentFeedbackCount = zoneSessions.filter((s) => s.min_rating != null && s.min_rating < 3).length;
         const attentionCount = zoneSessions.filter(
           (s) => s.session_rating != null && s.session_rating <= 3 && s.has_comment
         ).length;
-        const totalAlerts = zoneSessions.length;
+        const totalAlerts = zoneSessions.length + pendingAssistanceCount;
+
+        // Urgent = pending assistance OR urgent feedback
+        const urgentCount = pendingAssistanceCount + urgentFeedbackCount;
 
         const priority = urgentCount > 0 ? 2 : totalAlerts > 0 ? 1 : 0;
         const latestAt =
@@ -76,7 +101,7 @@ const KioskZoneOverview = ({ zones, tables, feedbackMap, feedbackList, assistanc
               )
             : null;
 
-        return { zone, zoneTables, urgentCount, attentionCount, totalAlerts, priority, latestAt };
+        return { zone, zoneTables, urgentCount, attentionCount, totalAlerts, priority, latestAt, pendingAssistanceCount };
       })
       .sort((a, b) => {
         if (b.priority !== a.priority) return b.priority - a.priority;
@@ -84,7 +109,7 @@ const KioskZoneOverview = ({ zones, tables, feedbackMap, feedbackList, assistanc
         if (b.totalAlerts !== a.totalAlerts) return b.totalAlerts - a.totalAlerts;
         return (a.zone.name || '').localeCompare(b.zone.name || '');
       });
-  }, [zones, tables, sessions]);
+  }, [zones, tables, sessions, assistanceMap]);
 
   // Status styles
   const getZoneAccent = (urgentCount, totalAlerts) =>
@@ -113,8 +138,8 @@ const KioskZoneOverview = ({ zones, tables, feedbackMap, feedbackList, assistanc
       `inline-flex items-center justify-center shrink-0
        text-white font-medium border-2 transition-colors duration-150 cursor-pointer
        ${tableStatus.bg} ${tableStatus.border}`;
-    // Pulse for unhappy feedback or pending assistance
-    const pulseStyle = (tableStatus.status === 'unhappy' || tableStatus.status === 'assistance-pending') ? slowPulseStyle : {};
+    // Pulse for unhappy feedback, attention, or pending assistance - color matches border
+    const pulseStyle = getPulseStyle(tableStatus.status);
 
     switch (shape) {
       case 'circle':
@@ -178,10 +203,17 @@ const KioskZoneOverview = ({ zones, tables, feedbackMap, feedbackList, assistanc
             {zonesWithMeta.map(({ zone, zoneTables, totalAlerts, urgentCount, latestAt }) => {
               const accent = getZoneAccent(urgentCount, totalAlerts);
 
+              // Zone card styling based on urgency
+              const zoneCardClass = urgentCount > 0
+                ? 'border-red-500 dark:border-red-500 bg-red-50 dark:bg-red-900/20'
+                : totalAlerts > 0
+                  ? 'border-amber-400 dark:border-amber-500 bg-amber-50 dark:bg-amber-900/10'
+                  : 'border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800';
+
               return (
                 <section
                   key={zone.id}
-                  className="relative rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 shadow-sm hover:shadow transition-shadow"
+                  className={`relative rounded-xl border-2 shadow-sm hover:shadow transition-shadow ${zoneCardClass}`}
                 >
                   {/* Accent bar */}
                   <div className={`absolute left-0 top-0 bottom-0 w-1.5 rounded-l-xl ${accent}`} />

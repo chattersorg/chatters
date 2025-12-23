@@ -54,33 +54,33 @@ const Modal = ({
   return (
     <div className="fixed inset-0 z-50 overflow-y-auto">
       {/* Backdrop */}
-      <div 
-        className="fixed inset-0 bg-black bg-opacity-50 transition-opacity"
+      <div
+        className="fixed inset-0 bg-black/50 dark:bg-black/70 transition-opacity"
         onClick={handleBackdropClick}
       />
-      
+
       {/* Modal container */}
       <div className="flex min-h-full items-center justify-center p-4">
-        <div 
+        <div
           className={`
-            relative w-full ${sizeClasses[size]} 
-            bg-white rounded-lg shadow-xl 
+            relative w-full ${sizeClasses[size]}
+            bg-white dark:bg-gray-800 rounded-lg shadow-xl dark:shadow-2xl
             transform transition-all duration-200
             ${className}
           `}
         >
           {/* Header */}
           {(title || showCloseButton) && (
-            <div className="flex items-center justify-between p-4 border-b border-gray-200">
+            <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700">
               {title && (
-                <h3 className="text-lg font-semibold text-gray-900">
+                <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
                   {title}
                 </h3>
               )}
               {showCloseButton && (
                 <button
                   onClick={onClose}
-                  className="text-gray-400 hover:text-gray-600 transition-colors p-1 rounded-md hover:bg-gray-100"
+                  className="text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300 transition-colors p-1 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700"
                   title="Close"
                 >
                   <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -90,7 +90,7 @@ const Modal = ({
               )}
             </div>
           )}
-          
+
           {/* Content */}
           <div className="p-4">
             {children}

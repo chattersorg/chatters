@@ -1,7 +1,24 @@
 import React, { forwardRef, useMemo, useRef, useState, useEffect, useCallback } from 'react';
 
-const slowPulseStyle = { animation: 'slow-pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite' };
-const pulseKeyframes = `@keyframes slow-pulse{0%,100%{opacity:1}50%{opacity:.3}}`;
+// Pulse animations for different urgency colors - only pulses outward, no return
+const pulseKeyframes = `
+@keyframes pulse-red{0%{box-shadow:0 0 0 0 rgba(239,68,68,0.7)}100%{box-shadow:0 0 0 8px rgba(239,68,68,0)}}
+@keyframes pulse-yellow{0%{box-shadow:0 0 0 0 rgba(234,179,8,0.7)}100%{box-shadow:0 0 0 8px rgba(234,179,8,0)}}
+@keyframes pulse-orange{0%{box-shadow:0 0 0 0 rgba(249,115,22,0.7)}100%{box-shadow:0 0 0 8px rgba(249,115,22,0)}}
+`;
+
+const getPulseStyle = (status) => {
+  switch (status) {
+    case 'urgent-feedback':
+      return { animation: 'pulse-red 1s ease-out infinite' };
+    case 'attention-feedback':
+      return { animation: 'pulse-yellow 1s ease-out infinite' };
+    case 'assistance-pending':
+      return { animation: 'pulse-orange 1s ease-out infinite' };
+    default:
+      return {};
+  }
+};
 
 // Logical design space for % coords
 const WORLD_WIDTH = 1600;
@@ -139,8 +156,8 @@ const KioskFloorPlan = forwardRef(({ tables, selectedZoneId, feedbackMap, select
 
   const getTableShapeClasses = (table, tableStatus) => {
     const baseClass = `text-white flex items-center justify-center font-bold border-4 shadow-lg transition-all duration-200 cursor-pointer ${tableStatus.bgColor} ${tableStatus.borderColor}`;
-    // Pulse for urgent feedback, attention feedback, or pending assistance
-    const pulseStyle = (tableStatus.status === 'urgent-feedback' || tableStatus.status === 'attention-feedback' || tableStatus.status === 'assistance-pending') ? slowPulseStyle : {};
+    // Pulse for urgent feedback, attention feedback, or pending assistance - color matches border
+    const pulseStyle = getPulseStyle(tableStatus.status);
 
     switch (table.shape) {
       case 'circle':
