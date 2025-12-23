@@ -1,8 +1,15 @@
 // /api/reviews.js
 // Consolidated review platform APIs (Google, TripAdvisor, Unified Search)
-// Force deployment update
+// Force deployment update v2 - added logging
 const { createClient } = require('@supabase/supabase-js');
 const { authenticateVenueAccess, authenticateAdmin } = require('./auth-helper');
+
+console.log('🚀 Reviews API module loading...');
+console.log('🔑 GOOGLE_MAPS_API_KEY exists:', !!process.env.GOOGLE_MAPS_API_KEY);
+console.log('🔑 TRIPADVISOR_API_KEY exists:', !!process.env.TRIPADVISOR_API_KEY);
+console.log('🔑 SUPABASE_URL exists:', !!(process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.REACT_APP_SUPABASE_URL));
+console.log('🔑 SUPABASE_ANON_KEY exists:', !!(process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || process.env.REACT_APP_SUPABASE_ANON_KEY));
+console.log('🔑 SUPABASE_SERVICE_ROLE_KEY exists:', !!process.env.SUPABASE_SERVICE_ROLE_KEY);
 
 // Config constants
 const GOOGLE_RATINGS_TTL_HOURS = 24;
@@ -12,6 +19,7 @@ const GOOGLE_VENUE_DETAILS_FIELDS = 'place_id,name,formatted_address,formatted_p
 const GOOGLE_API_KEY = process.env.GOOGLE_MAPS_API_KEY;
 const TRIPADVISOR_API_KEY = process.env.TRIPADVISOR_API_KEY;
 
+console.log('📦 Creating Supabase clients...');
 
 // Create Supabase clients
 const supabaseAdmin = createClient(
@@ -24,7 +32,10 @@ const supabaseClient = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || process.env.REACT_APP_SUPABASE_ANON_KEY
 );
 
-export default async function handler(req, res) {
+console.log('✅ Reviews API module loaded successfully');
+
+module.exports = async function handler(req, res) {
+  console.log('🔧 Reviews API handler invoked');
   console.log('🔧 Reviews API called:', req.method, req.url);
   console.log('🔧 Query params:', req.query);
 
@@ -189,29 +200,46 @@ async function handleGoogleRatings(req, res) {
 }
 
 async function handleGooglePlacesSearch(req, res) {
+  console.log('🔍 [Google] handleGooglePlacesSearch called');
+
   if (req.method !== 'GET') {
+    console.log('❌ [Google] Invalid method:', req.method);
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
-  await authenticateAdmin(req);
+  console.log('🔐 [Google] Authenticating user...');
+  try {
+    await authenticateAdmin(req);
+    console.log('✅ [Google] Authentication successful');
+  } catch (authError) {
+    console.error('❌ [Google] Authentication failed:', authError.message);
+    return res.status(401).json({ error: 'Authentication failed', details: authError.message });
+  }
 
   const { query, type = 'autocomplete' } = req.query;
+  console.log('🔍 [Google] Search query:', query, 'type:', type);
+
   if (!query) {
+    console.log('❌ [Google] Missing query parameter');
     return res.status(400).json({ error: 'query parameter is required' });
   }
 
+  console.log('🔑 [Google] Checking API key... exists:', !!GOOGLE_API_KEY);
   if (!GOOGLE_API_KEY) {
-    return res.status(503).json({ 
-      status: 'temporary_unavailable', 
-      reason: 'google_api_not_configured' 
+    console.log('❌ [Google] API key not configured');
+    return res.status(503).json({
+      status: 'temporary_unavailable',
+      reason: 'google_api_not_configured'
     });
   }
 
+  console.log('📡 [Google] Making API request, type:', type);
   if (type === 'autocomplete') {
     return await handleGoogleAutocomplete(req, res, query, GOOGLE_API_KEY);
   } else if (type === 'findplace') {
     return await handleGoogleFindPlace(req, res, query, GOOGLE_API_KEY);
   } else {
+    console.log('❌ [Google] Invalid type:', type);
     return res.status(400).json({ error: 'Invalid type. Use "autocomplete" or "findplace"' });
   }
 }
