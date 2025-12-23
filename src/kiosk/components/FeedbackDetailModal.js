@@ -124,9 +124,11 @@ const FeedbackDetailModal = ({
   if (!isOpen || !item) return null;
 
   const isFeedback = item.type === 'feedback';
-  const isPositiveFeedback = isFeedback && item.avg_rating !== null && item.avg_rating > 3;
+  // Use min_rating if available, otherwise fall back to avg_rating for positive check
+  const ratingForPositiveCheck = item.min_rating ?? item.avg_rating;
+  const isPositiveFeedback = isFeedback && ratingForPositiveCheck !== null && ratingForPositiveCheck > 3;
 
-  // Determine urgency
+  // Determine urgency based on LOWEST individual rating (not average)
   const getUrgencyInfo = () => {
     if (!isFeedback) {
       return {
@@ -136,7 +138,9 @@ const FeedbackDetailModal = ({
         borderColor: 'border-orange-500/30'
       };
     }
-    if (item.avg_rating !== null && item.avg_rating < 3) {
+    // Use min_rating for urgency (lowest individual rating in session)
+    const urgencyRating = item.min_rating ?? item.avg_rating;
+    if (urgencyRating !== null && urgencyRating < 3) {
       return {
         label: 'URGENT',
         bgColor: 'bg-red-500/20',
@@ -144,7 +148,7 @@ const FeedbackDetailModal = ({
         borderColor: 'border-red-500/30'
       };
     }
-    if (item.avg_rating !== null && item.avg_rating <= 4) {
+    if (urgencyRating !== null && urgencyRating <= 4) {
       return {
         label: 'ATTENTION',
         bgColor: 'bg-yellow-500/20',

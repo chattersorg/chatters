@@ -59,11 +59,17 @@ const groupBySession = (feedbackItems) => {
         ? ratings.reduce((sum, rating) => sum + rating, 0) / ratings.length
         : null;
 
+      // Use the LOWEST individual rating for urgency (not the average)
+      // This ensures any single bad rating triggers appropriate urgency
+      const minRating = ratings.length > 0 ? Math.min(...ratings) : null;
+
       return {
         ...session,
         type: 'feedback',
         avg_rating: avgRating,
-        urgency: avgRating !== null && avgRating < 3 ? 3 : (avgRating !== null && avgRating <= 4) ? 2 : 1,
+        min_rating: minRating,
+        // Urgency based on lowest individual rating
+        urgency: minRating !== null && minRating < 3 ? 3 : (minRating !== null && minRating <= 4) ? 2 : 1,
       };
     });
 };
