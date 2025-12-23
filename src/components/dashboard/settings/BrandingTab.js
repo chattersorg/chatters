@@ -453,10 +453,10 @@ const BrandingTab = ({
         </div>
       </div>
 
-      {/* Brand Colors */}
+      {/* Brand Colours */}
       <SettingsCard
-        title="Brand Colors"
-        description="Customize the colors used on your feedback pages"
+        title="Brand Colours"
+        description="Customise the colours used on your feedback pages"
         onSave={saveColors}
         loading={colorsLoading}
         message={colorsMessage}
@@ -578,7 +578,7 @@ const BrandingTab = ({
       <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl overflow-hidden">
         <div className="px-6 py-4 border-b border-gray-100 dark:border-gray-800">
           <h3 className="text-base font-semibold text-gray-900 dark:text-white">Confirmation Messages</h3>
-          <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">Customize the messages customers see after actions</p>
+          <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">Customise the messages customers see after actions</p>
         </div>
         <div className="p-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">

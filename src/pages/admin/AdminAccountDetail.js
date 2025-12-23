@@ -40,6 +40,8 @@ const AdminAccountDetail = () => {
   const [showRatingsDemoPicker, setShowRatingsDemoPicker] = useState(false);
   const [ratingsDemoDateRange, setRatingsDemoDateRange] = useState({ startDate: '', endDate: '' });
   const [seedingRatingsDemo, setSeedingRatingsDemo] = useState(false);
+  const [showDemoTools, setShowDemoTools] = useState(false);
+  const [activeTab, setActiveTab] = useState('overview');
 
   useEffect(() => {
     loadAccountData();
@@ -75,7 +77,31 @@ const AdminAccountDetail = () => {
 
       if (venuesError) throw venuesError;
 
-      setVenues(venuesData || []);
+      // Get venue IDs for this account
+      const venueIds = venuesData?.map(v => v.id) || [];
+
+      // Load actual table counts from table_positions (excluding soft-deleted)
+      let tableCounts = {};
+      if (venueIds.length > 0) {
+        const { data: tablePositionsData } = await supabase
+          .from('table_positions')
+          .select('venue_id')
+          .in('venue_id', venueIds)
+          .is('deleted_at', null);
+
+        tableCounts = (tablePositionsData || []).reduce((acc, item) => {
+          acc[item.venue_id] = (acc[item.venue_id] || 0) + 1;
+          return acc;
+        }, {});
+      }
+
+      // Add actual table counts to venues
+      const venuesWithTableCounts = venuesData?.map(venue => ({
+        ...venue,
+        actual_table_count: tableCounts[venue.id] || 0
+      })) || [];
+
+      setVenues(venuesWithTableCounts);
 
     } catch (error) {
       console.error('Error loading account:', error);
@@ -623,191 +649,142 @@ const AdminAccountDetail = () => {
         </div>
       </div>
 
-      <div className="max-w-[1400px] mx-auto px-6 lg:px-8 py-8">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Left Column - Account Info */}
-          <div className="lg:col-span-1 space-y-6">
-            {/* Account Details */}
-            <div className="bg-white border border-gray-200 rounded-xl p-6">
-              <h3 className="text-lg font-medium text-gray-900 mb-4">Account Information</h3>
-
-              <div className="space-y-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1.5">
-                    Company Name
-                  </label>
-                  {editingAccount ? (
-                    <input
-                      type="text"
-                      value={editingAccount.name}
-                      onChange={(e) => setEditingAccount({...editingAccount, name: e.target.value})}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                    />
-                  ) : (
-                    <div className="px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg">
-                      {account.name || 'Not set'}
-                    </div>
-                  )}
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1.5">
-                    Phone
-                  </label>
-                  {editingAccount ? (
-                    <input
-                      type="tel"
-                      value={editingAccount.phone}
-                      onChange={(e) => setEditingAccount({...editingAccount, phone: e.target.value})}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                    />
-                  ) : (
-                    <div className="px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg">
-                      {account.phone || 'Not set'}
-                    </div>
-                  )}
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1.5">
-                    Created
-                  </label>
-                  <div className="px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg">
-                    {new Date(account.created_at).toLocaleDateString()}
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Master User */}
-            <div className="bg-white border border-gray-200 rounded-xl p-6">
-              <h3 className="text-lg font-medium text-gray-900 mb-4">Master User</h3>
-
-              {account.masterUser ? (
-                <div className="space-y-3">
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
-                      <span className="text-sm font-medium text-blue-700">
-                        {account.masterUser.first_name?.[0]}{account.masterUser.last_name?.[0]}
-                      </span>
-                    </div>
-                    <div>
-                      <div className="text-sm font-medium text-gray-900">
-                        {account.masterUser.first_name} {account.masterUser.last_name}
-                      </div>
-                      <div className="text-xs text-gray-500">{account.masterUser.role}</div>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-2 text-sm text-gray-600">
-                    <Mail className="w-4 h-4" />
-                    {account.masterUser.email}
-                  </div>
-                </div>
-              ) : (
-                <p className="text-sm text-gray-500">No master user assigned</p>
-              )}
-            </div>
-
-            {/* Billing & Stripe */}
-            <div className="bg-white border border-gray-200 rounded-xl p-6">
-              <h3 className="text-lg font-medium text-gray-900 mb-4">Billing & Stripe</h3>
-
-              <div className="space-y-4">
-                <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                  <div className="flex items-center gap-2">
-                    <CreditCard className="w-5 h-5 text-gray-400" />
-                    <span className="text-sm font-medium text-gray-900">Paid Status</span>
-                  </div>
-                  <span className={`px-2 py-1 rounded text-xs font-medium ${
-                    account.is_paid ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'
-                  }`}>
-                    {account.is_paid ? 'Paid' : 'Not Paid'}
-                  </span>
-                </div>
-
-                <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                  <div className="flex items-center gap-2">
-                    <Calendar className="w-5 h-5 text-gray-400" />
-                    <span className="text-sm font-medium text-gray-900">Trial End</span>
-                  </div>
-                  <span className="text-sm text-gray-600">
-                    {account.trial_ends_at ? new Date(account.trial_ends_at).toLocaleDateString() : 'No trial'}
-                  </span>
-                </div>
-
-                {stripeDashboardUrl && (
-                  <a
-                    href={stripeDashboardUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="flex items-center justify-center gap-2 w-full px-4 py-2 bg-purple-600 text-white text-sm font-medium rounded-lg hover:bg-purple-700 transition-colors"
-                  >
-                    <ExternalLink className="w-4 h-4" />
-                    View in Stripe Dashboard
-                  </a>
-                )}
-
-                {account.stripe_customer_id && (
-                  <button
-                    onClick={getStripePortalUrl}
-                    className="flex items-center justify-center gap-2 w-full px-4 py-2 border border-gray-300 text-sm font-medium rounded-lg text-gray-700 bg-white hover:bg-gray-50 transition-colors"
-                  >
-                    <ExternalLink className="w-4 h-4" />
-                    Customer Portal
-                  </button>
-                )}
-              </div>
-            </div>
-
-            {/* Trial Extension */}
-            <div className="bg-white border border-gray-200 rounded-xl p-6">
-              <h3 className="text-lg font-medium text-gray-900 mb-4">Extend Trial</h3>
-
-              <div className="space-y-3">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1.5">
-                    Add Days to Trial
-                  </label>
-                  <input
-                    type="number"
-                    min="1"
-                    value={extendDays}
-                    onChange={(e) => setExtendDays(e.target.value)}
-                    placeholder="Enter number of days"
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                  />
-                </div>
-
-                <button
-                  onClick={handleExtendTrial}
-                  disabled={!extendDays || extending}
-                  className="w-full px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
-                >
-                  {extending ? (
-                    <>
-                      <Loader2 className="w-4 h-4 animate-spin" />
-                      Extending...
-                    </>
-                  ) : (
-                    <>
-                      <Clock className="w-4 h-4" />
-                      Extend Trial
-                    </>
-                  )}
-                </button>
-
-                <p className="text-xs text-gray-500">
-                  Current trial end: {account.trial_ends_at ? new Date(account.trial_ends_at).toLocaleDateString() : 'Not set'}
-                </p>
-              </div>
-            </div>
+      <div className="max-w-[900px] mx-auto px-6 lg:px-8 py-8">
+        {/* Tabbed Card */}
+        <div className="bg-white border border-gray-200 rounded-xl overflow-hidden">
+          {/* Tab Navigation */}
+          <div className="border-b border-gray-200">
+            <nav className="flex -mb-px">
+              <button
+                onClick={() => setActiveTab('overview')}
+                className={`px-6 py-4 text-sm font-medium border-b-2 transition-colors ${
+                  activeTab === 'overview'
+                    ? 'border-blue-600 text-blue-600'
+                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                }`}
+              >
+                Overview
+              </button>
+              <button
+                onClick={() => setActiveTab('venues')}
+                className={`px-6 py-4 text-sm font-medium border-b-2 transition-colors ${
+                  activeTab === 'venues'
+                    ? 'border-blue-600 text-blue-600'
+                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                }`}
+              >
+                Venues ({venues.length})
+              </button>
+              <button
+                onClick={() => setActiveTab('billing')}
+                className={`px-6 py-4 text-sm font-medium border-b-2 transition-colors ${
+                  activeTab === 'billing'
+                    ? 'border-blue-600 text-blue-600'
+                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                }`}
+              >
+                Billing
+              </button>
+              <button
+                onClick={() => setActiveTab('tools')}
+                className={`px-6 py-4 text-sm font-medium border-b-2 transition-colors ${
+                  activeTab === 'tools'
+                    ? 'border-blue-600 text-blue-600'
+                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                }`}
+              >
+                Tools
+              </button>
+            </nav>
           </div>
 
-          {/* Right Column - Venues */}
-          <div className="lg:col-span-2">
-            <div className="bg-white border border-gray-200 rounded-xl">
-              <div className="px-6 py-5 border-b border-gray-200">
-                <div className="flex items-center justify-between">
+          {/* Tab Content */}
+          <div className="p-6">
+            {/* Overview Tab */}
+            {activeTab === 'overview' && (
+              <div className="space-y-6">
+                {/* Account Details */}
+                <div>
+                  <h3 className="text-lg font-medium text-gray-900 mb-4">Account Information</h3>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1.5">
+                        Company Name
+                      </label>
+                      {editingAccount ? (
+                        <input
+                          type="text"
+                          value={editingAccount.name}
+                          onChange={(e) => setEditingAccount({...editingAccount, name: e.target.value})}
+                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                        />
+                      ) : (
+                        <div className="px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg">
+                          {account.name || 'Not set'}
+                        </div>
+                      )}
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1.5">
+                        Phone
+                      </label>
+                      {editingAccount ? (
+                        <input
+                          type="tel"
+                          value={editingAccount.phone}
+                          onChange={(e) => setEditingAccount({...editingAccount, phone: e.target.value})}
+                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                        />
+                      ) : (
+                        <div className="px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg">
+                          {account.phone || 'Not set'}
+                        </div>
+                      )}
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1.5">
+                        Created
+                      </label>
+                      <div className="px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg">
+                        {new Date(account.created_at).toLocaleDateString()}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Master User */}
+                <div className="border-t border-gray-200 pt-6">
+                  <h3 className="text-lg font-medium text-gray-900 mb-4">Master User</h3>
+                  {account.masterUser ? (
+                    <div className="flex items-center gap-4 p-4 bg-gray-50 rounded-lg">
+                      <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center">
+                        <span className="text-sm font-medium text-blue-700">
+                          {account.masterUser.first_name?.[0]}{account.masterUser.last_name?.[0]}
+                        </span>
+                      </div>
+                      <div>
+                        <div className="text-sm font-medium text-gray-900">
+                          {account.masterUser.first_name} {account.masterUser.last_name}
+                        </div>
+                        <div className="flex items-center gap-2 text-sm text-gray-500">
+                          <Mail className="w-4 h-4" />
+                          {account.masterUser.email}
+                        </div>
+                      </div>
+                    </div>
+                  ) : (
+                    <p className="text-sm text-gray-500">No master user assigned</p>
+                  )}
+                </div>
+              </div>
+            )}
+
+            {/* Venues Tab */}
+            {activeTab === 'venues' && (
+              <div>
+                <div className="flex items-center justify-between mb-4">
                   <h3 className="text-lg font-medium text-gray-900">Venues</h3>
                   <button
                     onClick={() => navigate(`/admin/accounts/${accountId}/venues/new`)}
@@ -817,127 +794,232 @@ const AdminAccountDetail = () => {
                     Add Venue
                   </button>
                 </div>
-              </div>
 
-              {/* Demo Data Population Section */}
-              <div className="px-6 py-4 border-b border-gray-200">
-                <div className="flex items-center justify-between mb-3">
-                  <div>
-                    <h4 className="text-sm font-semibold text-gray-700 mb-1">Demo Data Population</h4>
-                    <p className="text-xs text-gray-500">Populate realistic demo data for demos and testing</p>
-                  </div>
-                </div>
-                <div className="flex gap-2">
-                  <button
-                    onClick={openFeedbackDemoPicker}
-                    disabled={seedingFeedbackDemo || seedingRatingsDemo}
-                    className="inline-flex items-center justify-center gap-2 px-4 py-2 bg-blue-600 text-white hover:bg-blue-700 rounded-lg transition-colors disabled:opacity-50 text-sm font-medium shadow-sm"
-                    title="High-quality feedback & assistance data (45-50 sessions/day, 95% resolution)"
-                  >
-                    {seedingFeedbackDemo ? (
-                      <>
-                        <Loader2 className="w-4 h-4 animate-spin" />
-                        Processing...
-                      </>
-                    ) : (
-                      <>
-                        <MessageSquare className="w-4 h-4" />
-                        Feedback Demo
-                      </>
-                    )}
-                  </button>
-                  <button
-                    onClick={openRatingsDemoPicker}
-                    disabled={seedingRatingsDemo || seedingFeedbackDemo}
-                    className="inline-flex items-center justify-center gap-2 px-4 py-2 bg-orange-600 text-white hover:bg-orange-700 rounded-lg transition-colors disabled:opacity-50 text-sm font-medium shadow-sm"
-                    title="Google & TripAdvisor ratings with upward trend"
-                  >
-                    {seedingRatingsDemo ? (
-                      <>
-                        <Loader2 className="w-4 h-4 animate-spin" />
-                        Processing...
-                      </>
-                    ) : (
-                      <>
-                        <Star className="w-4 h-4" />
-                        Ratings Demo
-                      </>
-                    )}
-                  </button>
-                </div>
-              </div>
-
-              {venues.length > 0 ? (
-                <div className="overflow-x-auto">
-                  <table className="min-w-full divide-y divide-gray-200">
-                    <thead className="bg-gray-50">
-                      <tr>
-                        <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                          Venue Name
-                        </th>
-                        <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                          Address
-                        </th>
-                        <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                          Tables
-                        </th>
-                        <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                          Created
-                        </th>
-                      </tr>
-                    </thead>
-                    <tbody className="bg-white divide-y divide-gray-200">
-                      {venues.map((venue) => (
-                        <tr key={venue.id} className="hover:bg-gray-50 transition-colors">
-                          <td className="px-6 py-4 whitespace-nowrap">
-                            <div className="flex items-center gap-2">
-                              <Building2 className="w-4 h-4 text-gray-400" />
-                              <span className="text-sm font-medium text-gray-900">{venue.name}</span>
-                            </div>
-                          </td>
-                          <td className="px-6 py-4">
-                            <div className="text-sm text-gray-900">
-                              {venue.address ? (
-                                <>
-                                  {venue.address.line1 && <div>{venue.address.line1}</div>}
-                                  {venue.address.line2 && <div>{venue.address.line2}</div>}
-                                  {venue.address.city && <div>{venue.address.city}{venue.address.postcode && `, ${venue.address.postcode}`}</div>}
-                                </>
-                              ) : (
-                                <span className="text-gray-400">No address</span>
-                              )}
-                            </div>
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                            {venue.table_count || 0}
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                            {new Date(venue.created_at).toLocaleDateString()}
-                          </td>
+                {venues.length > 0 ? (
+                  <div className="overflow-x-auto border border-gray-200 rounded-lg">
+                    <table className="min-w-full divide-y divide-gray-200">
+                      <thead className="bg-gray-50">
+                        <tr>
+                          <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Venue Name
+                          </th>
+                          <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Address
+                          </th>
+                          <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Tables
+                          </th>
+                          <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Created
+                          </th>
                         </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              ) : (
-                <div className="text-center py-12">
-                  <div className="p-4 bg-gray-50 rounded-2xl w-fit mx-auto mb-4">
-                    <Building2 className="h-10 w-10 text-gray-400" />
+                      </thead>
+                      <tbody className="bg-white divide-y divide-gray-200">
+                        {venues.map((venue) => (
+                          <tr key={venue.id} className="hover:bg-gray-50 transition-colors">
+                            <td className="px-6 py-4 whitespace-nowrap">
+                              <div className="flex items-center gap-2">
+                                <Building2 className="w-4 h-4 text-gray-400" />
+                                <span className="text-sm font-medium text-gray-900">{venue.name}</span>
+                              </div>
+                            </td>
+                            <td className="px-6 py-4">
+                              <div className="text-sm text-gray-900">
+                                {venue.address ? (
+                                  <>
+                                    {venue.address.line1 && <div>{venue.address.line1}</div>}
+                                    {venue.address.line2 && <div>{venue.address.line2}</div>}
+                                    {venue.address.city && <div>{venue.address.city}{venue.address.postcode && `, ${venue.address.postcode}`}</div>}
+                                  </>
+                                ) : (
+                                  <span className="text-gray-400">No address</span>
+                                )}
+                              </div>
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                              {venue.actual_table_count || 0}
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                              {new Date(venue.created_at).toLocaleDateString()}
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
                   </div>
-                  <h3 className="text-lg font-semibold text-gray-900 mb-1">No venues yet</h3>
-                  <p className="text-sm text-gray-500 mb-4">
-                    Create the first venue for this account
-                  </p>
-                  <button
-                    onClick={() => navigate(`/admin/accounts/${accountId}/venues/new`)}
-                    className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700"
-                  >
-                    <Plus className="w-4 h-4" />
-                    Add First Venue
-                  </button>
+                ) : (
+                  <div className="text-center py-12 border border-gray-200 rounded-lg">
+                    <div className="p-4 bg-gray-50 rounded-2xl w-fit mx-auto mb-4">
+                      <Building2 className="h-10 w-10 text-gray-400" />
+                    </div>
+                    <h3 className="text-lg font-semibold text-gray-900 mb-1">No venues yet</h3>
+                    <p className="text-sm text-gray-500 mb-4">
+                      Create the first venue for this account
+                    </p>
+                    <button
+                      onClick={() => navigate(`/admin/accounts/${accountId}/venues/new`)}
+                      className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700"
+                    >
+                      <Plus className="w-4 h-4" />
+                      Add First Venue
+                    </button>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* Billing Tab */}
+            {activeTab === 'billing' && (
+              <div className="space-y-6">
+                <div>
+                  <h3 className="text-lg font-medium text-gray-900 mb-4">Billing & Stripe</h3>
+                  <div className="space-y-4">
+                    <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+                      <div className="flex items-center gap-3">
+                        <CreditCard className="w-5 h-5 text-gray-400" />
+                        <span className="text-sm font-medium text-gray-900">Paid Status</span>
+                      </div>
+                      <span className={`px-3 py-1 rounded-full text-xs font-medium ${
+                        account.is_paid ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'
+                      }`}>
+                        {account.is_paid ? 'Paid' : 'Not Paid'}
+                      </span>
+                    </div>
+
+                    <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+                      <div className="flex items-center gap-3">
+                        <Calendar className="w-5 h-5 text-gray-400" />
+                        <span className="text-sm font-medium text-gray-900">Trial End</span>
+                      </div>
+                      <span className="text-sm text-gray-600">
+                        {account.trial_ends_at ? new Date(account.trial_ends_at).toLocaleDateString() : 'No trial'}
+                      </span>
+                    </div>
+
+                    <div className="flex gap-3">
+                      {stripeDashboardUrl && (
+                        <a
+                          href={stripeDashboardUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="flex-1 flex items-center justify-center gap-2 px-4 py-2 bg-purple-600 text-white text-sm font-medium rounded-lg hover:bg-purple-700 transition-colors"
+                        >
+                          <ExternalLink className="w-4 h-4" />
+                          View in Stripe
+                        </a>
+                      )}
+
+                      {account.stripe_customer_id && (
+                        <button
+                          onClick={getStripePortalUrl}
+                          className="flex-1 flex items-center justify-center gap-2 px-4 py-2 border border-gray-300 text-sm font-medium rounded-lg text-gray-700 bg-white hover:bg-gray-50 transition-colors"
+                        >
+                          <ExternalLink className="w-4 h-4" />
+                          Customer Portal
+                        </button>
+                      )}
+                    </div>
+                  </div>
                 </div>
-              )}
-            </div>
+
+                {/* Trial Extension */}
+                <div className="border-t border-gray-200 pt-6">
+                  <h3 className="text-lg font-medium text-gray-900 mb-4">Extend Trial</h3>
+                  <div className="max-w-sm space-y-3">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1.5">
+                        Add Days to Trial
+                      </label>
+                      <input
+                        type="number"
+                        min="1"
+                        value={extendDays}
+                        onChange={(e) => setExtendDays(e.target.value)}
+                        placeholder="Enter number of days"
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                      />
+                    </div>
+
+                    <button
+                      onClick={handleExtendTrial}
+                      disabled={!extendDays || extending}
+                      className="w-full px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                    >
+                      {extending ? (
+                        <>
+                          <Loader2 className="w-4 h-4 animate-spin" />
+                          Extending...
+                        </>
+                      ) : (
+                        <>
+                          <Clock className="w-4 h-4" />
+                          Extend Trial
+                        </>
+                      )}
+                    </button>
+
+                    <p className="text-xs text-gray-500">
+                      Current trial end: {account.trial_ends_at ? new Date(account.trial_ends_at).toLocaleDateString() : 'Not set'}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Tools Tab */}
+            {activeTab === 'tools' && (
+              <div className="space-y-6">
+                <div>
+                  <h3 className="text-lg font-medium text-gray-900 mb-2">Demo Data Tools</h3>
+                  <p className="text-sm text-gray-500 mb-4">Populate realistic demo data for demos and testing</p>
+
+                  <div className="p-4 bg-amber-50 border border-amber-200 rounded-lg mb-4">
+                    <p className="text-sm text-amber-800">
+                      <strong>Warning:</strong> These tools will add demo data to the account. Use with caution.
+                    </p>
+                  </div>
+
+                  <div className="flex gap-3">
+                    <button
+                      onClick={openFeedbackDemoPicker}
+                      disabled={seedingFeedbackDemo || seedingRatingsDemo}
+                      className="inline-flex items-center justify-center gap-2 px-4 py-2 bg-blue-600 text-white hover:bg-blue-700 rounded-lg transition-colors disabled:opacity-50 text-sm font-medium"
+                      title="High-quality feedback & assistance data (45-50 sessions/day, 95% resolution)"
+                    >
+                      {seedingFeedbackDemo ? (
+                        <>
+                          <Loader2 className="w-4 h-4 animate-spin" />
+                          Processing...
+                        </>
+                      ) : (
+                        <>
+                          <MessageSquare className="w-4 h-4" />
+                          Feedback Demo
+                        </>
+                      )}
+                    </button>
+                    <button
+                      onClick={openRatingsDemoPicker}
+                      disabled={seedingRatingsDemo || seedingFeedbackDemo}
+                      className="inline-flex items-center justify-center gap-2 px-4 py-2 bg-orange-600 text-white hover:bg-orange-700 rounded-lg transition-colors disabled:opacity-50 text-sm font-medium"
+                      title="Google & TripAdvisor ratings with upward trend"
+                    >
+                      {seedingRatingsDemo ? (
+                        <>
+                          <Loader2 className="w-4 h-4 animate-spin" />
+                          Processing...
+                        </>
+                      ) : (
+                        <>
+                          <Star className="w-4 h-4" />
+                          Ratings Demo
+                        </>
+                      )}
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
         </div>
       </div>

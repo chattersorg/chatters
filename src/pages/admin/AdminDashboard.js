@@ -160,9 +160,38 @@ export default function AdminDashboard() {
           console.error('Error loading venues:', venuesError);
         }
 
-        // Link venues to accounts
+        // Load actual table counts from table_positions (excluding soft-deleted)
+        const { data: tableCountsData, error: tableCountsError } = await supabase
+          .from('table_positions')
+          .select('venue_id, deleted_at');
+
+        if (tableCountsError) {
+          console.error('Error loading table counts:', tableCountsError);
+        }
+
+        // Debug: Log all tables and their deleted_at status
+        console.log('📊 [Admin] All table_positions:', tableCountsData?.length || 0);
+        console.log('📊 [Admin] Tables with deleted_at:', tableCountsData?.filter(t => t.deleted_at)?.length || 0);
+        console.log('📊 [Admin] Tables without deleted_at:', tableCountsData?.filter(t => !t.deleted_at)?.length || 0);
+
+        // Filter to only non-deleted tables
+        const activeTables = (tableCountsData || []).filter(t => !t.deleted_at);
+
+        // Count tables per venue
+        const tableCountsByVenue = activeTables.reduce((acc, row) => {
+          acc[row.venue_id] = (acc[row.venue_id] || 0) + 1;
+          return acc;
+        }, {});
+
+        console.log('📊 [Admin] Table counts by venue:', tableCountsByVenue);
+
+        // Link venues to accounts with actual table counts
         const accountsWithVenues = (accountsData || []).map(account => {
-          const accountVenues = (venuesData || []).filter(venue => venue.account_id === account.id);
+          const accountVenues = (venuesData || []).filter(venue => venue.account_id === account.id)
+            .map(venue => ({
+              ...venue,
+              actual_table_count: tableCountsByVenue[venue.id] || 0
+            }));
           return { ...account, venues: accountVenues };
         });
 
@@ -936,7 +965,7 @@ export default function AdminDashboard() {
               const status = getAccountStatus(account);
               const masterUser = account.users?.find(u => u.role === 'master');
               const venueCount = account.venues?.length || 0;
-              const totalTables = account.venues?.reduce((sum, v) => sum + (v.table_count || 0), 0) || 0;
+              const totalTables = account.venues?.reduce((sum, v) => sum + (v.actual_table_count || 0), 0) || 0;
 
               return (
                 <div
@@ -1529,7 +1558,7 @@ export default function AdminDashboard() {
                                 <Building2 className="w-4 h-4 text-gray-500" />
                                 <span className="font-medium text-gray-900">{venue.name}</span>
                                 <span className="text-sm text-gray-500">
-                                  {venue.table_count || 0} tables
+                                  {venue.actual_table_count || 0} tables
                                 </span>
                                 {employees.length > 0 && (
                                   <span className="bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded-full">
