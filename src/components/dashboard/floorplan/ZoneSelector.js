@@ -1,13 +1,14 @@
 import React, { useState } from 'react';
+import { Pencil } from 'lucide-react';
 
-const ZoneSelector = ({ 
-  zones, 
-  selectedZoneId, 
-  editMode, 
-  onZoneSelect, 
-  onZoneRename, 
-  onZoneDelete, 
-  onCreateZone 
+const ZoneSelector = ({
+  zones,
+  selectedZoneId,
+  editMode,
+  onZoneSelect,
+  onZoneRename,
+  onZoneDelete,
+  onCreateZone
 }) => {
   const [editingZoneId, setEditingZoneId] = useState(null);
   const [editingName, setEditingName] = useState('');
@@ -68,15 +69,24 @@ const ZoneSelector = ({
           )}
 
           {editMode && editingZoneId !== zone.id && (
-            <button
-              onClick={() => onZoneDelete(zone.id)}
-              className="ml-0.5 w-5 h-5 bg-red-100 dark:bg-red-900/30 hover:bg-red-200 dark:hover:bg-red-900/50 text-red-600 dark:text-red-400 rounded-full text-xs font-bold opacity-0 group-hover:opacity-100 transition-all duration-200 flex items-center justify-center"
-              title="Delete zone"
-            >
-              <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-              </svg>
-            </button>
+            <div className="flex items-center opacity-0 group-hover:opacity-100 transition-all duration-200">
+              <button
+                onClick={() => handleRenameStart(zone)}
+                className="ml-0.5 w-5 h-5 bg-blue-100 dark:bg-blue-900/30 hover:bg-blue-200 dark:hover:bg-blue-900/50 text-blue-600 dark:text-blue-400 rounded-full text-xs font-bold flex items-center justify-center"
+                title="Rename zone"
+              >
+                <Pencil className="w-2.5 h-2.5" />
+              </button>
+              <button
+                onClick={() => onZoneDelete(zone.id)}
+                className="ml-0.5 w-5 h-5 bg-red-100 dark:bg-red-900/30 hover:bg-red-200 dark:hover:bg-red-900/50 text-red-600 dark:text-red-400 rounded-full text-xs font-bold flex items-center justify-center"
+                title="Delete zone"
+              >
+                <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
           )}
         </div>
       ))}

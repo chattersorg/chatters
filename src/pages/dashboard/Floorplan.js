@@ -52,23 +52,55 @@ const Floorplan = () => {
 
   // Data loading functions
   const loadZones = async (venueId) => {
-    const { data } = await supabase
+    console.log('🗺️ [Floorplan] Loading zones for venue:', venueId);
+    const { data, error } = await supabase
       .from('zones')
       .select('*')
       .eq('venue_id', venueId)
       .order('order');
+
+    if (error) {
+      console.error('❌ [Floorplan] Error loading zones:', error);
+    }
+
+    console.log('🗺️ [Floorplan] Zones loaded:', data?.length || 0, 'zones');
+    console.log('🗺️ [Floorplan] Zone details:', data?.map(z => ({ id: z.id, name: z.name, order: z.order })));
+
     setZones(data || []);
-    if (data && data.length > 0) setSelectedZoneId(data[0].id);
+    if (data && data.length > 0) {
+      console.log('🗺️ [Floorplan] Setting selected zone to first zone:', data[0].id, data[0].name);
+      setSelectedZoneId(data[0].id);
+    }
   };
 
   const loadTables = async (venueId) => {
-    const { data } = await supabase
+    console.log('🪑 [Floorplan] Loading tables for venue:', venueId);
+    const { data, error } = await supabase
       .from('table_positions')
       .select('*')
-      .eq('venue_id', venueId);
+      .eq('venue_id', venueId)
+      .is('deleted_at', null);
+
+    if (error) {
+      console.error('❌ [Floorplan] Error loading tables:', error);
+    }
+
+    console.log('🪑 [Floorplan] Tables loaded:', data?.length || 0, 'tables');
+    console.log('🪑 [Floorplan] Table details:');
+    data?.forEach(t => {
+      console.log(`   Table #${t.table_number} (id: ${t.id}) - zone_id: ${t.zone_id || 'NULL/UNASSIGNED'}, position: (${t.x_percent}%, ${t.y_percent}%)`);
+    });
+
+    // Log tables without zone assignment
+    const unassignedTables = data?.filter(t => !t.zone_id) || [];
+    if (unassignedTables.length > 0) {
+      console.warn('⚠️ [Floorplan] UNASSIGNED TABLES FOUND:', unassignedTables.length);
+      console.warn('⚠️ [Floorplan] Unassigned table numbers:', unassignedTables.map(t => t.table_number));
+    }
 
     const container = layoutRef.current;
     if (!container) {
+      console.log('🪑 [Floorplan] Container not ready, setting tables without pixel conversion');
       // Set tables without pixel conversion if container not ready
       setTables(
         (data || []).map((t) => ({
@@ -83,6 +115,7 @@ const Floorplan = () => {
     }
 
     const { width, height } = container.getBoundingClientRect();
+    console.log('🪑 [Floorplan] Container size:', width, 'x', height);
 
     setTables(
       (data || []).map((t) => ({
