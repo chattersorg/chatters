@@ -3,6 +3,7 @@ import { loadStripe } from '@stripe/stripe-js';
 import {
   Elements,
   PaymentElement,
+  AddressElement,
   useStripe,
   useElements
 } from '@stripe/react-stripe-js';
@@ -130,6 +131,24 @@ const CheckoutForm = ({ onSuccess, onCancel, subtotal = 0, billingPeriod, venueC
         </div>
       )}
 
+      {/* Billing Address */}
+      <div className="space-y-2">
+        <h3 className="text-sm font-medium text-gray-700">Billing Address</h3>
+        <AddressElement
+          options={{
+            mode: 'billing',
+            fields: {
+              phone: 'never'
+            },
+            validation: {
+              phone: {
+                required: 'never'
+              }
+            }
+          }}
+        />
+      </div>
+
       {/* Payment Element */}
       <div className="space-y-2">
         <div className="flex items-center gap-2 text-gray-700">
@@ -141,8 +160,12 @@ const CheckoutForm = ({ onSuccess, onCancel, subtotal = 0, billingPeriod, venueC
             layout: isSetupMode ? 'accordion' : 'tabs',
             fields: {
               billingDetails: {
-                address: 'auto'
+                address: 'never' // We're using AddressElement instead
               }
+            },
+            wallets: {
+              applePay: 'auto',
+              googlePay: 'auto'
             }
           }}
         />
