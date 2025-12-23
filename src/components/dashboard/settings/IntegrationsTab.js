@@ -13,6 +13,7 @@ const IntegrationsTab = () => {
   const [tripadvisorResults, setTripadvisorResults] = useState([]);
   const [isSearchingTripadvisor, setIsSearchingTripadvisor] = useState(false);
   const [showTripadvisorDropdown, setShowTripadvisorDropdown] = useState(false);
+  const [tripadvisorSearchError, setTripadvisorSearchError] = useState(null);
   const tripadvisorSearchTimeoutRef = useRef(null);
   const tripadvisorDropdownRef = useRef(null);
 
@@ -64,12 +65,18 @@ const IntegrationsTab = () => {
     try {
       const { data: venue, error } = await supabase
         .from('venues')
-        .select('id, name, place_id, tripadvisor_location_id, google_review_link, tripadvisor_link, tripadvisor_integration_locked')
+        .select('id, name, place_id, tripadvisor_location_id, google_review_link, tripadvisor_link, tripadvisor_integration_locked, address')
         .eq('id', venueId)
         .single();
 
       if (!error && venue) {
         setVenueData(venue);
+        // Pre-fill TripAdvisor search with venue name and postcode if not connected
+        if (!venue.tripadvisor_location_id && venue.name) {
+          const postcode = venue.address?.postalCode || venue.address?.postcode || '';
+          const suggestedSearch = postcode ? `${venue.name}, ${postcode}` : venue.name;
+          setTripadvisorSearchQuery(suggestedSearch);
+        }
       }
     } catch (error) {
       console.error('Error loading venue data:', error);
@@ -220,6 +227,7 @@ const IntegrationsTab = () => {
   const handleTripadvisorSearchInput = (value) => {
     setTripadvisorSearchQuery(value);
     setShowTripadvisorDropdown(value.length > 2);
+    setTripadvisorSearchError(null);
 
     if (tripadvisorSearchTimeoutRef.current) {
       clearTimeout(tripadvisorSearchTimeoutRef.current);
@@ -236,11 +244,21 @@ const IntegrationsTab = () => {
     }
   };
 
+  const handleTripadvisorSearchButton = () => {
+    if (tripadvisorSearchQuery.length > 2) {
+      setShowTripadvisorDropdown(true);
+      setIsSearchingTripadvisor(true);
+      performTripadvisorSearch(tripadvisorSearchQuery);
+    }
+  };
+
   const performTripadvisorSearch = async (query) => {
+    setTripadvisorSearchError(null);
     try {
       const token = (await supabase.auth.getSession()).data.session?.access_token;
       if (!token) {
         console.error('No authentication token');
+        setTripadvisorSearchError('Please log in to search TripAdvisor');
         return;
       }
 
@@ -253,13 +271,25 @@ const IntegrationsTab = () => {
       if (response.ok) {
         const data = await response.json();
         setTripadvisorResults(data.suggestions || []);
+        if (data.suggestions?.length === 0) {
+          setTripadvisorSearchError('No results found. Try different search terms.');
+        }
       } else {
-        console.error('TripAdvisor search failed:', response.status);
+        const errorData = await response.json().catch(() => ({}));
+        console.error('TripAdvisor search failed:', response.status, errorData);
         setTripadvisorResults([]);
+        if (errorData.reason === 'tripadvisor_api_not_configured') {
+          setTripadvisorSearchError('TripAdvisor search is temporarily unavailable. Please try again later.');
+        } else if (errorData.status === 'temporary_unavailable') {
+          setTripadvisorSearchError('TripAdvisor search is temporarily unavailable. Please try again later.');
+        } else {
+          setTripadvisorSearchError('Search failed. Please try again.');
+        }
       }
     } catch (error) {
       console.error('TripAdvisor search error:', error);
       setTripadvisorResults([]);
+      setTripadvisorSearchError('Network error. Please check your connection.');
     } finally {
       setIsSearchingTripadvisor(false);
     }
@@ -479,7 +509,7 @@ const IntegrationsTab = () => {
         </div>
 
         {/* TripAdvisor Card */}
-        <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-shadow">
+        <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl shadow-sm hover:shadow-md transition-shadow">
           {/* Card Header */}
           <div className="px-6 py-5 border-b border-gray-100 dark:border-gray-800 bg-gradient-to-r from-gray-50 to-white dark:from-gray-900 dark:to-gray-900">
             <div className="flex items-center justify-between">
@@ -574,26 +604,45 @@ const IntegrationsTab = () => {
                 {/* Search Input */}
                 <div>
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    Search for your business
+                    Search for your business on TripAdvisor
                   </label>
                   <div className="relative" ref={tripadvisorDropdownRef}>
-                    <div className="relative">
-                      <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-                      <input
-                        type="text"
-                        value={tripadvisorSearchQuery}
-                        onChange={(e) => handleTripadvisorSearchInput(e.target.value)}
-                        placeholder="e.g., 'The Fox Inn, SW1A 1AA'"
-                        className="w-full pl-10 pr-4 py-3 border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 rounded-xl focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 text-sm"
-                      />
+                    <div className="flex gap-2">
+                      <div className="relative flex-1">
+                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                        <input
+                          type="text"
+                          value={tripadvisorSearchQuery}
+                          onChange={(e) => handleTripadvisorSearchInput(e.target.value)}
+                          placeholder="e.g., 'The Fox Inn, SW1A 1AA'"
+                          className="w-full pl-10 pr-4 py-3 border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 rounded-xl focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 text-sm"
+                        />
+                      </div>
+                      <button
+                        onClick={handleTripadvisorSearchButton}
+                        disabled={tripadvisorSearchQuery.length < 3 || isSearchingTripadvisor}
+                        className="px-4 py-3 bg-green-600 hover:bg-green-700 disabled:bg-gray-300 dark:disabled:bg-gray-700 text-white rounded-xl font-medium transition-colors disabled:cursor-not-allowed flex items-center gap-2"
+                      >
+                        {isSearchingTripadvisor ? (
+                          <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                        ) : (
+                          <Search className="w-4 h-4" />
+                        )}
+                        Search
+                      </button>
                     </div>
 
                     {showTripadvisorDropdown && (
-                      <div className="absolute z-10 w-full mt-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl shadow-lg max-h-64 overflow-y-auto">
+                      <div className="absolute z-50 w-full mt-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl shadow-xl max-h-64 overflow-y-auto">
                         {isSearchingTripadvisor ? (
                           <div className="flex items-center gap-2 px-4 py-3 text-sm text-gray-500 dark:text-gray-400">
                             <div className="w-4 h-4 border-2 border-gray-300 border-t-green-500 rounded-full animate-spin" />
                             Searching TripAdvisor...
+                          </div>
+                        ) : tripadvisorSearchError ? (
+                          <div className="px-4 py-3 text-sm text-amber-600 dark:text-amber-400 flex items-start gap-2">
+                            <AlertCircle className="w-4 h-4 flex-shrink-0 mt-0.5" />
+                            <span>{tripadvisorSearchError}</span>
                           </div>
                         ) : tripadvisorResults.length > 0 ? (
                           tripadvisorResults.map((result, index) => (
@@ -634,7 +683,11 @@ const IntegrationsTab = () => {
                     )}
                   </div>
                   <p className="mt-2 text-xs text-gray-500 dark:text-gray-400">
-                    Include your business name and postcode for best results (UK businesses only)
+                    {venueData?.name && venueData?.address?.postalCode ? (
+                      <>We've pre-filled this based on your venue details. Click Search or adjust the query if needed.</>
+                    ) : (
+                      <>Include your business name and postcode for best results.</>
+                    )}
                   </p>
                 </div>
               </div>
