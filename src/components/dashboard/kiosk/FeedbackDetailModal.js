@@ -152,9 +152,10 @@ const FeedbackDetailModal = ({
   
   const sessions = useMemo(() => groupBySession(feedbackItems), [feedbackItems]);
   
-  // Helper function to determine if feedback is positive (rating > 3)
+  // Helper function to determine if feedback is positive (min rating > 4)
+  // Uses min_rating to match urgency calculation - any low rating means it needs resolution
   const isPositiveFeedback = (session) => {
-    return session.avg_rating !== null && session.avg_rating > 3;
+    return session.min_rating !== null && session.min_rating > 4;
   };
   
   // Load current user and staff members
