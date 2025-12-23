@@ -51,15 +51,16 @@ const CheckoutForm = ({ onSuccess, onCancel, subtotal = 0, billingPeriod, venueC
   // Debounce VAT validation
   const [vatDebounceTimer, setVatDebounceTimer] = useState(null);
 
-  // Check if we should show VAT field based on country
+  // Check if we should show VAT field based on country (EU only, not UK)
+  // UK VAT numbers don't change the tax rate - UK businesses still pay 20% VAT
+  // Only EU businesses with valid VAT qualify for reverse charge (0% VAT)
   useEffect(() => {
     if (billingAddress?.country) {
       const isEU = EU_COUNTRIES.includes(billingAddress.country);
-      const isUK = billingAddress.country === 'GB';
-      setShowVatField(isEU || isUK);
+      setShowVatField(isEU);
 
-      // Reset VAT state when country changes
-      if (!isEU && !isUK) {
+      // Reset VAT state when country changes to non-EU
+      if (!isEU) {
         setVatNumber('');
         setVatValidation(null);
       }
@@ -92,9 +93,12 @@ const CheckoutForm = ({ onSuccess, onCancel, subtotal = 0, billingPeriod, venueC
       });
 
       const data = await response.json();
+      const isEU = EU_COUNTRIES.includes(country);
       setVatValidation({
         valid: data.valid,
-        message: data.valid ? 'Valid VAT number - reverse charge applies' : (data.message || 'Invalid VAT number')
+        message: data.valid
+          ? (isEU ? 'Valid VAT number - reverse charge applies' : 'Valid VAT number')
+          : (data.message || 'Invalid VAT number')
       });
 
       // If valid, recalculate tax with VAT exemption
@@ -384,12 +388,12 @@ const CheckoutForm = ({ onSuccess, onCancel, subtotal = 0, billingPeriod, venueC
             />
           </div>
 
-          {/* VAT Number - Only shown for EU/UK countries */}
+          {/* VAT Number - Required for EU countries */}
           {showVatField && (
             <div className="space-y-2">
               <div className="flex items-center gap-2 text-gray-700">
                 <Building2 className="w-4 h-4" />
-                <h3 className="text-sm font-medium">VAT Number (Optional)</h3>
+                <h3 className="text-sm font-medium">VAT Number <span className="text-red-500">*</span></h3>
               </div>
               <div className="relative">
                 <input
@@ -421,14 +425,15 @@ const CheckoutForm = ({ onSuccess, onCancel, subtotal = 0, billingPeriod, venueC
                   </div>
                 )}
               </div>
-              {vatValidation && (
+              {vatValidation ? (
                 <p className={`text-xs ${vatValidation.valid ? 'text-green-600' : 'text-red-600'}`}>
                   {vatValidation.message}
                 </p>
+              ) : !vatNumber && (
+                <p className="text-xs text-gray-500">
+                  Required for EU business customers
+                </p>
               )}
-              <p className="text-xs text-gray-500">
-                Business customers with valid VAT numbers qualify for reverse charge (0% VAT)
-              </p>
             </div>
           )}
 
@@ -476,7 +481,7 @@ const CheckoutForm = ({ onSuccess, onCancel, subtotal = 0, billingPeriod, venueC
               <Button
                 type="submit"
                 variant="primary"
-                disabled={!stripe}
+                disabled={!stripe || (showVatField && !vatValidation?.valid)}
                 loading={isProcessing}
                 className="flex-1"
               >
