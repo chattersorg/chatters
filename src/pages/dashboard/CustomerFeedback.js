@@ -292,7 +292,7 @@ const CustomerFeedbackContent = () => {
     }
 
     setAssistanceLoading(true);
-    
+
     try {
       const requestData = {
         venue_id: venueId,
@@ -301,7 +301,7 @@ const CustomerFeedbackContent = () => {
         message: 'Just need assistance - Our team will be right with you'
       };
 
-      // Insert assistance request
+      // Insert assistance request directly - requires RLS policy for anon insert
       const { data, error } = await supabase
         .from('assistance_requests')
         .insert([requestData])

@@ -74,6 +74,14 @@ const groupBySession = (feedbackItems) => {
 const KioskPage = () => {
   const { venueId, venueName, loading: venueLoading } = useVenue();
 
+  // Force dark mode on kiosk - always show dark theme regardless of system preference
+  useEffect(() => {
+    document.documentElement.classList.add('dark');
+    return () => {
+      document.documentElement.classList.remove('dark');
+    };
+  }, []);
+
   // State
   const [zones, setZones] = useState([]);
   const [tables, setTables] = useState([]);
@@ -726,64 +734,70 @@ const KioskPage = () => {
         </div>
       </div>
 
-      {/* Toolbar */}
-      <div className="flex-shrink-0 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800 px-4 py-2">
-        <div className="flex items-center justify-between gap-4">
-          {/* Left: Zone selector */}
-          <div className="flex items-center gap-3">
-            {/* Overview button */}
+      {/* Toolbar - Tab Style */}
+      <div className="flex-shrink-0 bg-gray-900 border-b border-gray-700">
+        <div className="flex items-center justify-between">
+          {/* Left: Zone tabs */}
+          <div className="flex items-center">
+            {/* Overview tab */}
             <button
               onClick={handleBackToOverview}
-              className={`px-2.5 py-1 rounded text-sm font-medium transition-all duration-200 ${
+              className={`relative px-4 py-3 text-sm font-medium transition-all duration-200 ${
                 currentView === 'overview'
-                  ? 'bg-blue-600 text-white'
-                  : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-600'
+                  ? 'text-white'
+                  : 'text-gray-400 hover:text-gray-200'
               }`}
             >
-              <LayoutGrid className="w-4 h-4 inline-block mr-1" />
-              Overview
+              <div className="flex items-center gap-2">
+                <LayoutGrid className="w-4 h-4" />
+                <span>Overview</span>
+              </div>
+              {currentView === 'overview' && (
+                <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-blue-500" />
+              )}
             </button>
 
-            <div className="h-6 w-px bg-gray-200 dark:bg-gray-700" />
-
-            {/* Zone buttons */}
-            <div className="flex items-center gap-2">
-              {zones.map(zone => {
-                const notificationCount = zoneNotificationCounts[zone.id] || 0;
-                return (
-                  <button
-                    key={zone.id}
-                    onClick={() => handleZoneSelect(zone.id)}
-                    className={`relative px-2.5 py-1 rounded text-sm font-medium transition-all duration-200 ${
-                      currentView === zone.id
-                        ? 'bg-blue-600 text-white'
-                        : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-600'
-                    }`}
-                  >
-                    {zone.name}
+            {/* Zone tabs */}
+            {zones.map(zone => {
+              const notificationCount = zoneNotificationCounts[zone.id] || 0;
+              return (
+                <button
+                  key={zone.id}
+                  onClick={() => handleZoneSelect(zone.id)}
+                  className={`relative px-4 py-3 text-sm font-medium transition-all duration-200 ${
+                    currentView === zone.id
+                      ? 'text-white'
+                      : 'text-gray-400 hover:text-gray-200'
+                  }`}
+                >
+                  <div className="flex items-center gap-2">
+                    <span>{zone.name}</span>
                     {notificationCount > 0 && (
-                      <span className="absolute -top-1.5 -right-1.5 min-w-[18px] h-[18px] flex items-center justify-center bg-red-500 text-white text-[10px] font-bold rounded-full px-1">
+                      <span className="min-w-[20px] h-5 flex items-center justify-center bg-red-500 text-white text-xs font-bold rounded-full px-1.5">
                         {notificationCount}
                       </span>
                     )}
-                  </button>
-                );
-              })}
-            </div>
+                  </div>
+                  {currentView === zone.id && (
+                    <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-blue-500" />
+                  )}
+                </button>
+              );
+            })}
           </div>
 
           {/* Right: Stats */}
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-4 px-4">
             {feedbackList.sessionCount > 0 && (
               <div className="flex items-center gap-2 text-sm">
                 <MessageSquare className="w-4 h-4 text-blue-500" />
-                <span className="text-gray-600 dark:text-gray-400">{feedbackList.sessionCount} feedback</span>
+                <span className="text-gray-400">{feedbackList.sessionCount} feedback</span>
               </div>
             )}
             {assistanceRequests.length > 0 && (
               <div className="flex items-center gap-2 text-sm">
                 <Bell className="w-4 h-4 text-orange-500 animate-pulse" />
-                <span className="text-gray-600 dark:text-gray-400">{assistanceRequests.length} assistance</span>
+                <span className="text-gray-400">{assistanceRequests.length} assistance</span>
               </div>
             )}
           </div>

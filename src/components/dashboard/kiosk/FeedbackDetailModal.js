@@ -73,19 +73,19 @@ const groupBySession = (feedbackItems) => {
 };
 
 const getRatingColor = (rating) => {
-  if (rating == null) return 'text-slate-500';
-  if (rating <= 2) return 'text-red-600';
-  if (rating <= 3) return 'text-amber-600';
-  return 'text-emerald-600';
+  if (rating == null) return 'text-slate-500 dark:text-slate-400';
+  if (rating <= 2) return 'text-red-600 dark:text-red-400';
+  if (rating <= 3) return 'text-amber-600 dark:text-amber-400';
+  return 'text-emerald-600 dark:text-emerald-400';
 };
 
 const StarRating = ({ rating, className = '' }) => {
   if (rating == null) return (
     <div className="flex items-center gap-1">
-      <span className="text-slate-400 text-sm font-medium">No rating provided</span>
+      <span className="text-slate-400 dark:text-slate-500 text-sm font-medium">No rating provided</span>
     </div>
   );
-  
+
   return (
     <div className={`flex items-center gap-1.5 ${className}`}>
       <div className="flex gap-0.5">
@@ -93,9 +93,9 @@ const StarRating = ({ rating, className = '' }) => {
           <svg
             key={star}
             className={`w-4 h-4 ${
-              star <= rating 
-                ? 'text-amber-400 fill-current' 
-                : 'text-slate-200'
+              star <= rating
+                ? 'text-amber-400 fill-current'
+                : 'text-slate-200 dark:text-slate-600'
             }`}
             fill={star <= rating ? 'currentColor' : 'none'}
             stroke="currentColor"
@@ -431,8 +431,8 @@ const FeedbackDetailModal = ({
     urgent: {
       label: 'URGENT',
       color: 'bg-red-600 text-white',
-      bgColor: 'bg-red-50',
-      borderColor: 'border-red-200',
+      bgColor: 'bg-red-50 dark:bg-red-900/30',
+      borderColor: 'border-red-200 dark:border-red-800',
       icon: (
         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.95-.833-2.72 0L4.094 16.5c-.77.833.192 2.5 1.732 2.5z" />
@@ -442,8 +442,8 @@ const FeedbackDetailModal = ({
     attention: {
       label: 'ATTENTION',
       color: 'bg-amber-600 text-white',
-      bgColor: 'bg-amber-50',
-      borderColor: 'border-amber-200',
+      bgColor: 'bg-amber-50 dark:bg-amber-900/30',
+      borderColor: 'border-amber-200 dark:border-amber-800',
       icon: (
         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -453,8 +453,8 @@ const FeedbackDetailModal = ({
     positive: {
       label: 'POSITIVE',
       color: 'bg-green-600 text-white',
-      bgColor: 'bg-green-50',
-      borderColor: 'border-green-200',
+      bgColor: 'bg-green-50 dark:bg-green-900/30',
+      borderColor: 'border-green-200 dark:border-green-800',
       icon: (
         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
@@ -486,16 +486,16 @@ const FeedbackDetailModal = ({
         <div className={`${urgency.bgColor} ${urgency.borderColor} border-b px-6 py-5 -mx-4 -mt-4 mb-4`}>
           <div className="flex items-center justify-between gap-4">
             <div className="flex items-center gap-3 min-w-0">
-              <div className="w-10 h-10 bg-white rounded-lg flex items-center justify-center shadow-sm border border-gray-200 flex-shrink-0">
-                <svg className="w-5 h-5 text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <div className="w-10 h-10 bg-white dark:bg-gray-700 rounded-lg flex items-center justify-center shadow-sm border border-gray-200 dark:border-gray-600 flex-shrink-0">
+                <svg className="w-5 h-5 text-slate-600 dark:text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 8h10m0 0V6a2 2 0 00-2-2H9a2 2 0 00-2 2v2m0 0v8a2 2 0 002 2h6a2 2 0 002-2V8M9 12h6" />
                 </svg>
               </div>
               <div className="min-w-0">
-                <h3 className="text-lg font-semibold text-slate-900 truncate">
+                <h3 className="text-lg font-semibold text-slate-900 dark:text-slate-100 truncate">
                   Table {session.table_number}
                 </h3>
-                <div className="flex items-center gap-3 text-xs text-slate-600">
+                <div className="flex items-center gap-3 text-xs text-slate-600 dark:text-slate-400">
                   <span>{dayjs(session.created_at).fromNow()}</span>
                   <span>•</span>
                   <span>{session.items.length} response{session.items.length !== 1 ? 's' : ''}</span>
@@ -504,7 +504,7 @@ const FeedbackDetailModal = ({
             </div>
             <div className="flex items-center gap-2 flex-shrink-0">
               {session.avg_rating && (
-                <div className="bg-white rounded-lg px-2 py-1.5 shadow-sm border">
+                <div className="bg-white dark:bg-gray-700 rounded-lg px-2 py-1.5 shadow-sm border dark:border-gray-600">
                   <StarRating rating={session.avg_rating} />
                 </div>
               )}
@@ -523,10 +523,10 @@ const FeedbackDetailModal = ({
               const question = item.questions?.question || `Question ${index + 1}`;
 
               return (
-                <div key={item.id} className="bg-white border border-gray-200 rounded-lg p-4 shadow-sm">
+                <div key={item.id} className="bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg p-4 shadow-sm">
                   <div className="flex items-center justify-between gap-3">
                     <div className="min-w-0 flex-1">
-                      <h6 className="font-medium text-slate-900 text-sm truncate">
+                      <h6 className="font-medium text-slate-900 dark:text-slate-100 text-sm truncate">
                         {question}
                       </h6>
                     </div>
@@ -538,8 +538,8 @@ const FeedbackDetailModal = ({
                   </div>
 
                   {item.additional_feedback && item.additional_feedback.trim() && (
-                    <div className="mt-3 bg-blue-50 border border-blue-100 rounded-lg p-3">
-                      <p className="text-sm text-slate-700 leading-relaxed">
+                    <div className="mt-3 bg-blue-50 dark:bg-blue-900/30 border border-blue-100 dark:border-blue-800 rounded-lg p-3">
+                      <p className="text-sm text-slate-700 dark:text-slate-300 leading-relaxed">
                         "{item.additional_feedback.trim()}"
                       </p>
                     </div>
@@ -551,22 +551,22 @@ const FeedbackDetailModal = ({
 
         {/* Multiple Sessions Alert - Compact */}
         {sessions.length > 1 && (
-          <div className="bg-amber-50 border border-amber-200 rounded-lg p-3 flex items-center gap-2 mt-4">
-            <svg className="w-4 h-4 text-amber-600 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <div className="bg-amber-50 dark:bg-amber-900/30 border border-amber-200 dark:border-amber-800 rounded-lg p-3 flex items-center gap-2 mt-4">
+            <svg className="w-4 h-4 text-amber-600 dark:text-amber-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
             </svg>
-            <span className="text-sm text-amber-800">
+            <span className="text-sm text-amber-800 dark:text-amber-300">
               <strong>{sessions.length} sessions</strong> will be resolved together
             </span>
           </div>
         )}
 
         {/* Compact Resolution Section */}
-        <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
+        <div className="bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg p-4">
           {isPositiveFeedback(session) ? (
             // For positive feedback - compact clear button
             <div className="space-y-3">
-              <div className="flex items-center gap-2 text-emerald-700">
+              <div className="flex items-center gap-2 text-emerald-700 dark:text-emerald-400">
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                 </svg>
@@ -582,7 +582,7 @@ const FeedbackDetailModal = ({
                 </button>
                 <button
                   onClick={onClose}
-                  className="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 font-medium text-sm hover:bg-gray-50"
+                  className="px-4 py-2 border border-gray-300 dark:border-gray-500 rounded-lg text-gray-700 dark:text-gray-300 font-medium text-sm hover:bg-gray-50 dark:hover:bg-gray-600"
                 >
                   Cancel
                 </button>
@@ -598,7 +598,7 @@ const FeedbackDetailModal = ({
                   className={`flex-1 px-3 py-2 rounded-lg text-sm font-medium transition-all flex items-center justify-center gap-2 ${
                     resolutionType === 'resolved'
                       ? 'bg-emerald-600 text-white'
-                      : 'bg-white border border-gray-300 text-gray-700 hover:bg-gray-50'
+                      : 'bg-white dark:bg-gray-600 border border-gray-300 dark:border-gray-500 text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-500'
                   }`}
                 >
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -611,7 +611,7 @@ const FeedbackDetailModal = ({
                   className={`flex-1 px-3 py-2 rounded-lg text-sm font-medium transition-all flex items-center justify-center gap-2 ${
                     resolutionType === 'dismissed'
                       ? 'bg-amber-600 text-white'
-                      : 'bg-white border border-gray-300 text-gray-700 hover:bg-gray-50'
+                      : 'bg-white dark:bg-gray-600 border border-gray-300 dark:border-gray-500 text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-500'
                   }`}
                 >
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -628,19 +628,19 @@ const FeedbackDetailModal = ({
                   onChange={(e) => setDismissalReason(e.target.value)}
                   placeholder="Reason for dismissal..."
                   rows={2}
-                  className="w-full px-3 py-2 border border-amber-300 rounded-lg text-sm bg-amber-50 placeholder-amber-500 resize-none"
+                  className="w-full px-3 py-2 border border-amber-300 dark:border-amber-700 rounded-lg text-sm bg-amber-50 dark:bg-amber-900/30 text-gray-900 dark:text-gray-100 placeholder-amber-500 dark:placeholder-amber-400 resize-none"
                 />
               )}
 
               {/* Staff Member Selection - Compact */}
               <div>
-                <label className="block text-xs font-medium text-slate-600 mb-1">
+                <label className="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1">
                   Staff Member <span className="text-red-500">*</span>
                 </label>
                 <select
                   value={selectedStaffMember}
                   onChange={(e) => setSelectedStaffMember(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm bg-white"
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-500 rounded-lg text-sm bg-white dark:bg-gray-600 text-gray-900 dark:text-gray-100"
                 >
                   <option value="">Select staff...</option>
                   {staffMembers.filter(p => p.source === 'employee').map(employee => (
@@ -664,12 +664,12 @@ const FeedbackDetailModal = ({
                     }}
                     className="w-4 h-4 text-blue-600 rounded"
                   />
-                  <label htmlFor="addCoResolver" className="text-xs text-slate-600">Add co-resolver</label>
+                  <label htmlFor="addCoResolver" className="text-xs text-slate-600 dark:text-slate-400">Add co-resolver</label>
                   {addCoResolver && (
                     <select
                       value={selectedCoResolver}
                       onChange={(e) => setSelectedCoResolver(e.target.value)}
-                      className="flex-1 px-2 py-1 border border-gray-300 rounded text-sm bg-white"
+                      className="flex-1 px-2 py-1 border border-gray-300 dark:border-gray-500 rounded text-sm bg-white dark:bg-gray-600 text-gray-900 dark:text-gray-100"
                     >
                       <option value="">Select...</option>
                       {staffMembers
@@ -691,7 +691,7 @@ const FeedbackDetailModal = ({
                   onChange={(e) => setResolutionMessage(e.target.value)}
                   placeholder="Resolution notes (optional)..."
                   rows={2}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm placeholder-gray-400 resize-none"
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-500 rounded-lg text-sm bg-white dark:bg-gray-600 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-300 resize-none"
                   maxLength={500}
                 />
               )}
@@ -705,13 +705,13 @@ const FeedbackDetailModal = ({
                     resolutionType === 'resolved'
                       ? 'bg-emerald-600 hover:bg-emerald-700'
                       : 'bg-amber-600 hover:bg-amber-700'
-                  } disabled:bg-slate-400`}
+                  } disabled:bg-slate-400 dark:disabled:bg-slate-600`}
                 >
                   {isResolving ? 'Processing...' : (resolutionType === 'resolved' ? 'Mark Resolved' : 'Dismiss')}
                 </button>
                 <button
                   onClick={onClose}
-                  className="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 font-medium text-sm hover:bg-gray-50"
+                  className="px-4 py-2 border border-gray-300 dark:border-gray-500 rounded-lg text-gray-700 dark:text-gray-300 font-medium text-sm hover:bg-gray-50 dark:hover:bg-gray-600"
                 >
                   Cancel
                 </button>
