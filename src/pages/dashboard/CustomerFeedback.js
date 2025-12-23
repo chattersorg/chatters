@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
-import { supabase } from '../../utils/supabase';
+import { supabase, supabaseAnon } from '../../utils/supabase';
 import { v4 as uuidv4 } from 'uuid';
 import { Star } from 'lucide-react';
 import AlertModal from '../../components/ui/AlertModal';
@@ -301,8 +301,8 @@ const CustomerFeedbackContent = () => {
         message: 'Just need assistance - Our team will be right with you'
       };
 
-      // Insert assistance request directly - requires RLS policy for anon insert
-      const { data, error } = await supabase
+      // Insert assistance request using anon client (no session) to ensure anon RLS policy is used
+      const { data, error } = await supabaseAnon
         .from('assistance_requests')
         .insert([requestData])
         .select();
