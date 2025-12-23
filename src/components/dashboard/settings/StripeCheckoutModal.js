@@ -380,8 +380,14 @@ const CheckoutForm = ({ onSuccess, onCancel, subtotal = 0, billingPeriod, venueC
             <AddressElement
               options={{
                 mode: 'billing',
+                display: {
+                  name: 'full'
+                },
                 fields: {
                   phone: 'never'
+                },
+                autocomplete: {
+                  mode: 'disabled'
                 }
               }}
               onChange={handleAddressChange}
