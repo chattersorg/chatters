@@ -151,11 +151,10 @@ export default async function handler(req, res) {
       });
     }
 
-    // Build hierarchy tree for master/admin view
-    let hierarchy = null;
-    if (userData.role === 'master' || userData.role === 'admin') {
-      hierarchy = buildHierarchy(enrichedManagers, userData.id);
-    }
+    // Build hierarchy tree for all users
+    // For master/admin: shows all managers with master as root
+    // For managers: shows their direct reports with them as root
+    const hierarchy = buildHierarchy(enrichedManagers, user.id);
 
     return res.status(200).json({
       managers: enrichedManagers,

@@ -263,55 +263,6 @@ const ManagersPage = () => {
         </PermissionGate>
       </div>
 
-      {/* Stats Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 p-5">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm font-medium text-gray-500 dark:text-gray-400">Total Managers</p>
-              <p className="text-2xl font-semibold text-gray-900 dark:text-white mt-1">
-                {loading ? '-' : managers.length}
-              </p>
-            </div>
-            <div className="w-12 h-12 rounded-xl bg-gray-100 dark:bg-gray-800 flex items-center justify-center">
-              <UserCheck className="w-6 h-6 text-gray-600 dark:text-gray-400" />
-            </div>
-          </div>
-        </div>
-
-        <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 p-5">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm font-medium text-gray-500 dark:text-gray-400">Active Venues</p>
-              <p className="text-2xl font-semibold text-gray-900 dark:text-white mt-1">
-                {loading ? '-' : [...new Set(managers.flatMap(m => m.venues?.map(v => v.id) || []))].length}
-              </p>
-            </div>
-            <div className="w-12 h-12 rounded-xl bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center">
-              <Building2 className="w-6 h-6 text-blue-600 dark:text-blue-400" />
-            </div>
-          </div>
-        </div>
-
-        <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 p-5">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm font-medium text-gray-500 dark:text-gray-400">Added This Month</p>
-              <p className="text-2xl font-semibold text-gray-900 dark:text-white mt-1">
-                {loading ? '-' : managers.filter(m => {
-                  const createdAt = new Date(m.created_at);
-                  const now = new Date();
-                  return createdAt.getMonth() === now.getMonth() && createdAt.getFullYear() === now.getFullYear();
-                }).length}
-              </p>
-            </div>
-            <div className="w-12 h-12 rounded-xl bg-green-100 dark:bg-green-900/30 flex items-center justify-center">
-              <Clock className="w-6 h-6 text-green-600 dark:text-green-400" />
-            </div>
-          </div>
-        </div>
-      </div>
-
       {/* Search */}
       <div className="flex flex-col sm:flex-row sm:items-center gap-4">
         <div className="relative flex-1 max-w-md">

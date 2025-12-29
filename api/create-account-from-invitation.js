@@ -295,62 +295,33 @@ module.exports = async function handler(req, res) {
         } else {
           authUserId = authData.user.id;
         }
-        // Check if record exists by auth user ID
-        const { data: existingUserRecord } = await supabaseAdmin
+        // Use upsert to handle both insert and update cases
+        // This ensures invited_by is always set correctly, even if a record was created by a trigger
+        const { error: upsertError } = await supabaseAdmin
           .from('users')
-          .select('id')
-          .eq('id', authUserId)
-          .single();
+          .upsert({
+            id: authUserId,
+            email: invitation.email,
+            first_name: invitation.first_name,
+            last_name: invitation.last_name,
+            phone: invitation.phone || null,
+            date_of_birth: invitation.date_of_birth || null,
+            role: 'manager',
+            account_id: invitation.account_id,
+            deleted_at: null,
+            invited_by: invitation.invited_by
+          }, {
+            onConflict: 'id'
+          });
 
-        if (existingUserRecord) {
-          // Update existing record (might have been hard-deleted and we're reusing the auth user)
-          const { error: updateError } = await supabaseAdmin
-            .from('users')
-            .update({
-              email: invitation.email,
-              first_name: invitation.first_name,
-              last_name: invitation.last_name,
-              phone: invitation.phone || null,
-              date_of_birth: invitation.date_of_birth || null,
-              role: 'manager',
-              account_id: invitation.account_id,
-              deleted_at: null,
-              invited_by: invitation.invited_by
-            })
-            .eq('id', authUserId);
-
-          if (updateError) {
-            console.error('User table update error:', updateError);
-            return res.status(500).json({
-              success: false,
-              message: 'Failed to update user record: ' + updateError.message
-            });
-          }
-        } else {
-          // Create new record
-          const { error: userError } = await supabaseAdmin
-            .from('users')
-            .insert({
-              id: authUserId,
-              email: invitation.email,
-              first_name: invitation.first_name,
-              last_name: invitation.last_name,
-              phone: invitation.phone || null,
-              date_of_birth: invitation.date_of_birth || null,
-              role: 'manager',
-              account_id: invitation.account_id,
-              invited_by: invitation.invited_by
-            });
-
-          if (userError) {
-            console.error('User table insertion error:', userError);
-            // Try to delete the auth user since we failed to create the database record
-            await supabaseAdmin.auth.admin.deleteUser(authUserId);
-            return res.status(500).json({
-              success: false,
-              message: 'Failed to create user record: ' + userError.message
-            });
-          }
+        if (upsertError) {
+          console.error('User table upsert error:', upsertError);
+          // Try to delete the auth user since we failed to create the database record
+          await supabaseAdmin.auth.admin.deleteUser(authUserId);
+          return res.status(500).json({
+            success: false,
+            message: 'Failed to create user record: ' + upsertError.message
+          });
         }
       }
     }
