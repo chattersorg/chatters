@@ -12,7 +12,6 @@ import {
   ChevronRight,
   ChevronDown,
   Building2,
-  Mail,
   Calendar,
   UserPlus,
   Settings,
@@ -24,7 +23,7 @@ import {
 const ManagersPage = () => {
   usePageTitle('Managers');
   const navigate = useNavigate();
-  const { userRole, allVenues } = useVenue();
+  const { userRole } = useVenue();
   const { hasPermission } = usePermissions();
 
   const [managers, setManagers] = useState([]);
@@ -32,7 +31,6 @@ const ManagersPage = () => {
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [expandedNodes, setExpandedNodes] = useState(new Set());
-  const [viewMode, setViewMode] = useState('list'); // 'list' or 'hierarchy'
 
   const fetchManagers = useCallback(async () => {
     try {
@@ -92,14 +90,6 @@ const ManagersPage = () => {
     });
   };
 
-  const filteredManagers = managers.filter(manager => {
-    const searchLower = searchTerm.toLowerCase();
-    const fullName = `${manager.first_name || ''} ${manager.last_name || ''}`.toLowerCase();
-    return fullName.includes(searchLower) ||
-           manager.email?.toLowerCase().includes(searchLower) ||
-           manager.venues?.some(v => v.name?.toLowerCase().includes(searchLower));
-  });
-
   const formatDate = (dateString) => {
     if (!dateString) return 'Unknown';
     return new Date(dateString).toLocaleDateString('en-GB', {
@@ -108,6 +98,43 @@ const ManagersPage = () => {
       year: 'numeric'
     });
   };
+
+  // Get avatar background color based on hierarchy level (darker at top, lighter as you go down)
+  const getAvatarStyle = (level) => {
+    const shades = [
+      'bg-gray-700 text-white',      // Level 0 - Darkest
+      'bg-gray-500 text-white',      // Level 1
+      'bg-gray-400 text-white',      // Level 2
+      'bg-gray-300 text-gray-700',   // Level 3
+      'bg-gray-200 text-gray-600',   // Level 4+
+    ];
+    return shades[Math.min(level, shades.length - 1)];
+  };
+
+  // Filter hierarchy based on search term
+  const filterHierarchy = (nodes, searchLower) => {
+    if (!searchLower) return nodes;
+
+    return nodes.reduce((acc, node) => {
+      const fullName = `${node.first_name || ''} ${node.last_name || ''}`.toLowerCase();
+      const matchesSearch = fullName.includes(searchLower) ||
+                           node.email?.toLowerCase().includes(searchLower) ||
+                           node.venues?.some(v => v.name?.toLowerCase().includes(searchLower));
+
+      const filteredChildren = node.children ? filterHierarchy(node.children, searchLower) : [];
+
+      if (matchesSearch || filteredChildren.length > 0) {
+        acc.push({
+          ...node,
+          children: filteredChildren
+        });
+      }
+
+      return acc;
+    }, []);
+  };
+
+  const filteredHierarchy = hierarchy ? filterHierarchy(hierarchy, searchTerm.toLowerCase()) : [];
 
   const renderHierarchyNode = (node, level = 0) => {
     const isExpanded = expandedNodes.has(node.id);
@@ -120,14 +147,14 @@ const ManagersPage = () => {
           onClick={() => navigate(`/staff/managers/${node.id}`)}
         >
           <td className="px-6 py-4 whitespace-nowrap">
-            <div className="flex items-center" style={{ paddingLeft: `${level * 24}px` }}>
+            <div className="flex items-center" style={{ paddingLeft: `${level * 28}px` }}>
               {/* Expand/Collapse Button */}
               <button
                 onClick={(e) => {
                   e.stopPropagation();
                   toggleNode(node.id);
                 }}
-                className={`w-6 h-6 flex items-center justify-center rounded hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors mr-2 ${!hasChildren ? 'invisible' : ''}`}
+                className={`w-6 h-6 flex items-center justify-center rounded hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors mr-3 ${!hasChildren ? 'invisible' : ''}`}
               >
                 {isExpanded ? (
                   <ChevronDown className="w-4 h-4 text-gray-500" />
@@ -136,8 +163,8 @@ const ManagersPage = () => {
                 )}
               </button>
 
-              {/* Avatar */}
-              <div className="w-10 h-10 rounded-full bg-gradient-to-br from-purple-500 to-indigo-600 flex items-center justify-center text-white font-medium text-sm mr-3">
+              {/* Avatar - grey shades based on level */}
+              <div className={`w-10 h-10 rounded-full flex items-center justify-center font-medium text-sm mr-3 flex-shrink-0 ${getAvatarStyle(level)}`}>
                 {`${node.first_name?.[0] || ''}${node.last_name?.[0] || ''}`.toUpperCase() || '?'}
               </div>
 
@@ -172,16 +199,6 @@ const ManagersPage = () => {
                 <span className="text-sm text-gray-400 dark:text-gray-500 italic">No venues assigned</span>
               )}
             </div>
-          </td>
-          <td className="px-6 py-4 whitespace-nowrap">
-            {node.invited_by_name ? (
-              <div className="flex items-center text-sm text-gray-600 dark:text-gray-400">
-                <UserPlus className="w-3.5 h-3.5 mr-1.5 text-gray-400" />
-                {node.invited_by_name}
-              </div>
-            ) : (
-              <span className="text-sm text-gray-400 dark:text-gray-500">-</span>
-            )}
           </td>
           <td className="px-6 py-4 whitespace-nowrap">
             <div className="flex items-center text-sm text-gray-600 dark:text-gray-400">
@@ -256,8 +273,8 @@ const ManagersPage = () => {
                 {loading ? '-' : managers.length}
               </p>
             </div>
-            <div className="w-12 h-12 rounded-xl bg-purple-100 dark:bg-purple-900/30 flex items-center justify-center">
-              <UserCheck className="w-6 h-6 text-purple-600 dark:text-purple-400" />
+            <div className="w-12 h-12 rounded-xl bg-gray-100 dark:bg-gray-800 flex items-center justify-center">
+              <UserCheck className="w-6 h-6 text-gray-600 dark:text-gray-400" />
             </div>
           </div>
         </div>
@@ -295,7 +312,7 @@ const ManagersPage = () => {
         </div>
       </div>
 
-      {/* Search and View Toggle */}
+      {/* Search */}
       <div className="flex flex-col sm:flex-row sm:items-center gap-4">
         <div className="relative flex-1 max-w-md">
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
@@ -315,31 +332,6 @@ const ManagersPage = () => {
             </button>
           )}
         </div>
-
-        {hierarchy && userRole === 'master' && (
-          <div className="flex items-center bg-gray-100 dark:bg-gray-800 rounded-lg p-1">
-            <button
-              onClick={() => setViewMode('list')}
-              className={`px-4 py-2 text-sm font-medium rounded-md transition-colors ${
-                viewMode === 'list'
-                  ? 'bg-white dark:bg-gray-700 text-gray-900 dark:text-white shadow-sm'
-                  : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
-              }`}
-            >
-              List View
-            </button>
-            <button
-              onClick={() => setViewMode('hierarchy')}
-              className={`px-4 py-2 text-sm font-medium rounded-md transition-colors ${
-                viewMode === 'hierarchy'
-                  ? 'bg-white dark:bg-gray-700 text-gray-900 dark:text-white shadow-sm'
-                  : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
-              }`}
-            >
-              Hierarchy
-            </button>
-          </div>
-        )}
       </div>
 
       {/* Managers Table */}
@@ -367,6 +359,22 @@ const ManagersPage = () => {
               </Button>
             </PermissionGate>
           </div>
+        ) : filteredHierarchy.length === 0 ? (
+          <div className="text-center py-16">
+            <div className="w-16 h-16 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center mx-auto mb-4">
+              <Search className="w-8 h-8 text-gray-400 dark:text-gray-600" />
+            </div>
+            <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">No results found</h3>
+            <p className="text-gray-500 dark:text-gray-400 mb-4">
+              No managers match "{searchTerm}"
+            </p>
+            <button
+              onClick={() => setSearchTerm('')}
+              className="text-blue-600 dark:text-blue-400 hover:underline text-sm font-medium"
+            >
+              Clear search
+            </button>
+          </div>
         ) : (
           <div className="overflow-x-auto">
             <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
@@ -379,9 +387,6 @@ const ManagersPage = () => {
                     Venues
                   </th>
                   <th className="px-6 py-3.5 text-left text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wider">
-                    Invited By
-                  </th>
-                  <th className="px-6 py-3.5 text-left text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wider">
                     Joined
                   </th>
                   <th className="px-6 py-3.5 text-center text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wider">
@@ -390,97 +395,18 @@ const ManagersPage = () => {
                 </tr>
               </thead>
               <tbody className="bg-white dark:bg-gray-900 divide-y divide-gray-100 dark:divide-gray-800">
-                {viewMode === 'hierarchy' && hierarchy ? (
-                  hierarchy.map(node => renderHierarchyNode(node))
-                ) : (
-                  filteredManagers.map((manager, index) => (
-                    <tr
-                      key={manager.id}
-                      className={`hover:bg-blue-50 dark:hover:bg-gray-800 transition-colors cursor-pointer ${
-                        index % 2 === 0 ? 'bg-white dark:bg-gray-900' : 'bg-gray-50/50 dark:bg-gray-800/30'
-                      }`}
-                      onClick={() => navigate(`/staff/managers/${manager.id}`)}
-                    >
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="flex items-center">
-                          <div className="w-10 h-10 rounded-full bg-gradient-to-br from-purple-500 to-indigo-600 flex items-center justify-center text-white font-medium text-sm mr-3 flex-shrink-0">
-                            {`${manager.first_name?.[0] || ''}${manager.last_name?.[0] || ''}`.toUpperCase() || '?'}
-                          </div>
-                          <div>
-                            <div className="text-sm font-medium text-gray-900 dark:text-white">
-                              {manager.first_name} {manager.last_name}
-                            </div>
-                            <div className="text-sm text-gray-500 dark:text-gray-400">
-                              {manager.email}
-                            </div>
-                          </div>
-                        </div>
-                      </td>
-                      <td className="px-6 py-4">
-                        <div className="flex flex-wrap gap-1.5">
-                          {manager.venues?.slice(0, 3).map((venue) => (
-                            <span
-                              key={venue.id}
-                              className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 border border-blue-200 dark:border-blue-800"
-                            >
-                              <Building2 className="w-3 h-3" />
-                              {venue.name}
-                            </span>
-                          ))}
-                          {manager.venues?.length > 3 && (
-                            <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400">
-                              +{manager.venues.length - 3} more
-                            </span>
-                          )}
-                          {(!manager.venues || manager.venues.length === 0) && (
-                            <span className="text-sm text-gray-400 dark:text-gray-500 italic">No venues assigned</span>
-                          )}
-                        </div>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        {manager.invited_by_name ? (
-                          <div className="flex items-center text-sm text-gray-600 dark:text-gray-400">
-                            <UserPlus className="w-3.5 h-3.5 mr-1.5 text-gray-400" />
-                            {manager.invited_by_name}
-                          </div>
-                        ) : (
-                          <span className="text-sm text-gray-400 dark:text-gray-500">-</span>
-                        )}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="flex items-center text-sm text-gray-600 dark:text-gray-400">
-                          <Calendar className="w-3.5 h-3.5 mr-1.5 text-gray-400" />
-                          {formatDate(manager.created_at)}
-                        </div>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-center">
-                        <PermissionGate permission="managers.permissions">
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              navigate(`/staff/managers/${manager.id}`);
-                            }}
-                            className="inline-flex items-center justify-center w-8 h-8 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
-                            title="Manage permissions"
-                          >
-                            <Settings className="w-4 h-4" />
-                          </button>
-                        </PermissionGate>
-                      </td>
-                    </tr>
-                  ))
-                )}
+                {filteredHierarchy.map(node => renderHierarchyNode(node))}
               </tbody>
             </table>
           </div>
         )}
 
         {/* Results count footer */}
-        {!loading && managers.length > 0 && (
+        {!loading && managers.length > 0 && filteredHierarchy.length > 0 && (
           <div className="px-6 py-3 bg-gray-50 dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700">
             <p className="text-sm text-gray-500 dark:text-gray-400">
-              Showing {filteredManagers.length} of {managers.length} manager{managers.length !== 1 ? 's' : ''}
-              {searchTerm && ` matching "${searchTerm}"`}
+              {managers.length} manager{managers.length !== 1 ? 's' : ''} in your organisation
+              {searchTerm && ` (filtered)`}
             </p>
           </div>
         )}
