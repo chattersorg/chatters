@@ -23,16 +23,13 @@ WHERE u.role = 'manager'
 -- Create a function to check if user X can manage user Y
 -- Returns true if:
 -- 1. X is a master/admin (can manage anyone in their account)
--- 2. X invited Y (direct invitation)
--- 3. All of Y's venues are within X's venues (venue scope)
+-- 2. X invited Y (directly or somewhere in the invitation chain)
 CREATE OR REPLACE FUNCTION can_manage_user(manager_id UUID, target_id UUID)
 RETURNS BOOLEAN AS $$
 DECLARE
   manager_role TEXT;
   manager_account UUID;
   target_account UUID;
-  manager_venues UUID[];
-  target_venues UUID[];
 BEGIN
   -- Get manager's role and account
   SELECT role, account_id INTO manager_role, manager_account
@@ -58,6 +55,7 @@ BEGIN
   END IF;
 
   -- Check if manager invited target (recursive up the chain)
+  -- This means: walk up from target's invited_by until we find manager_id
   IF EXISTS (
     WITH RECURSIVE invitation_chain AS (
       SELECT id, invited_by FROM users WHERE id = target_id
@@ -71,25 +69,8 @@ BEGIN
     RETURN TRUE;
   END IF;
 
-  -- Check venue scope: all target venues must be within manager venues
-  SELECT ARRAY_AGG(venue_id) INTO manager_venues
-  FROM staff WHERE user_id = manager_id;
-
-  SELECT ARRAY_AGG(venue_id) INTO target_venues
-  FROM staff WHERE user_id = target_id;
-
-  -- If manager has no venues, they can't manage by venue scope
-  IF manager_venues IS NULL OR array_length(manager_venues, 1) IS NULL THEN
-    RETURN FALSE;
-  END IF;
-
-  -- If target has no venues, venue scope doesn't apply
-  IF target_venues IS NULL OR array_length(target_venues, 1) IS NULL THEN
-    RETURN FALSE;
-  END IF;
-
-  -- Check if all target venues are within manager venues
-  RETURN target_venues <@ manager_venues;
+  -- No other criteria - venue scope alone is not enough
+  RETURN FALSE;
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 
@@ -143,5 +124,5 @@ $$ LANGUAGE plpgsql SECURITY DEFINER;
 
 -- Add comment for documentation
 COMMENT ON COLUMN users.invited_by IS 'The user who invited this manager. Used for hierarchy management.';
-COMMENT ON FUNCTION can_manage_user IS 'Checks if manager_id can manage target_id based on invitation chain or venue scope.';
+COMMENT ON FUNCTION can_manage_user IS 'Checks if manager_id can manage target_id based on invitation chain. Masters/admins can manage anyone in their account. Managers can only manage people they invited.';
 COMMENT ON FUNCTION get_manageable_users IS 'Returns all managers that the viewer can see/manage.';

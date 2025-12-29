@@ -92,6 +92,23 @@ export default async function handler(req, res) {
       }
     });
 
+    // Build invitation tree to check if user invited someone (directly or indirectly)
+    const isInInvitationChain = (targetId, inviterId) => {
+      // Check if inviterId invited targetId (directly or through chain)
+      let current = managers.find(m => m.id === targetId);
+      const visited = new Set();
+
+      while (current && !visited.has(current.id)) {
+        visited.add(current.id);
+        if (current.invited_by === inviterId) {
+          return true;
+        }
+        // Move up the chain
+        current = managers.find(m => m.id === current.invited_by);
+      }
+      return false;
+    };
+
     // Determine which managers the current user can see
     const canManage = (managerId) => {
       // Master can see all
@@ -99,21 +116,8 @@ export default async function handler(req, res) {
         return true;
       }
 
-      const manager = managers.find(m => m.id === managerId);
-      if (!manager) return false;
-
-      // Check if current user invited this manager
-      if (manager.invited_by === user.id) {
-        return true;
-      }
-
-      // Check venue scope - all manager's venues must be in user's venues
-      const managerVenues = venuesByManager.get(managerId) || [];
-      const managerVenueIds = managerVenues.map(v => v.id);
-
-      if (managerVenueIds.length === 0) return false;
-
-      return managerVenueIds.every(vid => userVenueIds.has(vid));
+      // Only show managers that this user invited (directly or indirectly)
+      return isInInvitationChain(managerId, user.id);
     };
 
     // Filter and enrich managers
