@@ -63,6 +63,52 @@ async function requireAdminRole(req) {
   return userData;
 }
 
+async function requirePermission(req, permissionCode) {
+  const userData = await authenticateAdmin(req);
+
+  // Admin and master users always have all permissions
+  if (['admin', 'master'].includes(userData.role)) {
+    return userData;
+  }
+
+  // For managers, check their permissions
+  // First get user's permission record
+  const { data: userPerm } = await supabaseAdmin
+    .from('user_permissions')
+    .select(`
+      role_template_id,
+      custom_permissions,
+      role_templates (
+        role_template_permissions (
+          permissions (code)
+        )
+      )
+    `)
+    .eq('user_id', userData.id)
+    .single();
+
+  let hasPermission = false;
+
+  if (userPerm) {
+    // Check custom permissions first
+    if (userPerm.custom_permissions?.includes(permissionCode)) {
+      hasPermission = true;
+    }
+    // Then check role template permissions
+    else if (userPerm.role_templates?.role_template_permissions) {
+      hasPermission = userPerm.role_templates.role_template_permissions.some(
+        rtp => rtp.permissions?.code === permissionCode
+      );
+    }
+  }
+
+  if (!hasPermission) {
+    throw new Error(`Insufficient permissions. ${permissionCode} permission required.`);
+  }
+
+  return userData;
+}
+
 async function authenticateVenueAccess(req, venueId) {
   const userData = await authenticateAdmin(req);
 
@@ -113,5 +159,6 @@ module.exports = {
   authenticateAdmin,
   requireMasterRole,
   requireAdminRole,
+  requirePermission,
   authenticateVenueAccess
 };

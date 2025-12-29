@@ -1,6 +1,6 @@
 // /api/admin/invite-manager.js
 const { createClient } = require('@supabase/supabase-js');
-const { requireMasterRole } = require('../auth-helper');
+const { requirePermission } = require('../auth-helper');
 const { Resend } = require('resend');
 
 const supabaseAdmin = createClient(
@@ -22,10 +22,11 @@ module.exports = async function handler(req, res) {
   });
 
   try {
-    const userData = await requireMasterRole(req);
+    // Require managers.invite permission instead of master role
+    const userData = await requirePermission(req, 'managers.invite');
     const { email, venueIds, firstName, lastName, phone, dateOfBirth, permissionTemplateId } = req.body;
 
-    console.log('Invite manager request:', { email, firstName, lastName, phone, dateOfBirth, venueIds, permissionTemplateId, accountId: userData.account_id });
+    console.log('Invite manager request:', { email, firstName, lastName, phone, dateOfBirth, venueIds, permissionTemplateId, accountId: userData.account_id, invitedBy: userData.id });
 
     if (!email || !venueIds || venueIds.length === 0) {
       return res.status(400).json({ error: 'Email and venue IDs required' });
@@ -33,6 +34,28 @@ module.exports = async function handler(req, res) {
 
     if (!firstName || !lastName) {
       return res.status(400).json({ error: 'First name and last name required' });
+    }
+
+    // For non-master users, verify they have access to all selected venues
+    if (userData.role === 'manager') {
+      const { data: userVenues, error: userVenuesError } = await supabaseAdmin
+        .from('staff')
+        .select('venue_id')
+        .eq('user_id', userData.id);
+
+      if (userVenuesError) {
+        console.error('Error fetching user venues:', userVenuesError);
+        throw new Error('Failed to verify your venue access');
+      }
+
+      const userVenueIds = new Set(userVenues?.map(v => v.venue_id) || []);
+      const unauthorizedVenues = venueIds.filter(vid => !userVenueIds.has(vid));
+
+      if (unauthorizedVenues.length > 0) {
+        return res.status(403).json({
+          error: 'You can only invite managers to venues you have access to'
+        });
+      }
     }
 
     // Verify venues belong to user's account

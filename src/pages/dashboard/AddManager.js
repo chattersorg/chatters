@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../../utils/supabase';
 import { useVenue } from '../../context/VenueContext';
+import { usePermissions } from '../../context/PermissionsContext';
 import usePageTitle from '../../hooks/usePageTitle';
 import { ChartCard } from '../../components/dashboard/layout/ModernCard';
 import { Button } from '../../components/ui/button';
@@ -22,6 +23,7 @@ const AddManager = () => {
   usePageTitle('Add Manager');
   const navigate = useNavigate();
   const { allVenues, userRole } = useVenue();
+  const { hasPermission } = usePermissions();
 
   // Form state
   const [formData, setFormData] = useState({
@@ -40,13 +42,17 @@ const AddManager = () => {
   const [message, setMessage] = useState({ type: '', text: '' });
   const [roleTemplates, setRoleTemplates] = useState([]);
   const [accountId, setAccountId] = useState(null);
+  const [availableVenues, setAvailableVenues] = useState([]);
 
-  // Redirect if not master
+  // Check if user can invite managers
+  const canInvite = hasPermission('managers.invite');
+
+  // Redirect if user doesn't have permission to invite
   useEffect(() => {
-    if (userRole && userRole !== 'master') {
-      navigate('/staff/list');
+    if (!canInvite) {
+      navigate('/staff/managers');
     }
-  }, [userRole, navigate]);
+  }, [canInvite, navigate]);
 
   // Fetch role templates and account info
   useEffect(() => {
@@ -64,6 +70,15 @@ const AddManager = () => {
 
         if (userData?.account_id) {
           setAccountId(userData.account_id);
+        }
+
+        // Set available venues based on user role
+        // Masters can assign to any venue, managers can only assign to their venues
+        if (userRole === 'master') {
+          setAvailableVenues(allVenues);
+        } else {
+          // For managers, they can only invite to venues they have access to
+          setAvailableVenues(allVenues);
         }
 
         // Fetch role templates (system + account-specific)
@@ -89,7 +104,7 @@ const AddManager = () => {
     };
 
     fetchData();
-  }, []);
+  }, [userRole, allVenues]);
 
   // Handle form field changes
   const handleChange = (field, value) => {
@@ -196,7 +211,7 @@ const AddManager = () => {
     }
   };
 
-  if (userRole !== 'master') {
+  if (!canInvite) {
     return null;
   }
 
@@ -316,14 +331,16 @@ const AddManager = () => {
         {/* Venue Assignment */}
         <ChartCard
           title="Venue Assignment"
-          subtitle="Select which venues this manager can access"
+          subtitle={userRole === 'master'
+            ? "Select which venues this manager can access"
+            : "Select which of your venues this manager can access"}
         >
           <div className="space-y-3">
-            {allVenues.length === 0 ? (
+            {availableVenues.length === 0 ? (
               <p className="text-sm text-gray-500 dark:text-gray-400">No venues available</p>
             ) : (
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-                {allVenues.map(venue => (
+                {availableVenues.map(venue => (
                   <label
                     key={venue.id}
                     className={`flex items-center gap-3 p-4 rounded-lg border-2 cursor-pointer transition-all ${

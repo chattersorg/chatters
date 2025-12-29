@@ -127,7 +127,8 @@ const venueNavItems = [
     subItems: [
       { label: 'Leaderboard', path: '/staff/leaderboard', icon: Trophy, permission: 'staff.leaderboard' },
       { label: 'Recognition', path: '/staff/recognition', icon: Award, permission: 'staff.recognition' },
-      { label: 'Team', path: '/staff/team', icon: Users, permission: 'staff.view' },
+      { label: 'Employees', path: '/staff/team', icon: Users, permission: 'staff.view' },
+      { label: 'Managers', path: '/staff/managers', icon: UserCheck, permission: 'managers.view' },
       { label: 'Roles', path: '/staff/roles', icon: UserCheck, permission: 'staff.edit' },
       { label: 'Locations', path: '/staff/locations', icon: Map, permission: 'staff.edit' }
     ]
@@ -189,8 +190,15 @@ const multiVenueNavItems = [
 // Administration Section - Master-only for account-wide management
 const adminNavItems = [
   {
+    id: 'admin-managers',
+    label: 'Managers',
+    icon: Users,
+    path: '/admin/managers',
+    color: 'text-rose-600'
+  },
+  {
     id: 'permission-templates',
-    label: 'Permission Templates',
+    label: 'Role Templates',
     icon: Key,
     path: '/admin/permissions/templates',
     color: 'text-rose-600'

@@ -67,6 +67,7 @@ import MenuBuilderPage from './pages/dashboard/MenuBuilderPage';
 // Admin pages (master only)
 import ManagerPermissions from './pages/dashboard/admin/ManagerPermissions';
 import RoleTemplates from './pages/dashboard/admin/RoleTemplates';
+import ManagersPage from './pages/dashboard/ManagersPage';
 
 // Kiosk (venue‑aware, no dashboard frame)
 import KioskPage from './pages/dashboard/KioskPage';
@@ -351,8 +352,12 @@ const DashboardRoutes = () => {
             <CSVImportReview />
           </ProtectedRoute>
         } />
-        {/* Legacy routes - redirect to combined staff list */}
-        <Route path="/staff/managers" element={<Navigate to="/staff/list" replace />} />
+        {/* Managers page - shows hierarchy for users with managers.view */}
+        <Route path="/staff/managers" element={
+          <ProtectedRoute permission="managers.view">
+            <ManagersPage />
+          </ProtectedRoute>
+        } />
         <Route path="/staff/employees" element={<Navigate to="/staff/list" replace />} />
         <Route path="/staff/employees/:employeeId" element={
           <ProtectedRoute permission="staff.view">
@@ -465,6 +470,11 @@ const DashboardRoutes = () => {
         } />
 
         {/* Administration Section (Master only) */}
+        <Route path="/admin/managers" element={
+          <ProtectedRoute permission="managers.view">
+            <ManagersPage />
+          </ProtectedRoute>
+        } />
         <Route path="/admin/permissions" element={<Navigate to="/admin/permissions/managers" replace />} />
         <Route path="/admin/permissions/managers" element={
           <ProtectedRoute permission="managers.permissions">

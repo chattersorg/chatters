@@ -134,7 +134,8 @@ module.exports = async function handler(req, res) {
           phone: invitation.phone || null,
           date_of_birth: invitation.date_of_birth || null,
           role: 'manager',
-          account_id: invitation.account_id
+          account_id: invitation.account_id,
+          invited_by: invitation.invited_by
         })
         .eq('id', softDeletedUser.id);
 
@@ -224,7 +225,8 @@ module.exports = async function handler(req, res) {
             last_name: invitation.last_name || existingUserByEmail.last_name,
             phone: invitation.phone || null,
             date_of_birth: invitation.date_of_birth || null,
-            deleted_at: null
+            deleted_at: null,
+            invited_by: invitation.invited_by
             // Preserve the existing role (master/manager)
           })
           .eq('id', existingUserByEmail.id);
@@ -312,7 +314,8 @@ module.exports = async function handler(req, res) {
               date_of_birth: invitation.date_of_birth || null,
               role: 'manager',
               account_id: invitation.account_id,
-              deleted_at: null
+              deleted_at: null,
+              invited_by: invitation.invited_by
             })
             .eq('id', authUserId);
 
@@ -335,7 +338,8 @@ module.exports = async function handler(req, res) {
               phone: invitation.phone || null,
               date_of_birth: invitation.date_of_birth || null,
               role: 'manager',
-              account_id: invitation.account_id
+              account_id: invitation.account_id,
+              invited_by: invitation.invited_by
             });
 
           if (userError) {
