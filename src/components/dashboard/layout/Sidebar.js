@@ -128,8 +128,8 @@ const venueNavItems = [
       { label: 'Leaderboard', path: '/staff/leaderboard', icon: Trophy, permission: 'staff.leaderboard' },
       { label: 'Recognition', path: '/staff/recognition', icon: Award, permission: 'staff.recognition' },
       { label: 'Team', path: '/staff/team', icon: Users, permission: 'staff.view' },
-      { label: 'Roles', path: '/staff/roles', icon: UserCheck, permission: 'staff.roles' },
-      { label: 'Locations', path: '/staff/locations', icon: Map, permission: 'staff.locations' }
+      { label: 'Roles', path: '/staff/roles', icon: UserCheck, permission: 'staff.edit' },
+      { label: 'Locations', path: '/staff/locations', icon: Map, permission: 'staff.edit' }
     ]
   },
   {

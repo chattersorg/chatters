@@ -302,7 +302,8 @@ const RoleTemplates = () => {
     ai: 'AI Features',
     reviews: 'Reviews',
     billing: 'Billing',
-    multivenue: 'Multi-Venue'
+    multivenue: 'Multi-Venue',
+    menu: 'Menu'
   };
 
   if (userRole !== 'master') {

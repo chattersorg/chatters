@@ -206,7 +206,7 @@ export const PermissionsProvider = ({ children }) => {
       'venue-edit': ['venue.edit'],
       'qr-generate': ['qr.generate'],
       'ai-regenerate': ['ai.regenerate'],
-      'reviews-respond': ['reviews.respond'],
+      // 'reviews-respond': ['reviews.respond'], // Not implemented yet - no reply functionality
       'billing-manage': ['billing.manage']
     };
 

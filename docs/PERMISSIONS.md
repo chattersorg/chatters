@@ -31,7 +31,6 @@ There are three user roles in Chatters:
 |------|------|-------------|
 | `feedback.view` | View Feedback | View customer feedback and responses |
 | `feedback.respond` | Respond to Feedback | Reply to customer feedback |
-| `feedback.delete` | Delete Feedback | Delete feedback entries |
 | `feedback.export` | Export Feedback | Export feedback data to CSV/Excel |
 
 ### Questions
@@ -51,7 +50,7 @@ There are three user roles in Chatters:
 | Code | Name | Description |
 |------|------|-------------|
 | `nps.view` | View NPS | View NPS scores and submissions |
-| `nps.export` | Export NPS | Export NPS data |
+| `nps.edit` | Edit NPS Settings | Configure NPS surveys and settings |
 
 ### Staff
 | Code | Name | Description |
@@ -100,7 +99,7 @@ There are three user roles in Chatters:
 | Code | Name | Description |
 |------|------|-------------|
 | `reviews.view` | View Reviews | View external reviews (Google, etc.) |
-| `reviews.respond` | Respond to Reviews | Reply to external reviews |
+<!-- | `reviews.respond` | Respond to Reviews | Reply to external reviews | (Not yet implemented) -->
 
 ### Billing
 | Code | Name | Description |
@@ -112,7 +111,6 @@ There are three user roles in Chatters:
 | Code | Name | Description |
 |------|------|-------------|
 | `multivenue.view` | View All Venues | Access multi-venue overview |
-| `multivenue.compare` | Compare Venues | Compare performance across venues |
 
 ## Role Templates
 
@@ -130,17 +128,17 @@ Read-only access to feedback and reports.
 Can respond to feedback and manage staff.
 - Everything in Viewer, plus:
 - `feedback.respond`, `feedback.export`
-- `reports.export`, `nps.export`
+- `reports.export`
 - `staff.edit`, `staff.recognition`
-- `qr.generate`, `ai.chat`, `reviews.respond`
+- `qr.generate`, `ai.chat`
 
 #### Manager
 Full venue management except billing and permissions.
 - Everything in Editor, plus:
-- `feedback.delete`, `questions.edit`, `reports.create`
+- `questions.edit`, `reports.create`
 - `managers.view`, `managers.invite`
 - `venue.edit`, `venue.branding`, `venue.integrations`
-- `floorplan.edit`, `ai.regenerate`, `multivenue.compare`
+- `floorplan.edit`, `ai.regenerate`
 
 #### Admin
 Full access including billing and user management.
