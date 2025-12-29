@@ -203,7 +203,7 @@ const StaffListPage = () => {
   const fetchStaffForManager = async (userId) => {
     const { data: staffData } = await supabase
       .from('staff')
-      .select(`id, user_id, venue_id, role, created_at, venues!inner (id, name), users!inner (id, email, role, first_name, last_name, deleted_at)`)
+      .select(`id, user_id, venue_id, role, created_at, venues!inner (id, name), users!inner (id, email, role, first_name, last_name, deleted_at, invited_by)`)
       .eq('venue_id', venueId)
       .neq('user_id', userId)
       .is('users.deleted_at', null);
@@ -213,7 +213,36 @@ const StaffListPage = () => {
       .select(`id, venue_id, first_name, last_name, email, phone, role, location, created_at, venues (id, name)`)
       .eq('venue_id', venueId);
 
-    const managersData = staffData?.filter(staff => staff.role === 'manager') || [];
+    // Filter managers to only show those the current user invited (directly or indirectly)
+    const allManagerStaff = staffData?.filter(staff => staff.role === 'manager') || [];
+
+    // Build a set of user IDs that the current user can manage (those they invited)
+    const canManageUserIds = new Set();
+
+    // Helper to check if userId is in the invitation chain of inviterId
+    const isInInvitationChain = (targetUserId) => {
+      let current = allManagerStaff.find(m => m.user_id === targetUserId);
+      const visited = new Set();
+
+      while (current && !visited.has(current.user_id)) {
+        visited.add(current.user_id);
+        if (current.users?.invited_by === userId) {
+          return true;
+        }
+        // Move up the chain - find the staff record for the inviter
+        current = allManagerStaff.find(m => m.user_id === current.users?.invited_by);
+      }
+      return false;
+    };
+
+    // Check each manager
+    allManagerStaff.forEach(manager => {
+      if (isInInvitationChain(manager.user_id)) {
+        canManageUserIds.add(manager.user_id);
+      }
+    });
+
+    const managersData = allManagerStaff.filter(m => canManageUserIds.has(m.user_id));
     setManagers(managersData);
     setEmployees(employeesData || []);
   };
