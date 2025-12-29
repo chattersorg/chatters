@@ -201,49 +201,57 @@ const StaffListPage = () => {
   };
 
   const fetchStaffForManager = async (userId) => {
-    const { data: staffData } = await supabase
-      .from('staff')
-      .select(`id, user_id, venue_id, role, created_at, venues!inner (id, name), users!inner (id, email, role, first_name, last_name, deleted_at, invited_by)`)
-      .eq('venue_id', venueId)
-      .neq('user_id', userId)
-      .is('users.deleted_at', null);
-
+    // Fetch employees directly (no hierarchy filtering needed)
     const { data: employeesData } = await supabase
       .from('employees')
       .select(`id, venue_id, first_name, last_name, email, phone, role, location, created_at, venues (id, name)`)
       .eq('venue_id', venueId);
 
-    // Filter managers to only show those the current user invited (directly or indirectly)
-    const allManagerStaff = staffData?.filter(staff => staff.role === 'manager') || [];
+    // Use the managers API endpoint which handles hierarchy filtering server-side
+    // This bypasses RLS and ensures invited_by is properly checked
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session) {
+        const response = await fetch('/api/managers/list', {
+          method: 'GET',
+          headers: {
+            'Authorization': `Bearer ${session.access_token}`,
+            'Content-Type': 'application/json'
+          }
+        });
 
-    // Build a set of user IDs that the current user can manage (those they invited)
-    const canManageUserIds = new Set();
-
-    // Helper to check if userId is in the invitation chain of inviterId
-    const isInInvitationChain = (targetUserId) => {
-      let current = allManagerStaff.find(m => m.user_id === targetUserId);
-      const visited = new Set();
-
-      while (current && !visited.has(current.user_id)) {
-        visited.add(current.user_id);
-        if (current.users?.invited_by === userId) {
-          return true;
+        if (response.ok) {
+          const data = await response.json();
+          // Filter to only managers at the current venue and transform to match expected format
+          const managersAtVenue = (data.managers || []).filter(manager =>
+            manager.venues?.some(v => v.id === venueId)
+          ).map(manager => ({
+            id: manager.id,
+            user_id: manager.id,
+            venue_id: venueId,
+            role: 'manager',
+            created_at: manager.created_at,
+            venues: { id: venueId, name: manager.venues?.find(v => v.id === venueId)?.name },
+            users: {
+              id: manager.id,
+              email: manager.email,
+              role: manager.role,
+              first_name: manager.first_name,
+              last_name: manager.last_name,
+              deleted_at: null
+            }
+          }));
+          setManagers(managersAtVenue);
+        } else {
+          console.error('Failed to fetch managers from API');
+          setManagers([]);
         }
-        // Move up the chain - find the staff record for the inviter
-        current = allManagerStaff.find(m => m.user_id === current.users?.invited_by);
       }
-      return false;
-    };
+    } catch (error) {
+      console.error('Error fetching managers:', error);
+      setManagers([]);
+    }
 
-    // Check each manager
-    allManagerStaff.forEach(manager => {
-      if (isInInvitationChain(manager.user_id)) {
-        canManageUserIds.add(manager.user_id);
-      }
-    });
-
-    const managersData = allManagerStaff.filter(m => canManageUserIds.has(m.user_id));
-    setManagers(managersData);
     setEmployees(employeesData || []);
   };
 

@@ -86,6 +86,14 @@ module.exports = async function handler(req, res) {
       return res.status(400).json({ error: 'A user with this email already exists' });
     }
 
+    // Invalidate any existing pending invitations for this email
+    // This prevents old invitation links from being used
+    await supabaseAdmin
+      .from('manager_invitations')
+      .update({ status: 'revoked' })
+      .eq('email', email)
+      .eq('status', 'pending');
+
     // Create invitation
     const token = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
     const expiresAt = new Date();

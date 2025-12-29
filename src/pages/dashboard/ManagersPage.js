@@ -4,7 +4,6 @@ import { supabase } from '../../utils/supabase';
 import { useVenue } from '../../context/VenueContext';
 import { usePermissions, PermissionGate } from '../../context/PermissionsContext';
 import usePageTitle from '../../hooks/usePageTitle';
-import { ChartCard } from '../../components/dashboard/layout/ModernCard';
 import { Button } from '../../components/ui/button';
 import {
   Users,
@@ -17,8 +16,9 @@ import {
   Calendar,
   UserPlus,
   Settings,
-  Trash2,
-  MoreVertical
+  X,
+  UserCheck,
+  Clock
 } from 'lucide-react';
 
 const ManagersPage = () => {
@@ -97,7 +97,7 @@ const ManagersPage = () => {
     const fullName = `${manager.first_name || ''} ${manager.last_name || ''}`.toLowerCase();
     return fullName.includes(searchLower) ||
            manager.email?.toLowerCase().includes(searchLower) ||
-           manager.venues?.some(v => v.name.toLowerCase().includes(searchLower));
+           manager.venues?.some(v => v.name?.toLowerCase().includes(searchLower));
   });
 
   const formatDate = (dateString) => {
@@ -114,79 +114,100 @@ const ManagersPage = () => {
     const hasChildren = node.children && node.children.length > 0;
 
     return (
-      <div key={node.id} className="select-none">
-        <div
-          className={`flex items-center gap-3 py-3 px-4 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors cursor-pointer border-b border-gray-100 dark:border-gray-800`}
-          style={{ paddingLeft: `${level * 24 + 16}px` }}
+      <React.Fragment key={node.id}>
+        <tr
+          className="hover:bg-blue-50 dark:hover:bg-gray-800 transition-colors cursor-pointer"
           onClick={() => navigate(`/staff/managers/${node.id}`)}
         >
-          {/* Expand/Collapse Button */}
-          <button
-            onClick={(e) => {
-              e.stopPropagation();
-              toggleNode(node.id);
-            }}
-            className={`w-6 h-6 flex items-center justify-center rounded hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors ${!hasChildren ? 'invisible' : ''}`}
-          >
-            {isExpanded ? (
-              <ChevronDown className="w-4 h-4 text-gray-500" />
-            ) : (
-              <ChevronRight className="w-4 h-4 text-gray-500" />
-            )}
-          </button>
+          <td className="px-6 py-4 whitespace-nowrap">
+            <div className="flex items-center" style={{ paddingLeft: `${level * 24}px` }}>
+              {/* Expand/Collapse Button */}
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  toggleNode(node.id);
+                }}
+                className={`w-6 h-6 flex items-center justify-center rounded hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors mr-2 ${!hasChildren ? 'invisible' : ''}`}
+              >
+                {isExpanded ? (
+                  <ChevronDown className="w-4 h-4 text-gray-500" />
+                ) : (
+                  <ChevronRight className="w-4 h-4 text-gray-500" />
+                )}
+              </button>
 
-          {/* Avatar */}
-          <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white font-medium text-sm">
-            {`${node.first_name?.[0] || ''}${node.last_name?.[0] || ''}`.toUpperCase() || '?'}
-          </div>
+              {/* Avatar */}
+              <div className="w-10 h-10 rounded-full bg-gradient-to-br from-purple-500 to-indigo-600 flex items-center justify-center text-white font-medium text-sm mr-3">
+                {`${node.first_name?.[0] || ''}${node.last_name?.[0] || ''}`.toUpperCase() || '?'}
+              </div>
 
-          {/* Info */}
-          <div className="flex-1 min-w-0">
-            <div className="flex items-center gap-2">
-              <span className="font-medium text-gray-900 dark:text-white truncate">
-                {node.first_name} {node.last_name}
-              </span>
-              {node.invited_by_name && (
-                <span className="text-xs text-gray-500 dark:text-gray-400">
-                  invited by {node.invited_by_name}
-                </span>
-              )}
+              {/* Name and Email */}
+              <div>
+                <div className="text-sm font-medium text-gray-900 dark:text-white">
+                  {node.first_name} {node.last_name}
+                </div>
+                <div className="text-sm text-gray-500 dark:text-gray-400">
+                  {node.email}
+                </div>
+              </div>
             </div>
-            <div className="flex items-center gap-3 text-sm text-gray-500 dark:text-gray-400">
-              <span className="truncate">{node.email}</span>
-              {node.venues && node.venues.length > 0 && (
-                <span className="flex items-center gap-1">
+          </td>
+          <td className="px-6 py-4">
+            <div className="flex flex-wrap gap-1.5">
+              {node.venues?.slice(0, 3).map((venue) => (
+                <span
+                  key={venue.id}
+                  className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 border border-blue-200 dark:border-blue-800"
+                >
                   <Building2 className="w-3 h-3" />
-                  {node.venues.length} venue{node.venues.length !== 1 ? 's' : ''}
+                  {venue.name}
+                </span>
+              ))}
+              {node.venues?.length > 3 && (
+                <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400">
+                  +{node.venues.length - 3} more
                 </span>
               )}
+              {(!node.venues || node.venues.length === 0) && (
+                <span className="text-sm text-gray-400 dark:text-gray-500 italic">No venues assigned</span>
+              )}
             </div>
-          </div>
-
-          {/* Actions */}
-          <div className="flex items-center gap-2">
+          </td>
+          <td className="px-6 py-4 whitespace-nowrap">
+            {node.invited_by_name ? (
+              <div className="flex items-center text-sm text-gray-600 dark:text-gray-400">
+                <UserPlus className="w-3.5 h-3.5 mr-1.5 text-gray-400" />
+                {node.invited_by_name}
+              </div>
+            ) : (
+              <span className="text-sm text-gray-400 dark:text-gray-500">-</span>
+            )}
+          </td>
+          <td className="px-6 py-4 whitespace-nowrap">
+            <div className="flex items-center text-sm text-gray-600 dark:text-gray-400">
+              <Calendar className="w-3.5 h-3.5 mr-1.5 text-gray-400" />
+              {formatDate(node.created_at)}
+            </div>
+          </td>
+          <td className="px-6 py-4 whitespace-nowrap text-center">
             <PermissionGate permission="managers.permissions">
               <button
                 onClick={(e) => {
                   e.stopPropagation();
                   navigate(`/staff/managers/${node.id}`);
                 }}
-                className="p-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
+                className="inline-flex items-center justify-center w-8 h-8 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
                 title="Manage permissions"
               >
                 <Settings className="w-4 h-4" />
               </button>
             </PermissionGate>
-          </div>
-        </div>
+          </td>
+        </tr>
 
         {/* Children */}
-        {hasChildren && isExpanded && (
-          <div>
-            {node.children.map(child => renderHierarchyNode(child, level + 1))}
-          </div>
-        )}
-      </div>
+        {hasChildren && isExpanded && node.children.map(child => renderHierarchyNode(child, level + 1))}
+      </React.Fragment>
     );
   };
 
@@ -205,7 +226,7 @@ const ManagersPage = () => {
   return (
     <div className="space-y-6">
       {/* Page Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
           <h1 className="text-2xl font-semibold text-gray-900 dark:text-white">Managers</h1>
           <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
@@ -225,34 +246,91 @@ const ManagersPage = () => {
         </PermissionGate>
       </div>
 
+      {/* Stats Cards */}
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 p-5">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm font-medium text-gray-500 dark:text-gray-400">Total Managers</p>
+              <p className="text-2xl font-semibold text-gray-900 dark:text-white mt-1">
+                {loading ? '-' : managers.length}
+              </p>
+            </div>
+            <div className="w-12 h-12 rounded-xl bg-purple-100 dark:bg-purple-900/30 flex items-center justify-center">
+              <UserCheck className="w-6 h-6 text-purple-600 dark:text-purple-400" />
+            </div>
+          </div>
+        </div>
+
+        <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 p-5">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm font-medium text-gray-500 dark:text-gray-400">Active Venues</p>
+              <p className="text-2xl font-semibold text-gray-900 dark:text-white mt-1">
+                {loading ? '-' : [...new Set(managers.flatMap(m => m.venues?.map(v => v.id) || []))].length}
+              </p>
+            </div>
+            <div className="w-12 h-12 rounded-xl bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center">
+              <Building2 className="w-6 h-6 text-blue-600 dark:text-blue-400" />
+            </div>
+          </div>
+        </div>
+
+        <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 p-5">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm font-medium text-gray-500 dark:text-gray-400">Added This Month</p>
+              <p className="text-2xl font-semibold text-gray-900 dark:text-white mt-1">
+                {loading ? '-' : managers.filter(m => {
+                  const createdAt = new Date(m.created_at);
+                  const now = new Date();
+                  return createdAt.getMonth() === now.getMonth() && createdAt.getFullYear() === now.getFullYear();
+                }).length}
+              </p>
+            </div>
+            <div className="w-12 h-12 rounded-xl bg-green-100 dark:bg-green-900/30 flex items-center justify-center">
+              <Clock className="w-6 h-6 text-green-600 dark:text-green-400" />
+            </div>
+          </div>
+        </div>
+      </div>
+
       {/* Search and View Toggle */}
-      <div className="flex items-center gap-4">
+      <div className="flex flex-col sm:flex-row sm:items-center gap-4">
         <div className="relative flex-1 max-w-md">
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
           <input
             type="text"
-            placeholder="Search managers..."
+            placeholder="Search by name, email, or venue..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full pl-10 pr-4 py-2 border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            className="w-full pl-10 pr-10 py-2.5 border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
           />
+          {searchTerm && (
+            <button
+              onClick={() => setSearchTerm('')}
+              className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+            >
+              <X className="w-4 h-4" />
+            </button>
+          )}
         </div>
 
         {hierarchy && userRole === 'master' && (
           <div className="flex items-center bg-gray-100 dark:bg-gray-800 rounded-lg p-1">
             <button
               onClick={() => setViewMode('list')}
-              className={`px-3 py-1.5 text-sm font-medium rounded-md transition-colors ${
+              className={`px-4 py-2 text-sm font-medium rounded-md transition-colors ${
                 viewMode === 'list'
                   ? 'bg-white dark:bg-gray-700 text-gray-900 dark:text-white shadow-sm'
                   : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
               }`}
             >
-              List
+              List View
             </button>
             <button
               onClick={() => setViewMode('hierarchy')}
-              className={`px-3 py-1.5 text-sm font-medium rounded-md transition-colors ${
+              className={`px-4 py-2 text-sm font-medium rounded-md transition-colors ${
                 viewMode === 'hierarchy'
                   ? 'bg-white dark:bg-gray-700 text-gray-900 dark:text-white shadow-sm'
                   : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
@@ -264,19 +342,24 @@ const ManagersPage = () => {
         )}
       </div>
 
-      {/* Managers Content */}
-      <ChartCard>
+      {/* Managers Table */}
+      <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 shadow-sm overflow-hidden">
         {loading ? (
-          <div className="flex items-center justify-center py-12">
+          <div className="flex items-center justify-center py-16">
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
           </div>
         ) : managers.length === 0 ? (
-          <div className="text-center py-12">
-            <Users className="w-12 h-12 text-gray-300 dark:text-gray-600 mx-auto mb-3" />
-            <p className="text-gray-500 dark:text-gray-400 mb-4">No managers found</p>
+          <div className="text-center py-16">
+            <div className="w-16 h-16 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center mx-auto mb-4">
+              <Users className="w-8 h-8 text-gray-400 dark:text-gray-600" />
+            </div>
+            <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">No managers yet</h3>
+            <p className="text-gray-500 dark:text-gray-400 mb-6 max-w-sm mx-auto">
+              Invite managers to help you run your venues. They'll be able to access the dashboard based on their permissions.
+            </p>
             <PermissionGate permission="managers.invite">
               <Button
-                variant="secondary"
+                variant="primary"
                 onClick={() => navigate('/staff/managers/add')}
               >
                 <UserPlus className="w-4 h-4 mr-2" />
@@ -284,72 +367,124 @@ const ManagersPage = () => {
               </Button>
             </PermissionGate>
           </div>
-        ) : viewMode === 'hierarchy' && hierarchy ? (
-          <div className="divide-y divide-gray-100 dark:divide-gray-800">
-            {hierarchy.map(node => renderHierarchyNode(node))}
-          </div>
         ) : (
-          <div className="divide-y divide-gray-100 dark:divide-gray-800">
-            {filteredManagers.map((manager) => (
-              <div
-                key={manager.id}
-                className="flex items-center gap-4 py-4 px-4 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors cursor-pointer"
-                onClick={() => navigate(`/staff/managers/${manager.id}`)}
-              >
-                {/* Avatar */}
-                <div className="w-12 h-12 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white font-medium">
-                  {`${manager.first_name?.[0] || ''}${manager.last_name?.[0] || ''}`.toUpperCase() || '?'}
-                </div>
-
-                {/* Info */}
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2">
-                    <span className="font-medium text-gray-900 dark:text-white">
-                      {manager.first_name} {manager.last_name}
-                    </span>
-                    {manager.invited_by_name && (
-                      <span className="text-xs text-gray-500 dark:text-gray-400 bg-gray-100 dark:bg-gray-800 px-2 py-0.5 rounded-full">
-                        invited by {manager.invited_by_name}
-                      </span>
-                    )}
-                  </div>
-                  <div className="flex items-center gap-4 text-sm text-gray-500 dark:text-gray-400 mt-1">
-                    <span className="flex items-center gap-1">
-                      <Mail className="w-3 h-3" />
-                      {manager.email}
-                    </span>
-                    <span className="flex items-center gap-1">
-                      <Calendar className="w-3 h-3" />
-                      Joined {formatDate(manager.created_at)}
-                    </span>
-                  </div>
-                </div>
-
-                {/* Venues */}
-                <div className="hidden md:flex flex-wrap gap-1 max-w-xs">
-                  {manager.venues?.slice(0, 2).map((venue) => (
-                    <span
-                      key={venue.id}
-                      className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400"
+          <div className="overflow-x-auto">
+            <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+              <thead className="bg-gray-50 dark:bg-gray-800">
+                <tr>
+                  <th className="px-6 py-3.5 text-left text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wider">
+                    Manager
+                  </th>
+                  <th className="px-6 py-3.5 text-left text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wider">
+                    Venues
+                  </th>
+                  <th className="px-6 py-3.5 text-left text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wider">
+                    Invited By
+                  </th>
+                  <th className="px-6 py-3.5 text-left text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wider">
+                    Joined
+                  </th>
+                  <th className="px-6 py-3.5 text-center text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wider">
+                    Actions
+                  </th>
+                </tr>
+              </thead>
+              <tbody className="bg-white dark:bg-gray-900 divide-y divide-gray-100 dark:divide-gray-800">
+                {viewMode === 'hierarchy' && hierarchy ? (
+                  hierarchy.map(node => renderHierarchyNode(node))
+                ) : (
+                  filteredManagers.map((manager, index) => (
+                    <tr
+                      key={manager.id}
+                      className={`hover:bg-blue-50 dark:hover:bg-gray-800 transition-colors cursor-pointer ${
+                        index % 2 === 0 ? 'bg-white dark:bg-gray-900' : 'bg-gray-50/50 dark:bg-gray-800/30'
+                      }`}
+                      onClick={() => navigate(`/staff/managers/${manager.id}`)}
                     >
-                      <Building2 className="w-3 h-3" />
-                      {venue.name}
-                    </span>
-                  ))}
-                  {manager.venues?.length > 2 && (
-                    <span className="px-2 py-0.5 text-xs text-gray-500 dark:text-gray-400">
-                      +{manager.venues.length - 2} more
-                    </span>
-                  )}
-                </div>
-
-                {/* Arrow */}
-                <ChevronRight className="w-5 h-5 text-gray-400" />
-              </div>
-            ))}
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="flex items-center">
+                          <div className="w-10 h-10 rounded-full bg-gradient-to-br from-purple-500 to-indigo-600 flex items-center justify-center text-white font-medium text-sm mr-3 flex-shrink-0">
+                            {`${manager.first_name?.[0] || ''}${manager.last_name?.[0] || ''}`.toUpperCase() || '?'}
+                          </div>
+                          <div>
+                            <div className="text-sm font-medium text-gray-900 dark:text-white">
+                              {manager.first_name} {manager.last_name}
+                            </div>
+                            <div className="text-sm text-gray-500 dark:text-gray-400">
+                              {manager.email}
+                            </div>
+                          </div>
+                        </div>
+                      </td>
+                      <td className="px-6 py-4">
+                        <div className="flex flex-wrap gap-1.5">
+                          {manager.venues?.slice(0, 3).map((venue) => (
+                            <span
+                              key={venue.id}
+                              className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 border border-blue-200 dark:border-blue-800"
+                            >
+                              <Building2 className="w-3 h-3" />
+                              {venue.name}
+                            </span>
+                          ))}
+                          {manager.venues?.length > 3 && (
+                            <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400">
+                              +{manager.venues.length - 3} more
+                            </span>
+                          )}
+                          {(!manager.venues || manager.venues.length === 0) && (
+                            <span className="text-sm text-gray-400 dark:text-gray-500 italic">No venues assigned</span>
+                          )}
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        {manager.invited_by_name ? (
+                          <div className="flex items-center text-sm text-gray-600 dark:text-gray-400">
+                            <UserPlus className="w-3.5 h-3.5 mr-1.5 text-gray-400" />
+                            {manager.invited_by_name}
+                          </div>
+                        ) : (
+                          <span className="text-sm text-gray-400 dark:text-gray-500">-</span>
+                        )}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="flex items-center text-sm text-gray-600 dark:text-gray-400">
+                          <Calendar className="w-3.5 h-3.5 mr-1.5 text-gray-400" />
+                          {formatDate(manager.created_at)}
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-center">
+                        <PermissionGate permission="managers.permissions">
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              navigate(`/staff/managers/${manager.id}`);
+                            }}
+                            className="inline-flex items-center justify-center w-8 h-8 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
+                            title="Manage permissions"
+                          >
+                            <Settings className="w-4 h-4" />
+                          </button>
+                        </PermissionGate>
+                      </td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
           </div>
         )}
-      </ChartCard>
+
+        {/* Results count footer */}
+        {!loading && managers.length > 0 && (
+          <div className="px-6 py-3 bg-gray-50 dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700">
+            <p className="text-sm text-gray-500 dark:text-gray-400">
+              Showing {filteredManagers.length} of {managers.length} manager{managers.length !== 1 ? 's' : ''}
+              {searchTerm && ` matching "${searchTerm}"`}
+            </p>
+          </div>
+        )}
+      </div>
     </div>
   );
 };
