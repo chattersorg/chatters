@@ -242,6 +242,9 @@ module.exports = async function handler(req, res) {
         authUserId = existingUserByEmail.id;
       } else {
         // No existing user - create new auth user with auto-generated ID
+        console.log('=== CREATE ACCOUNT: No existing user, creating new auth user ===');
+        console.log('Invitation invited_by:', invitation.invited_by);
+
         const { data: authData, error: authError } = await supabaseAdmin.auth.admin.createUser({
           email: invitation.email,
           password: password,
@@ -254,6 +257,7 @@ module.exports = async function handler(req, res) {
 
         if (authError) {
           if (authError.message?.includes('already been registered') || authError.message?.includes('already exists')) {
+            console.log('=== CREATE ACCOUNT: Auth user already exists, updating ===');
             const { data: listData } = await supabaseAdmin.auth.admin.listUsers();
             const existingAuthUser = listData?.users?.find(u => u.email === invitation.email);
 
@@ -294,10 +298,24 @@ module.exports = async function handler(req, res) {
           }
         } else {
           authUserId = authData.user.id;
+          console.log('=== CREATE ACCOUNT: Auth user created with ID:', authUserId);
         }
+
+        // Small delay to ensure any Supabase auth triggers complete first
+        // This handles race conditions with automatic user record creation
+        await new Promise(resolve => setTimeout(resolve, 500));
+
         // Use upsert to handle both insert and update cases
         // This ensures invited_by is always set correctly, even if a record was created by a trigger
-        const { error: upsertError } = await supabaseAdmin
+        console.log('=== CREATE ACCOUNT: Upserting user record ===');
+        console.log('Upsert data:', {
+          id: authUserId,
+          email: invitation.email,
+          invited_by: invitation.invited_by,
+          account_id: invitation.account_id
+        });
+
+        const { data: upsertData, error: upsertError } = await supabaseAdmin
           .from('users')
           .upsert({
             id: authUserId,
@@ -312,7 +330,12 @@ module.exports = async function handler(req, res) {
             invited_by: invitation.invited_by
           }, {
             onConflict: 'id'
-          });
+          })
+          .select();
+
+        console.log('=== CREATE ACCOUNT: Upsert result ===');
+        console.log('Upsert data returned:', upsertData);
+        console.log('Upsert error:', upsertError);
 
         if (upsertError) {
           console.error('User table upsert error:', upsertError);
@@ -322,6 +345,30 @@ module.exports = async function handler(req, res) {
             success: false,
             message: 'Failed to create user record: ' + upsertError.message
           });
+        }
+
+        // Verify the record was created/updated correctly
+        const { data: verifyUser } = await supabaseAdmin
+          .from('users')
+          .select('id, email, invited_by')
+          .eq('id', authUserId)
+          .single();
+        console.log('=== CREATE ACCOUNT: Verification of user record ===');
+        console.log('User after upsert:', verifyUser);
+
+        // If invited_by is still null after upsert, try an explicit update
+        if (!verifyUser?.invited_by && invitation.invited_by) {
+          console.log('=== CREATE ACCOUNT: invited_by is null after upsert, trying explicit update ===');
+          const { error: updateError } = await supabaseAdmin
+            .from('users')
+            .update({ invited_by: invitation.invited_by })
+            .eq('id', authUserId);
+
+          if (updateError) {
+            console.error('Explicit update error:', updateError);
+          } else {
+            console.log('=== CREATE ACCOUNT: Explicit update successful ===');
+          }
         }
       }
     }
