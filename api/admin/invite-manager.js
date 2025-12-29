@@ -86,6 +86,84 @@ module.exports = async function handler(req, res) {
       return res.status(400).json({ error: 'A user with this email already exists' });
     }
 
+    // Validate permission template assignment (prevent escalation)
+    let validatedTemplateId = permissionTemplateId;
+
+    if (userData.role === 'manager') {
+      // Check if user has managers.permissions - if not, they can't assign any template
+      const { data: inviterPerm } = await supabaseAdmin
+        .from('user_permissions')
+        .select(`
+          role_template_id,
+          custom_permissions,
+          role_templates (
+            role_template_permissions (
+              permissions (code)
+            )
+          )
+        `)
+        .eq('user_id', userData.id)
+        .single();
+
+      // Get inviter's permission codes
+      let inviterPermissions = [];
+      if (inviterPerm?.role_templates?.role_template_permissions) {
+        inviterPermissions = inviterPerm.role_templates.role_template_permissions
+          .map(rtp => rtp.permissions?.code)
+          .filter(Boolean);
+      }
+      if (inviterPerm?.custom_permissions) {
+        inviterPermissions = [...inviterPermissions, ...inviterPerm.custom_permissions];
+      }
+
+      // Check if inviter has managers.permissions
+      const canAssignPermissions = inviterPermissions.includes('managers.permissions');
+
+      if (!canAssignPermissions) {
+        // User cannot assign permissions - force to null (will default to Viewer)
+        validatedTemplateId = null;
+        console.log('Inviter lacks managers.permissions - template set to null (Viewer)');
+      } else if (permissionTemplateId) {
+        // Validate that the selected template doesn't contain permissions the inviter lacks
+        // or any master_only permissions
+        const { data: templateData } = await supabaseAdmin
+          .from('role_templates')
+          .select(`
+            id,
+            role_template_permissions (
+              permissions (code, master_only)
+            )
+          `)
+          .eq('id', permissionTemplateId)
+          .single();
+
+        if (templateData?.role_template_permissions) {
+          const templatePermCodes = templateData.role_template_permissions
+            .map(rtp => rtp.permissions)
+            .filter(Boolean);
+
+          // Check for master_only permissions or permissions the inviter doesn't have
+          const hasInvalidPermission = templatePermCodes.some(perm => {
+            if (perm.master_only) {
+              console.log(`Template contains master_only permission: ${perm.code}`);
+              return true;
+            }
+            if (!inviterPermissions.includes(perm.code)) {
+              console.log(`Inviter lacks permission: ${perm.code}`);
+              return true;
+            }
+            return false;
+          });
+
+          if (hasInvalidPermission) {
+            return res.status(403).json({
+              error: 'You cannot assign a permission template with permissions you do not have'
+            });
+          }
+        }
+      }
+    }
+
     // Invalidate any existing pending invitations for this email
     // This prevents old invitation links from being used
     await supabaseAdmin
@@ -113,7 +191,7 @@ module.exports = async function handler(req, res) {
         last_name: lastName,
         phone: phone || null,
         date_of_birth: dateOfBirth || null,
-        permission_template_id: permissionTemplateId || null
+        permission_template_id: validatedTemplateId || null
       })
       .select()
       .single();

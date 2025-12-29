@@ -16,14 +16,15 @@ import {
   Building2,
   Check,
   Send,
-  RefreshCw
+  RefreshCw,
+  Info
 } from 'lucide-react';
 
 const AddManager = () => {
   usePageTitle('Add Manager');
   const navigate = useNavigate();
   const { allVenues, userRole } = useVenue();
-  const { hasPermission } = usePermissions();
+  const { hasPermission, permissions } = usePermissions();
 
   // Form state
   const [formData, setFormData] = useState({
@@ -41,11 +42,14 @@ const AddManager = () => {
   const [loadingTemplates, setLoadingTemplates] = useState(true);
   const [message, setMessage] = useState({ type: '', text: '' });
   const [roleTemplates, setRoleTemplates] = useState([]);
+  const [availableTemplates, setAvailableTemplates] = useState([]);
   const [accountId, setAccountId] = useState(null);
   const [availableVenues, setAvailableVenues] = useState([]);
 
   // Check if user can invite managers
   const canInvite = hasPermission('managers.invite');
+  // Check if user can assign permissions (if not, invitee defaults to Viewer)
+  const canAssignPermissions = hasPermission('managers.permissions');
 
   // Redirect if user doesn't have permission to invite
   useEffect(() => {
@@ -87,7 +91,7 @@ const AddManager = () => {
           .select(`
             *,
             role_template_permissions (
-              permissions (code, name)
+              permissions (code, name, master_only)
             )
           `)
           .or(`is_system.eq.true,account_id.eq.${userData?.account_id}`)
@@ -95,6 +99,33 @@ const AddManager = () => {
           .order('name', { ascending: true });
 
         setRoleTemplates(templates || []);
+
+        // Filter templates based on user's permissions
+        // Masters can assign any template
+        // Managers can only assign templates where all permissions are ones they have
+        // AND no master_only permissions are included
+        if (userRole === 'master') {
+          setAvailableTemplates(templates || []);
+        } else {
+          const filtered = (templates || []).filter(template => {
+            const templatePerms = template.role_template_permissions || [];
+
+            // Check each permission in the template
+            return templatePerms.every(rtp => {
+              const perm = rtp.permissions;
+              if (!perm) return true;
+
+              // Reject if it's a master-only permission (like billing)
+              if (perm.master_only) return false;
+
+              // Reject if the inviter doesn't have this permission
+              if (!permissions.includes(perm.code)) return false;
+
+              return true;
+            });
+          });
+          setAvailableTemplates(filtered);
+        }
       } catch (error) {
         console.error('Error fetching data:', error);
         setMessage({ type: 'error', text: 'Failed to load templates' });
@@ -104,7 +135,7 @@ const AddManager = () => {
     };
 
     fetchData();
-  }, [userRole, allVenues]);
+  }, [userRole, allVenues, permissions]);
 
   // Handle form field changes
   const handleChange = (field, value) => {
@@ -381,24 +412,39 @@ const AddManager = () => {
         {/* Permissions Template */}
         <ChartCard
           title="Permissions Template"
-          subtitle="Assign a role template to define what this manager can access"
+          subtitle={canAssignPermissions
+            ? "Assign a role template to define what this manager can access"
+            : "This manager will be assigned Viewer permissions by default"}
         >
-          {loadingTemplates ? (
+          {!canAssignPermissions ? (
+            // User doesn't have managers.permissions - show info message
+            <div className="flex items-start gap-3 p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
+              <Info className="w-5 h-5 text-blue-600 dark:text-blue-400 flex-shrink-0 mt-0.5" />
+              <div>
+                <p className="text-sm text-blue-800 dark:text-blue-300 font-medium">
+                  Viewer permissions will be assigned
+                </p>
+                <p className="text-xs text-blue-600 dark:text-blue-400 mt-1">
+                  You don't have permission to assign custom roles. The invited manager will receive Viewer permissions which allow them to view data but not make changes.
+                </p>
+              </div>
+            </div>
+          ) : loadingTemplates ? (
             <div className="flex items-center justify-center py-8">
               <RefreshCw className="w-6 h-6 text-blue-600 animate-spin" />
             </div>
-          ) : roleTemplates.length === 0 ? (
+          ) : availableTemplates.length === 0 ? (
             <div className="text-center py-8">
               <Shield className="w-12 h-12 text-gray-300 dark:text-gray-600 mx-auto mb-3" />
               <p className="text-sm text-gray-500 dark:text-gray-400">No permission templates available</p>
               <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">
-                You can set permissions after the manager accepts the invitation
+                The manager will receive Viewer permissions by default
               </p>
             </div>
           ) : (
             <div className="space-y-3">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                {roleTemplates.map(template => {
+                {availableTemplates.map(template => {
                   const permissionCount = template.role_template_permissions?.length || 0;
                   const isSelected = formData.permissionTemplateId === template.id;
 
@@ -452,7 +498,7 @@ const AddManager = () => {
                 })}
               </div>
               <p className="text-xs text-gray-500 dark:text-gray-400">
-                Optional - You can also set permissions after the manager accepts the invitation
+                Optional - If not selected, the manager will receive Viewer permissions by default
               </p>
             </div>
           )}
