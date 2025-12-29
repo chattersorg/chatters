@@ -289,6 +289,7 @@ const RoleTemplates = () => {
   };
 
   // Get category labels
+  // Note: billing is excluded - it's master-only and not assignable through templates
   const categoryLabels = {
     feedback: 'Feedback',
     questions: 'Questions',
@@ -301,7 +302,6 @@ const RoleTemplates = () => {
     qr: 'QR Codes',
     ai: 'AI Features',
     reviews: 'Reviews',
-    billing: 'Billing',
     multivenue: 'Multi-Venue',
     menu: 'Menu'
   };
@@ -422,7 +422,10 @@ const RoleTemplates = () => {
                   {expandedTemplate === template.id && (
                     <div className="border-t border-gray-200 dark:border-gray-700 p-4 bg-gray-50 dark:bg-gray-800/30">
                       <div className="space-y-4">
-                        {Object.entries(permissionsByCategory).map(([categoryKey, perms]) => (
+                        {Object.entries(permissionsByCategory)
+                          // Filter out billing category - billing is master-only
+                          .filter(([categoryKey]) => categoryKey !== 'billing')
+                          .map(([categoryKey, perms]) => (
                           <div key={categoryKey}>
                             <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                               {categoryLabels[categoryKey] || categoryKey}

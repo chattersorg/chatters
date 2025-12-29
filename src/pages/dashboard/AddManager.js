@@ -24,7 +24,7 @@ const AddManager = () => {
   usePageTitle('Add Manager');
   const navigate = useNavigate();
   const { allVenues, userRole } = useVenue();
-  const { hasPermission, permissions } = usePermissions();
+  const { hasPermission, permissions, initialized: permissionsInitialized } = usePermissions();
 
   // Form state
   const [formData, setFormData] = useState({
@@ -104,6 +104,8 @@ const AddManager = () => {
         // Masters can assign any template
         // Managers can only assign templates where all permissions are ones they have
         // AND no master_only permissions are included
+        console.log('Filtering templates - userRole:', userRole, 'permissions:', permissions);
+
         if (userRole === 'master') {
           setAvailableTemplates(templates || []);
         } else {
@@ -111,18 +113,29 @@ const AddManager = () => {
             const templatePerms = template.role_template_permissions || [];
 
             // Check each permission in the template
-            return templatePerms.every(rtp => {
+            const canAssign = templatePerms.every(rtp => {
               const perm = rtp.permissions;
               if (!perm) return true;
 
               // Reject if it's a master-only permission (like billing)
-              if (perm.master_only) return false;
+              if (perm.master_only) {
+                console.log(`Template "${template.name}" rejected: contains master_only permission ${perm.code}`);
+                return false;
+              }
 
               // Reject if the inviter doesn't have this permission
-              if (!permissions.includes(perm.code)) return false;
+              if (!permissions.includes(perm.code)) {
+                console.log(`Template "${template.name}" rejected: user lacks permission ${perm.code}`);
+                return false;
+              }
 
               return true;
             });
+
+            if (canAssign) {
+              console.log(`Template "${template.name}" allowed`);
+            }
+            return canAssign;
           });
           setAvailableTemplates(filtered);
         }
@@ -134,8 +147,11 @@ const AddManager = () => {
       }
     };
 
-    fetchData();
-  }, [userRole, allVenues, permissions]);
+    // Only run when permissions are loaded (to avoid race condition)
+    if (permissionsInitialized) {
+      fetchData();
+    }
+  }, [userRole, allVenues, permissions, permissionsInitialized]);
 
   // Handle form field changes
   const handleChange = (field, value) => {
