@@ -6,6 +6,7 @@ import { Star } from 'lucide-react';
 import AlertModal from '../../components/ui/AlertModal';
 import { LanguageProvider, useLanguage } from '../../context/LanguageContext';
 import LanguageSelector from '../../components/ui/LanguageSelector';
+import { getDefaultTagsForCategory, normalizeTags } from '../../utils/feedbackTags';
 
 const CustomerFeedbackContent = () => {
   const { venueId } = useParams();
@@ -17,7 +18,6 @@ const CustomerFeedbackContent = () => {
   const [tableNumber, setTableNumber] = useState('');
   const [current, setCurrent] = useState(0);
   const [feedbackAnswers, setFeedbackAnswers] = useState([]);
-  const [freeText, setFreeText] = useState('');
   const [isFinished, setIsFinished] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -28,6 +28,7 @@ const CustomerFeedbackContent = () => {
   const [customerEmail, setCustomerEmail] = useState('');
   const [hasStarted, setHasStarted] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [showFollowUp, setShowFollowUp] = useState(false);
 
 
   // Utility function to check if current time is within feedback hours
@@ -159,36 +160,85 @@ const CustomerFeedbackContent = () => {
     }
   }, [venueId]);
 
-  const handleStarAnswer = (rating) => {
-    const question = questions[current];
-    setFeedbackAnswers(prev => [...prev, {
-      venue_id: venueId,
-      question_id: question.id,
-      session_id: sessionId,
-      sentiment: null, // No emoji sentiment for stars
-      rating,
-      table_number: tableNumber || null,
-    }]);
+  const getQuestionTags = (question) => {
+    const existing = Array.isArray(question?.follow_up_tags) && question.follow_up_tags.length > 0
+      ? question.follow_up_tags
+      : getDefaultTagsForCategory(question?.category);
+    return normalizeTags(existing);
+  };
 
-    if (current < questions.length - 1) setCurrent(current + 1);
-    else setCurrent(-1); // Move to free-text input
+  const upsertAnswer = (question, updates) => {
+    setFeedbackAnswers((prev) => {
+      const index = prev.findIndex((entry) => entry.question_id === question.id);
+      const baseEntry = {
+        venue_id: venueId,
+        question_id: question.id,
+        session_id: sessionId,
+        sentiment: null,
+        rating: null,
+        table_number: tableNumber || null,
+        follow_up_tags: [],
+        follow_up_text: '',
+      };
+      const nextEntry = { ...(index >= 0 ? prev[index] : baseEntry), ...updates };
+      const next = [...prev];
+      if (index >= 0) {
+        next[index] = nextEntry;
+      } else {
+        next.push(nextEntry);
+      }
+      return next;
+    });
+  };
+
+  const handleAdvance = () => {
+    if (isSubmitting) return;
+    if (current < questions.length - 1) {
+      setCurrent(current + 1);
+      setShowFollowUp(false);
+      return;
+    }
+    handleSubmit();
+  };
+
+  const handleStarAnswer = (rating) => {
+    if (isSubmitting) return;
+    const question = questions[current];
+    upsertAnswer(question, { rating, table_number: tableNumber || null });
+
+    if (rating <= 3) {
+      setShowFollowUp(true);
+      return;
+    }
+
+    handleAdvance();
+  };
+
+  const handleToggleFollowUpTag = (question, tag) => {
+    const existing = feedbackAnswers.find((entry) => entry.question_id === question.id);
+    const currentTags = Array.isArray(existing?.follow_up_tags) ? existing.follow_up_tags : [];
+    const nextTags = currentTags.includes(tag)
+      ? currentTags.filter((t) => t !== tag)
+      : [...currentTags, tag];
+    upsertAnswer(question, { follow_up_tags: nextTags });
+  };
+
+  const handleFollowUpTextChange = (question, value) => {
+    upsertAnswer(question, { follow_up_text: value });
   };
 
   const handleSubmit = async () => {
     setIsSubmitting(true);
     try {
-      const entries = [...feedbackAnswers];
-      if (freeText.trim()) {
-        entries.push({
-          venue_id: venueId,
-          question_id: null,
-          sentiment: null,
-          rating: null,
-          additional_feedback: freeText,
-          table_number: tableNumber || null,
-          session_id: sessionId,
-        });
-      }
+      const entries = feedbackAnswers.map((entry) => ({
+        ...entry,
+        table_number: entry.table_number || tableNumber || null,
+        follow_up_tags: Array.isArray(entry.follow_up_tags) && entry.follow_up_tags.length > 0
+          ? entry.follow_up_tags
+          : null,
+        follow_up_text: entry.follow_up_text?.trim() || null,
+        additional_feedback: entry.follow_up_text?.trim() || null,
+      }));
 
       // Create feedback session if email provided (for NPS)
       if (customerEmail.trim()) {
@@ -549,6 +599,10 @@ const CustomerFeedbackContent = () => {
   const background = venue.background_color || '#ffffff';
   const textColor = venue.text_color || '#111827';
   const buttonTextColor = venue.button_text_color || '#ffffff';
+  const currentQuestion = questions[current];
+  const currentAnswer = feedbackAnswers.find((entry) => entry.question_id === currentQuestion?.id) || {};
+  const followUpTags = getQuestionTags(currentQuestion);
+  const selectedFollowUpTags = Array.isArray(currentAnswer.follow_up_tags) ? currentAnswer.follow_up_tags : [];
 
   return (
     <div className="min-h-screen flex items-center justify-center p-6" style={getBackgroundStyle()}>
@@ -641,7 +695,7 @@ const CustomerFeedbackContent = () => {
               {t('continue')}
             </button>
           </div>
-        ) : current >= 0 ? (
+        ) : (
           <div>
             <div className="mb-6">
               <div className="text-sm mb-2 font-medium" style={{ color: textColor, opacity: 0.7 }}>
@@ -665,7 +719,9 @@ const CustomerFeedbackContent = () => {
               </div>
             )}
 
-            <h2 className="text-2xl font-bold mb-8" style={{ color: textColor }}>{questions[current].question}</h2>
+            <h2 className="text-2xl font-bold mb-8" style={{ color: textColor }}>
+              {currentQuestion?.question}
+            </h2>
             
             {/* Star rating system */}
             <div className="space-y-8">
@@ -700,6 +756,60 @@ const CustomerFeedbackContent = () => {
                 </div>
               </div>
 
+              {showFollowUp && (
+                <div className="pt-6 mt-6" style={{ borderTop: `2px solid ${textColor}20` }}>
+                  <h3 className="text-lg font-bold mb-2" style={{ color: textColor }}>
+                    {t('whatCouldWeImprove')}
+                  </h3>
+                  <p className="text-sm mb-4" style={{ color: textColor, opacity: 0.7 }}>
+                    {t('selectAnyThatApply')}
+                  </p>
+                  <div className="flex flex-wrap gap-2">
+                    {followUpTags.map((tag) => {
+                      const isSelected = selectedFollowUpTags.includes(tag);
+                      return (
+                        <button
+                          key={tag}
+                          onClick={() => handleToggleFollowUpTag(currentQuestion, tag)}
+                          className="px-3 py-2 text-sm rounded-full border transition-all"
+                          style={{
+                            borderColor: isSelected ? primary : `${textColor}30`,
+                            backgroundColor: isSelected ? `${primary}15` : 'transparent',
+                            color: isSelected ? primary : textColor,
+                          }}
+                        >
+                          {tag}
+                        </button>
+                      );
+                    })}
+                  </div>
+                  <div className="mt-4">
+                    <label className="block text-sm font-medium mb-2" style={{ color: textColor }}>
+                      {t('addQuickNoteOptional')}
+                    </label>
+                    <textarea
+                      value={currentAnswer.follow_up_text || ''}
+                      onChange={(e) => handleFollowUpTextChange(currentQuestion, e.target.value)}
+                      rows={3}
+                      placeholder={t('additionalCommentsPlaceholder')}
+                      className="w-full p-3 border-2 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-offset-2 transition-all"
+                      style={{
+                        borderColor: primary,
+                        backgroundColor: 'rgba(255, 255, 255, 0.9)',
+                        color: textColor,
+                      }}
+                    />
+                  </div>
+                  <button
+                    onClick={handleAdvance}
+                    className="w-full mt-4 py-3 rounded-xl font-bold text-base transition-all hover:opacity-90 hover:scale-105 active:scale-95 shadow-lg"
+                    style={{ backgroundColor: primary, color: buttonTextColor }}
+                  >
+                    {t('continue')}
+                  </button>
+                </div>
+              )}
+
               {/* Assistance Request Button */}
               <div className="pt-6 mt-6" style={{ borderTop: `2px solid ${textColor}20` }}>
                 <p className="text-sm mb-3 text-center" style={{ color: textColor, opacity: 0.8 }}>{t('dontWantFeedback')}</p>
@@ -727,42 +837,6 @@ const CustomerFeedbackContent = () => {
                 </button>
               </div>
             </div>
-          </div>
-        ) : (
-          <div>
-            <h2 className="text-xl font-bold mb-4" style={{ color: textColor }}>
-              {t('anythingElse')} <span className="text-sm font-normal" style={{ opacity: 0.6 }}>({t('optional')})</span>
-            </h2>
-            <textarea
-              value={freeText}
-              onChange={(e) => setFreeText(e.target.value)}
-              rows={5}
-              placeholder={t('additionalCommentsPlaceholder')}
-              className="w-full p-4 border-2 rounded-xl text-base mb-6 focus:outline-none focus:ring-2 focus:ring-offset-2 transition-all"
-              style={{
-                borderColor: primary,
-                backgroundColor: 'rgba(255, 255, 255, 0.9)',
-                color: textColor,
-              }}
-            />
-            <button
-              onClick={handleSubmit}
-              disabled={isSubmitting}
-              className="w-full py-4 rounded-xl font-bold text-lg transition-all hover:opacity-90 hover:scale-105 active:scale-95 shadow-lg disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
-              style={{ backgroundColor: primary, color: buttonTextColor }}
-            >
-              {isSubmitting ? (
-                <>
-                  <svg className="animate-spin h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                  </svg>
-                  {t('submitting')}
-                </>
-              ) : (
-                t('submitFeedback')
-              )}
-            </button>
           </div>
         )}
         </div>

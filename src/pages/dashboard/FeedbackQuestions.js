@@ -5,6 +5,7 @@ import usePageTitle from '../../hooks/usePageTitle';
 import { useVenue } from '../../context/VenueContext';
 import AlertModal from '../../components/ui/AlertModal';
 import QuestionManagementTab from '../../components/dashboard/feedback/QuestionManagementTab';
+import { getDefaultTagsForCategory, normalizeTags } from '../../utils/feedbackTags';
 
 const FeedbackQuestionsPage = () => {
   usePageTitle('Question Management');
@@ -13,13 +14,19 @@ const FeedbackQuestionsPage = () => {
   // All state variables from ManageQuestions
   const [questions, setQuestions] = useState([]);
   const [newQuestion, setNewQuestion] = useState('');
+  const [newQuestionCategory, setNewQuestionCategory] = useState('general');
+  const [newQuestionTags, setNewQuestionTags] = useState(getDefaultTagsForCategory('general'));
   const [editingQuestionId, setEditingQuestionId] = useState(null);
   const [editingQuestionText, setEditingQuestionText] = useState('');
+  const [editingQuestionCategory, setEditingQuestionCategory] = useState('general');
+  const [editingQuestionTags, setEditingQuestionTags] = useState(getDefaultTagsForCategory('general'));
   const [inactiveQuestions, setInactiveQuestions] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [isReplaceModalOpen, setIsReplaceModalOpen] = useState(false);
   const [selectedInactiveQuestion, setSelectedInactiveQuestion] = useState(null);
   const [pendingNewQuestion, setPendingNewQuestion] = useState('');
+  const [pendingNewQuestionCategory, setPendingNewQuestionCategory] = useState('general');
+  const [pendingNewQuestionTags, setPendingNewQuestionTags] = useState(getDefaultTagsForCategory('general'));
   const [replacementSource, setReplacementSource] = useState(null);
   const [duplicateError, setDuplicateError] = useState('');
   const [addedSuggestedQuestions, setAddedSuggestedQuestions] = useState([]);
@@ -37,6 +44,15 @@ const FeedbackQuestionsPage = () => {
   const filteredSuggestedQuestions = suggestedQuestions.filter(
     (question) => !addedSuggestedQuestions.includes(question)
   );
+
+  const getQuestionCategory = (question) => question?.category || 'general';
+
+  const getQuestionTags = (question) => {
+    if (Array.isArray(question?.follow_up_tags) && question.follow_up_tags.length > 0) {
+      return normalizeTags(question.follow_up_tags);
+    }
+    return normalizeTags(getDefaultTagsForCategory(getQuestionCategory(question)));
+  };
 
   useEffect(() => {
     if (!venueId) return;
@@ -78,6 +94,8 @@ const FeedbackQuestionsPage = () => {
   const handleAddQuestion = async () => {
     if (questions.length >= 5) {
       setPendingNewQuestion(newQuestion);
+      setPendingNewQuestionCategory(newQuestionCategory);
+      setPendingNewQuestionTags(newQuestionTags);
       setReplacementSource('new');
       setIsReplaceModalOpen(true);
       return;
@@ -111,9 +129,17 @@ const FeedbackQuestionsPage = () => {
       return;
     }
 
+    const normalizedTags = normalizeTags(newQuestionTags);
     const { data, error } = await supabase
       .from('questions')
-      .insert([{ venue_id: venueId, question: newQuestion, order: questions.length, active: true }])
+      .insert([{
+        venue_id: venueId,
+        question: newQuestion,
+        order: questions.length,
+        active: true,
+        category: newQuestionCategory,
+        follow_up_tags: normalizedTags,
+      }])
       .select();
 
     if (error) {
@@ -121,6 +147,8 @@ const FeedbackQuestionsPage = () => {
     } else {
       setQuestions([...questions, data[0]]);
       setNewQuestion('');
+      setNewQuestionCategory('general');
+      setNewQuestionTags(getDefaultTagsForCategory('general'));
 
       if (suggestedQuestions.includes(newQuestion)) {
         setAddedSuggestedQuestions([...addedSuggestedQuestions, newQuestion]);
@@ -149,6 +177,8 @@ const FeedbackQuestionsPage = () => {
     if (question) {
       setEditingQuestionId(questionId);
       setEditingQuestionText(question.question);
+      setEditingQuestionCategory(getQuestionCategory(question));
+      setEditingQuestionTags(getQuestionTags(question));
     }
   };
 
@@ -171,9 +201,14 @@ const FeedbackQuestionsPage = () => {
       return;
     }
 
+    const normalizedTags = normalizeTags(editingQuestionTags);
     const { error } = await supabase
       .from('questions')
-      .update({ question: editingQuestionText })
+      .update({
+        question: editingQuestionText,
+        category: editingQuestionCategory,
+        follow_up_tags: normalizedTags,
+      })
       .eq('id', editingQuestionId);
 
     if (error) {
@@ -181,17 +216,21 @@ const FeedbackQuestionsPage = () => {
     } else {
       setQuestions(questions.map(q => 
         q.id === editingQuestionId 
-          ? { ...q, question: editingQuestionText }
+          ? { ...q, question: editingQuestionText, category: editingQuestionCategory, follow_up_tags: normalizedTags }
           : q
       ));
       setEditingQuestionId(null);
       setEditingQuestionText('');
+      setEditingQuestionCategory('general');
+      setEditingQuestionTags(getDefaultTagsForCategory('general'));
     }
   };
 
   const handleCancelEdit = () => {
     setEditingQuestionId(null);
     setEditingQuestionText('');
+    setEditingQuestionCategory('general');
+    setEditingQuestionTags(getDefaultTagsForCategory('general'));
   };
 
   const handleDeleteQuestion = async (questionId) => {
@@ -273,7 +312,14 @@ const FeedbackQuestionsPage = () => {
     if (replacementSource === 'new') {
       const { data, error } = await supabase
         .from('questions')
-        .insert([{ venue_id: venueId, question: pendingNewQuestion, order: questions.length, active: true }])
+        .insert([{
+          venue_id: venueId,
+          question: pendingNewQuestion,
+          order: questions.length,
+          active: true,
+          category: pendingNewQuestionCategory,
+          follow_up_tags: normalizeTags(pendingNewQuestionTags),
+        }])
         .select();
 
       if (error) {
@@ -282,6 +328,8 @@ const FeedbackQuestionsPage = () => {
         const updatedQuestions = questions.filter((q) => q.id !== questionIdToReplace);
         setQuestions([...updatedQuestions, data[0]]);
         setNewQuestion('');
+        setNewQuestionCategory('general');
+        setNewQuestionTags(getDefaultTagsForCategory('general'));
       }
     } else if (replacementSource === 'inactive') {
       await supabase
@@ -294,6 +342,8 @@ const FeedbackQuestionsPage = () => {
     }
 
     setPendingNewQuestion('');
+    setPendingNewQuestionCategory('general');
+    setPendingNewQuestionTags(getDefaultTagsForCategory('general'));
     setSelectedInactiveQuestion(null);
     setReplacementSource(null);
     setIsReplaceModalOpen(false);
@@ -318,7 +368,30 @@ const FeedbackQuestionsPage = () => {
     setDuplicateError('');
   };
 
+  const handleNewQuestionCategoryChange = (category) => {
+    setNewQuestionCategory(category);
+    setNewQuestionTags(getDefaultTagsForCategory(category));
+  };
+
+  const handleEditingCategoryChange = (category) => {
+    setEditingQuestionCategory(category);
+    setEditingQuestionTags(getDefaultTagsForCategory(category));
+  };
+
+  const handleResetNewQuestionTags = () => {
+    setNewQuestionTags(getDefaultTagsForCategory(newQuestionCategory));
+  };
+
+  const handleResetEditingTags = () => {
+    setEditingQuestionTags(getDefaultTagsForCategory(editingQuestionCategory));
+  };
+
   const startEditingQuestion = (questionId, questionText) => {
+    const question = questions.find((q) => q.id === questionId);
+    if (question) {
+      setEditingQuestionCategory(getQuestionCategory(question));
+      setEditingQuestionTags(getQuestionTags(question));
+    }
     setEditingQuestionId(questionId);
     setEditingQuestionText(questionText);
   };
@@ -326,6 +399,8 @@ const FeedbackQuestionsPage = () => {
   const cancelEditingQuestion = () => {
     setEditingQuestionId(null);
     setEditingQuestionText('');
+    setEditingQuestionCategory('general');
+    setEditingQuestionTags(getDefaultTagsForCategory('general'));
   };
 
   const handleEditTextChange = (newText) => {
@@ -351,20 +426,29 @@ const FeedbackQuestionsPage = () => {
       return;
     }
 
+    const normalizedTags = normalizeTags(editingQuestionTags);
     const { error } = await supabase
       .from('questions')
-      .update({ question: editingQuestionText })
+      .update({
+        question: editingQuestionText,
+        category: editingQuestionCategory,
+        follow_up_tags: normalizedTags,
+      })
       .eq('id', editingQuestionId);
 
     if (error) {
       console.error('Error updating question:', error);
     } else {
       const updatedQuestions = questions.map((q) =>
-        q.id === editingQuestionId ? { ...q, question: editingQuestionText } : q
+        q.id === editingQuestionId
+          ? { ...q, question: editingQuestionText, category: editingQuestionCategory, follow_up_tags: normalizedTags }
+          : q
       );
       setQuestions(updatedQuestions);
       setEditingQuestionId(null);
       setEditingQuestionText('');
+      setEditingQuestionCategory('general');
+      setEditingQuestionTags(getDefaultTagsForCategory('general'));
     }
   };
 
@@ -420,10 +504,20 @@ const FeedbackQuestionsPage = () => {
             setQuestions={setQuestions}
             newQuestion={newQuestion}
             setNewQuestion={setNewQuestion}
+            newQuestionCategory={newQuestionCategory}
+            newQuestionTags={newQuestionTags}
+            onNewQuestionCategoryChange={handleNewQuestionCategoryChange}
+            setNewQuestionTags={setNewQuestionTags}
+            onResetNewQuestionTags={handleResetNewQuestionTags}
             editingQuestionId={editingQuestionId}
             setEditingQuestionId={setEditingQuestionId}
             editingQuestionText={editingQuestionText}
             setEditingQuestionText={setEditingQuestionText}
+            editingQuestionCategory={editingQuestionCategory}
+            editingQuestionTags={editingQuestionTags}
+            onEditingCategoryChange={handleEditingCategoryChange}
+            setEditingQuestionTags={setEditingQuestionTags}
+            onResetEditingTags={handleResetEditingTags}
             inactiveQuestions={inactiveQuestions}
             setInactiveQuestions={setInactiveQuestions}
             searchTerm={searchTerm}

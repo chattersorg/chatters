@@ -32,6 +32,9 @@ const translations = {
     tapStarToRate: 'Tap a star to rate',
     poor: 'Poor',
     excellent: 'Excellent',
+    whatCouldWeImprove: 'Thanks - what could we improve?',
+    selectAnyThatApply: 'Select any that apply (optional)',
+    addQuickNoteOptional: 'Add a quick note (optional)',
 
     // Assistance
     dontWantFeedback: "Don't want to leave feedback right now?",
@@ -126,6 +129,9 @@ const translations = {
     tapStarToRate: 'Atinge o stea pentru a evalua',
     poor: 'Slab',
     excellent: 'Excelent',
+    whatCouldWeImprove: 'Mulțumim - ce am putea îmbunătăți?',
+    selectAnyThatApply: 'Selectați tot ce se aplică (opțional)',
+    addQuickNoteOptional: 'Adăugați o notă scurtă (opțional)',
 
     // Assistance
     dontWantFeedback: 'Nu doriți să lăsați feedback acum?',
@@ -220,6 +226,9 @@ const translations = {
     tapStarToRate: 'Toca una estrella para calificar',
     poor: 'Malo',
     excellent: 'Excelente',
+    whatCouldWeImprove: 'Gracias - ¿qué podríamos mejorar?',
+    selectAnyThatApply: 'Selecciona todo lo que corresponda (opcional)',
+    addQuickNoteOptional: 'Agrega una nota breve (opcional)',
 
     // Assistance
     dontWantFeedback: '¿No quieres dejar comentarios ahora?',
