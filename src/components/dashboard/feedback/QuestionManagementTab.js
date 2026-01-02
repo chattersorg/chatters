@@ -5,7 +5,6 @@ import { Plus, Search, Edit3, Trash2, GripVertical, Archive, RotateCcw } from 'l
 import { Draggable, Droppable } from 'react-beautiful-dnd';
 import ReplaceModal from '../../common/ReplaceModal';
 import { PermissionGate } from '../../../context/PermissionsContext';
-import { QUESTION_CATEGORIES } from '../../../utils/feedbackTags';
 
 // Suggested Questions Component - moved outside to prevent re-creation
 const SuggestedQuestionsSection = ({ filteredSuggestedQuestions, setNewQuestion }) => (
@@ -38,75 +37,13 @@ const SuggestedQuestionsSection = ({ filteredSuggestedQuestions, setNewQuestion 
     </div>
   );
 
-const TagEditor = ({ tags, onChange, placeholder }) => {
-  const [input, setInput] = useState('');
-
-  const addTag = (rawValue) => {
-    const value = rawValue.trim();
-    if (!value) return;
-    if (tags.includes(value)) {
-      setInput('');
-      return;
-    }
-    onChange([...tags, value]);
-    setInput('');
-  };
-
-  const handleKeyDown = (event) => {
-    if (event.key === 'Enter' || event.key === ',') {
-      event.preventDefault();
-      addTag(input.replace(',', ''));
-    }
-  };
-
-  return (
-    <div className="space-y-3">
-      <div className="flex flex-wrap gap-2">
-        {tags.length === 0 && (
-          <span className="text-xs text-gray-400 dark:text-gray-500">No tags added yet</span>
-        )}
-        {tags.map((tag) => (
-          <span
-            key={tag}
-            className="inline-flex items-center gap-2 px-3 py-1 bg-blue-50 dark:bg-blue-900/30 text-blue-800 dark:text-blue-300 text-xs font-medium rounded-full"
-          >
-            {tag}
-            <button
-              type="button"
-              onClick={() => onChange(tags.filter((t) => t !== tag))}
-              className="text-blue-500 hover:text-blue-700 dark:text-blue-300 dark:hover:text-blue-200"
-              aria-label={`Remove ${tag}`}
-            >
-              ×
-            </button>
-          </span>
-        ))}
-      </div>
-      <input
-        type="text"
-        value={input}
-        onChange={(event) => setInput(event.target.value)}
-        onKeyDown={handleKeyDown}
-        placeholder={placeholder}
-        className="w-full px-4 py-3 border border-gray-300 dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500"
-      />
-      <p className="text-xs text-gray-500 dark:text-gray-400">Press Enter to add each tag.</p>
-    </div>
-  );
-};
-
 // Create New Question Component - moved outside to prevent re-creation
 const CreateQuestionSection = ({
   newQuestion,
   handleNewQuestionChange,
   questions,
   duplicateError,
-  handleAddQuestion,
-  newQuestionCategory,
-  onNewQuestionCategoryChange,
-  newQuestionTags,
-  setNewQuestionTags,
-  onResetNewQuestionTags
+  handleAddQuestion
 }) => (
     <div className="mb-8">
       <h3 className="text-base font-semibold text-gray-900 dark:text-gray-100 mb-4 flex items-center gap-2">
@@ -135,45 +72,6 @@ const CreateQuestionSection = ({
                 {newQuestion.length}/100
               </span>
             </div>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                Category
-              </label>
-              <select
-                value={newQuestionCategory}
-                onChange={(event) => onNewQuestionCategoryChange(event.target.value)}
-                className="w-full px-4 py-3 border border-gray-300 dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
-              >
-                {QUESTION_CATEGORIES.map((category) => (
-                  <option key={category.value} value={category.value}>
-                    {category.label}
-                  </option>
-                ))}
-              </select>
-            </div>
-            <div className="flex items-end justify-end">
-              <button
-                type="button"
-                onClick={onResetNewQuestionTags}
-                className="text-sm font-medium text-blue-600 hover:text-blue-700"
-              >
-                Reset tags to defaults
-              </button>
-            </div>
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-              Follow-up tags (shown only for ratings 1-3)
-            </label>
-            <TagEditor
-              tags={newQuestionTags}
-              onChange={setNewQuestionTags}
-              placeholder="Add a tag and press Enter"
-            />
           </div>
 
           <div className="flex items-center justify-between">
@@ -213,16 +111,11 @@ const ActiveQuestionsSection = ({
   questions,
   editingQuestionId,
   editingQuestionText,
-  editingQuestionCategory,
-  editingQuestionTags,
   handleEditTextChange,
   cancelEditingQuestion,
   saveEditedQuestion,
   startEditingQuestion,
-  handleDeleteQuestion,
-  onEditingCategoryChange,
-  setEditingQuestionTags,
-  onResetEditingTags
+  handleDeleteQuestion
 }) => (
     <div className="mb-8">
       <h3 className="text-base font-semibold text-gray-900 dark:text-gray-100 mb-4 flex items-center gap-2">
@@ -288,43 +181,6 @@ const ActiveQuestionsSection = ({
                                 </span>
                               </div>
                             </div>
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                              <div>
-                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                                  Category
-                                </label>
-                                <select
-                                  value={editingQuestionCategory}
-                                  onChange={(event) => onEditingCategoryChange(event.target.value)}
-                                  className="w-full px-4 py-3 border border-gray-300 dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
-                                >
-                                  {QUESTION_CATEGORIES.map((category) => (
-                                    <option key={category.value} value={category.value}>
-                                      {category.label}
-                                    </option>
-                                  ))}
-                                </select>
-                              </div>
-                              <div className="flex items-end justify-end">
-                                <button
-                                  type="button"
-                                  onClick={onResetEditingTags}
-                                  className="text-sm font-medium text-blue-600 hover:text-blue-700"
-                                >
-                                  Reset tags to defaults
-                                </button>
-                              </div>
-                            </div>
-                            <div>
-                              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                                Follow-up tags (shown only for ratings 1-3)
-                              </label>
-                              <TagEditor
-                                tags={editingQuestionTags}
-                                onChange={setEditingQuestionTags}
-                                placeholder="Add a tag and press Enter"
-                              />
-                            </div>
                             <div className="flex items-center justify-end space-x-3">
                               <button
                                 onClick={cancelEditingQuestion}
@@ -357,12 +213,7 @@ const ActiveQuestionsSection = ({
                                 </span>
                                 <h4 className="font-medium text-gray-900 dark:text-gray-100">{q.question}</h4>
                               </div>
-                              <p className="text-xs text-gray-500 dark:text-gray-400">
-                                Customers will rate this 1-5 stars
-                              </p>
-                              <p className="text-xs text-gray-500 dark:text-gray-400">
-                                Category: {QUESTION_CATEGORIES.find((category) => category.value === q.category)?.label || 'General'}
-                              </p>
+                              <p className="text-xs text-gray-500 dark:text-gray-400">Customers will rate this 1-5 stars</p>
                             </div>
 
                             <div className="flex items-center space-x-2">
@@ -498,16 +349,6 @@ const QuestionManagementTab = ({
   replacementSource,
   duplicateError,
   filteredSuggestedQuestions,
-  newQuestionCategory,
-  newQuestionTags,
-  onNewQuestionCategoryChange,
-  setNewQuestionTags,
-  onResetNewQuestionTags,
-  editingQuestionCategory,
-  editingQuestionTags,
-  onEditingCategoryChange,
-  setEditingQuestionTags,
-  onResetEditingTags,
   setNewQuestion,
   setSearchTerm,
   setIsReplaceModalOpen,
@@ -561,11 +402,6 @@ const QuestionManagementTab = ({
             questions={questions}
             duplicateError={duplicateError}
             handleAddQuestion={handleAddQuestion}
-            newQuestionCategory={newQuestionCategory}
-            onNewQuestionCategoryChange={onNewQuestionCategoryChange}
-            newQuestionTags={newQuestionTags}
-            setNewQuestionTags={setNewQuestionTags}
-            onResetNewQuestionTags={onResetNewQuestionTags}
           />
 
           <SuggestedQuestionsSection
@@ -580,16 +416,11 @@ const QuestionManagementTab = ({
             questions={questions}
             editingQuestionId={editingQuestionId}
             editingQuestionText={editingQuestionText}
-            editingQuestionCategory={editingQuestionCategory}
-            editingQuestionTags={editingQuestionTags}
             handleEditTextChange={handleEditTextChange}
             cancelEditingQuestion={cancelEditingQuestion}
             saveEditedQuestion={saveEditedQuestion}
             startEditingQuestion={startEditingQuestion}
             handleDeleteQuestion={handleDeleteQuestion}
-            onEditingCategoryChange={onEditingCategoryChange}
-            setEditingQuestionTags={setEditingQuestionTags}
-            onResetEditingTags={onResetEditingTags}
           />
         </div>
       </div>

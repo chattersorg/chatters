@@ -7,7 +7,6 @@ import { DragDropContext } from 'react-beautiful-dnd';
 import usePageTitle from '../../hooks/usePageTitle';
 import { useVenue } from '../../context/VenueContext';
 import AlertModal from '../../components/ui/AlertModal';
-import { getDefaultTagsForCategory, normalizeTags } from '../../utils/feedbackTags';
 
 // Import tab components
 import QRCodeTab from '../../components/dashboard/feedback/QRCodeTab';
@@ -25,19 +24,13 @@ const ManageQuestions = () => {
   // All your existing state variables
   const [questions, setQuestions] = useState([]);
   const [newQuestion, setNewQuestion] = useState('');
-  const [newQuestionCategory, setNewQuestionCategory] = useState('general');
-  const [newQuestionTags, setNewQuestionTags] = useState(getDefaultTagsForCategory('general'));
   const [editingQuestionId, setEditingQuestionId] = useState(null);
   const [editingQuestionText, setEditingQuestionText] = useState('');
-  const [editingQuestionCategory, setEditingQuestionCategory] = useState('general');
-  const [editingQuestionTags, setEditingQuestionTags] = useState(getDefaultTagsForCategory('general'));
   const [inactiveQuestions, setInactiveQuestions] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [isReplaceModalOpen, setIsReplaceModalOpen] = useState(false);
   const [selectedInactiveQuestion, setSelectedInactiveQuestion] = useState(null);
   const [pendingNewQuestion, setPendingNewQuestion] = useState('');
-  const [pendingNewQuestionCategory, setPendingNewQuestionCategory] = useState('general');
-  const [pendingNewQuestionTags, setPendingNewQuestionTags] = useState(getDefaultTagsForCategory('general'));
   const [replacementSource, setReplacementSource] = useState(null);
   const [duplicateError, setDuplicateError] = useState('');
   const [addedSuggestedQuestions, setAddedSuggestedQuestions] = useState([]);
@@ -55,15 +48,6 @@ const ManageQuestions = () => {
   const filteredSuggestedQuestions = suggestedQuestions.filter(
     (question) => !addedSuggestedQuestions.includes(question)
   );
-
-  const getQuestionCategory = (question) => question?.category || 'general';
-
-  const getQuestionTags = (question) => {
-    if (Array.isArray(question?.follow_up_tags) && question.follow_up_tags.length > 0) {
-      return normalizeTags(question.follow_up_tags);
-    }
-    return normalizeTags(getDefaultTagsForCategory(getQuestionCategory(question)));
-  };
 
   // Navigation items
   const navItems = [
@@ -117,8 +101,6 @@ const ManageQuestions = () => {
   const handleAddQuestion = async () => {
     if (questions.length >= 5) {
       setPendingNewQuestion(newQuestion);
-      setPendingNewQuestionCategory(newQuestionCategory);
-      setPendingNewQuestionTags(newQuestionTags);
       setReplacementSource('new');
       setIsReplaceModalOpen(true);
       return;
@@ -152,17 +134,9 @@ const ManageQuestions = () => {
       return;
     }
 
-    const normalizedTags = normalizeTags(newQuestionTags);
     const { data, error } = await supabase
       .from('questions')
-      .insert([{
-        venue_id: venueId,
-        question: newQuestion,
-        order: questions.length,
-        active: true,
-        category: newQuestionCategory,
-        follow_up_tags: normalizedTags,
-      }])
+      .insert([{ venue_id: venueId, question: newQuestion, order: questions.length, active: true }])
       .select();
 
     if (error) {
@@ -170,8 +144,6 @@ const ManageQuestions = () => {
     } else {
       setQuestions([...questions, data[0]]);
       setNewQuestion('');
-      setNewQuestionCategory('general');
-      setNewQuestionTags(getDefaultTagsForCategory('general'));
 
       if (suggestedQuestions.includes(newQuestion)) {
         setAddedSuggestedQuestions([...addedSuggestedQuestions, newQuestion]);
@@ -250,14 +222,7 @@ const ManageQuestions = () => {
     if (replacementSource === 'new') {
       const { data, error } = await supabase
         .from('questions')
-        .insert([{
-          venue_id: venueId,
-          question: pendingNewQuestion,
-          order: questions.length,
-          active: true,
-          category: pendingNewQuestionCategory,
-          follow_up_tags: normalizeTags(pendingNewQuestionTags),
-        }])
+        .insert([{ venue_id: venueId, question: pendingNewQuestion, order: questions.length, active: true }])
         .select();
 
       if (error) {
@@ -266,8 +231,6 @@ const ManageQuestions = () => {
         const updatedQuestions = questions.filter((q) => q.id !== questionIdToReplace);
         setQuestions([...updatedQuestions, data[0]]);
         setNewQuestion('');
-        setNewQuestionCategory('general');
-        setNewQuestionTags(getDefaultTagsForCategory('general'));
       }
     } else if (replacementSource === 'inactive') {
       await supabase
@@ -280,8 +243,6 @@ const ManageQuestions = () => {
     }
 
     setPendingNewQuestion('');
-    setPendingNewQuestionCategory('general');
-    setPendingNewQuestionTags(getDefaultTagsForCategory('general'));
     setSelectedInactiveQuestion(null);
     setReplacementSource(null);
     setIsReplaceModalOpen(false);
@@ -290,24 +251,6 @@ const ManageQuestions = () => {
   const handleNewQuestionChange = (e) => {
     setNewQuestion(e.target.value);
     setDuplicateError('');
-  };
-
-  const handleNewQuestionCategoryChange = (category) => {
-    setNewQuestionCategory(category);
-    setNewQuestionTags(getDefaultTagsForCategory(category));
-  };
-
-  const handleEditingCategoryChange = (category) => {
-    setEditingQuestionCategory(category);
-    setEditingQuestionTags(getDefaultTagsForCategory(category));
-  };
-
-  const handleResetNewQuestionTags = () => {
-    setNewQuestionTags(getDefaultTagsForCategory(newQuestionCategory));
-  };
-
-  const handleResetEditingTags = () => {
-    setEditingQuestionTags(getDefaultTagsForCategory(editingQuestionCategory));
   };
 
   const onDragEnd = async (result) => {
@@ -339,11 +282,6 @@ const ManageQuestions = () => {
   };
 
   const startEditingQuestion = (questionId, questionText) => {
-    const question = questions.find((q) => q.id === questionId);
-    if (question) {
-      setEditingQuestionCategory(getQuestionCategory(question));
-      setEditingQuestionTags(getQuestionTags(question));
-    }
     setEditingQuestionId(questionId);
     setEditingQuestionText(questionText);
   };
@@ -351,8 +289,6 @@ const ManageQuestions = () => {
   const cancelEditingQuestion = () => {
     setEditingQuestionId(null);
     setEditingQuestionText('');
-    setEditingQuestionCategory('general');
-    setEditingQuestionTags(getDefaultTagsForCategory('general'));
   };
 
   const handleEditTextChange = (newText) => {
@@ -378,29 +314,20 @@ const ManageQuestions = () => {
       return;
     }
 
-    const normalizedTags = normalizeTags(editingQuestionTags);
     const { error } = await supabase
       .from('questions')
-      .update({
-        question: editingQuestionText,
-        category: editingQuestionCategory,
-        follow_up_tags: normalizedTags,
-      })
+      .update({ question: editingQuestionText })
       .eq('id', editingQuestionId);
 
     if (error) {
       console.error('Error updating question:', error);
     } else {
       const updatedQuestions = questions.map((q) =>
-        q.id === editingQuestionId
-          ? { ...q, question: editingQuestionText, category: editingQuestionCategory, follow_up_tags: normalizedTags }
-          : q
+        q.id === editingQuestionId ? { ...q, question: editingQuestionText } : q
       );
       setQuestions(updatedQuestions);
       setEditingQuestionId(null);
       setEditingQuestionText('');
-      setEditingQuestionCategory('general');
-      setEditingQuestionTags(getDefaultTagsForCategory('general'));
     }
   };
 
@@ -423,8 +350,6 @@ const ManageQuestions = () => {
     if (question) {
       setEditingQuestionId(questionId);
       setEditingQuestionText(question.question);
-      setEditingQuestionCategory(getQuestionCategory(question));
-      setEditingQuestionTags(getQuestionTags(question));
     }
   };
 
@@ -447,14 +372,9 @@ const ManageQuestions = () => {
       return;
     }
 
-    const normalizedTags = normalizeTags(editingQuestionTags);
     const { error } = await supabase
       .from('questions')
-      .update({
-        question: editingQuestionText,
-        category: editingQuestionCategory,
-        follow_up_tags: normalizedTags,
-      })
+      .update({ question: editingQuestionText })
       .eq('id', editingQuestionId);
 
     if (error) {
@@ -462,21 +382,17 @@ const ManageQuestions = () => {
     } else {
       setQuestions(questions.map(q => 
         q.id === editingQuestionId 
-          ? { ...q, question: editingQuestionText, category: editingQuestionCategory, follow_up_tags: normalizedTags }
+          ? { ...q, question: editingQuestionText }
           : q
       ));
       setEditingQuestionId(null);
       setEditingQuestionText('');
-      setEditingQuestionCategory('general');
-      setEditingQuestionTags(getDefaultTagsForCategory('general'));
     }
   };
 
   const handleCancelEdit = () => {
     setEditingQuestionId(null);
     setEditingQuestionText('');
-    setEditingQuestionCategory('general');
-    setEditingQuestionTags(getDefaultTagsForCategory('general'));
   };
 
   const handleActivateQuestion = async (questionId) => {
@@ -510,12 +426,8 @@ const ManageQuestions = () => {
     // Data
     questions,
     newQuestion,
-    newQuestionCategory,
-    newQuestionTags,
     editingQuestionId,
     editingQuestionText,
-    editingQuestionCategory,
-    editingQuestionTags,
     inactiveQuestions,
     searchTerm,
     isReplaceModalOpen,
@@ -532,12 +444,8 @@ const ManageQuestions = () => {
 
     // Setters
     setNewQuestion,
-    setNewQuestionCategory,
-    setNewQuestionTags,
     setEditingQuestionId,
     setEditingQuestionText,
-    setEditingQuestionCategory,
-    setEditingQuestionTags,
     setSearchTerm,
     setIsReplaceModalOpen,
     setSelectedInactiveQuestion,
@@ -551,10 +459,6 @@ const ManageQuestions = () => {
     handleReplaceQuestion,
     onReplaceQuestion: handleReplaceQuestion,
     handleNewQuestionChange,
-    handleNewQuestionCategoryChange,
-    handleEditingCategoryChange,
-    handleResetNewQuestionTags,
-    handleResetEditingTags,
     onDragEnd,
     startEditingQuestion,
     cancelEditingQuestion,
@@ -601,20 +505,10 @@ const ManageQuestions = () => {
             setQuestions={setQuestions}
             newQuestion={newQuestion}
             setNewQuestion={setNewQuestion}
-            newQuestionCategory={newQuestionCategory}
-            newQuestionTags={newQuestionTags}
-            onNewQuestionCategoryChange={handleNewQuestionCategoryChange}
-            setNewQuestionTags={setNewQuestionTags}
-            onResetNewQuestionTags={handleResetNewQuestionTags}
             editingQuestionId={editingQuestionId}
             setEditingQuestionId={setEditingQuestionId}
             editingQuestionText={editingQuestionText}
             setEditingQuestionText={setEditingQuestionText}
-            editingQuestionCategory={editingQuestionCategory}
-            editingQuestionTags={editingQuestionTags}
-            onEditingCategoryChange={handleEditingCategoryChange}
-            setEditingQuestionTags={setEditingQuestionTags}
-            onResetEditingTags={handleResetEditingTags}
             inactiveQuestions={inactiveQuestions}
             setInactiveQuestions={setInactiveQuestions}
             searchTerm={searchTerm}
