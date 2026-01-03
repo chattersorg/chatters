@@ -1,7 +1,7 @@
 // /api/managers/list.js
 // Get list of managers the current user can manage
 
-const { createClient } = require('@supabase/supabase-js');
+import { createClient } from '@supabase/supabase-js';
 
 const supabaseAdmin = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.REACT_APP_SUPABASE_URL,
@@ -19,6 +19,9 @@ export default async function handler(req, res) {
   }
 
   try {
+    // Get optional venueId filter from query params
+    const { venueId } = req.query;
+
     // Get auth token from header
     const authHeader = req.headers.authorization;
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
@@ -44,6 +47,19 @@ export default async function handler(req, res) {
       return res.status(404).json({ error: 'User not found' });
     }
 
+    // If venueId is provided, verify it belongs to user's account
+    if (venueId) {
+      const { data: venue, error: venueError } = await supabaseAdmin
+        .from('venues')
+        .select('id, account_id')
+        .eq('id', venueId)
+        .single();
+
+      if (venueError || !venue || venue.account_id !== userData.account_id) {
+        return res.status(403).json({ error: 'Invalid venue' });
+      }
+    }
+
     // Get all managers in the account with their details
     const { data: managers, error: managersError } = await supabaseAdmin
       .from('users')
@@ -52,6 +68,7 @@ export default async function handler(req, res) {
         email,
         role,
         invited_by,
+        reports_to,
         created_at,
         first_name,
         last_name
@@ -83,6 +100,7 @@ export default async function handler(req, res) {
 
     // Build venue map for each manager
     const venuesByManager = new Map();
+    const managersWithVenueAccess = new Set();
     staffData?.forEach(staff => {
       if (!venuesByManager.has(staff.user_id)) {
         venuesByManager.set(staff.user_id, []);
@@ -90,21 +108,28 @@ export default async function handler(req, res) {
       if (staff.venues) {
         venuesByManager.get(staff.user_id).push(staff.venues);
       }
+      // Track which managers have access to the requested venue
+      if (venueId && staff.venue_id === venueId) {
+        managersWithVenueAccess.add(staff.user_id);
+      }
     });
 
-    // Build invitation tree to check if user invited someone (directly or indirectly)
-    const isInInvitationChain = (targetId, inviterId) => {
-      // Check if inviterId invited targetId (directly or through chain)
+    // Build hierarchy tree to check if user manages someone (directly or indirectly)
+    // Uses reports_to for hierarchy, falls back to invited_by for backward compatibility
+    const isInHierarchyChain = (targetId, managerId) => {
+      // Check if managerId is above targetId in the hierarchy (directly or through chain)
       let current = managers.find(m => m.id === targetId);
       const visited = new Set();
 
       while (current && !visited.has(current.id)) {
         visited.add(current.id);
-        if (current.invited_by === inviterId) {
+        // Use reports_to first, fall back to invited_by
+        const parentId = current.reports_to || current.invited_by;
+        if (parentId === managerId) {
           return true;
         }
         // Move up the chain
-        current = managers.find(m => m.id === current.invited_by);
+        current = managers.find(m => m.id === parentId);
       }
       return false;
     };
@@ -116,13 +141,15 @@ export default async function handler(req, res) {
         return true;
       }
 
-      // Only show managers that this user invited (directly or indirectly)
-      return isInInvitationChain(managerId, user.id);
+      // Only show managers that report to this user (directly or indirectly)
+      return isInHierarchyChain(managerId, user.id);
     };
 
     // Filter and enrich managers
     const enrichedManagers = managers
       .filter(m => canManage(m.id))
+      // If venueId is provided, only show managers with access to that venue
+      .filter(m => !venueId || managersWithVenueAccess.has(m.id))
       .map(manager => ({
         ...manager,
         venues: venuesByManager.get(manager.id) || [],
@@ -174,14 +201,17 @@ function buildHierarchy(managers, masterId) {
 
   managers.forEach(manager => {
     const node = managerMap.get(manager.id);
-    if (manager.invited_by === masterId || !manager.invited_by) {
-      // Direct report of master
+    // Use reports_to for hierarchy, fall back to invited_by for backward compatibility
+    const parentId = manager.reports_to || manager.invited_by;
+
+    if (parentId === masterId || !parentId) {
+      // Direct report of master/root
       tree.push(node);
-    } else if (managerMap.has(manager.invited_by)) {
+    } else if (managerMap.has(parentId)) {
       // Child of another manager
-      managerMap.get(manager.invited_by).children.push(node);
+      managerMap.get(parentId).children.push(node);
     } else {
-      // Orphaned (inviter not in list) - add to root
+      // Orphaned (parent not in list) - add to root
       tree.push(node);
     }
   });

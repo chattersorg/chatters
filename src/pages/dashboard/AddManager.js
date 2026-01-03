@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../../utils/supabase';
 import { useVenue } from '../../context/VenueContext';
@@ -17,7 +17,10 @@ import {
   Check,
   Send,
   RefreshCw,
-  Info
+  Info,
+  Users,
+  ChevronDown,
+  UserPlus
 } from 'lucide-react';
 
 const AddManager = () => {
@@ -34,7 +37,8 @@ const AddManager = () => {
     phone: '',
     dateOfBirth: '',
     venueIds: [],
-    permissionTemplateId: null
+    permissionTemplateId: null,
+    reportsTo: null // Will default to current user's ID
   });
 
   // UI state
@@ -45,11 +49,125 @@ const AddManager = () => {
   const [availableTemplates, setAvailableTemplates] = useState([]);
   const [accountId, setAccountId] = useState(null);
   const [availableVenues, setAvailableVenues] = useState([]);
+  const [allManagersWithVenues, setAllManagersWithVenues] = useState([]); // All managers with their venue access
+  const [currentUserId, setCurrentUserId] = useState(null);
 
   // Check if user can invite managers
   const canInvite = hasPermission('managers.invite');
   // Check if user can assign permissions (if not, invitee defaults to Viewer)
   const canAssignPermissions = hasPermission('managers.permissions');
+
+  // Filter available managers based on selected venues
+  // A manager can only be selected as "Reports To" if they have access to at least one of the selected venues
+  const availableManagers = useMemo(() => {
+    const selectedVenueIds = new Set(formData.venueIds);
+
+    // Always include current user as an option (they're the inviter)
+    const currentUserOption = {
+      id: currentUserId,
+      first_name: 'Me',
+      last_name: '(Direct Report)',
+      email: '',
+      isCurrentUser: true,
+      venueIds: [] // Current user is always valid regardless of venues
+    };
+
+    // If no venues selected, only show current user
+    if (selectedVenueIds.size === 0) {
+      return currentUserId ? [currentUserOption] : [];
+    }
+
+    // Filter managers who have access to at least one of the selected venues
+    const filteredManagers = allManagersWithVenues.filter(manager => {
+      // Check if manager has access to any of the selected venues
+      return manager.venueIds.some(venueId => selectedVenueIds.has(venueId));
+    });
+
+    return currentUserId ? [currentUserOption, ...filteredManagers] : filteredManagers;
+  }, [formData.venueIds, allManagersWithVenues, currentUserId]);
+
+  // Reset reportsTo to current user if the selected manager is no longer in the available list
+  useEffect(() => {
+    if (formData.reportsTo && availableManagers.length > 0) {
+      const isCurrentSelectionValid = availableManagers.some(m => m.id === formData.reportsTo);
+      if (!isCurrentSelectionValid) {
+        setFormData(prev => ({ ...prev, reportsTo: currentUserId }));
+      }
+    }
+  }, [availableManagers, formData.reportsTo, currentUserId]);
+
+  // Build a mini hierarchy preview showing where the new manager will be placed
+  const hierarchyPreview = useMemo(() => {
+    if (!formData.reportsTo) return null;
+
+    const selectedManager = availableManagers.find(m => m.id === formData.reportsTo);
+    if (!selectedManager) return null;
+
+    // Find the path to the selected manager (for context)
+    const buildPath = (managerId, visited = new Set()) => {
+      if (visited.has(managerId)) return [];
+      visited.add(managerId);
+
+      const manager = allManagersWithVenues.find(m => m.id === managerId);
+      if (!manager) return [];
+
+      const parentId = manager.reports_to || manager.invited_by;
+      if (parentId && parentId !== currentUserId) {
+        const parentPath = buildPath(parentId, visited);
+        return [...parentPath, manager];
+      }
+      return [manager];
+    };
+
+    // Get siblings (other managers who report to the same person)
+    const getSiblings = () => {
+      if (selectedManager.isCurrentUser) {
+        // Siblings are managers who report directly to current user
+        return allManagersWithVenues.filter(m => {
+          const parentId = m.reports_to || m.invited_by;
+          return parentId === currentUserId;
+        }).slice(0, 3); // Limit to 3 siblings for preview
+      } else {
+        // Siblings are other managers who report to the same parent
+        const parentId = selectedManager.reports_to || selectedManager.invited_by;
+        return allManagersWithVenues.filter(m => {
+          const mParentId = m.reports_to || m.invited_by;
+          return mParentId === parentId && m.id !== selectedManager.id;
+        }).slice(0, 2); // Limit to 2 siblings for preview
+      }
+    };
+
+    // Get children of the selected manager (current subordinates)
+    const getChildren = () => {
+      const managerId = selectedManager.isCurrentUser ? currentUserId : selectedManager.id;
+      return allManagersWithVenues.filter(m => {
+        const parentId = m.reports_to || m.invited_by;
+        return parentId === managerId;
+      }).slice(0, 2); // Limit to 2 for preview
+    };
+
+    return {
+      parent: selectedManager,
+      siblings: getSiblings(),
+      existingChildren: getChildren(),
+      path: selectedManager.isCurrentUser ? [] : buildPath(selectedManager.id)
+    };
+  }, [formData.reportsTo, availableManagers, allManagersWithVenues, currentUserId]);
+
+  // Get avatar background color based on hierarchy level
+  const getAvatarStyle = (level, isNew = false) => {
+    if (isNew) {
+      return 'bg-blue-500 text-white ring-2 ring-blue-300';
+    }
+    const shades = [
+      'bg-gray-700 text-white',
+      'bg-gray-500 text-white',
+      'bg-gray-400 text-white',
+      'bg-gray-300 text-gray-700',
+      'bg-gray-200 text-gray-600',
+    ];
+    return shades[Math.min(level, shades.length - 1)];
+  };
 
   // Redirect if user doesn't have permission to invite
   useEffect(() => {
@@ -76,6 +194,14 @@ const AddManager = () => {
           setAccountId(userData.account_id);
         }
 
+        setCurrentUserId(user.id);
+
+        // Set default reportsTo to current user
+        setFormData(prev => ({
+          ...prev,
+          reportsTo: user.id
+        }));
+
         // Set available venues based on user role
         // Masters can assign to any venue, managers can only assign to their venues
         if (userRole === 'master') {
@@ -83,6 +209,59 @@ const AddManager = () => {
         } else {
           // For managers, they can only invite to venues they have access to
           setAvailableVenues(allVenues);
+        }
+
+        // Fetch all managers with their venue access for the "Reports To" dropdown
+        // We'll filter this dynamically based on selected venues
+        const { data: allManagersData } = await supabase
+          .from('users')
+          .select('id, first_name, last_name, email, reports_to, invited_by')
+          .eq('account_id', userData?.account_id)
+          .eq('role', 'manager')
+          .is('deleted_at', null)
+          .order('first_name');
+
+        // Get venue access for all managers via staff table
+        const managerIds = (allManagersData || []).map(m => m.id);
+        const { data: staffData } = await supabase
+          .from('staff')
+          .select('user_id, venue_id')
+          .in('user_id', managerIds);
+
+        // Build a map of manager ID to their venue IDs
+        const venuesByManager = new Map();
+        (staffData || []).forEach(staff => {
+          if (!venuesByManager.has(staff.user_id)) {
+            venuesByManager.set(staff.user_id, new Set());
+          }
+          venuesByManager.get(staff.user_id).add(staff.venue_id);
+        });
+
+        // Enrich managers with their venue IDs
+        const managersWithVenues = (allManagersData || []).map(m => ({
+          ...m,
+          venueIds: Array.from(venuesByManager.get(m.id) || [])
+        }));
+
+        // For managers (not masters), filter to only subordinates
+        if (userRole !== 'master' && userRole !== 'admin') {
+          const subordinateIds = new Set();
+          const findSubordinates = (managerId) => {
+            managersWithVenues.forEach(m => {
+              const parentId = m.reports_to || m.invited_by;
+              if (parentId === managerId && !subordinateIds.has(m.id)) {
+                subordinateIds.add(m.id);
+                findSubordinates(m.id);
+              }
+            });
+          };
+          findSubordinates(user.id);
+
+          // Filter to only include subordinates
+          const filteredManagers = managersWithVenues.filter(m => subordinateIds.has(m.id));
+          setAllManagersWithVenues(filteredManagers);
+        } else {
+          setAllManagersWithVenues(managersWithVenues);
         }
 
         // Fetch role templates (system + account-specific)
@@ -222,7 +401,8 @@ const AddManager = () => {
         dateOfBirth: formData.dateOfBirth || null,
         venueIds: formData.venueIds,
         accountId: accountId,
-        permissionTemplateId: formData.permissionTemplateId
+        permissionTemplateId: formData.permissionTemplateId,
+        reportsTo: formData.reportsTo
       };
 
       const res = await fetch('/api/admin/invite-manager', {
@@ -247,7 +427,7 @@ const AddManager = () => {
 
       // Navigate back after short delay
       setTimeout(() => {
-        navigate('/staff/list');
+        navigate('/staff/managers');
       }, 2000);
 
     } catch (error) {
@@ -267,7 +447,7 @@ const AddManager = () => {
       {/* Header */}
       <div className="flex items-center gap-4">
         <button
-          onClick={() => navigate('/staff/list')}
+          onClick={() => navigate('/staff/managers')}
           className="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors"
         >
           <ArrowLeft className="w-5 h-5 text-gray-600 dark:text-gray-400" />
@@ -425,6 +605,109 @@ const AddManager = () => {
           </div>
         </ChartCard>
 
+        {/* Reports To */}
+        <ChartCard
+          title="Reports To"
+          subtitle="Select which manager this person will report to in the hierarchy"
+        >
+          <div className="space-y-4">
+            <div className="relative">
+              <Users className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
+              <select
+                value={formData.reportsTo || ''}
+                onChange={(e) => handleChange('reportsTo', e.target.value || null)}
+                className="w-full pl-10 pr-10 py-2.5 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm appearance-none cursor-pointer"
+              >
+                {availableManagers.map(manager => (
+                  <option key={manager.id} value={manager.id}>
+                    {manager.isCurrentUser
+                      ? 'Me (Direct Report)'
+                      : `${manager.first_name} ${manager.last_name}`}
+                  </option>
+                ))}
+              </select>
+              <ChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
+            </div>
+
+            {/* Visual Hierarchy Preview */}
+            {hierarchyPreview && (
+              <div className="mt-4 p-4 bg-gray-50 dark:bg-gray-800/50 rounded-lg border border-gray-200 dark:border-gray-700">
+                <p className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-3">
+                  Hierarchy Preview
+                </p>
+                <div className="space-y-1">
+                  {/* Show the parent (selected manager) */}
+                  <div className="flex items-center py-2">
+                    <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-medium ${getAvatarStyle(0)}`}>
+                      {hierarchyPreview.parent.isCurrentUser
+                        ? 'ME'
+                        : `${hierarchyPreview.parent.first_name?.[0] || ''}${hierarchyPreview.parent.last_name?.[0] || ''}`.toUpperCase()}
+                    </div>
+                    <div className="ml-3">
+                      <span className="text-sm font-medium text-gray-900 dark:text-white">
+                        {hierarchyPreview.parent.isCurrentUser
+                          ? 'You'
+                          : `${hierarchyPreview.parent.first_name} ${hierarchyPreview.parent.last_name}`}
+                      </span>
+                      {!hierarchyPreview.parent.isCurrentUser && (
+                        <span className="text-xs text-gray-500 dark:text-gray-400 ml-2">
+                          (Selected)
+                        </span>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Existing children of the selected manager */}
+                  {hierarchyPreview.existingChildren.map((child, idx) => (
+                    <div key={child.id} className="flex items-center py-2" style={{ paddingLeft: '28px' }}>
+                      <div className="w-4 border-l-2 border-b-2 border-gray-300 dark:border-gray-600 h-4 -mt-4 mr-2 rounded-bl"></div>
+                      <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-medium ${getAvatarStyle(1)}`}>
+                        {`${child.first_name?.[0] || ''}${child.last_name?.[0] || ''}`.toUpperCase()}
+                      </div>
+                      <span className="ml-3 text-sm text-gray-600 dark:text-gray-400">
+                        {child.first_name} {child.last_name}
+                      </span>
+                    </div>
+                  ))}
+
+                  {/* The NEW manager being added */}
+                  <div className="flex items-center py-2" style={{ paddingLeft: '28px' }}>
+                    <div className="w-4 border-l-2 border-b-2 border-blue-400 dark:border-blue-500 h-4 -mt-4 mr-2 rounded-bl"></div>
+                    <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-medium ${getAvatarStyle(1, true)}`}>
+                      {formData.firstName && formData.lastName
+                        ? `${formData.firstName[0]}${formData.lastName[0]}`.toUpperCase()
+                        : <UserPlus className="w-4 h-4" />}
+                    </div>
+                    <div className="ml-3">
+                      <span className="text-sm font-medium text-blue-600 dark:text-blue-400">
+                        {formData.firstName && formData.lastName
+                          ? `${formData.firstName} ${formData.lastName}`
+                          : 'New Manager'}
+                      </span>
+                      <span className="ml-2 text-xs px-1.5 py-0.5 bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 rounded">
+                        NEW
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Show more indicator if there are hidden siblings */}
+                  {hierarchyPreview.existingChildren.length > 0 && (
+                    <p className="text-xs text-gray-400 dark:text-gray-500 pl-10 pt-1">
+                      {hierarchyPreview.existingChildren.length === 2 && '...and other direct reports'}
+                    </p>
+                  )}
+                </div>
+              </div>
+            )}
+
+            <p className="text-xs text-gray-500 dark:text-gray-400">
+              {availableManagers.length <= 1
+                ? 'The new manager will report directly to you'
+                : 'Choose where in the hierarchy this manager should be placed'}
+            </p>
+          </div>
+        </ChartCard>
+
         {/* Permissions Template */}
         <ChartCard
           title="Permissions Template"
@@ -525,7 +808,7 @@ const AddManager = () => {
           <Button
             type="button"
             variant="secondary"
-            onClick={() => navigate('/staff/list')}
+            onClick={() => navigate('/staff/managers')}
             disabled={loading}
           >
             Cancel

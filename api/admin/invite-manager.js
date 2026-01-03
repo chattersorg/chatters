@@ -24,9 +24,9 @@ module.exports = async function handler(req, res) {
   try {
     // Require managers.invite permission instead of master role
     const userData = await requirePermission(req, 'managers.invite');
-    const { email, venueIds, firstName, lastName, phone, dateOfBirth, permissionTemplateId } = req.body;
+    const { email, venueIds, firstName, lastName, phone, dateOfBirth, permissionTemplateId, reportsTo } = req.body;
 
-    console.log('Invite manager request:', { email, firstName, lastName, phone, dateOfBirth, venueIds, permissionTemplateId, accountId: userData.account_id, invitedBy: userData.id });
+    console.log('Invite manager request:', { email, firstName, lastName, phone, dateOfBirth, venueIds, permissionTemplateId, reportsTo, accountId: userData.account_id, invitedBy: userData.id });
 
     if (!email || !venueIds || venueIds.length === 0) {
       return res.status(400).json({ error: 'Email and venue IDs required' });
@@ -84,6 +84,63 @@ module.exports = async function handler(req, res) {
 
     if (existingUser) {
       return res.status(400).json({ error: 'A user with this email already exists' });
+    }
+
+    // Validate reportsTo - must be within the inviter's hierarchy
+    let validatedReportsTo = reportsTo;
+    if (reportsTo) {
+      // For masters, they can place under any manager in the account
+      if (userData.role === 'master' || userData.role === 'admin') {
+        const { data: targetManager, error: targetError } = await supabaseAdmin
+          .from('users')
+          .select('id, account_id, role')
+          .eq('id', reportsTo)
+          .is('deleted_at', null)
+          .single();
+
+        if (targetError || !targetManager) {
+          return res.status(400).json({ error: 'Invalid reports to manager' });
+        }
+
+        if (targetManager.account_id !== userData.account_id) {
+          return res.status(403).json({ error: 'Cannot assign to a manager outside your account' });
+        }
+      } else {
+        // For managers, validate they can only place under themselves or their subordinates
+        // First check if reportsTo is the inviter themselves
+        if (reportsTo !== userData.id) {
+          // Get all managers this user has invited (directly or indirectly)
+          const { data: allManagers } = await supabaseAdmin
+            .from('users')
+            .select('id, reports_to, invited_by')
+            .eq('account_id', userData.account_id)
+            .eq('role', 'manager')
+            .is('deleted_at', null);
+
+          // Build a set of manager IDs that are in the inviter's subordinate chain
+          const subordinateIds = new Set();
+          const findSubordinates = (managerId) => {
+            (allManagers || []).forEach(m => {
+              // Use reports_to if available, fall back to invited_by
+              const parentId = m.reports_to || m.invited_by;
+              if (parentId === managerId && !subordinateIds.has(m.id)) {
+                subordinateIds.add(m.id);
+                findSubordinates(m.id);
+              }
+            });
+          };
+          findSubordinates(userData.id);
+
+          if (!subordinateIds.has(reportsTo)) {
+            return res.status(403).json({
+              error: 'You can only place new managers under yourself or managers you have invited'
+            });
+          }
+        }
+      }
+    } else {
+      // If no reportsTo specified, default to the inviter
+      validatedReportsTo = userData.id;
     }
 
     // Validate permission template assignment (prevent escalation)
@@ -191,7 +248,8 @@ module.exports = async function handler(req, res) {
         last_name: lastName,
         phone: phone || null,
         date_of_birth: dateOfBirth || null,
-        permission_template_id: validatedTemplateId || null
+        permission_template_id: validatedTemplateId || null,
+        reports_to: validatedReportsTo || null
       })
       .select()
       .single();

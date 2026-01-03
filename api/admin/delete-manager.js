@@ -64,6 +64,33 @@ module.exports = async function handler(req, res) {
       .eq('email', manager.email)
       .eq('status', 'pending');
 
+    // Get the manager's current permissions before deletion for audit log
+    const { data: existingPerm } = await supabaseAdmin
+      .from('user_permissions')
+      .select('role_template_id, custom_permissions')
+      .eq('user_id', managerId)
+      .single();
+
+    // Log the permission deletion for audit
+    try {
+      await supabaseAdmin
+        .from('permission_audit_log')
+        .insert({
+          target_user_id: managerId,
+          changed_by_user_id: userData.id,
+          action: 'delete',
+          previous_role_template_id: existingPerm?.role_template_id || null,
+          previous_custom_permissions: existingPerm?.custom_permissions || [],
+          new_role_template_id: null,
+          new_custom_permissions: [],
+          account_id: userData.account_id,
+          ip_address: req.headers['x-forwarded-for'] || req.connection?.remoteAddress || null,
+          user_agent: req.headers['user-agent'] || null
+        });
+    } catch (auditError) {
+      console.error('Failed to write audit log:', auditError);
+    }
+
     console.log(`Manager ${manager.email} soft-deleted by ${userData.id}`);
 
     return res.status(200).json({

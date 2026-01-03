@@ -135,7 +135,8 @@ module.exports = async function handler(req, res) {
           date_of_birth: invitation.date_of_birth || null,
           role: 'manager',
           account_id: invitation.account_id,
-          invited_by: invitation.invited_by
+          invited_by: invitation.invited_by,
+          reports_to: invitation.reports_to || invitation.invited_by
         })
         .eq('id', softDeletedUser.id);
 
@@ -226,7 +227,8 @@ module.exports = async function handler(req, res) {
             phone: invitation.phone || null,
             date_of_birth: invitation.date_of_birth || null,
             deleted_at: null,
-            invited_by: invitation.invited_by
+            invited_by: invitation.invited_by,
+            reports_to: invitation.reports_to || invitation.invited_by
             // Preserve the existing role (master/manager)
           })
           .eq('id', existingUserByEmail.id);
@@ -327,7 +329,8 @@ module.exports = async function handler(req, res) {
             role: 'manager',
             account_id: invitation.account_id,
             deleted_at: null,
-            invited_by: invitation.invited_by
+            invited_by: invitation.invited_by,
+            reports_to: invitation.reports_to || invitation.invited_by
           }, {
             onConflict: 'id'
           })
@@ -361,7 +364,10 @@ module.exports = async function handler(req, res) {
           console.log('=== CREATE ACCOUNT: invited_by is null after upsert, trying explicit update ===');
           const { error: updateError } = await supabaseAdmin
             .from('users')
-            .update({ invited_by: invitation.invited_by })
+            .update({
+              invited_by: invitation.invited_by,
+              reports_to: invitation.reports_to || invitation.invited_by
+            })
             .eq('id', authUserId);
 
           if (updateError) {
@@ -420,6 +426,26 @@ module.exports = async function handler(req, res) {
       if (permError) {
         console.error('User permissions creation error:', permError);
         // Don't fail the whole request, but log it
+      }
+
+      // Log the permission creation for audit
+      try {
+        await supabaseAdmin
+          .from('permission_audit_log')
+          .insert({
+            target_user_id: authUserId,
+            changed_by_user_id: invitation.invited_by,
+            action: 'create',
+            previous_role_template_id: null,
+            previous_custom_permissions: [],
+            new_role_template_id: invitation.permission_template_id,
+            new_custom_permissions: [],
+            account_id: invitation.account_id,
+            ip_address: req.headers['x-forwarded-for'] || req.connection?.remoteAddress || null,
+            user_agent: req.headers['user-agent'] || null
+          });
+      } catch (auditError) {
+        console.error('Failed to write audit log:', auditError);
       }
     }
 
