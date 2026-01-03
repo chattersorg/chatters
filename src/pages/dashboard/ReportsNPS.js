@@ -3,8 +3,11 @@ import { useNavigate } from 'react-router-dom';
 import { useVenue } from '../../context/VenueContext';
 import { supabase } from '../../utils/supabase';
 import usePageTitle from '../../hooks/usePageTitle';
-import { TrendingUp, TrendingDown, Minus, Mail, MailCheck, MailX, ChevronRight, Building2 } from 'lucide-react';
+import { TrendingUp, TrendingDown, Minus, Mail, MailCheck, MailX, ChevronRight, Building2, Download, X, Loader2 } from 'lucide-react';
 import FilterSelect from '../../components/ui/FilterSelect';
+import { usePermissions } from '../../context/PermissionsContext';
+import { Button } from '../../components/ui/button';
+import DatePicker from '../../components/dashboard/inputs/DatePicker';
 import {
   AreaChart,
   Area,
@@ -22,12 +25,17 @@ const ReportsNPS = () => {
   usePageTitle('NPS Reports');
   const navigate = useNavigate();
   const { venueId, selectedVenueIds, isAllVenuesMode, allVenues } = useVenue();
+  const { hasPermission } = usePermissions();
 
   const [loading, setLoading] = useState(true);
   const [npsData, setNpsData] = useState(null);
   const [submissions, setSubmissions] = useState([]);
   const [dateRange, setDateRange] = useState('30'); // days
   const [venueNPSData, setVenueNPSData] = useState({});
+  const [showExportModal, setShowExportModal] = useState(false);
+  const [exportStartDate, setExportStartDate] = useState('');
+  const [exportEndDate, setExportEndDate] = useState('');
+  const [exporting, setExporting] = useState(false);
 
   // Always show single venue view - /nps/score shows current venue only
   // Multi-venue view is available via /multi-venue routes
@@ -218,6 +226,91 @@ const ReportsNPS = () => {
     return <TrendingDown className="w-5 h-5 text-red-600" />;
   };
 
+  const handleOpenExportModal = () => {
+    // Set default dates based on current filter
+    const endDate = new Date();
+    const startDate = new Date();
+    startDate.setDate(startDate.getDate() - parseInt(dateRange));
+
+    setExportStartDate(startDate.toISOString().split('T')[0]);
+    setExportEndDate(endDate.toISOString().split('T')[0]);
+    setShowExportModal(true);
+  };
+
+  const handleExport = async () => {
+    try {
+      setExporting(true);
+
+      const startDate = new Date(exportStartDate);
+      startDate.setHours(0, 0, 0, 0);
+      const endDate = new Date(exportEndDate);
+      endDate.setHours(23, 59, 59, 999);
+
+      // Fetch NPS data for the selected date range
+      const { data, error } = await supabase
+        .from('nps_submissions')
+        .select('score, sent_at, responded_at, send_error')
+        .eq('venue_id', venueId)
+        .gte('created_at', startDate.toISOString())
+        .lte('created_at', endDate.toISOString());
+
+      if (error) throw error;
+
+      // Calculate metrics (no PII)
+      const sent = data.filter((s) => s.sent_at).length;
+      const responded = data.filter((s) => s.responded_at).length;
+      const pending = data.filter((s) => !s.sent_at).length;
+      const failed = data.filter((s) => s.send_error).length;
+
+      const responses = data.filter((s) => s.score !== null);
+      const promoters = responses.filter((s) => s.score >= 9).length;
+      const passives = responses.filter((s) => s.score >= 7 && s.score <= 8).length;
+      const detractors = responses.filter((s) => s.score <= 6).length;
+
+      const npsScore = responses.length > 0
+        ? Math.round(((promoters - detractors) / responses.length) * 100)
+        : null;
+
+      const responseRate = sent > 0 ? Math.round((responded / sent) * 100) : 0;
+
+      // Create CSV content
+      const csvContent = [
+        ['NPS Report Export'],
+        [`Date Range: ${exportStartDate} to ${exportEndDate}`],
+        [''],
+        ['Metric', 'Value'],
+        ['NPS Score', npsScore !== null ? npsScore : 'N/A'],
+        ['Total Responses', responded],
+        ['Response Rate', `${responseRate}%`],
+        ['Emails Sent', sent],
+        ['Pending', pending],
+        ['Failed Emails', failed],
+        [''],
+        ['Breakdown', 'Count', 'Percentage'],
+        ['Promoters (9-10)', promoters, responses.length > 0 ? `${Math.round((promoters / responses.length) * 100)}%` : '0%'],
+        ['Passives (7-8)', passives, responses.length > 0 ? `${Math.round((passives / responses.length) * 100)}%` : '0%'],
+        ['Detractors (0-6)', detractors, responses.length > 0 ? `${Math.round((detractors / responses.length) * 100)}%` : '0%'],
+      ].map(row => row.join(',')).join('\n');
+
+      // Download CSV
+      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+      const link = document.createElement('a');
+      const url = URL.createObjectURL(blob);
+      link.setAttribute('href', url);
+      link.setAttribute('download', `nps-report-${exportStartDate}-to-${exportEndDate}.csv`);
+      link.style.visibility = 'hidden';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+
+      setShowExportModal(false);
+    } catch (error) {
+      console.error('Error exporting NPS data:', error);
+    } finally {
+      setExporting(false);
+    }
+  };
+
   if (!venueId) {
     return null;
   }
@@ -350,16 +443,27 @@ const ReportsNPS = () => {
           <h1 className="text-2xl font-semibold text-gray-900 dark:text-white">NPS Reports</h1>
           <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">Net Promoter Score analytics and customer sentiment</p>
         </div>
-        <FilterSelect
-          value={dateRange}
-          onChange={(e) => setDateRange(e.target.value)}
-          options={[
-            { value: '7', label: 'Last 7 days' },
-            { value: '30', label: 'Last 30 days' },
-            { value: '90', label: 'Last 90 days' },
-            { value: '365', label: 'Last year' }
-          ]}
-        />
+        <div className="flex items-center gap-3">
+          {hasPermission('nps.export') && (
+            <Button
+              variant="secondary"
+              onClick={handleOpenExportModal}
+            >
+              <Download className="w-4 h-4 mr-2" />
+              Export
+            </Button>
+          )}
+          <FilterSelect
+            value={dateRange}
+            onChange={(e) => setDateRange(e.target.value)}
+            options={[
+              { value: '7', label: 'Last 7 days' },
+              { value: '30', label: 'Last 30 days' },
+              { value: '90', label: 'Last 90 days' },
+              { value: '365', label: 'Last year' }
+            ]}
+          />
+        </div>
       </div>
 
       <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl overflow-hidden p-6">
@@ -724,6 +828,67 @@ const ReportsNPS = () => {
           </div>
         </div>
       </div>
+
+      {/* Export Modal */}
+      {showExportModal && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+          <div className="bg-white dark:bg-gray-900 rounded-xl shadow-xl max-w-md w-full mx-4">
+            <div className="flex items-center justify-between p-6 border-b border-gray-200 dark:border-gray-800">
+              <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Export NPS Report</h2>
+              <button
+                onClick={() => setShowExportModal(false)}
+                className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            <div className="p-6 space-y-4">
+              <p className="text-sm text-gray-600 dark:text-gray-400">
+                Export NPS summary statistics for the selected date range. This export includes aggregate metrics only, no customer information.
+              </p>
+              <div className="grid grid-cols-2 gap-4">
+                <DatePicker
+                  label="Start Date"
+                  value={exportStartDate}
+                  onChange={(e) => setExportStartDate(e.target.value)}
+                  max={exportEndDate || new Date().toISOString().split('T')[0]}
+                />
+                <DatePicker
+                  label="End Date"
+                  value={exportEndDate}
+                  onChange={(e) => setExportEndDate(e.target.value)}
+                  min={exportStartDate}
+                  max={new Date().toISOString().split('T')[0]}
+                />
+              </div>
+            </div>
+            <div className="flex justify-end gap-3 p-6 border-t border-gray-200 dark:border-gray-800">
+              <Button
+                variant="secondary"
+                onClick={() => setShowExportModal(false)}
+              >
+                Cancel
+              </Button>
+              <Button
+                onClick={handleExport}
+                disabled={exporting || !exportStartDate || !exportEndDate}
+              >
+                {exporting ? (
+                  <>
+                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                    Exporting...
+                  </>
+                ) : (
+                  <>
+                    <Download className="w-4 h-4 mr-2" />
+                    Export CSV
+                  </>
+                )}
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

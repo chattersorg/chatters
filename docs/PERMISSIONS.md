@@ -49,8 +49,10 @@ There are three user roles in Chatters:
 ### NPS
 | Code | Name | Description |
 |------|------|-------------|
-| `nps.view` | View NPS | View NPS scores and submissions |
+| `nps.view` | View NPS Score | View NPS scores and submissions |
+| `nps.insights` | View NPS Insights | View NPS insights and analysis |
 | `nps.edit` | Edit NPS Settings | Configure NPS surveys and settings |
+| `nps.export` | Export NPS | Export NPS data |
 
 ### Staff
 | Code | Name | Description |
@@ -133,7 +135,7 @@ Can respond to feedback and manage staff.
 - `qr.generate`, `ai.chat`
 
 #### Manager
-Full venue management except billing and permissions.
+Full venue management except permissions.
 - Everything in Editor, plus:
 - `questions.edit`, `reports.create`
 - `managers.view`, `managers.invite`
@@ -141,7 +143,7 @@ Full venue management except billing and permissions.
 - `floorplan.edit`, `ai.regenerate`
 
 #### Admin
-Full access including billing and user management.
+Full access including user management.
 - All permissions
 
 ### Custom Templates

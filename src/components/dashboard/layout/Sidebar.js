@@ -78,7 +78,7 @@ const venueNavItems = [
       { label: 'All Feedback', path: '/feedback/all', icon: List, permission: 'feedback.view' },
       { label: 'Questions', path: '/feedback/questions', icon: HelpCircle, permission: 'questions.view' },
       { label: 'Insights', path: '/feedback/insights', icon: Zap, permission: 'reports.view' },
-      { label: 'Settings', path: '/settings/feedback', icon: Settings, permission: 'venue.view' }
+      { label: 'Settings', path: '/feedback/settings', icon: Settings, permission: 'feedback.settings' }
     ]
   },
   {
@@ -90,7 +90,7 @@ const venueNavItems = [
     permission: 'nps.view',
     subItems: [
       { label: 'Score', path: '/nps/score', icon: Star, permission: 'nps.view' },
-      { label: 'Insights', path: '/nps/insights', icon: TrendingUp, permission: 'nps.view' },
+      { label: 'Insights', path: '/nps/insights', icon: TrendingUp, permission: 'nps.insights' },
       { label: 'Settings', path: '/nps/settings', icon: Settings, permission: 'nps.edit' }
     ]
   },
@@ -127,7 +127,7 @@ const venueNavItems = [
     subItems: [
       { label: 'Leaderboard', path: '/staff/leaderboard', icon: Trophy, permission: 'staff.leaderboard' },
       { label: 'Recognition', path: '/staff/recognition', icon: Award, permission: 'staff.recognition' },
-      { label: 'Employees', path: '/staff/team', icon: Users, permission: 'staff.view' },
+      { label: 'Employees', path: '/staff/employees', icon: Users, permission: 'staff.view' },
       { label: 'Managers', path: '/staff/managers', icon: UserCheck, permission: 'managers.view' },
       { label: 'Roles', path: '/staff/roles', icon: UserCheck, permission: 'staff.edit' },
       { label: 'Locations', path: '/staff/locations', icon: Map, permission: 'staff.edit' }
@@ -256,15 +256,16 @@ const Sidebar = ({ collapsed, setCollapsed }) => {
   // Filter nav items based on permissions - memoized to prevent unnecessary re-renders
   const filterNavItems = useCallback((items) => {
     return items
-      .filter(item => canSeeItem(item))
       .map(item => {
         if (item.subItems) {
           const filteredSubItems = item.subItems.filter(subItem => canSeeItem(subItem));
           // If no sub-items are visible, hide the parent too
           if (filteredSubItems.length === 0) return null;
+          // Show parent if user can see it OR if they have any visible sub-items
           return { ...item, subItems: filteredSubItems };
         }
-        return item;
+        // For items without subItems, check permission normally
+        return canSeeItem(item) ? item : null;
       })
       .filter(Boolean);
   }, [canSeeItem]);

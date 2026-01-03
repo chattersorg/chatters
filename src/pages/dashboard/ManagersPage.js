@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { supabase } from '../../utils/supabase';
 import { useVenue } from '../../context/VenueContext';
 import { usePermissions, PermissionGate } from '../../context/PermissionsContext';
@@ -17,20 +17,37 @@ import {
   Settings,
   X,
   UserCheck,
-  Clock
+  Clock,
+  Mail,
+  RotateCcw
 } from 'lucide-react';
 
 const ManagersPage = () => {
   usePageTitle('Managers');
   const navigate = useNavigate();
-  const { userRole } = useVenue();
+  const location = useLocation();
+  const { userRole, venueId, venueName, allVenues } = useVenue();
   const { hasPermission } = usePermissions();
+
+  // Check if we're on the admin route (shows all org managers) vs staff route (venue-specific)
+  const isAdminRoute = location.pathname.startsWith('/admin/');
 
   const [managers, setManagers] = useState([]);
   const [hierarchy, setHierarchy] = useState(null);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [expandedNodes, setExpandedNodes] = useState(new Set());
+  const [message, setMessage] = useState('');
+
+  // Pending invitations
+  const [pendingInvitations, setPendingInvitations] = useState([]);
+  const [resendingEmail, setResendingEmail] = useState(null);
+  const [revokingInvitation, setRevokingInvitation] = useState(null);
+
+  // Deleted managers
+  const [deletedManagers, setDeletedManagers] = useState([]);
+  const [showDeletedManagers, setShowDeletedManagers] = useState(false);
+  const [recoveringManager, setRecoveringManager] = useState(null);
 
   const fetchManagers = useCallback(async () => {
     try {
@@ -39,7 +56,12 @@ const ManagersPage = () => {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) return;
 
-      const response = await fetch('/api/managers/list', {
+      // Only filter by venue on the staff route, not on admin route
+      const url = isAdminRoute
+        ? '/api/managers/list'
+        : `/api/managers/list?venueId=${venueId}`;
+
+      const response = await fetch(url, {
         headers: {
           'Authorization': `Bearer ${session.access_token}`
         }
@@ -70,13 +92,176 @@ const ManagersPage = () => {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [venueId, isAdminRoute]);
 
   useEffect(() => {
     if (hasPermission('managers.view')) {
       fetchManagers();
+      fetchPendingInvitations();
+      fetchDeletedManagers();
     }
   }, [hasPermission, fetchManagers]);
+
+  const fetchPendingInvitations = async () => {
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) return;
+
+      // Get account_id from venues for impersonation support
+      let accountId = '';
+      if (allVenues && allVenues.length > 0) {
+        const { data: venueData } = await supabase
+          .from('venues')
+          .select('account_id')
+          .eq('id', allVenues[0].id)
+          .single();
+        accountId = venueData?.account_id || '';
+      }
+
+      const url = accountId
+        ? `/api/admin/get-pending-invitations?accountId=${accountId}`
+        : '/api/admin/get-pending-invitations';
+
+      const response = await fetch(url, {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${session.access_token}`,
+          'Content-Type': 'application/json'
+        }
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        // Filter by venue if not on admin route
+        let invitations = data.invitations || [];
+        if (!isAdminRoute && venueId) {
+          invitations = invitations.filter(inv =>
+            inv.venue_ids?.includes(venueId)
+          );
+        }
+        setPendingInvitations(invitations);
+      }
+    } catch (error) {
+      console.error('Error fetching pending invitations:', error);
+    }
+  };
+
+  const fetchDeletedManagers = async () => {
+    try {
+      if (!allVenues || allVenues.length === 0) {
+        setDeletedManagers([]);
+        return;
+      }
+
+      const { data: venueData } = await supabase
+        .from('venues')
+        .select('account_id')
+        .eq('id', allVenues[0].id)
+        .single();
+
+      if (!venueData?.account_id) {
+        setDeletedManagers([]);
+        return;
+      }
+
+      const fourteenDaysAgo = new Date();
+      fourteenDaysAgo.setDate(fourteenDaysAgo.getDate() - 14);
+
+      const { data: deleted } = await supabase
+        .from('users')
+        .select('id, email, first_name, last_name, deleted_at, deleted_by')
+        .eq('account_id', venueData.account_id)
+        .eq('role', 'manager')
+        .not('deleted_at', 'is', null)
+        .gt('deleted_at', fourteenDaysAgo.toISOString())
+        .order('deleted_at', { ascending: false });
+
+      setDeletedManagers(deleted || []);
+    } catch (error) {
+      console.error('Error fetching deleted managers:', error);
+    }
+  };
+
+  const handleResendInvitation = async (email) => {
+    setResendingEmail(email);
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      const res = await fetch('/api/admin/resend-invitation', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session?.access_token}`
+        },
+        body: JSON.stringify({ email }),
+      });
+
+      const result = await res.json();
+      if (!res.ok) throw new Error(result.error || 'Failed to resend invitation');
+
+      setMessage(`Invitation resent to ${email}`);
+      setTimeout(() => setMessage(''), 5000);
+    } catch (error) {
+      setMessage('Failed to resend: ' + error.message);
+      setTimeout(() => setMessage(''), 5000);
+    } finally {
+      setResendingEmail(null);
+    }
+  };
+
+  const handleRevokeInvitation = async (invitationId) => {
+    setRevokingInvitation(invitationId);
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      const res = await fetch('/api/admin/revoke-invitation', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session?.access_token}`
+        },
+        body: JSON.stringify({ invitationId }),
+      });
+
+      const result = await res.json();
+      if (!res.ok) throw new Error(result.error || 'Failed to revoke invitation');
+
+      setMessage('Invitation revoked');
+      setTimeout(() => setMessage(''), 5000);
+      await fetchPendingInvitations();
+    } catch (error) {
+      setMessage('Failed to revoke: ' + error.message);
+      setTimeout(() => setMessage(''), 5000);
+    } finally {
+      setRevokingInvitation(null);
+    }
+  };
+
+  const handleRecoverManager = async (managerId) => {
+    setRecoveringManager(managerId);
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      const res = await fetch('/api/admin/recover-manager', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session?.access_token}`
+        },
+        body: JSON.stringify({ managerId }),
+      });
+
+      const result = await res.json();
+      if (!res.ok) throw new Error(result.error || 'Failed to recover manager');
+
+      setMessage(result.message || 'Manager recovered');
+      setTimeout(() => setMessage(''), 5000);
+      await fetchDeletedManagers();
+      await fetchManagers();
+    } catch (error) {
+      setMessage('Failed to recover: ' + error.message);
+      setTimeout(() => setMessage(''), 5000);
+    } finally {
+      setRecoveringManager(null);
+    }
+  };
 
   const toggleNode = (nodeId) => {
     setExpandedNodes(prev => {
@@ -247,9 +432,9 @@ const ManagersPage = () => {
         <div>
           <h1 className="text-2xl font-semibold text-gray-900 dark:text-white">Managers</h1>
           <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
-            {userRole === 'master'
-              ? 'Manage all managers in your organisation'
-              : 'View and manage your team members'}
+            {isAdminRoute
+              ? 'All managers in your organisation'
+              : `Managers with access to ${venueName}`}
           </p>
         </div>
         <PermissionGate permission="managers.invite">
@@ -262,6 +447,17 @@ const ManagersPage = () => {
           </Button>
         </PermissionGate>
       </div>
+
+      {/* Message */}
+      {message && (
+        <div className={`px-4 py-3 rounded-lg text-sm font-medium ${
+          message.includes('Failed') || message.includes('Error')
+            ? 'bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-400 border border-red-200 dark:border-red-800'
+            : 'bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-400 border border-green-200 dark:border-green-800'
+        }`}>
+          {message}
+        </div>
+      )}
 
       {/* Search */}
       <div className="flex flex-col sm:flex-row sm:items-center gap-4">
@@ -347,6 +543,63 @@ const ManagersPage = () => {
               </thead>
               <tbody className="bg-white dark:bg-gray-900 divide-y divide-gray-100 dark:divide-gray-800">
                 {filteredHierarchy.map(node => renderHierarchyNode(node))}
+
+                {/* Pending Invitations */}
+                {pendingInvitations.map((invitation) => (
+                  <tr
+                    key={`pending-${invitation.id}`}
+                    className="bg-amber-50/50 dark:bg-amber-900/10 hover:bg-amber-50 dark:hover:bg-amber-900/20 transition-colors"
+                  >
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="flex items-center">
+                        <div className="w-10 h-10 rounded-full bg-amber-100 dark:bg-amber-900/30 flex items-center justify-center text-sm font-medium text-amber-600 dark:text-amber-400 mr-3">
+                          {`${invitation.first_name?.[0] || ''}${invitation.last_name?.[0] || ''}`.toUpperCase() || '?'}
+                        </div>
+                        <div>
+                          <div className="text-sm font-medium text-gray-900 dark:text-white">
+                            {invitation.first_name} {invitation.last_name}
+                          </div>
+                          <div className="text-sm text-gray-500 dark:text-gray-400">
+                            {invitation.email}
+                          </div>
+                        </div>
+                      </div>
+                    </td>
+                    <td className="px-6 py-4">
+                      <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 border border-amber-200 dark:border-amber-800">
+                        <Clock className="w-3 h-3 mr-1" />
+                        Pending Invitation
+                      </span>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="flex items-center text-sm text-gray-600 dark:text-gray-400">
+                        <Mail className="w-3.5 h-3.5 mr-1.5 text-gray-400" />
+                        Invited {formatDate(invitation.created_at)}
+                      </div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-center">
+                      <PermissionGate permission="managers.invite">
+                        <div className="flex items-center justify-center gap-2">
+                          <button
+                            onClick={() => handleResendInvitation(invitation.email)}
+                            disabled={resendingEmail === invitation.email}
+                            className="text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 text-sm font-medium disabled:opacity-50"
+                          >
+                            {resendingEmail === invitation.email ? 'Sending...' : 'Resend'}
+                          </button>
+                          <span className="text-gray-300 dark:text-gray-600">|</span>
+                          <button
+                            onClick={() => handleRevokeInvitation(invitation.id)}
+                            disabled={revokingInvitation === invitation.id}
+                            className="text-red-600 dark:text-red-400 hover:text-red-800 dark:hover:text-red-300 text-sm font-medium disabled:opacity-50"
+                          >
+                            {revokingInvitation === invitation.id ? 'Revoking...' : 'Revoke'}
+                          </button>
+                        </div>
+                      </PermissionGate>
+                    </td>
+                  </tr>
+                ))}
               </tbody>
             </table>
           </div>
@@ -356,12 +609,96 @@ const ManagersPage = () => {
         {!loading && managers.length > 0 && filteredHierarchy.length > 0 && (
           <div className="px-6 py-3 bg-gray-50 dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700">
             <p className="text-sm text-gray-500 dark:text-gray-400">
-              {managers.length} manager{managers.length !== 1 ? 's' : ''} in your organisation
+              {managers.length} manager{managers.length !== 1 ? 's' : ''}
+              {pendingInvitations.length > 0 && `, ${pendingInvitations.length} pending`}
+              {isAdminRoute ? ' in your organisation' : ' with access to this venue'}
               {searchTerm && ` (filtered)`}
             </p>
           </div>
         )}
       </div>
+
+      {/* Deleted Managers Section */}
+      {deletedManagers.length > 0 && (
+        <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 shadow-sm overflow-hidden">
+          <button
+            onClick={() => setShowDeletedManagers(!showDeletedManagers)}
+            className="w-full flex items-center justify-between px-6 py-4 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
+          >
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 bg-yellow-100 dark:bg-yellow-900/30 rounded-full flex items-center justify-center">
+                <RotateCcw className="w-5 h-5 text-yellow-600 dark:text-yellow-400" />
+              </div>
+              <div className="text-left">
+                <h3 className="text-sm font-medium text-gray-900 dark:text-white">
+                  {deletedManagers.length} Recently Deleted Manager{deletedManagers.length !== 1 ? 's' : ''}
+                </h3>
+                <p className="text-xs text-gray-500 dark:text-gray-400">Can be recovered within 14 days</p>
+              </div>
+            </div>
+            {showDeletedManagers ? (
+              <ChevronDown className="w-5 h-5 text-gray-400" />
+            ) : (
+              <ChevronRight className="w-5 h-5 text-gray-400" />
+            )}
+          </button>
+
+          {showDeletedManagers && (
+            <div className="border-t border-gray-200 dark:border-gray-700">
+              <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                <thead className="bg-gray-50 dark:bg-gray-800">
+                  <tr>
+                    <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase">Manager</th>
+                    <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase">Email</th>
+                    <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase">Deleted</th>
+                    <th className="px-6 py-3 text-center text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase">Actions</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
+                  {deletedManagers.map((manager) => {
+                    const deletedDate = new Date(manager.deleted_at);
+                    const daysAgo = Math.floor((Date.now() - deletedDate.getTime()) / (1000 * 60 * 60 * 24));
+                    const daysRemaining = 14 - daysAgo;
+
+                    return (
+                      <tr key={manager.id} className="hover:bg-gray-50 dark:hover:bg-gray-800">
+                        <td className="px-6 py-4">
+                          <div className="flex items-center">
+                            <div className="w-10 h-10 rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center text-sm font-medium text-gray-600 dark:text-gray-300 mr-3">
+                              {`${manager.first_name?.[0] || ''}${manager.last_name?.[0] || ''}`.toUpperCase()}
+                            </div>
+                            <span className="text-sm font-medium text-gray-900 dark:text-white">
+                              {manager.first_name} {manager.last_name}
+                            </span>
+                          </div>
+                        </td>
+                        <td className="px-6 py-4 text-sm text-gray-600 dark:text-gray-400">{manager.email}</td>
+                        <td className="px-6 py-4">
+                          <div className="text-sm text-gray-600 dark:text-gray-400">
+                            {daysAgo === 0 ? 'Today' : `${daysAgo} day${daysAgo !== 1 ? 's' : ''} ago`}
+                          </div>
+                          <div className="text-xs text-gray-500 dark:text-gray-500">
+                            {daysRemaining} day{daysRemaining !== 1 ? 's' : ''} remaining
+                          </div>
+                        </td>
+                        <td className="px-6 py-4 text-center">
+                          <button
+                            onClick={() => handleRecoverManager(manager.id)}
+                            disabled={recoveringManager === manager.id}
+                            className="text-green-600 dark:text-green-400 hover:text-green-800 dark:hover:text-green-300 text-sm font-medium disabled:opacity-50"
+                          >
+                            {recoveringManager === manager.id ? 'Recovering...' : 'Recover'}
+                          </button>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </div>
+      )}
     </div>
   );
 };

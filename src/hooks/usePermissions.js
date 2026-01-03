@@ -198,7 +198,8 @@ export default usePermissions;
  * - reports.create    - Create custom reports
  *
  * NPS:
- * - nps.view          - View NPS data
+ * - nps.view          - View NPS score
+ * - nps.insights      - View NPS insights
  * - nps.edit          - Edit NPS settings
  *
  * STAFF:

@@ -292,7 +292,7 @@ const DashboardRoutes = () => {
           </ProtectedRoute>
         } />
         <Route path="/nps/insights" element={
-          <ProtectedRoute permission="nps.view">
+          <ProtectedRoute permission="nps.insights">
             <NPSInsightsPage />
           </ProtectedRoute>
         } />
@@ -337,16 +337,14 @@ const DashboardRoutes = () => {
             <RecognitionHistory />
           </ProtectedRoute>
         } />
-        <Route path="/staff/list" element={
+        <Route path="/staff/employees" element={
           <ProtectedRoute permission="staff.view">
             <StaffListPage />
           </ProtectedRoute>
         } />
-        <Route path="/staff/team" element={
-          <ProtectedRoute permission="staff.view">
-            <StaffListPage />
-          </ProtectedRoute>
-        } />
+        {/* Redirects from old paths to new /staff/employees */}
+        <Route path="/staff/list" element={<Navigate to="/staff/employees" replace />} />
+        <Route path="/staff/team" element={<Navigate to="/staff/employees" replace />} />
         <Route path="/staff/import" element={
           <ProtectedRoute permission="staff.edit">
             <CSVImportReview />
@@ -358,7 +356,6 @@ const DashboardRoutes = () => {
             <ManagersPage />
           </ProtectedRoute>
         } />
-        <Route path="/staff/employees" element={<Navigate to="/staff/list" replace />} />
         <Route path="/staff/employees/:employeeId" element={
           <ProtectedRoute permission="staff.view">
             <EmployeeDetail />
@@ -399,8 +396,8 @@ const DashboardRoutes = () => {
             <VenueSettingsPage />
           </ProtectedRoute>
         } />
-        <Route path="/settings/feedback" element={
-          <ProtectedRoute permission="venue.view">
+        <Route path="/feedback/settings" element={
+          <ProtectedRoute permission="feedback.settings">
             <FeedbackSettings />
           </ProtectedRoute>
         } />
