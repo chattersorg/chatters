@@ -52,6 +52,7 @@ export default async function handler(req, res) {
     let zoneData = { zones: [], tableToZone: {} };
     let staffRecognitions = [];
     let assistanceRequests = [];
+    let followUpTagData = [];
 
     // Always fetch questions (lightweight, needed for context)
     questions = await fetchQuestions(supabase, venueId);
@@ -79,6 +80,10 @@ export default async function handler(req, res) {
       assistanceRequests = await fetchAssistanceRequests(supabase, venueId, dateRange);
     }
 
+    if (dataNeeds.tags || dataNeeds.feedback) {
+      followUpTagData = await fetchFollowUpTags(supabase, venueId, dateRange);
+    }
+
     // Calculate derived data only if we have the source data
     const staffPerformance = (dataNeeds.staff && employees.length > 0)
       ? calculateStaffPerformance(feedbackData, employees, assistanceRequests)
@@ -104,7 +109,7 @@ export default async function handler(req, res) {
     });
 
     // Build context for Claude
-    const context = buildContext(feedbackData, npsData, stats, staffPerformance, zonePerformance, questions, venueName, dateRange, trends, employees, staffRecognitions);
+    const context = buildContext(feedbackData, npsData, stats, staffPerformance, zonePerformance, questions, venueName, dateRange, trends, employees, staffRecognitions, followUpTagData);
 
     // Call Claude Haiku
     const response = await fetch('https://api.anthropic.com/v1/messages', {
@@ -479,6 +484,7 @@ function analyzeQuestionIntent(message) {
     staff: false,
     zones: false,
     trends: false,
+    tags: false,
     questionsOnly: false
   };
 
@@ -534,6 +540,13 @@ function analyzeQuestionIntent(message) {
     /how.*doing/i, /performance/i, /summary/i, /overview/i
   ];
 
+  // Follow-up tag patterns
+  const tagPatterns = [
+    /tag/i, /follow.?up/i, /reason/i, /why.*low/i, /why.*bad/i,
+    /what.*wrong/i, /common.*issue/i, /common.*complaint/i,
+    /most.*selected/i, /top.*complaint/i, /categoris/i, /categoriz/i
+  ];
+
   // Check each category
   if (staffPatterns.some(p => p.test(message))) {
     needs.staff = true;
@@ -558,8 +571,13 @@ function analyzeQuestionIntent(message) {
     needs.feedback = true;
   }
 
+  if (tagPatterns.some(p => p.test(message))) {
+    needs.tags = true;
+    needs.feedback = true; // Need feedback context for tags
+  }
+
   // If nothing specific was detected, default to feedback (most common use case)
-  if (!needs.feedback && !needs.nps && !needs.staff && !needs.zones && !needs.trends && !needs.questionsOnly) {
+  if (!needs.feedback && !needs.nps && !needs.staff && !needs.zones && !needs.trends && !needs.tags && !needs.questionsOnly) {
     needs.feedback = true;
   }
 
@@ -755,6 +773,76 @@ async function fetchNPSData(supabase, venueId, dateRange) {
   }
 
   return data || [];
+}
+
+/**
+ * Fetch follow-up tag responses for the venue
+ */
+async function fetchFollowUpTags(supabase, venueId, dateRange) {
+  // First get all questions for this venue to filter tag responses
+  const { data: questionsData, error: questionsError } = await supabase
+    .from('questions')
+    .select('id, question, conditional_tags')
+    .eq('venue_id', venueId);
+
+  if (questionsError) {
+    console.error('[AI Chat] Error fetching questions for tags:', questionsError);
+    return [];
+  }
+
+  const questionIds = (questionsData || []).map(q => q.id);
+  if (questionIds.length === 0) return [];
+
+  // Fetch tag responses for this venue's questions
+  const { data: tagResponses, error: tagError } = await supabase
+    .from('feedback_tag_responses')
+    .select('question_id, tag, created_at')
+    .in('question_id', questionIds)
+    .gte('created_at', dateRange.from)
+    .lte('created_at', dateRange.to);
+
+  if (tagError) {
+    console.error('[AI Chat] Error fetching tag responses:', tagError);
+    return [];
+  }
+
+  // Build a map of question_id to question text and config
+  const questionMap = {};
+  (questionsData || []).forEach(q => {
+    questionMap[q.id] = {
+      question: q.question,
+      threshold: q.conditional_tags?.threshold || 3,
+      configuredTags: q.conditional_tags?.tags || []
+    };
+  });
+
+  // Aggregate tag data by question
+  const tagDataByQuestion = {};
+  (tagResponses || []).forEach(response => {
+    const qId = response.question_id;
+    if (!tagDataByQuestion[qId]) {
+      tagDataByQuestion[qId] = {
+        question: questionMap[qId]?.question || 'Unknown question',
+        threshold: questionMap[qId]?.threshold || 3,
+        tags: {}
+      };
+    }
+    if (!tagDataByQuestion[qId].tags[response.tag]) {
+      tagDataByQuestion[qId].tags[response.tag] = 0;
+    }
+    tagDataByQuestion[qId].tags[response.tag]++;
+  });
+
+  // Convert to array format for context
+  return Object.entries(tagDataByQuestion).map(([questionId, data]) => ({
+    questionId,
+    question: data.question,
+    threshold: data.threshold,
+    tags: Object.entries(data.tags)
+      .map(([tag, count]) => ({ tag, count }))
+      .sort((a, b) => b.count - a.count),
+    totalSelections: Object.values(data.tags).reduce((sum, count) => sum + count, 0)
+  }));
 }
 
 /**
@@ -1075,7 +1163,7 @@ function calculateTrends(feedbackData, dateRange) {
 /**
  * Build context string for Claude
  */
-function buildContext(feedbackData, npsData, stats, staffPerformance, zonePerformance, questions, venueName, dateRange, trends, employees, staffRecognitions) {
+function buildContext(feedbackData, npsData, stats, staffPerformance, zonePerformance, questions, venueName, dateRange, trends, employees, staffRecognitions, followUpTagData = []) {
   let context = `## Data Context for ${venueName || 'this venue'}
 Period: ${dateRange.description}
 
@@ -1309,6 +1397,43 @@ ${questions.length > 0
     if (sortedRecognitions.length > 0) {
       const mostRecognised = sortedRecognitions[0];
       context += `\n**Most Recognised Staff Member:** ${mostRecognised.name} (${mostRecognised.count} recognitions)\n`;
+    }
+  }
+
+  // Add follow-up tag data (reasons customers gave for low ratings)
+  if (followUpTagData && followUpTagData.length > 0) {
+    const totalTagSelections = followUpTagData.reduce((sum, q) => sum + q.totalSelections, 0);
+    context += `\n### Follow-up Tags (Reasons for Low Ratings):\n`;
+    context += `Total tag selections: ${totalTagSelections}\n\n`;
+
+    followUpTagData.forEach((questionData, idx) => {
+      context += `**${idx + 1}. ${questionData.question}** (shown when rating below ${questionData.threshold} stars)\n`;
+      context += `   ${questionData.totalSelections} total selections:\n`;
+      questionData.tags.forEach(tag => {
+        const percentage = Math.round((tag.count / questionData.totalSelections) * 100);
+        context += `   - "${tag.tag}": ${tag.count} (${percentage}%)\n`;
+      });
+      context += '\n';
+    });
+
+    // Identify most common issues across all questions
+    const allTags = {};
+    followUpTagData.forEach(q => {
+      q.tags.forEach(t => {
+        if (!allTags[t.tag]) allTags[t.tag] = 0;
+        allTags[t.tag] += t.count;
+      });
+    });
+
+    const sortedTags = Object.entries(allTags)
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 5);
+
+    if (sortedTags.length > 0) {
+      context += `**Top Issues Overall:**\n`;
+      sortedTags.forEach(([tag, count], i) => {
+        context += `${i + 1}. "${tag}": ${count} selections\n`;
+      });
     }
   }
 

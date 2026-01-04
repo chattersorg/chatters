@@ -40,6 +40,7 @@ import ReportsFeedbackPage from './pages/dashboard/ReportsFeedback';
 import ReportsImpactPage from './pages/dashboard/ReportsImpact';
 import ReportsMetricsPage from './pages/dashboard/ReportsMetrics';
 import ReportsNPSPage from './pages/dashboard/ReportsNPS';
+import ReportsFollowUpTagsPage from './pages/dashboard/ReportsFollowUpTags';
 import NPSInsightsPage from './pages/dashboard/NPSInsights';
 import NPSSettingsPage from './pages/dashboard/NPSSettings';
 import StaffListPage from './pages/dashboard/StaffList';
@@ -67,6 +68,7 @@ import MenuBuilderPage from './pages/dashboard/MenuBuilderPage';
 // Admin pages (master only)
 import ManagerPermissions from './pages/dashboard/admin/ManagerPermissions';
 import RoleTemplates from './pages/dashboard/admin/RoleTemplates';
+import VenueGroups from './pages/dashboard/admin/VenueGroups';
 import ManagersPage from './pages/dashboard/ManagersPage';
 
 // Kiosk (venue‑aware, no dashboard frame)
@@ -246,7 +248,7 @@ const DashboardRoutes = () => {
             <FeedbackQuestionsPage />
           </ProtectedRoute>
         } />
-        <Route path="/feedback/insights" element={
+        <Route path="/reports/satisfaction" element={
           <ProtectedRoute permission="reports.view">
             <CustomerInsightsPage />
           </ProtectedRoute>
@@ -283,6 +285,11 @@ const DashboardRoutes = () => {
         <Route path="/reports/metrics" element={
           <ProtectedRoute permission="reports.view">
             <ReportsMetricsPage />
+          </ProtectedRoute>
+        } />
+        <Route path="/reports/follow-up-tags" element={
+          <ProtectedRoute permission="feedback.view">
+            <ReportsFollowUpTagsPage />
           </ProtectedRoute>
         } />
         {/* NPS Section */}
@@ -481,6 +488,11 @@ const DashboardRoutes = () => {
         <Route path="/admin/permissions/templates" element={
           <ProtectedRoute permission="managers.permissions">
             <RoleTemplates />
+          </ProtectedRoute>
+        } />
+        <Route path="/admin/venue-groups" element={
+          <ProtectedRoute permission="venuegroups.edit">
+            <VenueGroups />
           </ProtectedRoute>
         } />
 

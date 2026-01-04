@@ -19,7 +19,8 @@ import {
   UserCheck,
   Clock,
   Mail,
-  RotateCcw
+  RotateCcw,
+  FolderKanban
 } from 'lucide-react';
 
 const ManagersPage = () => {
@@ -48,6 +49,9 @@ const ManagersPage = () => {
   const [deletedManagers, setDeletedManagers] = useState([]);
   const [showDeletedManagers, setShowDeletedManagers] = useState(false);
   const [recoveringManager, setRecoveringManager] = useState(null);
+
+  // Venue groups
+  const [venueGroups, setVenueGroups] = useState([]);
 
   const fetchManagers = useCallback(async () => {
     try {
@@ -99,6 +103,7 @@ const ManagersPage = () => {
       fetchManagers();
       fetchPendingInvitations();
       fetchDeletedManagers();
+      fetchVenueGroups();
     }
   }, [hasPermission, fetchManagers]);
 
@@ -180,6 +185,61 @@ const ManagersPage = () => {
     } catch (error) {
       console.error('Error fetching deleted managers:', error);
     }
+  };
+
+  const fetchVenueGroups = async () => {
+    try {
+      if (!allVenues || allVenues.length === 0) return;
+
+      const { data: venueData } = await supabase
+        .from('venues')
+        .select('account_id')
+        .eq('id', allVenues[0].id)
+        .single();
+
+      if (!venueData?.account_id) return;
+
+      const { data: groupsData } = await supabase
+        .from('venue_groups')
+        .select(`
+          *,
+          venue_group_members (
+            venue_id
+          )
+        `)
+        .eq('account_id', venueData.account_id)
+        .order('name', { ascending: true });
+
+      const transformedGroups = (groupsData || []).map(g => ({
+        ...g,
+        venueIds: g.venue_group_members?.map(m => m.venue_id) || []
+      }));
+
+      setVenueGroups(transformedGroups);
+    } catch (error) {
+      console.error('Error fetching venue groups:', error);
+    }
+  };
+
+  // Check if manager's venues match a complete group
+  const getMatchingGroup = (managerVenues) => {
+    if (!managerVenues || managerVenues.length === 0) return null;
+
+    const managerVenueIds = managerVenues.map(v => v.id).sort();
+
+    for (const group of venueGroups) {
+      if (group.venueIds.length === 0) continue;
+
+      const groupVenueIds = [...group.venueIds].sort();
+
+      // Check if manager has exactly all venues in this group
+      if (managerVenueIds.length === groupVenueIds.length &&
+          managerVenueIds.every((id, idx) => id === groupVenueIds[idx])) {
+        return group;
+      }
+    }
+
+    return null;
   };
 
   const handleResendInvitation = async (email) => {
@@ -365,25 +425,43 @@ const ManagersPage = () => {
             </div>
           </td>
           <td className="px-6 py-4">
-            <div className="flex flex-wrap gap-1.5">
-              {node.venues?.slice(0, 3).map((venue) => (
-                <span
-                  key={venue.id}
-                  className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 border border-blue-200 dark:border-blue-800"
-                >
-                  <Building2 className="w-3 h-3" />
-                  {venue.name}
-                </span>
-              ))}
-              {node.venues?.length > 3 && (
-                <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400">
-                  +{node.venues.length - 3} more
-                </span>
-              )}
-              {(!node.venues || node.venues.length === 0) && (
-                <span className="text-sm text-gray-400 dark:text-gray-500 italic">No venues assigned</span>
-              )}
-            </div>
+            {(() => {
+              const matchingGroup = getMatchingGroup(node.venues);
+              if (matchingGroup) {
+                return (
+                  <div className="flex flex-wrap gap-1.5">
+                    <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium bg-purple-50 dark:bg-purple-900/30 text-purple-700 dark:text-purple-400 border border-purple-200 dark:border-purple-800">
+                      <FolderKanban className="w-3 h-3" />
+                      {matchingGroup.name}
+                    </span>
+                    <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400">
+                      {node.venues.length} venue{node.venues.length !== 1 ? 's' : ''}
+                    </span>
+                  </div>
+                );
+              }
+              return (
+                <div className="flex flex-wrap gap-1.5">
+                  {node.venues?.slice(0, 3).map((venue) => (
+                    <span
+                      key={venue.id}
+                      className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 border border-blue-200 dark:border-blue-800"
+                    >
+                      <Building2 className="w-3 h-3" />
+                      {venue.name}
+                    </span>
+                  ))}
+                  {node.venues?.length > 3 && (
+                    <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400">
+                      +{node.venues.length - 3} more
+                    </span>
+                  )}
+                  {(!node.venues || node.venues.length === 0) && (
+                    <span className="text-sm text-gray-400 dark:text-gray-500 italic">No venues assigned</span>
+                  )}
+                </div>
+              );
+            })()}
           </td>
           <td className="px-6 py-4 whitespace-nowrap">
             <div className="flex items-center text-sm text-gray-600 dark:text-gray-400">

@@ -8,7 +8,8 @@ import { Button } from '../../components/ui/button';
 import { permissionSections } from '../../config/permissions';
 import {
   ArrowLeft, Mail, Building2, Save, Trash2, Shield,
-  Check, RefreshCw, Phone, Calendar, User, Archive, AlertTriangle
+  Check, RefreshCw, Phone, Calendar, User, Archive, AlertTriangle,
+  FolderKanban
 } from 'lucide-react';
 
 const TABS = [
@@ -33,6 +34,7 @@ const ManagerDetail = () => {
   // Manager edit state
   const [editedVenueIds, setEditedVenueIds] = useState([]);
   const [hasVenueChanges, setHasVenueChanges] = useState(false);
+  const [venueGroups, setVenueGroups] = useState([]);
 
   // Delete/Archive state
   const [showArchiveModal, setShowArchiveModal] = useState(false);
@@ -68,6 +70,7 @@ const ManagerDetail = () => {
     if (!managerId) return;
     fetchManager();
     fetchPermissionsData();
+    fetchVenueGroups();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [managerId]);
 
@@ -121,6 +124,44 @@ const ManagerDetail = () => {
       setMessage('Failed to load manager details');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchVenueGroups = async () => {
+    try {
+      // Get account ID from venues or impersonation
+      let accountId = impersonatedAccountId;
+
+      if (!accountId && allVenues && allVenues.length > 0) {
+        const { data: venueData } = await supabase
+          .from('venues')
+          .select('account_id')
+          .eq('id', allVenues[0].id)
+          .single();
+        accountId = venueData?.account_id;
+      }
+
+      if (!accountId) return;
+
+      const { data: groupsData } = await supabase
+        .from('venue_groups')
+        .select(`
+          *,
+          venue_group_members (
+            venue_id
+          )
+        `)
+        .eq('account_id', accountId)
+        .order('name', { ascending: true });
+
+      const transformedGroups = (groupsData || []).map(g => ({
+        ...g,
+        venueIds: g.venue_group_members?.map(m => m.venue_id) || []
+      }));
+
+      setVenueGroups(transformedGroups);
+    } catch (error) {
+      console.error('Error fetching venue groups:', error);
     }
   };
 
@@ -232,6 +273,29 @@ const ManagerDetail = () => {
       const newIds = prev.includes(venueId)
         ? prev.filter(id => id !== venueId)
         : [...prev, venueId];
+      setHasVenueChanges(JSON.stringify(newIds.sort()) !== JSON.stringify(managerVenues.sort()));
+      return newIds;
+    });
+  };
+
+  const handleGroupToggle = (group) => {
+    const groupVenueIds = group.venueIds;
+    const allGroupVenuesSelected = groupVenueIds.every(id => editedVenueIds.includes(id));
+
+    setEditedVenueIds(prev => {
+      let newIds;
+      if (allGroupVenuesSelected) {
+        // Deselect all venues in group (but keep at least one venue)
+        newIds = prev.filter(id => !groupVenueIds.includes(id));
+        // Ensure at least one venue remains selected
+        if (newIds.length === 0 && prev.length > 0) {
+          newIds = [prev[0]];
+        }
+      } else {
+        // Select all venues in group
+        const idsToAdd = groupVenueIds.filter(id => !prev.includes(id));
+        newIds = [...prev, ...idsToAdd];
+      }
       setHasVenueChanges(JSON.stringify(newIds.sort()) !== JSON.stringify(managerVenues.sort()));
       return newIds;
     });
@@ -361,13 +425,25 @@ const ManagerDetail = () => {
   };
 
   const togglePermission = (code) => {
-    setSelectedTemplate(null);
-    setCustomPermissions(prev => {
-      if (prev.includes(code)) {
-        return prev.filter(c => c !== code);
+    // If a template is selected, switch to custom mode with current template permissions
+    if (selectedTemplate) {
+      const currentPerms = [...templatePermissions];
+      setSelectedTemplate(null);
+      // Toggle the clicked permission
+      if (currentPerms.includes(code)) {
+        setCustomPermissions(currentPerms.filter(c => c !== code));
+      } else {
+        setCustomPermissions([...currentPerms, code]);
       }
-      return [...prev, code];
-    });
+    } else {
+      // Already in custom mode, just toggle the permission
+      setCustomPermissions(prev => {
+        if (prev.includes(code)) {
+          return prev.filter(c => c !== code);
+        }
+        return [...prev, code];
+      });
+    }
   };
 
   const isPermissionEnabled = (code) => {
@@ -602,6 +678,40 @@ const ManagerDetail = () => {
                   Select which venues this manager can access
                 </p>
               </div>
+
+              {/* Venue Groups - Quick Select */}
+              {venueGroups.length > 0 && (
+                <div className="mb-4 pb-4 border-b border-gray-200 dark:border-gray-700">
+                  <h4 className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-2">
+                    Quick Select by Group
+                  </h4>
+                  <div className="flex flex-wrap gap-2">
+                    {venueGroups.map(group => {
+                      const allSelected = group.venueIds.length > 0 && group.venueIds.every(id => editedVenueIds.includes(id));
+                      const someSelected = group.venueIds.some(id => editedVenueIds.includes(id));
+                      return (
+                        <button
+                          key={group.id}
+                          onClick={() => handleGroupToggle(group)}
+                          disabled={saving || group.venueIds.length === 0}
+                          className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
+                            allSelected
+                              ? 'bg-blue-600 text-white hover:bg-blue-700'
+                              : someSelected
+                              ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300 hover:bg-blue-200 dark:hover:bg-blue-900/60'
+                              : 'bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700'
+                          } ${group.venueIds.length === 0 ? 'opacity-50 cursor-not-allowed' : ''}`}
+                        >
+                          <FolderKanban className="w-3.5 h-3.5" />
+                          {group.name}
+                          <span className="text-xs opacity-75">({group.venueIds.length})</span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+
               <div className="space-y-2 max-h-96 overflow-y-auto">
                 {allVenues.map(venue => {
                   const isChecked = editedVenueIds.includes(venue.id);
@@ -752,9 +862,8 @@ const ManagerDetail = () => {
                           <div className="space-y-1">
                             {section.permissions.map(perm => {
                               const enabled = isPermissionEnabled(perm.code);
-                              const isLocked = !!selectedTemplate;
                               const isBillingPerm = perm.code.startsWith('billing.');
-                              const isDisabled = isLocked || (isBillingPerm && !canManageBilling);
+                              const isDisabled = isBillingPerm && !canManageBilling;
 
                               return (
                                 <label

@@ -12,7 +12,8 @@ import {
   Map,
   Sparkles,
   CreditCard,
-  Building2
+  Building2,
+  FolderKanban
 } from 'lucide-react';
 
 // Permission sections with descriptions - used for Role Templates and Manager Detail pages
@@ -44,9 +45,9 @@ export const permissionSections = [
     icon: Star,
     permissions: [
       { code: 'nps.view', label: 'View NPS Score', description: 'Access the NPS score page showing your Net Promoter Score, response breakdown, and submission history.' },
-      { code: 'nps.insights', label: 'View NPS Insights', description: 'Access AI-powered analysis of your NPS data, including trends, sentiment analysis, and recommendations.' },
-      { code: 'nps.edit', label: 'Edit NPS Settings', description: 'Configure NPS survey settings, enable or disable NPS collection, and customise the survey questions.' },
-      { code: 'nps.export', label: 'Export NPS Data', description: 'Download NPS responses and scores as CSV or Excel files for external analysis or record-keeping.' }
+      { code: 'nps.insights', label: 'View NPS Insights', description: 'Access AI-powered analysis of your NPS data, including trends, sentiment analysis, and recommendations.', requiresBase: 'nps.view' },
+      { code: 'nps.edit', label: 'Edit NPS Settings', description: 'Configure NPS survey settings, enable or disable NPS collection, and customise the survey questions.', requiresBase: 'nps.view' },
+      { code: 'nps.export', label: 'Export NPS Data', description: 'Download NPS responses and scores as CSV or Excel files for external analysis or record-keeping.', requiresBase: 'nps.view' }
     ]
   },
   {
@@ -56,8 +57,10 @@ export const permissionSections = [
     permissions: [
       { code: 'staff.view', label: 'View Staff', description: 'View the list of staff members, their details, and which roles or locations they are assigned to.' },
       { code: 'staff.edit', label: 'Edit Staff', description: 'Add new staff members, update their information, assign roles and locations, or remove them from the system.', requiresBase: 'staff.view' },
-      { code: 'staff.leaderboard', label: 'View Leaderboard', description: 'Access the staff leaderboard showing performance rankings based on customer feedback and recognition.' },
-      { code: 'staff.recognition', label: 'Manage Recognition', description: 'Give recognition to staff members and view the recognition history for your team.' }
+      { code: 'staff.leaderboard', label: 'View Leaderboard', description: 'Access the staff leaderboard showing performance rankings based on customer feedback and recognition.', requiresBase: 'staff.view' },
+      { code: 'staff.recognition', label: 'Manage Recognition', description: 'Give recognition to staff members and view the recognition history for your team.', requiresBase: 'staff.view' },
+      { code: 'staff.roles', label: 'Manage Roles', description: 'Create, edit, and delete staff roles that can be assigned to team members.', requiresBase: 'staff.view' },
+      { code: 'staff.locations', label: 'Manage Locations', description: 'Create, edit, and delete staff locations that can be assigned to team members.', requiresBase: 'staff.view' }
     ]
   },
   {
@@ -101,21 +104,22 @@ export const permissionSections = [
       { code: 'ai.chat', label: 'Use AI Chat', description: 'Interact with the AI assistant to ask questions about your feedback data and get instant analysis.' }
     ]
   },
-  {
-    title: 'Reviews',
-    category: 'reviews',
-    icon: Star,
-    permissions: [
-      { code: 'reviews.view', label: 'View Reviews', description: 'View external reviews from platforms like Google and TripAdvisor, aggregated in one place.' }
-    ]
-  },
+  // Reviews - hidden for now (feature not yet active)
+  // {
+  //   title: 'Reviews',
+  //   category: 'reviews',
+  //   icon: Star,
+  //   permissions: [
+  //     { code: 'reviews.view', label: 'View Reviews', description: 'View external reviews from platforms like Google and TripAdvisor, aggregated in one place.' }
+  //   ]
+  // },
   {
     title: 'Billing',
     category: 'billing',
     icon: CreditCard,
     permissions: [
       { code: 'billing.view', label: 'View Billing', description: 'View subscription details, invoices, and payment history for the account.' },
-      { code: 'billing.manage', label: 'Manage Billing', description: 'Update payment methods, change subscription plans, and manage billing settings.' }
+      { code: 'billing.manage', label: 'Manage Billing', description: 'Update payment methods, change subscription plans, and manage billing settings.', requiresBase: 'billing.view' }
     ]
   },
   {
@@ -124,6 +128,15 @@ export const permissionSections = [
     icon: Building2,
     permissions: [
       { code: 'multivenue.view', label: 'View All Venues', description: 'Access the multi-venue overview showing performance comparisons and aggregated data across all venues.' }
+    ]
+  },
+  {
+    title: 'Venue Groups',
+    category: 'venuegroups',
+    icon: FolderKanban,
+    permissions: [
+      { code: 'venuegroups.view', label: 'View Venue Groups', description: 'View venue groups that organise venues by region or category.' },
+      { code: 'venuegroups.edit', label: 'Manage Venue Groups', description: 'Create, edit, and delete venue groups and assign venues to groups.', requiresBase: 'venuegroups.view' }
     ]
   },
   {

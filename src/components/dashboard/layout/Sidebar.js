@@ -40,7 +40,9 @@ import {
   List,
   LayoutDashboard,
   Sparkles,
-  Key
+  Key,
+  FolderKanban,
+  Tag
 } from 'lucide-react';
 
 // Venue Management Section - Single venue context
@@ -77,7 +79,6 @@ const venueNavItems = [
     subItems: [
       { label: 'All Feedback', path: '/feedback/all', icon: List, permission: 'feedback.view' },
       { label: 'Questions', path: '/feedback/questions', icon: HelpCircle, permission: 'questions.view' },
-      { label: 'Insights', path: '/feedback/insights', icon: Zap, permission: 'reports.view' },
       { label: 'Settings', path: '/feedback/settings', icon: Settings, permission: 'feedback.settings' }
     ]
   },
@@ -113,6 +114,8 @@ const venueNavItems = [
     permission: 'reports.view',
     subItems: [
       { label: 'Performance', path: '/reports/performance', icon: TrendingUp, permission: 'reports.view' },
+      { label: 'Satisfaction', path: '/reports/satisfaction', icon: Zap, permission: 'reports.view' },
+      { label: 'Follow-up Tags', path: '/reports/follow-up-tags', icon: Tag, permission: 'feedback.view' },
       { label: 'Metrics', path: '/reports/metrics', icon: PieChart, permission: 'reports.view' },
       { label: 'Custom', path: '/reports/builder', icon: FileText, permission: 'reports.create' }
     ]
@@ -201,6 +204,13 @@ const adminNavItems = [
     label: 'Role Templates',
     icon: Key,
     path: '/admin/permissions/templates',
+    color: 'text-rose-600'
+  },
+  {
+    id: 'venue-groups',
+    label: 'Venue Groups',
+    icon: FolderKanban,
+    path: '/admin/venue-groups',
     color: 'text-rose-600'
   }
 ];

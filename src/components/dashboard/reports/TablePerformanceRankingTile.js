@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { supabase } from '../../../utils/supabase';
+import { TableProperties } from 'lucide-react';
 
 function startOfDay(d) { const x = new Date(d); x.setHours(0,0,0,0); return x; }
 function endOfDay(d)   { const x = new Date(d); x.setHours(23,59,59,999); return x; }
@@ -90,12 +91,10 @@ export default function TablePerformanceRankingTile({ venueId, timeframe = 'last
     const stats = Array.from(byTable.entries()).map(([table, ratings]) => {
       const total = ratings.length;
       const avg = total ? +(ratings.reduce((s, v) => s + v, 0) / total).toFixed(2) : 0;
-      // Count distribution 5→1
-      const dist = [5,4,3,2,1].map(star => ratings.filter(v => v === star).length);
-      return { table, average: avg, totalFeedback: total, dist };
+      return { table, average: avg, totalFeedback: total };
     });
 
-    // Sort: avg desc, then volume desc, then table asc (stable-ish)
+    // Sort: avg desc, then volume desc, then table asc
     stats.sort((a, b) => {
       if (b.average !== a.average) return b.average - a.average;
       if (b.totalFeedback !== a.totalFeedback) return b.totalFeedback - a.totalFeedback;
@@ -107,75 +106,83 @@ export default function TablePerformanceRankingTile({ venueId, timeframe = 'last
   }
 
   const noData = !loading && rows.length === 0;
+  const maxAvg = Math.max(...rows.map(r => r.average), 0);
 
-  // Greyscale accent blocks (match PeakHoursAnalysisTile aesthetic)
-  const band = (intensity) => {
-    // intensity 0..1 → alpha 0.1..1 for visibility
-    const a = intensity === 0 ? 0.08 : 0.15 + 0.85 * Math.min(1, Math.max(0, intensity));
-    return { backgroundColor: `rgba(15, 23, 42, ${a})` }; // slate-900 w/ variable alpha
+  const getRatingColor = (avg) => {
+    if (avg >= 4.5) return 'bg-green-500';
+    if (avg >= 4) return 'bg-green-400';
+    if (avg >= 3.5) return 'bg-yellow-500';
+    if (avg >= 3) return 'bg-orange-500';
+    return 'bg-red-500';
   };
 
-  // Footer quick facts
-  const best = rows[0];
-  const worst = rows[rows.length - 1];
-
   return (
-    <div className="bg-white dark:bg-gray-900 rounded-xl p-4 shadow-sm border border-gray-100 dark:border-gray-800">
+    <div className="h-full flex flex-col">
       {/* Header */}
-      <div className="flex items-start justify-between gap-3 mb-2">
+      <div className="flex items-start justify-between gap-4 mb-6">
         <div>
-          <h3 className="text-base font-semibold text-gray-900 dark:text-white">
-            Table Performance Ranking
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+            Table Performance
           </h3>
-          <p className="text-xs text-gray-600 dark:text-gray-400 mt-1">
-            Ranked by average rating
-          </p>
+          <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">Ranked by average rating</p>
+        </div>
+        <div className="text-right">
+          <div className="text-3xl font-bold text-gray-900 dark:text-white tabular-nums">{rows.length}</div>
+          <div className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">tables</div>
         </div>
       </div>
 
       {/* Content */}
       {loading ? (
-        <div className="space-y-3">
+        <div className="space-y-3 flex-1">
           {Array.from({ length: 5 }).map((_, i) => (
-            <div key={i} className="h-14 bg-gray-100 dark:bg-gray-800 rounded-md animate-pulse" />
+            <div key={i} className="h-12 bg-gray-100 dark:bg-gray-800 rounded-lg animate-pulse" />
           ))}
         </div>
       ) : noData ? (
-        <div className="text-center py-10">
-          <div className="text-sm text-gray-600 dark:text-gray-400">No table data yet — rankings will appear once feedback comes in.</div>
+        <div className="text-center py-12 flex-1 flex flex-col items-center justify-center">
+          <div className="w-12 h-12 bg-gray-100 dark:bg-gray-800 rounded-full flex items-center justify-center mx-auto mb-3">
+            <TableProperties className="w-6 h-6 text-gray-400 dark:text-gray-500" />
+          </div>
+          <p className="text-sm text-gray-500 dark:text-gray-400">No table data yet</p>
         </div>
       ) : (
-        <div className="space-y-2 overflow-y-auto pr-1" style={{ maxHeight: 'calc(100vh - 400px)', minHeight: '300px' }}>
+        <div className="flex-1 overflow-y-auto space-y-2 pr-1" style={{ maxHeight: '400px' }}>
           {rows.map((r, idx) => (
             <div
               key={r.table}
-              className="rounded-md border border-gray-100 dark:border-gray-800 p-3 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
-              title={`Table ${r.table} • ${r.average}★ avg from ${r.totalFeedback} responses`}
+              className="flex items-center gap-3 p-3 rounded-lg bg-gray-50 dark:bg-gray-800/50 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
             >
-              <div className="grid grid-cols-3 gap-3 items-center">
-                {/* Left: table number */}
-                <div className="text-left">
-                  <div className="text-sm font-medium text-gray-900 dark:text-white">Table {r.table}</div>
-                </div>
+              {/* Rank */}
+              <div className="w-6 text-center">
+                <span className={`text-sm font-bold ${idx === 0 ? 'text-yellow-500' : idx === 1 ? 'text-gray-400' : idx === 2 ? 'text-amber-600' : 'text-gray-500 dark:text-gray-400'}`}>
+                  {idx + 1}
+                </span>
+              </div>
 
-                {/* Center: rating count - aligned column */}
-                <div className="text-center">
-                  <div className="text-sm font-medium text-gray-900 dark:text-white tabular-nums">{r.totalFeedback}</div>
-                  <div className="text-[11px] text-gray-600 dark:text-gray-400">rating{r.totalFeedback !== 1 ? 's' : ''}</div>
+              {/* Table info */}
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-2">
+                  <span className="text-sm font-medium text-gray-900 dark:text-white">Table {r.table}</span>
+                  <span className="text-xs text-gray-400 dark:text-gray-500">({r.totalFeedback} rating{r.totalFeedback !== 1 ? 's' : ''})</span>
                 </div>
-
-                {/* Right: average */}
-                <div className="text-right">
-                  <div className="text-xl font-bold text-gray-900 dark:text-white tabular-nums">{r.average}</div>
-                  <div className="text-[11px] text-gray-600 dark:text-gray-400">avg rating</div>
+                {/* Progress bar */}
+                <div className="mt-1.5 relative bg-gray-200 dark:bg-gray-700 rounded-full h-2 overflow-hidden">
+                  <div
+                    className={`h-full rounded-full transition-all duration-500 ${getRatingColor(r.average)}`}
+                    style={{ width: `${maxAvg ? (r.average / 5) * 100 : 0}%` }}
+                  />
                 </div>
               </div>
 
+              {/* Average */}
+              <div className="text-right">
+                <div className="text-lg font-bold text-gray-900 dark:text-white tabular-nums">{r.average}</div>
+              </div>
             </div>
           ))}
         </div>
       )}
-
     </div>
   );
 }

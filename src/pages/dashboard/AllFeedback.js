@@ -2,7 +2,6 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { supabase } from '../../utils/supabase';
 import { useVenue } from '../../context/VenueContext';
 import { PermissionGate } from '../../context/PermissionsContext';
-import { ChartCard } from '../../components/dashboard/layout/ModernCard';
 import usePageTitle from '../../hooks/usePageTitle';
 import dayjs from 'dayjs';
 import { Search, Calendar, Filter, CheckSquare, Square, Eye, ChevronLeft, ChevronRight, ArrowUp, ArrowDown, ArrowUpDown } from 'lucide-react';
@@ -379,10 +378,15 @@ const AllFeedback = () => {
 
   return (
     <div className="space-y-6">
-      <ChartCard
-        title="All Feedback"
-        subtitle={`${filteredSessions.length} feedback sessions within selected timeframe`}
-      >
+      {/* Page Header */}
+      <div className="mb-2 flex items-center justify-between">
+        <div>
+          <h1 className="text-2xl font-semibold text-gray-900 dark:text-white">All Feedback</h1>
+          <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">{filteredSessions.length} feedback sessions within selected timeframe</p>
+        </div>
+      </div>
+
+      <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl p-6">
         {/* Filters */}
         <div className="mb-6 space-y-4">
           {/* Date Range and Filters */}
@@ -663,7 +667,7 @@ const AllFeedback = () => {
             )}
           </>
         )}
-      </ChartCard>
+      </div>
 
       {/* Bulk Resolve Confirmation Modal */}
       <ConfirmationModal

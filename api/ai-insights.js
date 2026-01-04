@@ -91,6 +91,9 @@ export default async function handler(req, res) {
       .order('created_at', { ascending: false })
       .limit(3);
 
+    // Fetch follow-up tag data for the date range
+    const followUpTagData = await fetchFollowUpTags(supabase, venueId, dateFrom, dateTo);
+
     // Get Anthropic API key from environment
     const anthropicApiKey = process.env.ANTHROPIC_API_KEY;
 
@@ -106,7 +109,8 @@ export default async function handler(req, res) {
       venueName,
       dateFrom,
       dateTo,
-      previousInsights
+      previousInsights,
+      followUpTagData
     );
 
     console.log('[AI Insights] Prompt length:', feedbackSummary.length, 'characters');
@@ -249,7 +253,7 @@ export default async function handler(req, res) {
 /**
  * Prepare feedback data summary for AI analysis
  */
-function prepareFeedbackSummary(feedbackData, npsData, venueName, dateFrom, dateTo, previousInsights = []) {
+function prepareFeedbackSummary(feedbackData, npsData, venueName, dateFrom, dateTo, previousInsights = [], followUpTagData = []) {
   // Count feedback by rating
   const ratingCounts = { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 };
   feedbackData.forEach(item => {
@@ -374,6 +378,34 @@ ${allComments.slice(0, 60).map((comment, idx) =>
   `${idx + 1}. [${comment.rating}★] ${comment.question}
    "${comment.text}"`
 ).join('\n\n')}
+${followUpTagData.length > 0 ? `
+
+## Follow-up Tags (Why Customers Gave Low Ratings):
+${followUpTagData.map((questionData, idx) => {
+  const tagLines = questionData.tags.map(tag => {
+    const percentage = Math.round((tag.count / questionData.totalSelections) * 100);
+    return `   - "${tag.tag}": ${tag.count} selections (${percentage}%)`;
+  }).join('\n');
+  return `${idx + 1}. **${questionData.question}** (${questionData.totalSelections} responses when rating below ${questionData.threshold} stars)
+${tagLines}`;
+}).join('\n\n')}
+
+**Top Issues Identified from Tags:**
+${(() => {
+  const allTags = {};
+  followUpTagData.forEach(q => {
+    q.tags.forEach(t => {
+      if (!allTags[t.tag]) allTags[t.tag] = 0;
+      allTags[t.tag] += t.count;
+    });
+  });
+  return Object.entries(allTags)
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 5)
+    .map(([tag, count], i) => `${i + 1}. "${tag}": ${count} total selections`)
+    .join('\n');
+})()}
+` : ''}
 ${historicalContext}
 
 ---
@@ -441,4 +473,74 @@ Analyse this feedback data and provide a comprehensive, actionable report in **U
 **IMPORTANT:** Return ONLY the JSON object. No additional text before or after.`;
 
   return prompt;
+}
+
+/**
+ * Fetch follow-up tag responses for the venue
+ */
+async function fetchFollowUpTags(supabase, venueId, dateFrom, dateTo) {
+  // First get all questions for this venue to filter tag responses
+  const { data: questionsData, error: questionsError } = await supabase
+    .from('questions')
+    .select('id, question, conditional_tags')
+    .eq('venue_id', venueId);
+
+  if (questionsError) {
+    console.error('[AI Insights] Error fetching questions for tags:', questionsError);
+    return [];
+  }
+
+  const questionIds = (questionsData || []).map(q => q.id);
+  if (questionIds.length === 0) return [];
+
+  // Fetch tag responses for this venue's questions
+  const { data: tagResponses, error: tagError } = await supabase
+    .from('feedback_tag_responses')
+    .select('question_id, tag, created_at')
+    .in('question_id', questionIds)
+    .gte('created_at', dateFrom)
+    .lte('created_at', dateTo);
+
+  if (tagError) {
+    console.error('[AI Insights] Error fetching tag responses:', tagError);
+    return [];
+  }
+
+  // Build a map of question_id to question text and config
+  const questionMap = {};
+  (questionsData || []).forEach(q => {
+    questionMap[q.id] = {
+      question: q.question,
+      threshold: q.conditional_tags?.threshold || 3,
+      configuredTags: q.conditional_tags?.tags || []
+    };
+  });
+
+  // Aggregate tag data by question
+  const tagDataByQuestion = {};
+  (tagResponses || []).forEach(response => {
+    const qId = response.question_id;
+    if (!tagDataByQuestion[qId]) {
+      tagDataByQuestion[qId] = {
+        question: questionMap[qId]?.question || 'Unknown question',
+        threshold: questionMap[qId]?.threshold || 3,
+        tags: {}
+      };
+    }
+    if (!tagDataByQuestion[qId].tags[response.tag]) {
+      tagDataByQuestion[qId].tags[response.tag] = 0;
+    }
+    tagDataByQuestion[qId].tags[response.tag]++;
+  });
+
+  // Convert to array format for context
+  return Object.entries(tagDataByQuestion).map(([questionId, data]) => ({
+    questionId,
+    question: data.question,
+    threshold: data.threshold,
+    tags: Object.entries(data.tags)
+      .map(([tag, count]) => ({ tag, count }))
+      .sort((a, b) => b.count - a.count),
+    totalSelections: Object.values(data.tags).reduce((sum, count) => sum + count, 0)
+  }));
 }

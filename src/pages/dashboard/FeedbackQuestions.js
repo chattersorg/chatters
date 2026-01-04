@@ -15,6 +15,7 @@ const FeedbackQuestionsPage = () => {
   const [newQuestion, setNewQuestion] = useState('');
   const [editingQuestionId, setEditingQuestionId] = useState(null);
   const [editingQuestionText, setEditingQuestionText] = useState('');
+  const [editingConditionalTags, setEditingConditionalTags] = useState(null);
   const [inactiveQuestions, setInactiveQuestions] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [isReplaceModalOpen, setIsReplaceModalOpen] = useState(false);
@@ -319,17 +320,24 @@ const FeedbackQuestionsPage = () => {
   };
 
   const startEditingQuestion = (questionId, questionText) => {
+    const question = questions.find(q => q.id === questionId);
     setEditingQuestionId(questionId);
     setEditingQuestionText(questionText);
+    setEditingConditionalTags(question?.conditional_tags || null);
   };
 
   const cancelEditingQuestion = () => {
     setEditingQuestionId(null);
     setEditingQuestionText('');
+    setEditingConditionalTags(null);
   };
 
   const handleEditTextChange = (newText) => {
     setEditingQuestionText(newText);
+  };
+
+  const handleConditionalTagsChange = (newTags) => {
+    setEditingConditionalTags(newTags);
   };
 
   const saveEditedQuestion = async () => {
@@ -353,18 +361,24 @@ const FeedbackQuestionsPage = () => {
 
     const { error } = await supabase
       .from('questions')
-      .update({ question: editingQuestionText })
+      .update({
+        question: editingQuestionText,
+        conditional_tags: editingConditionalTags
+      })
       .eq('id', editingQuestionId);
 
     if (error) {
       console.error('Error updating question:', error);
     } else {
       const updatedQuestions = questions.map((q) =>
-        q.id === editingQuestionId ? { ...q, question: editingQuestionText } : q
+        q.id === editingQuestionId
+          ? { ...q, question: editingQuestionText, conditional_tags: editingConditionalTags }
+          : q
       );
       setQuestions(updatedQuestions);
       setEditingQuestionId(null);
       setEditingQuestionText('');
+      setEditingConditionalTags(null);
     }
   };
 
@@ -424,6 +438,7 @@ const FeedbackQuestionsPage = () => {
             setEditingQuestionId={setEditingQuestionId}
             editingQuestionText={editingQuestionText}
             setEditingQuestionText={setEditingQuestionText}
+            editingConditionalTags={editingConditionalTags}
             inactiveQuestions={inactiveQuestions}
             setInactiveQuestions={setInactiveQuestions}
             searchTerm={searchTerm}
@@ -456,6 +471,7 @@ const FeedbackQuestionsPage = () => {
             startEditingQuestion={startEditingQuestion}
             cancelEditingQuestion={cancelEditingQuestion}
             handleEditTextChange={handleEditTextChange}
+            handleConditionalTagsChange={handleConditionalTagsChange}
             saveEditedQuestion={saveEditedQuestion}
           />
         </DragDropContext>

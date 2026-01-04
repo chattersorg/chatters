@@ -206,6 +206,7 @@ const ModernHeader = ({ sidebarCollapsed, setSidebarCollapsed, trialInfo }) => {
       if (currentPath === '/reports/insights') return 'Customer insights and patterns';
       if (currentPath === '/reports/metrics') return 'Key performance indicators';
       if (currentPath === '/reports/nps') return 'Net Promoter Score analytics';
+      if (currentPath === '/reports/follow-up-tags') return 'Reasons for low ratings';
       if (currentPath.startsWith('/nps-report/')) return 'Detailed NPS report';
       if (currentPath === '/reports/builder') return 'Custom report builder';
       return 'Analytics and insights';
