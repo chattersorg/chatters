@@ -36,9 +36,6 @@ const ReportsFollowUpTags = () => {
     try {
       setLoading(true);
 
-      const startDate = new Date();
-      startDate.setDate(startDate.getDate() - parseInt(dateRange));
-
       // Fetch all questions for this venue
       const { data: allQuestionsData, error: allQuestionsError } = await supabase
         .from('questions')
@@ -51,11 +48,19 @@ const ReportsFollowUpTags = () => {
       const venueQuestionIds = (allQuestionsData || []).map(q => q.id);
 
       // Fetch tag responses only for this venue's questions
-      const { data: allTagResponses, error: allTagError } = await supabase
+      let tagQuery = supabase
         .from('feedback_tag_responses')
         .select('question_id, tag, created_at')
-        .in('question_id', venueQuestionIds.length > 0 ? venueQuestionIds : [-1])
-        .gte('created_at', startDate.toISOString());
+        .in('question_id', venueQuestionIds.length > 0 ? venueQuestionIds : [-1]);
+
+      // Apply date filter unless "all time" is selected
+      if (dateRange !== 'all') {
+        const startDate = new Date();
+        startDate.setDate(startDate.getDate() - parseInt(dateRange));
+        tagQuery = tagQuery.gte('created_at', startDate.toISOString());
+      }
+
+      const { data: allTagResponses, error: allTagError } = await tagQuery;
 
       if (allTagError) throw allTagError;
 
@@ -169,27 +174,14 @@ const ReportsFollowUpTags = () => {
           className="w-full p-6 text-left hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
         >
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${
-                isActive
-                  ? 'bg-purple-100 dark:bg-purple-900/30'
-                  : 'bg-gray-100 dark:bg-gray-800'
-              }`}>
-                <Tag className={`w-5 h-5 ${
-                  isActive
-                    ? 'text-purple-600 dark:text-purple-400'
-                    : 'text-gray-500 dark:text-gray-400'
-                }`} />
-              </div>
-              <div>
-                <h3 className="text-base font-semibold text-gray-900 dark:text-white">
-                  {question.question}
-                </h3>
-                <p className="text-sm text-gray-500 dark:text-gray-400 mt-0.5">
-                  Tags shown for ratings below {data?.threshold || question.conditional_tags?.threshold} stars
-                  {!isActive && <span className="ml-2 text-gray-400">(Archived)</span>}
-                </p>
-              </div>
+            <div>
+              <h3 className="text-base font-semibold text-gray-900 dark:text-white">
+                {question.question}
+              </h3>
+              <p className="text-sm text-gray-500 dark:text-gray-400 mt-0.5">
+                Tags shown for ratings below {data?.threshold || question.conditional_tags?.threshold} stars
+                {!isActive && <span className="ml-2 text-gray-400">(Archived)</span>}
+              </p>
             </div>
             <div className="flex items-center gap-4">
               <div className="text-right">
@@ -212,13 +204,14 @@ const ReportsFollowUpTags = () => {
         {isExpanded && (
           <div className="px-6 pb-6 border-t border-gray-100 dark:border-gray-800">
             {chartData.length > 0 && totalResponses > 0 ? (
-              <div className="mt-6">
+              <div className="mt-6 grid grid-cols-1 lg:grid-cols-2 gap-6">
+                {/* Chart on the left */}
                 <div className="h-64">
                   <ResponsiveContainer width="100%" height="100%">
                     <BarChart
                       data={chartData}
                       layout="vertical"
-                      margin={{ top: 8, right: 8, bottom: 8, left: 120 }}
+                      margin={{ top: 8, right: 8, bottom: 8, left: 0 }}
                     >
                       <CartesianGrid stroke="#e5e7eb" strokeDasharray="3 3" horizontal={true} vertical={false} />
                       <XAxis
@@ -226,6 +219,7 @@ const ReportsFollowUpTags = () => {
                         stroke="#64748B"
                         fontSize={12}
                         tick={{ fill: '#64748B' }}
+                        allowDecimals={false}
                       />
                       <YAxis
                         type="category"
@@ -233,7 +227,7 @@ const ReportsFollowUpTags = () => {
                         stroke="#64748B"
                         fontSize={12}
                         tick={{ fill: '#64748B' }}
-                        width={110}
+                        width={90}
                       />
                       <Tooltip
                         contentStyle={{
@@ -259,8 +253,8 @@ const ReportsFollowUpTags = () => {
                   </ResponsiveContainer>
                 </div>
 
-                {/* Tag breakdown table */}
-                <div className="mt-6">
+                {/* Tag breakdown table on the right */}
+                <div>
                   <table className="w-full">
                     <thead>
                       <tr className="border-b border-gray-200 dark:border-gray-700">
@@ -278,10 +272,10 @@ const ReportsFollowUpTags = () => {
                     <tbody>
                       {chartData.map((item, index) => (
                         <tr key={item.tag} className="border-b border-gray-100 dark:border-gray-800">
-                          <td className="py-3 px-3">
+                          <td className="py-2 px-3">
                             <div className="flex items-center gap-2">
                               <div
-                                className="w-3 h-3 rounded-full"
+                                className="w-3 h-3 rounded-full flex-shrink-0"
                                 style={{ backgroundColor: getBarColor(index) }}
                               />
                               <span className="text-sm font-medium text-gray-900 dark:text-white">
@@ -289,10 +283,10 @@ const ReportsFollowUpTags = () => {
                               </span>
                             </div>
                           </td>
-                          <td className="py-3 px-3 text-right text-sm text-gray-600 dark:text-gray-400">
+                          <td className="py-2 px-3 text-right text-sm text-gray-600 dark:text-gray-400">
                             {item.count}
                           </td>
-                          <td className="py-3 px-3 text-right text-sm text-gray-600 dark:text-gray-400">
+                          <td className="py-2 px-3 text-right text-sm text-gray-600 dark:text-gray-400">
                             {item.percentage}%
                           </td>
                         </tr>
@@ -347,7 +341,7 @@ const ReportsFollowUpTags = () => {
             { value: '7', label: 'Last 7 days' },
             { value: '30', label: 'Last 30 days' },
             { value: '90', label: 'Last 90 days' },
-            { value: '365', label: 'Last year' }
+            { value: 'all', label: 'All time' }
           ]}
         />
       </div>

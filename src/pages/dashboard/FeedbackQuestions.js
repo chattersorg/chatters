@@ -25,6 +25,7 @@ const FeedbackQuestionsPage = () => {
   const [duplicateError, setDuplicateError] = useState('');
   const [addedSuggestedQuestions, setAddedSuggestedQuestions] = useState([]);
   const [alertModal, setAlertModal] = useState(null);
+  const [newQuestionConditionalTags, setNewQuestionConditionalTags] = useState(null);
 
   const qrCodeRef = useRef(null);
 
@@ -114,7 +115,13 @@ const FeedbackQuestionsPage = () => {
 
     const { data, error } = await supabase
       .from('questions')
-      .insert([{ venue_id: venueId, question: newQuestion, order: questions.length, active: true }])
+      .insert([{
+        venue_id: venueId,
+        question: newQuestion,
+        order: questions.length,
+        active: true,
+        conditional_tags: newQuestionConditionalTags
+      }])
       .select();
 
     if (error) {
@@ -122,6 +129,7 @@ const FeedbackQuestionsPage = () => {
     } else {
       setQuestions([...questions, data[0]]);
       setNewQuestion('');
+      setNewQuestionConditionalTags(null);
 
       if (suggestedQuestions.includes(newQuestion)) {
         setAddedSuggestedQuestions([...addedSuggestedQuestions, newQuestion]);
@@ -340,6 +348,10 @@ const FeedbackQuestionsPage = () => {
     setEditingConditionalTags(newTags);
   };
 
+  const handleNewQuestionConditionalTagsChange = (newTags) => {
+    setNewQuestionConditionalTags(newTags);
+  };
+
   const saveEditedQuestion = async () => {
     if (!editingQuestionText.trim()) {
       setAlertModal({
@@ -473,6 +485,8 @@ const FeedbackQuestionsPage = () => {
             handleEditTextChange={handleEditTextChange}
             handleConditionalTagsChange={handleConditionalTagsChange}
             saveEditedQuestion={saveEditedQuestion}
+            newQuestionConditionalTags={newQuestionConditionalTags}
+            handleNewQuestionConditionalTagsChange={handleNewQuestionConditionalTagsChange}
           />
         </DragDropContext>
       </div>

@@ -34,6 +34,7 @@ const AllFeedback = () => {
   const [resolveLoading, setResolveLoading] = useState(false);
   const [sortField, setSortField] = useState('created_at'); // 'created_at', 'type', 'avg_rating'
   const [sortDirection, setSortDirection] = useState('desc'); // 'asc' or 'desc'
+  const [tagResponses, setTagResponses] = useState({});
 
   // Load feedback sessions
   useEffect(() => {
@@ -355,9 +356,35 @@ const AllFeedback = () => {
   };
 
   // View details
-  const handleViewDetails = (session) => {
+  const handleViewDetails = async (session) => {
     setSelectedSession(session);
     setShowDetailsModal(true);
+
+    // Fetch tag responses for this session's items
+    const feedbackIds = session.items.map(item => item.id).filter(Boolean);
+    if (feedbackIds.length > 0 && session.type === 'feedback') {
+      try {
+        const { data: tags, error } = await supabase
+          .from('feedback_tag_responses')
+          .select('feedback_id, tag')
+          .in('feedback_id', feedbackIds);
+
+        if (!error && tags) {
+          const tagsByFeedback = {};
+          tags.forEach(t => {
+            if (!tagsByFeedback[t.feedback_id]) {
+              tagsByFeedback[t.feedback_id] = [];
+            }
+            tagsByFeedback[t.feedback_id].push(t.tag);
+          });
+          setTagResponses(tagsByFeedback);
+        }
+      } catch (error) {
+        console.error('Error fetching tag responses:', error);
+      }
+    } else {
+      setTagResponses({});
+    }
   };
 
   // Get rating color
@@ -686,13 +713,16 @@ const AllFeedback = () => {
       {/* Details Modal */}
       {showDetailsModal && selectedSession && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+          <div className="bg-white dark:bg-gray-800 rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto">
             <div className="p-6">
               <div className="flex items-center justify-between mb-4">
-                <h3 className="text-xl font-bold text-gray-900">Feedback Details</h3>
+                <h3 className="text-xl font-bold text-gray-900 dark:text-white">Feedback Details</h3>
                 <button
-                  onClick={() => setShowDetailsModal(false)}
-                  className="text-gray-400 hover:text-gray-600"
+                  onClick={() => {
+                    setShowDetailsModal(false);
+                    setTagResponses({});
+                  }}
+                  className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
                 >
                   ✕
                 </button>
@@ -700,39 +730,39 @@ const AllFeedback = () => {
 
               <div className="space-y-4">
                 {/* Session Info */}
-                <div className="grid grid-cols-2 gap-4 p-4 bg-gray-50 rounded-lg">
+                <div className="grid grid-cols-2 gap-4 p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
                   <div>
-                    <p className="text-sm text-gray-600">Table Number</p>
-                    <p className="font-medium text-gray-900">{selectedSession.table_number || 'N/A'}</p>
+                    <p className="text-sm text-gray-600 dark:text-gray-400">Table Number</p>
+                    <p className="font-medium text-gray-900 dark:text-white">{selectedSession.table_number || 'N/A'}</p>
                   </div>
                   <div>
-                    <p className="text-sm text-gray-600">Date/Time</p>
-                    <p className="font-medium text-gray-900">
+                    <p className="text-sm text-gray-600 dark:text-gray-400">Date/Time</p>
+                    <p className="font-medium text-gray-900 dark:text-white">
                       {dayjs(selectedSession.created_at).format('MMM D, YYYY h:mm A')}
                     </p>
                   </div>
                   <div>
-                    <p className="text-sm text-gray-600">Average Rating</p>
+                    <p className="text-sm text-gray-600 dark:text-gray-400">Average Rating</p>
                     <p className={`font-bold text-lg ${getRatingColor(selectedSession.avg_rating)}`}>
                       {selectedSession.avg_rating !== null ? `${selectedSession.avg_rating.toFixed(1)} stars` : 'N/A'}
                     </p>
                   </div>
                   <div>
-                    <p className="text-sm text-gray-600">Status</p>
-                    <p className="font-medium text-gray-900">
+                    <p className="text-sm text-gray-600 dark:text-gray-400">Status</p>
+                    <p className="font-medium text-gray-900 dark:text-white">
                       {selectedSession.is_dismissed ? (
-                        <span className="text-gray-600">Dismissed</span>
+                        <span className="text-gray-600 dark:text-gray-400">Dismissed</span>
                       ) : selectedSession.is_resolved ? (
-                        <span className="text-green-600">Resolved</span>
+                        <span className="text-green-600 dark:text-green-400">Resolved</span>
                       ) : (
-                        <span className="text-yellow-600">Unresolved</span>
+                        <span className="text-yellow-600 dark:text-yellow-400">Unresolved</span>
                       )}
                     </p>
                   </div>
                   {(selectedSession.is_resolved || selectedSession.is_dismissed) && selectedSession.resolver && (
                     <div className="col-span-2">
-                      <p className="text-sm text-gray-600 mb-1">Resolved By</p>
-                      <p className="font-medium text-gray-900">
+                      <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">Resolved By</p>
+                      <p className="font-medium text-gray-900 dark:text-white">
                         {selectedSession.resolver.first_name} {selectedSession.resolver.last_name}
                         {selectedSession.co_resolver && (
                           <span> with {selectedSession.co_resolver.first_name} {selectedSession.co_resolver.last_name}</span>
@@ -744,24 +774,24 @@ const AllFeedback = () => {
 
                 {/* Feedback Items */}
                 <div>
-                  <h4 className="font-semibold text-gray-900 mb-3">
+                  <h4 className="font-semibold text-gray-900 dark:text-white mb-3">
                     {selectedSession.type === 'assistance' ? 'Assistance Request Details' : 'Responses'}
                   </h4>
 
                   {selectedSession.type === 'assistance' ? (
                     // Display assistance request details
-                    <div className="p-4 bg-orange-50 border border-orange-200 rounded-lg">
+                    <div className="p-4 bg-orange-50 dark:bg-orange-900/30 border border-orange-200 dark:border-orange-800 rounded-lg">
                       <div className="flex items-start gap-3 mb-3">
                         <div className="flex-shrink-0 mt-1">
-                          <div className="w-8 h-8 rounded-full bg-orange-100 flex items-center justify-center">
-                            <span className="text-orange-600 text-lg">🆘</span>
+                          <div className="w-8 h-8 rounded-full bg-orange-100 dark:bg-orange-800 flex items-center justify-center">
+                            <span className="text-orange-600 dark:text-orange-300 text-lg">🆘</span>
                           </div>
                         </div>
                         <div className="flex-1">
-                          <p className="font-semibold text-gray-900 mb-2">Customer requested assistance</p>
+                          <p className="font-semibold text-gray-900 dark:text-white mb-2">Customer requested assistance</p>
                           {selectedSession.items[0]?.additional_feedback && (
-                            <div className="bg-white p-3 rounded border border-orange-200">
-                              <p className="text-sm text-gray-700">
+                            <div className="bg-white dark:bg-gray-800 p-3 rounded border border-orange-200 dark:border-orange-700">
+                              <p className="text-sm text-gray-700 dark:text-gray-300">
                                 {selectedSession.items[0].additional_feedback}
                               </p>
                             </div>
@@ -773,11 +803,11 @@ const AllFeedback = () => {
                     // Display regular feedback responses
                     <div className="space-y-3">
                       {selectedSession.items.map((item, index) => (
-                        <div key={item.id} className="p-3 border border-gray-200 rounded-lg">
+                        <div key={item.id} className="p-3 border border-gray-200 dark:border-gray-600 rounded-lg">
                           <div className="flex items-start justify-between gap-3 mb-2">
                             <div className="flex-1">
-                              <p className="text-xs text-gray-500 mb-1">Question {index + 1}</p>
-                              <p className="font-medium text-gray-900">{item.questions?.question || 'Question not available'}</p>
+                              <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">Question {index + 1}</p>
+                              <p className="font-medium text-gray-900 dark:text-white">{item.questions?.question || 'Question not available'}</p>
                             </div>
                             {item.rating && (
                               <div className="flex-shrink-0">
@@ -789,10 +819,23 @@ const AllFeedback = () => {
                           </div>
                           {item.additional_feedback && (
                             <div className="mt-2">
-                              <p className="text-xs text-gray-500 mb-1">Comment:</p>
-                              <p className="text-sm text-gray-700 p-2 bg-gray-50 rounded italic">
+                              <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">Comment:</p>
+                              <p className="text-sm text-gray-700 dark:text-gray-300 p-2 bg-gray-50 dark:bg-gray-700 rounded italic">
                                 "{item.additional_feedback}"
                               </p>
+                            </div>
+                          )}
+                          {/* Display follow-up tags if any */}
+                          {tagResponses[item.id] && tagResponses[item.id].length > 0 && (
+                            <div className="mt-3 flex flex-wrap gap-2">
+                              {tagResponses[item.id].map((tag, tagIndex) => (
+                                <span
+                                  key={tagIndex}
+                                  className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-red-100 dark:bg-red-900/40 text-red-700 dark:text-red-300 border border-red-200 dark:border-red-800"
+                                >
+                                  {tag}
+                                </span>
+                              ))}
                             </div>
                           )}
                         </div>
@@ -804,8 +847,11 @@ const AllFeedback = () => {
 
               <div className="mt-6 flex gap-3">
                 <button
-                  onClick={() => setShowDetailsModal(false)}
-                  className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
+                  onClick={() => {
+                    setShowDetailsModal(false);
+                    setTagResponses({});
+                  }}
+                  className="flex-1 px-4 py-2 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
                 >
                   Close
                 </button>
@@ -815,6 +861,7 @@ const AllFeedback = () => {
                       onClick={async () => {
                         setSelectedSessions(new Set([selectedSession.session_id]));
                         setShowDetailsModal(false);
+                        setTagResponses({});
                         setShowResolveModal(true);
                       }}
                       className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"

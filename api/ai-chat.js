@@ -138,10 +138,15 @@ OTHER RULES:
 - Use bullet points only when listing 3+ items
 
 HANDLING MISSING DATA:
-- You CAN access all data types: feedback, NPS, staff, zones, trends. Don't claim you can't.
+- You CAN access all data types: feedback, NPS, staff, zones, trends, follow-up tags. Don't claim you can't.
 - If no data exists for a time period, simply say "No [data type] recorded for [period]."
 - Don't add filler about other data that IS available - just answer the question asked.
 - For absurd dates (before 2020 or future), just say "No data for that period." - don't elaborate.
+
+FOLLOW-UP TAGS (important):
+- Follow-up tags show WHY customers gave low ratings for specific questions.
+- ALWAYS link tags to their question. Example: "For your 'service quality' question, customers cited 'Too Slow' (50%) and 'Staff Rude' (25%)."
+- Don't just list tags in isolation - connect them to the question they relate to for actionable insight.
 
 VISUALISATION CAPABILITY:
 - When the user asks for a graph, chart, or visual, OR when comparing multiple items, you MUST include a visualisation
@@ -1403,15 +1408,15 @@ ${questions.length > 0
   // Add follow-up tag data (reasons customers gave for low ratings)
   if (followUpTagData && followUpTagData.length > 0) {
     const totalTagSelections = followUpTagData.reduce((sum, q) => sum + q.totalSelections, 0);
-    context += `\n### Follow-up Tags (Reasons for Low Ratings):\n`;
-    context += `Total tag selections: ${totalTagSelections}\n\n`;
+    context += `\n### Follow-up Tags (Why Customers Gave Low Ratings):\n`;
+    context += `When customers rate below a threshold, they can select tags explaining why. Total: ${totalTagSelections} tag selections.\n\n`;
 
     followUpTagData.forEach((questionData, idx) => {
-      context += `**${idx + 1}. ${questionData.question}** (shown when rating below ${questionData.threshold} stars)\n`;
-      context += `   ${questionData.totalSelections} total selections:\n`;
+      context += `**For question "${questionData.question}"** (tags shown when rating below ${questionData.threshold} stars):\n`;
+      context += `Customers selected these reasons (${questionData.totalSelections} total):\n`;
       questionData.tags.forEach(tag => {
         const percentage = Math.round((tag.count / questionData.totalSelections) * 100);
-        context += `   - "${tag.tag}": ${tag.count} (${percentage}%)\n`;
+        context += `   - "${tag.tag}": ${tag.count} times (${percentage}%)\n`;
       });
       context += '\n';
     });

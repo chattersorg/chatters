@@ -43,7 +43,9 @@ const CreateQuestionSection = ({
   handleNewQuestionChange,
   questions,
   duplicateError,
-  handleAddQuestion
+  handleAddQuestion,
+  newQuestionConditionalTags,
+  handleNewQuestionConditionalTagsChange
 }) => (
     <div className="mb-8">
       <h3 className="text-base font-semibold text-gray-900 dark:text-gray-100 mb-4 flex items-center gap-2">
@@ -73,6 +75,13 @@ const CreateQuestionSection = ({
               </span>
             </div>
           </div>
+
+          {newQuestion.trim() && (
+            <ConditionalTagsEditor
+              conditionalTags={newQuestionConditionalTags}
+              onUpdate={handleNewQuestionConditionalTagsChange}
+            />
+          )}
 
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-4">
@@ -512,6 +521,8 @@ const QuestionManagementTab = ({
   handleConditionalTagsChange,
   handleAddInactiveQuestion,
   handleReplaceQuestion,
+  newQuestionConditionalTags,
+  handleNewQuestionConditionalTagsChange,
 }) => {
   const [view, setView] = useState('active'); // 'active', 'create', 'archive'
 
@@ -551,6 +562,8 @@ const QuestionManagementTab = ({
             questions={questions}
             duplicateError={duplicateError}
             handleAddQuestion={handleAddQuestion}
+            newQuestionConditionalTags={newQuestionConditionalTags}
+            handleNewQuestionConditionalTagsChange={handleNewQuestionConditionalTagsChange}
           />
 
           <SuggestedQuestionsSection

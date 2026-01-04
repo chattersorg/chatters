@@ -381,16 +381,18 @@ ${allComments.slice(0, 60).map((comment, idx) =>
 ${followUpTagData.length > 0 ? `
 
 ## Follow-up Tags (Why Customers Gave Low Ratings):
+These tags explain WHY customers gave low ratings. Each set of tags is linked to a specific feedback question.
+
 ${followUpTagData.map((questionData, idx) => {
   const tagLines = questionData.tags.map(tag => {
     const percentage = Math.round((tag.count / questionData.totalSelections) * 100);
     return `   - "${tag.tag}": ${tag.count} selections (${percentage}%)`;
   }).join('\n');
-  return `${idx + 1}. **${questionData.question}** (${questionData.totalSelections} responses when rating below ${questionData.threshold} stars)
+  return `**For question: "${questionData.question}"** (${questionData.totalSelections} customers selected tags when rating below ${questionData.threshold} stars)
 ${tagLines}`;
 }).join('\n\n')}
 
-**Top Issues Identified from Tags:**
+**Top Issues Across All Questions:**
 ${(() => {
   const allTags = {};
   followUpTagData.forEach(q => {
@@ -405,6 +407,8 @@ ${(() => {
     .map(([tag, count], i) => `${i + 1}. "${tag}": ${count} total selections`)
     .join('\n');
 })()}
+
+IMPORTANT: When reporting on tags, always reference the question they relate to. For example: "For your service question, customers cited 'Too Slow' as the main issue."
 ` : ''}
 ${historicalContext}
 
