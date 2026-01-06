@@ -95,7 +95,7 @@ const venueNavItems = [
       { label: 'Settings', path: '/nps/settings', icon: Settings, permission: 'nps.edit' }
     ]
   },
-  // Reviews BETA - hidden for now
+  // Reviews section hidden for now
   // {
   //   id: 'reviews',
   //   label: 'Reviews',
@@ -561,7 +561,6 @@ const Sidebar = ({ collapsed, setCollapsed }) => {
                 {showSubmenu && (
                   <div className="ml-2 mt-1 space-y-1 border-l-2 border-gray-100 dark:border-gray-800 pl-4">
                     {item.subItems.map((subItem, idx) => {
-                      const SubIcon = subItem.icon;
                       const resolvedSubPath = resolvePath(subItem.path);
                       // Check if any sibling path starts with this path - if so, use exact match
                       const hasSiblingPrefix = item.subItems.some((other, otherIdx) => {
@@ -582,10 +581,7 @@ const Sidebar = ({ collapsed, setCollapsed }) => {
                               : 'text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800 hover:text-gray-700 dark:hover:text-gray-300'
                           }`}
                         >
-                          <div className="flex items-center">
-                            <SubIcon className="w-4 h-4 mr-2" />
-                            {subItem.label}
-                          </div>
+                          <span>{subItem.label}</span>
                           {subItem.badge && (
                             <span className="px-1.5 py-0.5 text-[10px] font-semibold text-blue-700 dark:text-blue-400 bg-blue-100 dark:bg-blue-900/30 rounded uppercase tracking-wide">
                               {subItem.badge}
@@ -667,7 +663,6 @@ const Sidebar = ({ collapsed, setCollapsed }) => {
                 {showSubmenu && (
                   <div className="ml-2 mt-1 space-y-1 border-l-2 border-gray-100 dark:border-gray-800 pl-4">
                     {item.subItems.map((subItem, idx) => {
-                      const SubIcon = subItem.icon;
                       // Check if any sibling path starts with this path - if so, use exact match
                       const hasSiblingPrefix = item.subItems.some((other, otherIdx) =>
                         otherIdx !== idx && other.path.startsWith(subItem.path + '/')
@@ -686,10 +681,7 @@ const Sidebar = ({ collapsed, setCollapsed }) => {
                               : 'text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800 hover:text-gray-700 dark:hover:text-gray-300'
                           }`}
                         >
-                          <div className="flex items-center">
-                            <SubIcon className="w-4 h-4 mr-2" />
-                            {subItem.label}
-                          </div>
+                          <span>{subItem.label}</span>
                         </Link>
                       );
                     })}
@@ -766,7 +758,6 @@ const Sidebar = ({ collapsed, setCollapsed }) => {
                 {showSubmenu && (
                   <div className="ml-2 mt-1 space-y-1 border-l-2 border-gray-100 dark:border-gray-800 pl-4">
                     {item.subItems.map((subItem, idx) => {
-                      const SubIcon = subItem.icon;
                       // Check if any sibling path starts with this path - if so, use exact match
                       const hasSiblingPrefix = item.subItems.some((other, otherIdx) =>
                         otherIdx !== idx && other.path.startsWith(subItem.path + '/')
@@ -785,10 +776,7 @@ const Sidebar = ({ collapsed, setCollapsed }) => {
                               : 'text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800 hover:text-gray-700 dark:hover:text-gray-300'
                           }`}
                         >
-                          <div className="flex items-center">
-                            <SubIcon className="w-4 h-4 mr-2" />
-                            {subItem.label}
-                          </div>
+                          <span>{subItem.label}</span>
                         </Link>
                       );
                     })}

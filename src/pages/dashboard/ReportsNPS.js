@@ -3,19 +3,19 @@ import { useNavigate } from 'react-router-dom';
 import { useVenue } from '../../context/VenueContext';
 import { supabase } from '../../utils/supabase';
 import usePageTitle from '../../hooks/usePageTitle';
-import { TrendingUp, TrendingDown, Minus, Mail, MailCheck, MailX, ChevronRight, Building2, Download, X, Loader2 } from 'lucide-react';
+import { ArrowUp, ArrowDown, ChevronRight, Building2, Download, X, Loader2 } from 'lucide-react';
 import FilterSelect from '../../components/ui/FilterSelect';
 import { usePermissions } from '../../context/PermissionsContext';
 import { Button } from '../../components/ui/button';
 import DatePicker from '../../components/dashboard/inputs/DatePicker';
+import ModernCard from '../../components/dashboard/layout/ModernCard';
 import {
-  AreaChart,
-  Area,
+  LineChart,
+  Line,
   BarChart,
   Bar,
   XAxis,
   YAxis,
-  CartesianGrid,
   Tooltip,
   ResponsiveContainer,
   Cell,
@@ -209,21 +209,16 @@ const ReportsNPS = () => {
   };
 
   const getCategoryColor = (score) => {
-    if (score >= 9) return '#10b981'; // green
-    if (score >= 7) return '#f59e0b'; // yellow
+    if (score >= 9) return '#22c55e'; // green
+    if (score >= 7) return '#f59e0b'; // amber
     return '#ef4444'; // red
   };
 
   const getNPSColor = (score) => {
-    if (score >= 50) return 'text-green-600';
-    if (score >= 0) return 'text-yellow-600';
-    return 'text-red-600';
-  };
-
-  const getNPSTrend = (score) => {
-    if (score >= 50) return <TrendingUp className="w-5 h-5 text-green-600" />;
-    if (score >= 0) return <Minus className="w-5 h-5 text-yellow-600" />;
-    return <TrendingDown className="w-5 h-5 text-red-600" />;
+    if (score === null || score === undefined) return 'text-gray-900 dark:text-white';
+    if (score >= 50) return 'text-emerald-600 dark:text-emerald-400';
+    if (score >= 0) return 'text-amber-600 dark:text-amber-400';
+    return 'text-rose-600 dark:text-rose-400';
   };
 
   const handleOpenExportModal = () => {
@@ -435,6 +430,65 @@ const ReportsNPS = () => {
     return <div className="p-6 text-gray-500">No NPS data available</div>;
   }
 
+  // Format date for chart labels
+  const formatDateLabel = (dateStr) => {
+    const date = new Date(dateStr);
+    return date.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' });
+  };
+
+  // Custom tooltip for trend chart
+  const TrendTooltip = ({ active, payload }) => {
+    if (active && payload && payload.length) {
+      const data = payload[0].payload;
+      return (
+        <div className="rounded-lg shadow-lg overflow-hidden">
+          <div className="bg-gray-900 px-3 py-2">
+            <p className="text-xs font-medium text-white">{data.date}</p>
+          </div>
+          <div className="bg-white dark:bg-gray-800 px-3 py-2">
+            <div className="flex items-center gap-2 text-sm">
+              <div className="w-2 h-2 rounded-full bg-blue-500" />
+              <span className="text-gray-700 dark:text-gray-300">NPS:</span>
+              <span className={`font-bold ${getNPSColor(data.nps)}`}>
+                {data.nps >= 0 ? `+${data.nps}` : data.nps}
+              </span>
+            </div>
+          </div>
+        </div>
+      );
+    }
+    return null;
+  };
+
+  // Custom tooltip for distribution chart
+  const DistributionTooltip = ({ active, payload }) => {
+    if (active && payload && payload.length) {
+      const data = payload[0].payload;
+      const category = data.score >= 9 ? 'Promoter' : data.score >= 7 ? 'Passive' : 'Detractor';
+      const categoryColor = data.score >= 9 ? 'text-green-600' : data.score >= 7 ? 'text-amber-600' : 'text-red-600';
+      return (
+        <div className="rounded-lg shadow-lg overflow-hidden">
+          <div className="bg-gray-900 px-3 py-2">
+            <p className="text-xs font-medium text-white">Score {data.score}</p>
+          </div>
+          <div className="bg-white dark:bg-gray-800 px-3 py-2">
+            <div className="flex items-center gap-2 text-sm">
+              <div
+                className="w-2 h-2 rounded-full"
+                style={{ backgroundColor: getCategoryColor(data.score) }}
+              />
+              <span className={`font-medium ${categoryColor}`}>{category}:</span>
+              <span className="font-bold text-gray-900 dark:text-white">
+                {data.count} responses
+              </span>
+            </div>
+          </div>
+        </div>
+      );
+    }
+    return null;
+  };
+
   return (
     <div className="space-y-6">
       {/* Page Header */}
@@ -466,368 +520,402 @@ const ReportsNPS = () => {
         </div>
       </div>
 
-      <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl overflow-hidden p-6">
-        <div className="space-y-6">
-          {/* Key Metrics */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-            {/* NPS Score */}
-            <div className="bg-gray-50 dark:bg-black rounded-lg p-6">
-              <div className="flex items-start justify-between mb-4">
-                <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${
-                  npsData.npsScore !== null && npsData.npsScore >= 50
-                    ? 'bg-green-100 dark:bg-green-900/30'
-                    : npsData.npsScore !== null && npsData.npsScore >= 0
-                    ? 'bg-yellow-100 dark:bg-yellow-900/30'
-                    : 'bg-red-100 dark:bg-red-900/30'
-                }`}>
-                  {npsData.npsScore !== null ? (
-                    getNPSTrend(npsData.npsScore)
-                  ) : (
-                    <Minus className="w-5 h-5 text-gray-400" />
-                  )}
-                </div>
-              </div>
-              <div className={`text-2xl font-bold mb-1 ${
-                npsData.npsScore !== null ? getNPSColor(npsData.npsScore) : 'text-gray-400'
-              }`}>
-                {npsData.npsScore !== null ? npsData.npsScore : '—'}
-              </div>
-              <div className="text-sm text-gray-600 dark:text-gray-400">
+      {/* Main Metrics Row */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        {/* NPS Score Card with Chart */}
+        <ModernCard className="relative" padding="p-5" shadow="shadow-sm">
+          <div className="flex items-start justify-between mb-4">
+            <div>
+              <p className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">
                 NPS Score
+              </p>
+              <div className="flex items-center gap-2">
+                <span className={`text-3xl font-bold ${getNPSColor(npsData.npsScore)}`}>
+                  {npsData.npsScore !== null ? (npsData.npsScore >= 0 ? `+${npsData.npsScore}` : npsData.npsScore) : '—'}
+                </span>
               </div>
-              <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+              <p className="text-xs text-gray-500 dark:text-gray-500 mt-1">
                 {npsData.responded} responses
+              </p>
+            </div>
+          </div>
+
+          {/* NPS Trend Sparkline */}
+          {npsData.trendChartData.length > 0 && (
+            <div className="h-32 w-full">
+              <ResponsiveContainer width="100%" height="100%">
+                <LineChart
+                  data={npsData.trendChartData}
+                  margin={{ top: 5, right: 10, left: 0, bottom: 5 }}
+                >
+                  <XAxis
+                    dataKey="date"
+                    axisLine={false}
+                    tickLine={false}
+                    tick={{ fontSize: 10, fill: '#9ca3af' }}
+                    tickMargin={8}
+                  />
+                  <YAxis
+                    domain={[-100, 100]}
+                    axisLine={false}
+                    tickLine={false}
+                    tick={{ fontSize: 10, fill: '#9ca3af' }}
+                    width={35}
+                    tickFormatter={(val) => val}
+                  />
+                  <Tooltip content={<TrendTooltip />} />
+                  <Line
+                    type="monotone"
+                    dataKey="nps"
+                    stroke="#3b82f6"
+                    strokeWidth={2}
+                    dot={false}
+                    activeDot={{ r: 4, strokeWidth: 2 }}
+                    isAnimationActive={false}
+                  />
+                </LineChart>
+              </ResponsiveContainer>
+            </div>
+          )}
+
+          {/* NPS Breakdown */}
+          <div className="border-t border-gray-100 dark:border-gray-800 pt-3 mt-2">
+            <div className="flex flex-wrap gap-x-4 gap-y-2">
+              <div className="flex items-center gap-1.5">
+                <div className="w-2.5 h-2.5 rounded-full bg-green-500" />
+                <span className="text-xs text-gray-600 dark:text-gray-400">Promoters:</span>
+                <span className="text-xs font-semibold text-gray-900 dark:text-white">{npsData.promoters}</span>
+                <span className="text-xs text-gray-400">
+                  ({npsData.responded > 0 ? Math.round((npsData.promoters / npsData.responded) * 100) : 0}%)
+                </span>
+              </div>
+              <div className="flex items-center gap-1.5">
+                <div className="w-2.5 h-2.5 rounded-full bg-amber-500" />
+                <span className="text-xs text-gray-600 dark:text-gray-400">Passives:</span>
+                <span className="text-xs font-semibold text-gray-900 dark:text-white">{npsData.passives}</span>
+                <span className="text-xs text-gray-400">
+                  ({npsData.responded > 0 ? Math.round((npsData.passives / npsData.responded) * 100) : 0}%)
+                </span>
+              </div>
+              <div className="flex items-center gap-1.5">
+                <div className="w-2.5 h-2.5 rounded-full bg-red-500" />
+                <span className="text-xs text-gray-600 dark:text-gray-400">Detractors:</span>
+                <span className="text-xs font-semibold text-gray-900 dark:text-white">{npsData.detractors}</span>
+                <span className="text-xs text-gray-400">
+                  ({npsData.responded > 0 ? Math.round((npsData.detractors / npsData.responded) * 100) : 0}%)
+                </span>
               </div>
             </div>
+          </div>
+        </ModernCard>
 
-            {/* Response Rate */}
-            <div className="bg-gray-50 dark:bg-black rounded-lg p-6">
-              <div className="flex items-start justify-between mb-4">
-                <div className="w-10 h-10 bg-blue-100 dark:bg-blue-900/30 rounded-lg flex items-center justify-center">
-                  <MailCheck className="w-5 h-5 text-blue-600 dark:text-blue-400" />
-                </div>
-              </div>
-              <div className="text-2xl font-bold text-gray-900 dark:text-white mb-1">
-                {npsData.responseRate}%
-              </div>
-              <div className="text-sm text-gray-600 dark:text-gray-400">
+        {/* Response Rate Card */}
+        <ModernCard className="relative" padding="p-5" shadow="shadow-sm">
+          <div className="flex items-start justify-between mb-4">
+            <div>
+              <p className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">
                 Response Rate
+              </p>
+              <div className="flex items-center gap-2">
+                <span className="text-3xl font-bold text-gray-900 dark:text-white">
+                  {npsData.responseRate}%
+                </span>
               </div>
-              <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                {npsData.responded} of {npsData.sent} sent
-              </div>
-            </div>
-
-            {/* Emails Sent */}
-            <div className="bg-gray-50 dark:bg-black rounded-lg p-6">
-              <div className="flex items-start justify-between mb-4">
-                <div className="w-10 h-10 bg-green-100 dark:bg-green-900/30 rounded-lg flex items-center justify-center">
-                  <Mail className="w-5 h-5 text-green-600 dark:text-green-400" />
-                </div>
-              </div>
-              <div className="text-2xl font-bold text-gray-900 dark:text-white mb-1">
-                {npsData.sent}
-              </div>
-              <div className="text-sm text-gray-600 dark:text-gray-400">
-                Emails Sent
-              </div>
-              <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                {npsData.pending} pending
-              </div>
-            </div>
-
-            {/* Failed */}
-            <div className="bg-gray-50 dark:bg-black rounded-lg p-6">
-              <div className="flex items-start justify-between mb-4">
-                <div className="w-10 h-10 bg-red-100 dark:bg-red-900/30 rounded-lg flex items-center justify-center">
-                  <MailX className="w-5 h-5 text-red-600 dark:text-red-400" />
-                </div>
-              </div>
-              <div className="text-2xl font-bold text-gray-900 dark:text-white mb-1">
-                {npsData.failed}
-              </div>
-              <div className="text-sm text-gray-600 dark:text-gray-400">
-                Failed Emails
-              </div>
-              <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                Send errors
-              </div>
+              <p className="text-xs text-gray-500 dark:text-gray-500 mt-1">
+                {npsData.responded} of {npsData.sent} responded
+              </p>
             </div>
           </div>
 
-          {/* Breakdown */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div className="bg-gray-50 dark:bg-black rounded-lg p-6">
-              <div className="flex items-start justify-between mb-4">
-                <div className="w-10 h-10 bg-green-100 dark:bg-green-900/30 rounded-lg flex items-center justify-center">
-                  <TrendingUp className="w-5 h-5 text-green-600 dark:text-green-400" />
-                </div>
-                <div className="px-2 py-1 rounded-full text-xs font-medium bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300">
-                  {npsData.responded > 0
-                    ? Math.round((npsData.promoters / npsData.responded) * 100)
-                    : 0}%
-                </div>
-              </div>
-              <div className="text-2xl font-bold text-gray-900 dark:text-white mb-1">
-                {npsData.promoters}
-              </div>
-              <div className="text-sm text-gray-600 dark:text-gray-400">
-                Promoters (9-10)
-              </div>
-              <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                of {npsData.responded} responses
-              </div>
-            </div>
-
-            <div className="bg-gray-50 dark:bg-black rounded-lg p-6">
-              <div className="flex items-start justify-between mb-4">
-                <div className="w-10 h-10 bg-yellow-100 dark:bg-yellow-900/30 rounded-lg flex items-center justify-center">
-                  <Minus className="w-5 h-5 text-yellow-600 dark:text-yellow-400" />
-                </div>
-                <div className="px-2 py-1 rounded-full text-xs font-medium bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-300">
-                  {npsData.responded > 0
-                    ? Math.round((npsData.passives / npsData.responded) * 100)
-                    : 0}%
-                </div>
-              </div>
-              <div className="text-2xl font-bold text-gray-900 dark:text-white mb-1">
-                {npsData.passives}
-              </div>
-              <div className="text-sm text-gray-600 dark:text-gray-400">
-                Passives (7-8)
-              </div>
-              <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                of {npsData.responded} responses
-              </div>
-            </div>
-
-            <div className="bg-gray-50 dark:bg-black rounded-lg p-6">
-              <div className="flex items-start justify-between mb-4">
-                <div className="w-10 h-10 bg-red-100 dark:bg-red-900/30 rounded-lg flex items-center justify-center">
-                  <TrendingDown className="w-5 h-5 text-red-600 dark:text-red-400" />
-                </div>
-                <div className="px-2 py-1 rounded-full text-xs font-medium bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300">
-                  {npsData.responded > 0
-                    ? Math.round((npsData.detractors / npsData.responded) * 100)
-                    : 0}%
-                </div>
-              </div>
-              <div className="text-2xl font-bold text-gray-900 dark:text-white mb-1">
-                {npsData.detractors}
-              </div>
-              <div className="text-sm text-gray-600 dark:text-gray-400">
-                Detractors (0-6)
-              </div>
-              <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                of {npsData.responded} responses
-              </div>
-            </div>
-          </div>
-
-          {/* Charts */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            {/* NPS Trend */}
-            <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-lg p-6">
-              <div className="mb-4">
-                <h3 className="text-base font-semibold text-gray-900 dark:text-white">NPS Trend Over Time</h3>
-                <p className="text-xs text-gray-600 dark:text-gray-400 mt-1">Net Promoter Score progression</p>
-              </div>
-              {npsData.trendChartData.length > 0 ? (
-                <div className="h-64">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <AreaChart data={npsData.trendChartData} margin={{ top: 8, right: 8, bottom: 8, left: 0 }}>
-                      <CartesianGrid stroke="#e5e7eb" strokeDasharray="3 3" />
-                      <XAxis
-                        dataKey="date"
-                        stroke="#64748B"
-                        fontSize={12}
-                        tick={{ fill: '#64748B' }}
-                      />
-                      <YAxis
-                        domain={[-100, 100]}
-                        stroke="#64748B"
-                        fontSize={12}
-                        tick={{ fill: '#64748B' }}
-                        width={40}
-                      />
-                      <Tooltip
-                        contentStyle={{
-                          backgroundColor: 'white',
-                          border: '1px solid #e5e7eb',
-                          borderRadius: 8,
-                          fontSize: 12,
-                          fontWeight: 'bold',
-                          boxShadow: '0 4px 6px -1px rgba(0,0,0,0.1)',
-                        }}
-                        formatter={(value) => [value, 'NPS Score']}
-                      />
-                      <Area
-                        type="linear"
-                        dataKey="nps"
-                        stroke="#3b82f6"
-                        fill="url(#colorNPS)"
-                        strokeWidth={2}
-                        connectNulls={true}
-                        isAnimationActive={false}
-                        dot={{ r: 2, fill: '#3b82f6', strokeWidth: 0 }}
-                        activeDot={{ r: 4, fill: '#3b82f6', strokeWidth: 2, stroke: 'white' }}
-                      />
-                      <defs>
-                        <linearGradient id="colorNPS" x1="0" y1="0" x2="0" y2="1">
-                          <stop offset="0%" stopColor="#3b82f6" stopOpacity={0.3} />
-                          <stop offset="100%" stopColor="#3b82f6" stopOpacity={0} />
-                        </linearGradient>
-                      </defs>
-                    </AreaChart>
-                  </ResponsiveContainer>
-                </div>
-              ) : (
-                <div className="h-64 flex items-center justify-center text-gray-500 dark:text-gray-400">
-                  No trend data available
-                </div>
-              )}
-            </div>
-
-            {/* Score Distribution */}
-            <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-lg p-6">
-              <div className="mb-4">
-                <h3 className="text-base font-semibold text-gray-900 dark:text-white">Score Distribution</h3>
-                <p className="text-xs text-gray-600 dark:text-gray-400 mt-1">Response breakdown by rating (0-10)</p>
-              </div>
-              {npsData.distributionData.some((d) => d.count > 0) ? (
-                <div className="h-64">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <BarChart data={npsData.distributionData} margin={{ top: 8, right: 8, bottom: 8, left: 0 }}>
-                      <CartesianGrid stroke="#e5e7eb" strokeDasharray="3 3" />
-                      <XAxis
-                        dataKey="score"
-                        stroke="#64748B"
-                        fontSize={12}
-                        tick={{ fill: '#64748B' }}
-                      />
-                      <YAxis
-                        stroke="#64748B"
-                        fontSize={12}
-                        tick={{ fill: '#64748B' }}
-                        width={32}
-                      />
-                      <Tooltip
-                        contentStyle={{
-                          backgroundColor: 'white',
-                          border: '1px solid #e5e7eb',
-                          borderRadius: 8,
-                          fontSize: 12,
-                          fontWeight: 'bold',
-                          boxShadow: '0 4px 6px -1px rgba(0,0,0,0.1)',
-                        }}
-                        cursor={{ fill: 'rgba(59, 130, 246, 0.1)' }}
-                        formatter={(value, name, props) => {
-                          const score = props.payload.score;
-                          const category = score >= 9 ? 'Promoter' : score >= 7 ? 'Passive' : 'Detractor';
-                          return [
-                            `${value} responses`,
-                            `Score ${score} (${category})`
-                          ];
-                        }}
-                      />
-                      <Bar dataKey="count" radius={[4, 4, 0, 0]}>
-                        {npsData.distributionData.map((entry, index) => (
-                          <Cell key={`cell-${index}`} fill={getCategoryColor(entry.score)} />
-                        ))}
-                      </Bar>
-                    </BarChart>
-                  </ResponsiveContainer>
-                </div>
-              ) : (
-                <div className="h-64 flex items-center justify-center text-gray-500 dark:text-gray-400">
-                  No distribution data available
-                </div>
-              )}
-            </div>
-          </div>
-
-          {/* Recent Responses Table */}
-          <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-lg p-6">
-            <h3 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-4">Recent Responses</h3>
-            <div className="overflow-x-auto">
-              <table className="w-full">
-                <thead>
-                  <tr className="border-b border-gray-200 dark:border-gray-800">
-                    <th className="text-left py-3 px-4 font-medium text-gray-700 dark:text-gray-300">Email</th>
-                    <th className="text-left py-3 px-4 font-medium text-gray-700 dark:text-gray-300">Table</th>
-                    <th className="text-left py-3 px-4 font-medium text-gray-700 dark:text-gray-300">Score</th>
-                    <th className="text-left py-3 px-4 font-medium text-gray-700 dark:text-gray-300">Category</th>
-                    <th className="text-left py-3 px-4 font-medium text-gray-700 dark:text-gray-300">Comment</th>
-                    <th className="text-left py-3 px-4 font-medium text-gray-700 dark:text-gray-300">Date</th>
-                    <th className="text-left py-3 px-4 font-medium text-gray-700 dark:text-gray-300">Status</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {submissions
-                    .filter((s) => s.responded_at)
-                    .sort((a, b) => new Date(b.responded_at) - new Date(a.responded_at))
-                    .slice(0, 10)
-                    .map((submission) => {
-                      const category =
-                        submission.score >= 9
-                          ? { label: 'Promoter', color: 'text-green-600' }
-                          : submission.score >= 7
-                          ? { label: 'Passive', color: 'text-yellow-600' }
-                          : { label: 'Detractor', color: 'text-red-600' };
-
+          {/* Response Bar Chart */}
+          <div className="h-32 w-full">
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart
+                data={[
+                  { name: 'Responded', value: npsData.responded, color: '#22c55e' },
+                  { name: 'No Response', value: npsData.sent - npsData.responded, color: '#9ca3af' }
+                ]}
+                layout="vertical"
+                margin={{ top: 5, right: 30, left: 10, bottom: 5 }}
+              >
+                <XAxis type="number" hide />
+                <YAxis
+                  type="category"
+                  dataKey="name"
+                  axisLine={false}
+                  tickLine={false}
+                  tick={{ fontSize: 12, fill: '#6b7280' }}
+                  width={90}
+                />
+                <Tooltip
+                  content={({ active, payload }) => {
+                    if (active && payload && payload.length) {
+                      const item = payload[0].payload;
                       return (
-                        <tr key={submission.id} className="border-b border-gray-200 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-800">
-                          <td className="py-3 px-4 text-sm text-gray-900 dark:text-gray-300">{submission.customer_email}</td>
-                          <td className="py-3 px-4 text-sm text-gray-600 dark:text-gray-400">
-                            {submission.linkedFeedback?.table_number || submission.table_number ? (
-                              <span>{submission.linkedFeedback?.table_number || submission.table_number}</span>
-                            ) : (
-                              <span className="text-gray-400 dark:text-gray-500">—</span>
-                            )}
-                          </td>
-                          <td className="py-3 px-4">
-                            <span className={`text-lg font-bold ${category.color}`}>
-                              {submission.score}
+                        <div className="rounded-lg shadow-lg overflow-hidden">
+                          <div className="bg-gray-900 px-3 py-2">
+                            <p className="text-xs font-medium text-white">{item.name}</p>
+                          </div>
+                          <div className="bg-white dark:bg-gray-800 px-3 py-2">
+                            <span className="font-bold text-gray-900 dark:text-white">
+                              {item.value}
                             </span>
-                          </td>
-                          <td className="py-3 px-4">
-                            <span className={`text-sm font-medium ${category.color}`}>
-                              {category.label}
-                            </span>
-                          </td>
-                          <td className="py-3 px-4 text-sm text-gray-600 dark:text-gray-400 max-w-xs">
-                            {submission.feedback ? (
-                              <span className="line-clamp-2" title={submission.feedback}>
-                                {submission.feedback}
-                              </span>
-                            ) : (
-                              <span className="text-gray-400 dark:text-gray-500">—</span>
-                            )}
-                          </td>
-                          <td className="py-3 px-4 text-sm text-gray-600 dark:text-gray-400">
-                            {new Date(submission.responded_at).toLocaleDateString()}
-                          </td>
-                          <td className="py-3 px-4">
-                            <span className="text-xs bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300 px-2 py-1 rounded">
-                              Responded
-                            </span>
-                          </td>
-                        </tr>
+                          </div>
+                        </div>
                       );
-                    })}
-                  {submissions.filter((s) => s.responded_at).length === 0 && (
-                    <tr>
-                      <td colSpan="7" className="py-8 text-center text-gray-400">
-                        No responses yet
-                      </td>
-                    </tr>
-                  )}
-                </tbody>
-              </table>
+                    }
+                    return null;
+                  }}
+                />
+                <Bar dataKey="value" radius={[0, 4, 4, 0]} barSize={24}>
+                  {[
+                    { name: 'Responded', value: npsData.responded, color: '#22c55e' },
+                    { name: 'No Response', value: npsData.sent - npsData.responded, color: '#9ca3af' }
+                  ].map((entry, index) => (
+                    <Cell key={`cell-${index}`} fill={entry.color} />
+                  ))}
+                </Bar>
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+
+          {/* Legend */}
+          <div className="border-t border-gray-100 dark:border-gray-800 pt-3 mt-2">
+            <div className="flex flex-wrap gap-x-4 gap-y-2">
+              <div className="flex items-center gap-1.5">
+                <div className="w-2.5 h-2.5 rounded-full bg-green-500" />
+                <span className="text-xs text-gray-600 dark:text-gray-400">Responded:</span>
+                <span className="text-xs font-semibold text-gray-900 dark:text-white">{npsData.responded}</span>
+              </div>
+              <div className="flex items-center gap-1.5">
+                <div className="w-2.5 h-2.5 rounded-full bg-gray-400" />
+                <span className="text-xs text-gray-600 dark:text-gray-400">No Response:</span>
+                <span className="text-xs font-semibold text-gray-900 dark:text-white">{npsData.sent - npsData.responded}</span>
+              </div>
+            </div>
+          </div>
+        </ModernCard>
+
+        {/* Emails Sent Card */}
+        <ModernCard className="relative" padding="p-5" shadow="shadow-sm">
+          <div className="flex items-start justify-between mb-4">
+            <div>
+              <p className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">
+                Emails Sent
+              </p>
+              <div className="flex items-center gap-2">
+                <span className="text-3xl font-bold text-gray-900 dark:text-white">
+                  {npsData.sent}
+                </span>
+              </div>
+              <p className="text-xs text-gray-500 dark:text-gray-500 mt-1">
+                {npsData.pending} pending · {npsData.failed} failed
+              </p>
+            </div>
+          </div>
+
+          {/* Email Delivery Bar Chart */}
+          <div className="h-32 w-full">
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart
+                data={[
+                  { name: 'Delivered', value: npsData.sent - npsData.failed, color: '#22c55e' },
+                  { name: 'Failed', value: npsData.failed, color: '#ef4444' }
+                ]}
+                layout="vertical"
+                margin={{ top: 5, right: 30, left: 10, bottom: 5 }}
+              >
+                <XAxis type="number" hide />
+                <YAxis
+                  type="category"
+                  dataKey="name"
+                  axisLine={false}
+                  tickLine={false}
+                  tick={{ fontSize: 12, fill: '#6b7280' }}
+                  width={90}
+                />
+                <Tooltip
+                  content={({ active, payload }) => {
+                    if (active && payload && payload.length) {
+                      const item = payload[0].payload;
+                      return (
+                        <div className="rounded-lg shadow-lg overflow-hidden">
+                          <div className="bg-gray-900 px-3 py-2">
+                            <p className="text-xs font-medium text-white">{item.name}</p>
+                          </div>
+                          <div className="bg-white dark:bg-gray-800 px-3 py-2">
+                            <span className="font-bold text-gray-900 dark:text-white">
+                              {item.value}
+                            </span>
+                          </div>
+                        </div>
+                      );
+                    }
+                    return null;
+                  }}
+                />
+                <Bar dataKey="value" radius={[0, 4, 4, 0]} barSize={24}>
+                  {[
+                    { name: 'Delivered', value: npsData.sent - npsData.failed, color: '#22c55e' },
+                    { name: 'Failed', value: npsData.failed, color: '#ef4444' }
+                  ].map((entry, index) => (
+                    <Cell key={`cell-${index}`} fill={entry.color} />
+                  ))}
+                </Bar>
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+
+          {/* Legend */}
+          <div className="border-t border-gray-100 dark:border-gray-800 pt-3 mt-2">
+            <div className="flex flex-wrap gap-x-4 gap-y-2">
+              <div className="flex items-center gap-1.5">
+                <div className="w-2.5 h-2.5 rounded-full bg-green-500" />
+                <span className="text-xs text-gray-600 dark:text-gray-400">Delivered:</span>
+                <span className="text-xs font-semibold text-gray-900 dark:text-white">{npsData.sent - npsData.failed}</span>
+              </div>
+              <div className="flex items-center gap-1.5">
+                <div className="w-2.5 h-2.5 rounded-full bg-red-500" />
+                <span className="text-xs text-gray-600 dark:text-gray-400">Failed:</span>
+                <span className="text-xs font-semibold text-gray-900 dark:text-white">{npsData.failed}</span>
+              </div>
+            </div>
+          </div>
+        </ModernCard>
+      </div>
+
+      {/* Score Distribution */}
+      <ModernCard padding="p-5" shadow="shadow-sm">
+        <div className="mb-4">
+          <h3 className="text-base font-semibold text-gray-900 dark:text-white">Score Distribution</h3>
+          <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">Response breakdown by rating (0-10)</p>
+        </div>
+        {npsData.distributionData.some((d) => d.count > 0) ? (
+          <div className="h-48">
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart data={npsData.distributionData} margin={{ top: 8, right: 8, bottom: 8, left: 0 }}>
+                <XAxis
+                  dataKey="score"
+                  axisLine={false}
+                  tickLine={false}
+                  tick={{ fontSize: 12, fill: '#6b7280' }}
+                />
+                <YAxis
+                  axisLine={false}
+                  tickLine={false}
+                  tick={{ fontSize: 12, fill: '#6b7280' }}
+                  width={32}
+                />
+                <Tooltip content={<DistributionTooltip />} cursor={false} />
+                <Bar dataKey="count" radius={[4, 4, 0, 0]}>
+                  {npsData.distributionData.map((entry, index) => (
+                    <Cell key={`cell-${index}`} fill={getCategoryColor(entry.score)} />
+                  ))}
+                </Bar>
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+        ) : (
+          <div className="h-48 flex items-center justify-center text-gray-500 dark:text-gray-400">
+            No distribution data available
+          </div>
+        )}
+        {/* Legend */}
+        <div className="border-t border-gray-100 dark:border-gray-800 pt-3 mt-4">
+          <div className="flex flex-wrap gap-x-6 gap-y-2">
+            <div className="flex items-center gap-1.5">
+              <div className="w-2.5 h-2.5 rounded-full bg-green-500" />
+              <span className="text-xs text-gray-600 dark:text-gray-400">Promoters (9-10)</span>
+            </div>
+            <div className="flex items-center gap-1.5">
+              <div className="w-2.5 h-2.5 rounded-full bg-amber-500" />
+              <span className="text-xs text-gray-600 dark:text-gray-400">Passives (7-8)</span>
+            </div>
+            <div className="flex items-center gap-1.5">
+              <div className="w-2.5 h-2.5 rounded-full bg-red-500" />
+              <span className="text-xs text-gray-600 dark:text-gray-400">Detractors (0-6)</span>
             </div>
           </div>
         </div>
-      </div>
+      </ModernCard>
+
+      {/* Recent Responses Table */}
+      <ModernCard padding="p-5" shadow="shadow-sm">
+        <div className="mb-4">
+          <h3 className="text-base font-semibold text-gray-900 dark:text-white">Recent Responses</h3>
+          <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">Latest NPS submissions with feedback</p>
+        </div>
+        <div className="overflow-x-auto">
+          <table className="w-full">
+            <thead>
+              <tr className="border-b border-gray-200 dark:border-gray-800">
+                <th className="text-left py-3 px-4 font-medium text-xs uppercase tracking-wide text-gray-500 dark:text-gray-400">Email</th>
+                <th className="text-left py-3 px-4 font-medium text-xs uppercase tracking-wide text-gray-500 dark:text-gray-400">Table</th>
+                <th className="text-left py-3 px-4 font-medium text-xs uppercase tracking-wide text-gray-500 dark:text-gray-400">Score</th>
+                <th className="text-left py-3 px-4 font-medium text-xs uppercase tracking-wide text-gray-500 dark:text-gray-400">Category</th>
+                <th className="text-left py-3 px-4 font-medium text-xs uppercase tracking-wide text-gray-500 dark:text-gray-400">Comment</th>
+                <th className="text-left py-3 px-4 font-medium text-xs uppercase tracking-wide text-gray-500 dark:text-gray-400">Date</th>
+              </tr>
+            </thead>
+            <tbody>
+              {submissions
+                .filter((s) => s.responded_at)
+                .sort((a, b) => new Date(b.responded_at) - new Date(a.responded_at))
+                .slice(0, 10)
+                .map((submission) => {
+                  const category =
+                    submission.score >= 9
+                      ? { label: 'Promoter', color: 'text-green-600', bg: 'bg-green-100 dark:bg-green-900/30' }
+                      : submission.score >= 7
+                      ? { label: 'Passive', color: 'text-amber-600', bg: 'bg-amber-100 dark:bg-amber-900/30' }
+                      : { label: 'Detractor', color: 'text-red-600', bg: 'bg-red-100 dark:bg-red-900/30' };
+
+                  return (
+                    <tr key={submission.id} className="border-b border-gray-100 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors">
+                      <td className="py-3 px-4 text-sm text-gray-900 dark:text-gray-300">{submission.customer_email}</td>
+                      <td className="py-3 px-4 text-sm text-gray-600 dark:text-gray-400">
+                        {submission.linkedFeedback?.table_number || submission.table_number ? (
+                          <span className="font-medium">{submission.linkedFeedback?.table_number || submission.table_number}</span>
+                        ) : (
+                          <span className="text-gray-400 dark:text-gray-500">—</span>
+                        )}
+                      </td>
+                      <td className="py-3 px-4">
+                        <span className={`text-lg font-bold ${category.color}`}>
+                          {submission.score}
+                        </span>
+                      </td>
+                      <td className="py-3 px-4">
+                        <span className={`text-xs font-medium px-2 py-1 rounded-full ${category.bg} ${category.color}`}>
+                          {category.label}
+                        </span>
+                      </td>
+                      <td className="py-3 px-4 text-sm text-gray-600 dark:text-gray-400 max-w-xs">
+                        {submission.feedback ? (
+                          <span className="line-clamp-2" title={submission.feedback}>
+                            {submission.feedback}
+                          </span>
+                        ) : (
+                          <span className="text-gray-400 dark:text-gray-500">—</span>
+                        )}
+                      </td>
+                      <td className="py-3 px-4 text-sm text-gray-600 dark:text-gray-400">
+                        {new Date(submission.responded_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}
+                      </td>
+                    </tr>
+                  );
+                })}
+              {submissions.filter((s) => s.responded_at).length === 0 && (
+                <tr>
+                  <td colSpan="6" className="py-12 text-center text-gray-400">
+                    No responses yet
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </div>
+      </ModernCard>
 
       {/* Export Modal */}
       {showExportModal && (

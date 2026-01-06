@@ -3,31 +3,24 @@ import { useVenue } from '../../context/VenueContext';
 import { supabase } from '../../utils/supabase';
 import usePageTitle from '../../hooks/usePageTitle';
 import FilterSelect from '../../components/ui/FilterSelect';
+import ModernCard from '../../components/dashboard/layout/ModernCard';
 import {
   TrendingUp,
   TrendingDown,
   Clock,
   MessageSquare,
-  Users,
   Star,
   ArrowUpRight,
-  ArrowDownRight,
-  Minus,
-  Table2,
-  Calendar
+  Minus
 } from 'lucide-react';
 import {
   BarChart,
   Bar,
   XAxis,
   YAxis,
-  CartesianGrid,
   Tooltip,
   ResponsiveContainer,
-  Cell,
-  PieChart,
-  Pie,
-  Legend
+  Cell
 } from 'recharts';
 
 const NPSInsights = () => {
@@ -309,9 +302,30 @@ const NPSInsights = () => {
 
   const getNPSColor = (score) => {
     if (score === null) return '#9ca3af';
-    if (score >= 50) return '#10b981';
+    if (score >= 50) return '#22c55e';
     if (score >= 0) return '#f59e0b';
     return '#ef4444';
+  };
+
+  // Custom tooltip component
+  const CustomTooltip = ({ active, payload, label, formatter }) => {
+    if (active && payload && payload.length) {
+      return (
+        <div className="rounded-lg shadow-lg overflow-hidden">
+          <div className="bg-gray-900 px-3 py-2">
+            <p className="text-xs font-medium text-white">{label}</p>
+          </div>
+          <div className="bg-white dark:bg-gray-800 px-3 py-2">
+            {formatter ? formatter(payload[0]) : (
+              <span className="font-bold text-gray-900 dark:text-white">
+                {payload[0].value}
+              </span>
+            )}
+          </div>
+        </div>
+      );
+    }
+    return null;
   };
 
   const getCategoryIcon = (score) => {
@@ -365,127 +379,150 @@ const NPSInsights = () => {
 
       {/* Summary Stats */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl p-6">
-          <div className="flex items-center gap-3 mb-2">
-            <div className="w-10 h-10 bg-blue-100 dark:bg-blue-900/30 rounded-lg flex items-center justify-center">
-              <MessageSquare className="w-5 h-5 text-blue-600 dark:text-blue-400" />
-            </div>
-            <div>
-              <div className="text-2xl font-bold text-gray-900 dark:text-white">{insights.totalResponses}</div>
-              <div className="text-sm text-gray-600 dark:text-gray-400">Total NPS Responses</div>
-            </div>
+        <ModernCard padding="p-5" shadow="shadow-sm">
+          <p className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">
+            Total NPS Responses
+          </p>
+          <div className="text-3xl font-bold text-gray-900 dark:text-white">
+            {insights.totalResponses}
           </div>
-        </div>
+          <p className="text-xs text-gray-500 dark:text-gray-500 mt-1">
+            In selected period
+          </p>
+        </ModernCard>
 
-        <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl p-6">
-          <div className="flex items-center gap-3 mb-2">
-            <div className="w-10 h-10 bg-green-100 dark:bg-green-900/30 rounded-lg flex items-center justify-center">
-              <ArrowUpRight className="w-5 h-5 text-green-600 dark:text-green-400" />
-            </div>
-            <div>
-              <div className="text-2xl font-bold text-gray-900 dark:text-white">{insights.totalLinked}</div>
-              <div className="text-sm text-gray-600 dark:text-gray-400">Linked to Feedback</div>
-            </div>
+        <ModernCard padding="p-5" shadow="shadow-sm">
+          <p className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">
+            Linked to Feedback
+          </p>
+          <div className="text-3xl font-bold text-gray-900 dark:text-white">
+            {insights.totalLinked}
           </div>
-        </div>
+          <p className="text-xs text-gray-500 dark:text-gray-500 mt-1">
+            {insights.totalResponses > 0
+              ? `${Math.round((insights.totalLinked / insights.totalResponses) * 100)}% of responses`
+              : 'No responses yet'}
+          </p>
+        </ModernCard>
 
-        <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl p-6">
-          <div className="flex items-center gap-3 mb-2">
-            <div className="w-10 h-10 bg-purple-100 dark:bg-purple-900/30 rounded-lg flex items-center justify-center">
-              <Clock className="w-5 h-5 text-purple-600 dark:text-purple-400" />
-            </div>
-            <div>
-              <div className="text-2xl font-bold text-gray-900 dark:text-white">
-                {insights.responseTimeAnalysis.average}h
-              </div>
-              <div className="text-sm text-gray-600 dark:text-gray-400">Avg Response Time</div>
-            </div>
+        <ModernCard padding="p-5" shadow="shadow-sm">
+          <p className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">
+            Avg Response Time
+          </p>
+          <div className="text-3xl font-bold text-gray-900 dark:text-white">
+            {insights.responseTimeAnalysis.average}h
           </div>
-        </div>
+          <p className="text-xs text-gray-500 dark:text-gray-500 mt-1">
+            Median: {insights.responseTimeAnalysis.median}h
+          </p>
+        </ModernCard>
       </div>
 
       {/* Correlation: Feedback Rating vs NPS */}
-      {insights.ratingCorrelation.length > 0 && (
-        <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl p-6">
-          <div className="mb-4">
-            <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Feedback Rating vs NPS Score</h3>
-            <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
-              How does the original feedback rating correlate with NPS responses?
-            </p>
-          </div>
-          <div className="h-64">
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={insights.ratingCorrelation} margin={{ top: 8, right: 8, bottom: 8, left: 0 }}>
-                <CartesianGrid stroke="#e5e7eb" strokeDasharray="3 3" />
-                <XAxis
-                  dataKey="rating"
-                  stroke="#64748B"
-                  fontSize={12}
-                  tickFormatter={(val) => `${val} star`}
-                />
-                <YAxis
-                  domain={[-100, 100]}
-                  stroke="#64748B"
-                  fontSize={12}
-                  width={40}
-                />
-                <Tooltip
-                  contentStyle={{
-                    backgroundColor: 'white',
-                    border: '1px solid #e5e7eb',
-                    borderRadius: 8,
-                    fontSize: 12,
-                  }}
-                  formatter={(value, name, props) => [
-                    `NPS: ${value}`,
-                    `${props.payload.count} responses`
-                  ]}
-                />
-                <Bar dataKey="npsScore" radius={[4, 4, 0, 0]}>
-                  {insights.ratingCorrelation.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={getNPSColor(entry.npsScore)} />
-                  ))}
-                </Bar>
-              </BarChart>
-            </ResponsiveContainer>
-          </div>
-          <div className="mt-4 grid grid-cols-5 gap-2">
-            {insights.ratingCorrelation.map(item => (
-              <div key={item.rating} className="text-center p-2 bg-gray-50 dark:bg-gray-800 rounded-lg">
-                <div className="flex items-center justify-center gap-1 mb-1">
-                  {[...Array(item.rating)].map((_, i) => (
-                    <Star key={i} className="w-3 h-3 fill-yellow-400 text-yellow-400" />
-                  ))}
-                </div>
-                <div className="text-lg font-bold" style={{ color: getNPSColor(item.npsScore) }}>
-                  {item.npsScore}
-                </div>
-                <div className="text-xs text-gray-500 dark:text-gray-400">{item.count} resp.</div>
-              </div>
-            ))}
-          </div>
+      <ModernCard padding="p-5" shadow="shadow-sm">
+        <div className="mb-4">
+          <h3 className="text-base font-semibold text-gray-900 dark:text-white">Feedback Rating vs NPS Score</h3>
+          <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+            How does the original feedback rating correlate with NPS responses?
+          </p>
         </div>
-      )}
+        {insights.ratingCorrelation.length > 0 ? (
+          <>
+            <div className="h-48">
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={insights.ratingCorrelation} margin={{ top: 8, right: 8, bottom: 8, left: 0 }}>
+                  <XAxis
+                    dataKey="rating"
+                    axisLine={false}
+                    tickLine={false}
+                    tick={{ fontSize: 12, fill: '#6b7280' }}
+                    tickFormatter={(val) => `${val}★`}
+                  />
+                  <YAxis
+                    domain={[-100, 100]}
+                    axisLine={false}
+                    tickLine={false}
+                    tick={{ fontSize: 12, fill: '#6b7280' }}
+                    width={40}
+                  />
+                  <Tooltip
+                    cursor={false}
+                    content={({ active, payload }) => {
+                      if (active && payload && payload.length) {
+                        const data = payload[0].payload;
+                        return (
+                          <div className="rounded-lg shadow-lg overflow-hidden">
+                            <div className="bg-gray-900 px-3 py-2">
+                              <p className="text-xs font-medium text-white">{data.rating} Star Rating</p>
+                            </div>
+                            <div className="bg-white dark:bg-gray-800 px-3 py-2">
+                              <div className="text-sm">
+                                <span className="text-gray-600 dark:text-gray-400">NPS: </span>
+                                <span className="font-bold" style={{ color: getNPSColor(data.npsScore) }}>
+                                  {data.npsScore >= 0 ? `+${data.npsScore}` : data.npsScore}
+                                </span>
+                              </div>
+                              <div className="text-xs text-gray-500 mt-1">{data.count} responses</div>
+                            </div>
+                          </div>
+                        );
+                      }
+                      return null;
+                    }}
+                  />
+                  <Bar dataKey="npsScore" radius={[4, 4, 0, 0]}>
+                    {insights.ratingCorrelation.map((entry, index) => (
+                      <Cell key={`cell-${index}`} fill={getNPSColor(entry.npsScore)} />
+                    ))}
+                  </Bar>
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+            {/* Legend */}
+            <div className="border-t border-gray-100 dark:border-gray-800 pt-3 mt-4">
+              <div className="grid grid-cols-5 gap-2">
+                {insights.ratingCorrelation.map(item => (
+                  <div key={item.rating} className="text-center">
+                    <div className="flex items-center justify-center gap-0.5 mb-1">
+                      {[...Array(item.rating)].map((_, i) => (
+                        <Star key={i} className="w-2.5 h-2.5 fill-yellow-400 text-yellow-400" />
+                      ))}
+                    </div>
+                    <div className="text-sm font-bold" style={{ color: getNPSColor(item.npsScore) }}>
+                      {item.npsScore >= 0 ? `+${item.npsScore}` : item.npsScore}
+                    </div>
+                    <div className="text-xs text-gray-400">{item.count}</div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </>
+        ) : (
+          <div className="h-48 flex items-center justify-center text-gray-500 dark:text-gray-400">
+            No linked feedback data available
+          </div>
+        )}
+      </ModernCard>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
         {/* NPS by Day of Week */}
-        <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl p-6">
+        <ModernCard padding="p-5" shadow="shadow-sm">
           <div className="mb-4">
-            <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+            <h3 className="text-base font-semibold text-gray-900 dark:text-white">
               NPS by Day of Week
             </h3>
-            <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+            <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
               Which days generate the highest NPS scores?
             </p>
           </div>
           <div className="space-y-2">
             {insights.dayOfWeekAnalysis.map(day => (
               <div key={day.day} className="flex items-center gap-3">
-                <div className="w-10 text-sm font-medium text-gray-600 dark:text-gray-400">{day.day}</div>
-                <div className="flex-1 h-8 bg-gray-100 dark:bg-gray-800 rounded-lg overflow-hidden relative">
+                <div className="w-10 text-xs font-medium text-gray-500 dark:text-gray-400">{day.day}</div>
+                <div className="flex-1 h-7 bg-gray-100 dark:bg-gray-800 rounded-md overflow-hidden relative">
                   {day.npsScore !== null && (
                     <div
-                      className="h-full rounded-lg transition-all"
+                      className="h-full rounded-md transition-all"
                       style={{
                         width: `${Math.max(0, (day.npsScore + 100) / 2)}%`,
                         backgroundColor: getNPSColor(day.npsScore)
@@ -493,87 +530,112 @@ const NPSInsights = () => {
                     />
                   )}
                   <div className="absolute inset-0 flex items-center justify-between px-3">
-                    <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                      {day.npsScore !== null ? day.npsScore : '—'}
+                    <span className="text-xs font-semibold text-gray-700 dark:text-gray-300">
+                      {day.npsScore !== null ? (day.npsScore >= 0 ? `+${day.npsScore}` : day.npsScore) : '—'}
                     </span>
-                    <span className="text-xs text-gray-500 dark:text-gray-400">{day.count} resp.</span>
+                    <span className="text-xs text-gray-500 dark:text-gray-400">{day.count}</span>
                   </div>
                 </div>
               </div>
             ))}
           </div>
-        </div>
+        </ModernCard>
 
         {/* Response Time Distribution */}
-        <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl p-6">
+        <ModernCard padding="p-5" shadow="shadow-sm">
           <div className="mb-4">
-            <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+            <h3 className="text-base font-semibold text-gray-900 dark:text-white">
               Response Time Distribution
             </h3>
-            <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+            <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
               How quickly do customers respond to NPS surveys?
             </p>
           </div>
-          <div className="h-48">
+          <div className="h-40">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={insights.responseTimeAnalysis.byHour} margin={{ top: 8, right: 8, bottom: 8, left: 0 }}>
-                <CartesianGrid stroke="#e5e7eb" strokeDasharray="3 3" />
-                <XAxis dataKey="label" stroke="#64748B" fontSize={10} />
-                <YAxis stroke="#64748B" fontSize={12} width={32} />
+                <XAxis
+                  dataKey="label"
+                  axisLine={false}
+                  tickLine={false}
+                  tick={{ fontSize: 10, fill: '#6b7280' }}
+                />
+                <YAxis
+                  axisLine={false}
+                  tickLine={false}
+                  tick={{ fontSize: 12, fill: '#6b7280' }}
+                  width={32}
+                />
                 <Tooltip
-                  contentStyle={{
-                    backgroundColor: 'white',
-                    border: '1px solid #e5e7eb',
-                    borderRadius: 8,
-                    fontSize: 12,
+                  cursor={false}
+                  content={({ active, payload }) => {
+                    if (active && payload && payload.length) {
+                      const data = payload[0].payload;
+                      return (
+                        <div className="rounded-lg shadow-lg overflow-hidden">
+                          <div className="bg-gray-900 px-3 py-2">
+                            <p className="text-xs font-medium text-white">{data.label}</p>
+                          </div>
+                          <div className="bg-white dark:bg-gray-800 px-3 py-2">
+                            <span className="font-bold text-gray-900 dark:text-white">
+                              {data.count} responses
+                            </span>
+                          </div>
+                        </div>
+                      );
+                    }
+                    return null;
                   }}
                 />
                 <Bar dataKey="count" fill="#3b82f6" radius={[4, 4, 0, 0]} />
               </BarChart>
             </ResponsiveContainer>
           </div>
-          <div className="mt-4 flex justify-around text-center">
-            <div>
-              <div className="text-xl font-bold text-gray-900 dark:text-white">
-                {insights.responseTimeAnalysis.average}h
+          {/* Legend */}
+          <div className="border-t border-gray-100 dark:border-gray-800 pt-3 mt-2">
+            <div className="flex justify-around text-center">
+              <div>
+                <div className="text-lg font-bold text-gray-900 dark:text-white">
+                  {insights.responseTimeAnalysis.average}h
+                </div>
+                <div className="text-xs text-gray-500 dark:text-gray-400">Average</div>
               </div>
-              <div className="text-xs text-gray-500 dark:text-gray-400">Average</div>
-            </div>
-            <div>
-              <div className="text-xl font-bold text-gray-900 dark:text-white">
-                {insights.responseTimeAnalysis.median}h
+              <div>
+                <div className="text-lg font-bold text-gray-900 dark:text-white">
+                  {insights.responseTimeAnalysis.median}h
+                </div>
+                <div className="text-xs text-gray-500 dark:text-gray-400">Median</div>
               </div>
-              <div className="text-xs text-gray-500 dark:text-gray-400">Median</div>
             </div>
           </div>
-        </div>
+        </ModernCard>
       </div>
 
       {/* NPS by Table/Location */}
-      {insights.tableAnalysis.length > 0 && (
-        <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl p-6">
-          <div className="mb-4">
-            <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
-              NPS by Table/Location
-            </h3>
-            <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
-              Which tables or locations generate the best NPS scores?
-            </p>
-          </div>
+      <ModernCard padding="p-5" shadow="shadow-sm">
+        <div className="mb-4">
+          <h3 className="text-base font-semibold text-gray-900 dark:text-white">
+            NPS by Table/Location
+          </h3>
+          <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+            Which tables or locations generate the best NPS scores?
+          </p>
+        </div>
+        {insights.tableAnalysis.length > 0 ? (
           <div className="overflow-x-auto">
             <table className="w-full">
               <thead>
                 <tr className="border-b border-gray-200 dark:border-gray-800">
-                  <th className="text-left py-3 px-4 font-medium text-gray-700 dark:text-gray-300">Table</th>
-                  <th className="text-center py-3 px-4 font-medium text-gray-700 dark:text-gray-300">NPS Score</th>
-                  <th className="text-center py-3 px-4 font-medium text-gray-700 dark:text-gray-300">Responses</th>
-                  <th className="text-center py-3 px-4 font-medium text-gray-700 dark:text-gray-300">Promoters</th>
-                  <th className="text-center py-3 px-4 font-medium text-gray-700 dark:text-gray-300">Detractors</th>
+                  <th className="text-left py-3 px-4 font-medium text-xs uppercase tracking-wide text-gray-500 dark:text-gray-400">Table</th>
+                  <th className="text-center py-3 px-4 font-medium text-xs uppercase tracking-wide text-gray-500 dark:text-gray-400">NPS Score</th>
+                  <th className="text-center py-3 px-4 font-medium text-xs uppercase tracking-wide text-gray-500 dark:text-gray-400">Responses</th>
+                  <th className="text-center py-3 px-4 font-medium text-xs uppercase tracking-wide text-gray-500 dark:text-gray-400">Promoters</th>
+                  <th className="text-center py-3 px-4 font-medium text-xs uppercase tracking-wide text-gray-500 dark:text-gray-400">Detractors</th>
                 </tr>
               </thead>
               <tbody>
                 {insights.tableAnalysis.map((row) => (
-                  <tr key={row.table} className="border-b border-gray-200 dark:border-gray-800">
+                  <tr key={row.table} className="border-b border-gray-100 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors">
                     <td className="py-3 px-4 font-medium text-gray-900 dark:text-white">
                       Table {row.table}
                     </td>
@@ -583,7 +645,7 @@ const NPSInsights = () => {
                         style={{ color: getNPSColor(row.npsScore) }}
                       >
                         {getCategoryIcon(row.npsScore)}
-                        {row.npsScore}
+                        {row.npsScore >= 0 ? `+${row.npsScore}` : row.npsScore}
                       </span>
                     </td>
                     <td className="py-3 px-4 text-center text-gray-600 dark:text-gray-400">
@@ -596,41 +658,49 @@ const NPSInsights = () => {
               </tbody>
             </table>
           </div>
-        </div>
-      )}
+        ) : (
+          <div className="h-32 flex items-center justify-center text-gray-500 dark:text-gray-400">
+            No table data available
+          </div>
+        )}
+      </ModernCard>
 
       {/* Response Rate by Original Sentiment */}
-      {insights.sentimentResponseRate.length > 0 && (
-        <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl p-6">
-          <div className="mb-4">
-            <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
-              Response Rate by Original Feedback Rating
-            </h3>
-            <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
-              Do happier customers respond to NPS surveys more often?
-            </p>
-          </div>
-          <div className="grid grid-cols-5 gap-4">
+      <ModernCard padding="p-5" shadow="shadow-sm">
+        <div className="mb-4">
+          <h3 className="text-base font-semibold text-gray-900 dark:text-white">
+            Response Rate by Original Feedback Rating
+          </h3>
+          <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+            Do happier customers respond to NPS surveys more often?
+          </p>
+        </div>
+        {insights.sentimentResponseRate.length > 0 ? (
+          <div className="grid grid-cols-5 gap-3">
             {insights.sentimentResponseRate
               .filter(item => item.sent > 0)
               .map(item => (
-              <div key={item.rating} className="text-center p-4 bg-gray-50 dark:bg-gray-800 rounded-lg">
-                <div className="flex items-center justify-center gap-1 mb-2">
+              <div key={item.rating} className="text-center p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
+                <div className="flex items-center justify-center gap-0.5 mb-2">
                   {[...Array(item.rating)].map((_, i) => (
-                    <Star key={i} className="w-3 h-3 fill-yellow-400 text-yellow-400" />
+                    <Star key={i} className="w-2.5 h-2.5 fill-yellow-400 text-yellow-400" />
                   ))}
                 </div>
-                <div className="text-2xl font-bold text-gray-900 dark:text-white">
+                <div className="text-xl font-bold text-gray-900 dark:text-white">
                   {item.responseRate}%
                 </div>
                 <div className="text-xs text-gray-500 dark:text-gray-400">
-                  {item.responded}/{item.sent} responded
+                  {item.responded}/{item.sent}
                 </div>
               </div>
             ))}
           </div>
-        </div>
-      )}
+        ) : (
+          <div className="h-32 flex items-center justify-center text-gray-500 dark:text-gray-400">
+            No linked feedback data available
+          </div>
+        )}
+      </ModernCard>
     </div>
   );
 };

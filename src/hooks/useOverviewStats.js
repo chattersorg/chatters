@@ -27,12 +27,21 @@ const useOverviewStats = (venueId) => {
 
       const now = new Date();
       const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+      const todayEnd = new Date(todayStart);
+      todayEnd.setHours(23, 59, 59, 999);
+
       const yesterdayStart = new Date(todayStart);
       yesterdayStart.setDate(yesterdayStart.getDate() - 1);
 
-      // Calculate 7-day lookback for sparkline data
+      // Same day last week (for trend comparison)
+      const lastWeekSameDayStart = new Date(todayStart);
+      lastWeekSameDayStart.setDate(lastWeekSameDayStart.getDate() - 7);
+      const lastWeekSameDayEnd = new Date(lastWeekSameDayStart);
+      lastWeekSameDayEnd.setHours(23, 59, 59, 999);
+
+      // Calculate 7-day lookback for sparkline data (previous 7 days, not including today)
       const sevenDaysAgo = new Date(todayStart);
-      sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 6);
+      sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
 
       // Fetch today's feedback sessions (including resolution info)
       const todayFeedbackResult = await logQuery(
@@ -46,17 +55,17 @@ const useOverviewStats = (venueId) => {
       );
       const todayFeedback = todayFeedbackResult.data;
 
-      // Fetch yesterday's feedback for comparison
-      const yesterdayFeedbackResult = await logQuery(
-        'feedback:yesterday',
+      // Fetch same day last week's feedback for trend comparison
+      const lastWeekFeedbackResult = await logQuery(
+        'feedback:lastWeek',
         supabase
           .from('feedback')
           .select('id, session_id, rating, resolved_at, is_actioned')
           .eq('venue_id', venueId)
-          .gte('created_at', yesterdayStart.toISOString())
-          .lt('created_at', todayStart.toISOString())
+          .gte('created_at', lastWeekSameDayStart.toISOString())
+          .lte('created_at', lastWeekSameDayEnd.toISOString())
       );
-      const yesterdayFeedback = yesterdayFeedbackResult.data;
+      const lastWeekFeedback = lastWeekFeedbackResult.data;
 
       // Fetch today's assistance requests
       const todayAssistanceResult = await logQuery(
@@ -70,17 +79,17 @@ const useOverviewStats = (venueId) => {
       );
       const todayAssistance = todayAssistanceResult.data;
 
-      // Fetch yesterday's assistance for comparison
-      const yesterdayAssistanceResult = await logQuery(
-        'assistance_requests:yesterday',
+      // Fetch same day last week's assistance for trend comparison
+      const lastWeekAssistanceResult = await logQuery(
+        'assistance_requests:lastWeek',
         supabase
           .from('assistance_requests')
           .select('id, created_at, acknowledged_at, resolved_at')
           .eq('venue_id', venueId)
-          .gte('created_at', yesterdayStart.toISOString())
-          .lt('created_at', todayStart.toISOString())
+          .gte('created_at', lastWeekSameDayStart.toISOString())
+          .lte('created_at', lastWeekSameDayEnd.toISOString())
       );
-      const yesterdayAssistance = yesterdayAssistanceResult.data;
+      const lastWeekAssistance = lastWeekAssistanceResult.data;
 
       // Fetch 7-day data for sparklines
       const sevenDayFeedbackResult = await logQuery(
@@ -110,20 +119,32 @@ const useOverviewStats = (venueId) => {
       const todayAssistanceCount = todayAssistance?.length || 0;
       const todaySessions = todaySessionIds.size + todayAssistanceCount;
 
-      const yesterdaySessionIds = new Set(yesterdayFeedback?.map(f => f.session_id) || []);
-      const yesterdayAssistanceCount = yesterdayAssistance?.length || 0;
-      const yesterdaySessions = yesterdaySessionIds.size + yesterdayAssistanceCount;
-      
+      const lastWeekSessionIds = new Set(lastWeekFeedback?.map(f => f.session_id) || []);
+      const lastWeekAssistanceCount = lastWeekAssistance?.length || 0;
+      const lastWeekSessions = lastWeekSessionIds.size + lastWeekAssistanceCount;
+
       // Average satisfaction
       const todayRatings = todayFeedback?.filter(f => f.rating).map(f => f.rating) || [];
-      const avgSatisfaction = todayRatings.length > 0 
+      const avgSatisfaction = todayRatings.length > 0
         ? (todayRatings.reduce((a, b) => a + b, 0) / todayRatings.length).toFixed(1)
         : null;
 
-      const yesterdayRatings = yesterdayFeedback?.filter(f => f.rating).map(f => f.rating) || [];
-      const yesterdayAvgSatisfaction = yesterdayRatings.length > 0 
-        ? yesterdayRatings.reduce((a, b) => a + b, 0) / yesterdayRatings.length
+      const lastWeekRatings = lastWeekFeedback?.filter(f => f.rating).map(f => f.rating) || [];
+      const lastWeekAvgSatisfaction = lastWeekRatings.length > 0
+        ? lastWeekRatings.reduce((a, b) => a + b, 0) / lastWeekRatings.length
         : null;
+
+      // NPS Score calculation (5 stars = Promoter, 4 stars = Passive, 1-3 stars = Detractor)
+      const calculateNPS = (ratings) => {
+        if (!ratings || ratings.length === 0) return null;
+        const promoters = ratings.filter(r => r === 5).length;
+        const detractors = ratings.filter(r => r <= 3).length;
+        const total = ratings.length;
+        return Math.round(((promoters - detractors) / total) * 100);
+      };
+
+      const todayNPS = calculateNPS(todayRatings);
+      const lastWeekNPS = calculateNPS(lastWeekRatings);
 
       // Response time calculation - use sessions (not individual feedback items)
       // Group feedback by session to get earliest created_at and latest resolved_at per session
@@ -150,26 +171,26 @@ const useOverviewStats = (venueId) => {
         ? calculateAverageResponseTime(allResolvedToday)
         : null;
 
-      const resolvedAssistanceYesterday = yesterdayAssistance?.filter(a => a.resolved_at) || [];
+      const resolvedAssistanceLastWeek = lastWeekAssistance?.filter(a => a.resolved_at) || [];
 
-      const resolvedFeedbackSessionsMapYesterday = {};
-      (yesterdayFeedback?.filter(f => f.resolved_at && f.is_actioned) || []).forEach(f => {
-        if (!resolvedFeedbackSessionsMapYesterday[f.session_id]) {
-          resolvedFeedbackSessionsMapYesterday[f.session_id] = { created_at: f.created_at, resolved_at: f.resolved_at };
+      const resolvedFeedbackSessionsMapLastWeek = {};
+      (lastWeekFeedback?.filter(f => f.resolved_at && f.is_actioned) || []).forEach(f => {
+        if (!resolvedFeedbackSessionsMapLastWeek[f.session_id]) {
+          resolvedFeedbackSessionsMapLastWeek[f.session_id] = { created_at: f.created_at, resolved_at: f.resolved_at };
         } else {
-          if (new Date(f.created_at) < new Date(resolvedFeedbackSessionsMapYesterday[f.session_id].created_at)) {
-            resolvedFeedbackSessionsMapYesterday[f.session_id].created_at = f.created_at;
+          if (new Date(f.created_at) < new Date(resolvedFeedbackSessionsMapLastWeek[f.session_id].created_at)) {
+            resolvedFeedbackSessionsMapLastWeek[f.session_id].created_at = f.created_at;
           }
-          if (new Date(f.resolved_at) > new Date(resolvedFeedbackSessionsMapYesterday[f.session_id].resolved_at)) {
-            resolvedFeedbackSessionsMapYesterday[f.session_id].resolved_at = f.resolved_at;
+          if (new Date(f.resolved_at) > new Date(resolvedFeedbackSessionsMapLastWeek[f.session_id].resolved_at)) {
+            resolvedFeedbackSessionsMapLastWeek[f.session_id].resolved_at = f.resolved_at;
           }
         }
       });
-      const resolvedFeedbackSessionsForResponseTimeYesterday = Object.values(resolvedFeedbackSessionsMapYesterday);
-      const allResolvedYesterday = [...resolvedAssistanceYesterday, ...resolvedFeedbackSessionsForResponseTimeYesterday];
+      const resolvedFeedbackSessionsForResponseTimeLastWeek = Object.values(resolvedFeedbackSessionsMapLastWeek);
+      const allResolvedLastWeek = [...resolvedAssistanceLastWeek, ...resolvedFeedbackSessionsForResponseTimeLastWeek];
 
-      const yesterdayAvgResponseTime = allResolvedYesterday.length > 0
-        ? calculateAverageResponseTimeMs(allResolvedYesterday)
+      const lastWeekAvgResponseTime = allResolvedLastWeek.length > 0
+        ? calculateAverageResponseTimeMs(allResolvedLastWeek)
         : null;
 
       // Completion rate - include both feedback sessions and assistance
@@ -185,67 +206,82 @@ const useOverviewStats = (venueId) => {
       const completedToday = resolvedFeedbackSessionsToday + resolvedAssistanceCountToday;
       const completionRate = totalToday > 0 ? Math.round((completedToday / totalToday) * 100) : null;
 
-      const totalFeedbackSessionsYesterday = yesterdaySessionIds.size;
-      const resolvedFeedbackSessionsYesterday = new Set(
-        yesterdayFeedback?.filter(f => f.resolved_at && f.is_actioned).map(f => f.session_id) || []
+      const totalFeedbackSessionsLastWeek = lastWeekSessionIds.size;
+      const resolvedFeedbackSessionsLastWeek = new Set(
+        lastWeekFeedback?.filter(f => f.resolved_at && f.is_actioned).map(f => f.session_id) || []
       ).size;
 
-      const totalAssistanceYesterday = yesterdayAssistance?.length || 0;
-      const resolvedAssistanceCountYesterday = resolvedAssistanceYesterday.length;
+      const totalAssistanceLastWeek = lastWeekAssistance?.length || 0;
+      const resolvedAssistanceCountLastWeek = resolvedAssistanceLastWeek.length;
 
-      const totalYesterday = totalFeedbackSessionsYesterday + totalAssistanceYesterday;
-      const completedYesterday = resolvedFeedbackSessionsYesterday + resolvedAssistanceCountYesterday;
-      const yesterdayCompletionRate = totalYesterday > 0 ? (completedYesterday / totalYesterday) * 100 : null;
+      const totalLastWeek = totalFeedbackSessionsLastWeek + totalAssistanceLastWeek;
+      const completedLastWeek = resolvedFeedbackSessionsLastWeek + resolvedAssistanceCountLastWeek;
+      const lastWeekCompletionRate = totalLastWeek > 0 ? (completedLastWeek / totalLastWeek) * 100 : null;
 
       // Active alerts (unresolved assistance requests)
       const activeAlerts = todayAssistance?.filter(a => !a.resolved_at).length || 0;
-      const yesterdayActiveAlerts = yesterdayAssistance?.filter(a => !a.resolved_at).length || 0;
+      const lastWeekActiveAlerts = lastWeekAssistance?.filter(a => !a.resolved_at).length || 0;
 
       // Peak hour analysis
       const peakHour = calculatePeakHour(todayFeedback || []);
-      const yesterdayPeakHour = calculatePeakHour(yesterdayFeedback || []);
+      const lastWeekPeakHour = calculatePeakHour(lastWeekFeedback || []);
 
       // Activity level
       const currentActivity = calculateActivityLevel(todaySessions);
-      const yesterdayActivity = calculateActivityLevel(yesterdaySessions);
+      const lastWeekActivity = calculateActivityLevel(lastWeekSessions);
 
-      // Calculate trends - all compared to yesterday
-      const sessionsTrend = calculateTrend(todaySessions, yesterdaySessions);
-      const satisfactionTrend = avgSatisfaction && yesterdayAvgSatisfaction
-        ? calculateTrend(parseFloat(avgSatisfaction), yesterdayAvgSatisfaction, true)
+      // Calculate trends - all compared to same day last week
+      const sessionsTrend = calculateTrend(todaySessions, lastWeekSessions);
+      const satisfactionTrend = avgSatisfaction && lastWeekAvgSatisfaction
+        ? calculateTrend(parseFloat(avgSatisfaction), lastWeekAvgSatisfaction, true)
         : null;
-      const responseTimeTrend = avgResponseTime && yesterdayAvgResponseTime
-        ? calculateTrend(calculateAverageResponseTimeMs(allResolvedToday), yesterdayAvgResponseTime, false, true)
+      // Calculate response time trend - needs both values to compare
+      const todayResponseTimeMs = allResolvedToday.length > 0 ? calculateAverageResponseTimeMs(allResolvedToday) : null;
+      const responseTimeTrend = todayResponseTimeMs !== null && lastWeekAvgResponseTime !== null
+        ? calculateTrend(todayResponseTimeMs, lastWeekAvgResponseTime, false, true)
         : null;
-      const completionTrend = completionRate && yesterdayCompletionRate
-        ? calculateTrend(completionRate, yesterdayCompletionRate, true)
+      const completionTrend = completionRate && lastWeekCompletionRate
+        ? calculateTrend(completionRate, lastWeekCompletionRate, true)
         : null;
 
       // Additional trends for MetricCard stats
-      const alertsTrend = calculateTrend(activeAlerts, yesterdayActiveAlerts, false, true); // Lower is better
-      const resolvedTrend = calculateTrend(completedToday, completedYesterday, true);
+      const alertsTrend = calculateTrend(activeAlerts, lastWeekActiveAlerts, false, true); // Lower is better
+      const resolvedTrend = calculateTrend(completedToday, completedLastWeek, true);
 
-      // Calculate hourly sparkline data for today (more dramatic visualization)
-      const sessionsSparkline = calculateHourlySparkline(todayFeedback, todayAssistance, 'sessions');
-      const satisfactionSparkline = calculateHourlySparkline(todayFeedback, todayAssistance, 'satisfaction');
-      const responseTimeSparkline = calculateHourlySparkline(todayFeedback, todayAssistance, 'responseTime');
-      const completionRateSparkline = calculateHourlySparkline(todayFeedback, todayAssistance, 'completionRate');
+      // NPS trend - show point difference, not percentage
+      const npsTrend = todayNPS !== null && lastWeekNPS !== null
+        ? {
+            value: todayNPS - lastWeekNPS >= 0 ? `+${todayNPS - lastWeekNPS}` : `${todayNPS - lastWeekNPS}`,
+            direction: todayNPS > lastWeekNPS ? 'up' : todayNPS < lastWeekNPS ? 'down' : 'neutral'
+          }
+        : null;
+
+      // Calculate 7-day sparkline data (previous 7 days, not including today)
+      const sessionsSparkline = calculate7DaySparkline(sevenDayFeedback, sevenDayAssistance, 'sessions');
+      const satisfactionSparkline = calculate7DaySparkline(sevenDayFeedback, sevenDayAssistance, 'satisfaction');
+      const responseTimeSparkline = calculate7DaySparkline(sevenDayFeedback, sevenDayAssistance, 'responseTime');
+      const completionRateSparkline = calculate7DaySparkline(sevenDayFeedback, sevenDayAssistance, 'completionRate');
 
       setStats({
         todaySessions,
-        yesterdaySessions,
+        lastWeekSessions,
         avgSatisfaction,
         avgResponseTime,
         completionRate,
         activeAlerts,
-        yesterdayActiveAlerts,
+        lastWeekActiveAlerts,
         resolvedToday: completedToday,
-        yesterdayResolved: completedYesterday,
+        lastWeekResolved: completedLastWeek,
         currentActivity,
-        yesterdayActivity,
+        lastWeekActivity,
         peakHour,
-        yesterdayPeakHour,
-        // Session trends
+        lastWeekPeakHour,
+        // NPS
+        npsScore: todayNPS,
+        lastWeekNPS,
+        npsTrend: npsTrend?.value,
+        npsTrendDirection: npsTrend?.direction,
+        // Session trends (compared to same day last week)
         sessionsTrend: sessionsTrend?.value,
         sessionsTrendDirection: sessionsTrend?.direction,
         // Satisfaction trends
@@ -296,14 +332,20 @@ const useOverviewStats = (venueId) => {
 
   const calculateAverageResponseTimeMs = (resolvedRequests) => {
     if (!resolvedRequests.length) return null;
-    
+
+    let validCount = 0;
     const totalMs = resolvedRequests.reduce((sum, request) => {
       const created = new Date(request.created_at);
       const resolved = new Date(request.resolved_at);
-      return sum + (resolved - created);
+      const diff = resolved - created;
+      if (!isNaN(diff) && diff >= 0) {
+        validCount++;
+        return sum + diff;
+      }
+      return sum;
     }, 0);
-    
-    return totalMs / resolvedRequests.length;
+
+    return validCount > 0 ? totalMs / validCount : null;
   };
 
   const calculatePeakHour = (feedback) => {
@@ -333,6 +375,7 @@ const useOverviewStats = (venueId) => {
 
   const calculateTrend = (current, previous, higherIsBetter = true, lowerIsBetter = false) => {
     if (current === null || previous === null) return null;
+    if (isNaN(current) || isNaN(previous)) return null;
 
     // Handle case where previous is 0
     if (previous === 0) {
@@ -441,8 +484,8 @@ const useOverviewStats = (venueId) => {
     const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
     const sparklineData = [];
 
-    // Generate data for the last 7 days
-    for (let i = 6; i >= 0; i--) {
+    // Generate data for the previous 7 days (not including today)
+    for (let i = 7; i >= 1; i--) {
       const dayStart = new Date(todayStart);
       dayStart.setDate(dayStart.getDate() - i);
       const dayEnd = new Date(dayStart);

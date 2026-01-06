@@ -105,21 +105,22 @@ export const permissionSections = [
     ]
   },
   // Reviews - hidden for now (feature not yet active)
-  // {
-  //   title: 'Reviews',
-  //   category: 'reviews',
-  //   icon: Star,
-  //   permissions: [
-  //     { code: 'reviews.view', label: 'View Reviews', description: 'View external reviews from platforms like Google and TripAdvisor, aggregated in one place.' }
-  //   ]
-  // },
+  {
+    title: 'Reviews',
+    category: 'reviews',
+    icon: Star,
+    permissions: [
+      { code: 'reviews.view', label: 'View Reviews', description: 'View external reviews from platforms like Google and TripAdvisor, aggregated in one place.' }
+    ]
+  },
   {
     title: 'Billing',
     category: 'billing',
     icon: CreditCard,
     permissions: [
       { code: 'billing.view', label: 'View Billing', description: 'View subscription details, invoices, and payment history for the account.' },
-      { code: 'billing.manage', label: 'Manage Billing', description: 'Update payment methods, change subscription plans, and manage billing settings.', requiresBase: 'billing.view' }
+      { code: 'billing.manage', label: 'Manage Billing', description: 'Update payment methods, change subscription plans, and manage billing settings.', requiresBase: 'billing.view' },
+      { code: 'venue.create', label: 'Create Venues', description: 'Create new venues for the account. Only managers below you in the hierarchy can be assigned to new venues.', requiresBase: 'billing.manage' }
     ]
   },
   {

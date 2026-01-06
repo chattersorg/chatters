@@ -54,6 +54,7 @@ import AccountBillingPage from './pages/dashboard/AccountBilling';
 import FeedbackSettings from './pages/dashboard/FeedbackSettings';
 import AllFeedback from './pages/dashboard/AllFeedback';
 import CustomDashboard from './pages/dashboard/CustomDashboard';
+import MultiVenueDashboardNew from './pages/dashboard/MultiVenueDashboardNew';
 import OverviewDetails from './pages/dashboard/OverviewDetails';
 import NPSReportDetail from './pages/dashboard/NPSReportDetail';
 // Full version (requires Google Business Profile API approval)
@@ -219,6 +220,11 @@ const DashboardRoutes = () => {
         <Route path="/multi-venue/dashboard" element={
           <ProtectedRoute permission="multivenue.view">
             <CustomDashboard />
+          </ProtectedRoute>
+        } />
+        <Route path="/multi-venue/dashboard_new" element={
+          <ProtectedRoute permission="multivenue.view">
+            <MultiVenueDashboardNew />
           </ProtectedRoute>
         } />
         {/* Legacy multi-venue routes */}
