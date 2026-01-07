@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { useVenue } from '../../context/VenueContext';
 import { PermissionGate } from '../../context/PermissionsContext';
 import { supabase } from '../../utils/supabase';
@@ -46,8 +46,8 @@ const AIInsights = () => {
   const currentVenue = allVenues.find(v => v.id === venueId);
   const venueName = currentVenue?.name || 'your venue';
 
-  // Calculate current week start (Monday)
-  const currentWeekStart = getWeekStart(new Date());
+  // Calculate current week start (Monday) - memoized to prevent recalculation on every render
+  const currentWeekStart = useMemo(() => getWeekStart(new Date()), []);
 
   // Load all insights for this venue
   const loadInsights = useCallback(async () => {

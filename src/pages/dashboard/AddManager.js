@@ -202,14 +202,9 @@ const AddManager = () => {
           reportsTo: user.id
         }));
 
-        // Set available venues based on user role
-        // Masters can assign to any venue, managers can only assign to their venues
-        if (userRole === 'master') {
-          setAvailableVenues(allVenues);
-        } else {
-          // For managers, they can only invite to venues they have access to
-          setAvailableVenues(allVenues);
-        }
+        // Set available venues - allVenues is already filtered by VenueContext
+        // (masters see all account venues, managers see only their assigned venues)
+        setAvailableVenues(allVenues);
 
         // Fetch all managers with their venue access for the "Reports To" dropdown
         // We'll filter this dynamically based on selected venues

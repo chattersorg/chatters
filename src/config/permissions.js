@@ -26,7 +26,9 @@ export const permissionSections = [
       { code: 'feedback.view', label: 'View Feedback', description: 'Access the feedback feed to view all customer feedback submissions and responses from your team.' },
       { code: 'feedback.respond', label: 'Respond to Feedback', description: 'Send replies directly to customers who have left feedback, allowing you to address concerns or thank them.', requiresBase: 'feedback.view' },
       { code: 'feedback.export', label: 'Export Feedback', description: 'Download feedback data as CSV or Excel files for offline analysis or reporting purposes.', requiresBase: 'feedback.view' },
-      { code: 'feedback.settings', label: 'Edit Feedback Settings', description: 'Modify feedback questions, set feedback availability hours, customise thank you messages, and configure review prompts.', requiresBase: 'feedback.view' }
+      { code: 'feedback.settings', label: 'Edit Feedback Settings', description: 'Modify feedback availability hours, customise thank you messages, and configure review prompts.', requiresBase: 'feedback.view' },
+      { code: 'questions.view', label: 'View Questions', description: 'View the list of feedback questions that customers are asked when submitting feedback.' },
+      { code: 'questions.edit', label: 'Edit Questions', description: 'Create, edit, reorder, and delete the feedback questions that customers see.', requiresBase: 'questions.view' }
     ]
   },
   {
@@ -70,6 +72,7 @@ export const permissionSections = [
     permissions: [
       { code: 'managers.view', label: 'View Managers', description: 'View the list of managers who have access to this venue and their current permission levels.' },
       { code: 'managers.invite', label: 'Invite Managers', description: 'Send invitations to new managers, granting them access to the venue dashboard with specified permissions.', requiresBase: 'managers.view' },
+      { code: 'managers.venues', label: 'Manage Venue Access', description: 'Change which venues a manager can access. Only affects managers below you in the hierarchy.', requiresBase: 'managers.view' },
       { code: 'managers.remove', label: 'Remove Managers', description: 'Revoke access for managers, removing their ability to view or manage this venue.', requiresBase: 'managers.view' },
       { code: 'managers.permissions', label: 'Manage Permissions', description: 'Change the permission levels of other managers, controlling what they can view and do within the dashboard.', requiresBase: 'managers.view' }
     ]
@@ -82,7 +85,8 @@ export const permissionSections = [
       { code: 'venue.edit', label: 'Edit Venue Settings', description: 'Modify venue details such as name, address, opening hours, contact information, and general settings.' },
       { code: 'venue.branding', label: 'Edit Branding', description: 'Customise the venue branding including logo, colours, and styling that appears on customer-facing pages.' },
       { code: 'venue.integrations', label: 'Manage Integrations', description: 'Connect and configure the venue\'s third-party integrations.' },
-      { code: 'qr.view', label: 'View QR Code & URL', description: 'View and download the venue QR code and feedback URL for sharing with customers.' }
+      { code: 'qr.view', label: 'View QR Code & URL', description: 'View and download the venue QR code and feedback URL for sharing with customers.' },
+      { code: 'qr.generate', label: 'Download QR Code', description: 'Download and generate new QR codes for printing and distribution.', requiresBase: 'qr.view' }
     ]
   },
   {

@@ -54,7 +54,7 @@ import AccountBillingPage from './pages/dashboard/AccountBilling';
 import FeedbackSettings from './pages/dashboard/FeedbackSettings';
 import AllFeedback from './pages/dashboard/AllFeedback';
 import CustomDashboard from './pages/dashboard/CustomDashboard';
-import MultiVenueDashboardNew from './pages/dashboard/MultiVenueDashboardNew';
+import MultiVenueDashboard from './pages/dashboard/MultiVenueDashboard';
 import OverviewDetails from './pages/dashboard/OverviewDetails';
 import NPSReportDetail from './pages/dashboard/NPSReportDetail';
 // Full version (requires Google Business Profile API approval)
@@ -219,12 +219,7 @@ const DashboardRoutes = () => {
         } />
         <Route path="/multi-venue/dashboard" element={
           <ProtectedRoute permission="multivenue.view">
-            <CustomDashboard />
-          </ProtectedRoute>
-        } />
-        <Route path="/multi-venue/dashboard_new" element={
-          <ProtectedRoute permission="multivenue.view">
-            <MultiVenueDashboardNew />
+            <MultiVenueDashboard />
           </ProtectedRoute>
         } />
         {/* Legacy multi-venue routes */}
@@ -385,12 +380,12 @@ const DashboardRoutes = () => {
           </ProtectedRoute>
         } />
         <Route path="/staff/roles" element={
-          <ProtectedRoute permission="staff.edit">
+          <ProtectedRoute permission="staff.roles">
             <StaffRolesPage />
           </ProtectedRoute>
         } />
         <Route path="/staff/locations" element={
-          <ProtectedRoute permission="staff.edit">
+          <ProtectedRoute permission="staff.locations">
             <StaffLocationsPage />
           </ProtectedRoute>
         } />
@@ -457,7 +452,7 @@ const DashboardRoutes = () => {
           </ProtectedRoute>
         } />
         <Route path="/venue-settings/menu-builder" element={
-          <ProtectedRoute permission="venue.edit">
+          <ProtectedRoute permission="menu.edit">
             <MenuBuilderPage />
           </ProtectedRoute>
         } />

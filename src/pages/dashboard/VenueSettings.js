@@ -8,6 +8,7 @@ import { PermissionGate } from '../../context/PermissionsContext';
 import usePermissions from '../../hooks/usePermissions';
 import VenueTab from '../../components/dashboard/settings/VenueTab';
 import { ChevronRight, ChevronDown, Trash2, AlertTriangle, Info } from 'lucide-react';
+import toast from 'react-hot-toast';
 
 const VenueSettingsPage = () => {
   const location = useLocation();
@@ -40,7 +41,6 @@ const VenueSettingsPage = () => {
     postalCode: '',
     country: '',
   });
-  const [message, setMessage] = useState('');
   const [venueMetrics, setVenueMetrics] = useState({});
   const [loadingMetrics, setLoadingMetrics] = useState(false);
   const [expandedVenueId, setExpandedVenueId] = useState(null);
@@ -303,7 +303,6 @@ const VenueSettingsPage = () => {
     if (!venueId) return;
 
     setLoading(true);
-    setMessage('');
 
     try {
       // Update venues table
@@ -324,11 +323,11 @@ const VenueSettingsPage = () => {
         throw venueError;
       }
 
-      setMessage('Venue settings updated successfully!');
+      toast.success('Venue settings saved successfully!');
     } catch (error) {
       console.error('Error updating venue settings:', error);
       const errorDetails = error.code ? `Error ${error.code}: ${error.message}` : error.message;
-      setMessage(`Failed to update venue settings: ${errorDetails}`);
+      toast.error(`Failed to save venue settings: ${errorDetails}`);
     } finally {
       setLoading(false);
     }
@@ -1070,7 +1069,6 @@ const VenueSettingsPage = () => {
         setCountry={setCountry}
         saveSettings={saveSettings}
         loading={loading}
-        message={message}
         venueId={venueId}
       />
     </div>

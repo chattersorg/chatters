@@ -2,7 +2,7 @@
 // Update permissions for a manager with validation to prevent escalation
 
 const { createClient } = require('@supabase/supabase-js');
-const { requirePermission } = require('../auth-helper');
+const { requirePermission, requireHierarchy } = require('../auth-helper');
 
 const supabaseAdmin = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.REACT_APP_SUPABASE_URL,
@@ -54,6 +54,9 @@ module.exports = async function handler(req, res) {
     if (targetManager.role === 'master' || targetManager.role === 'admin') {
       return res.status(403).json({ error: 'Cannot modify permissions for master or admin users' });
     }
+
+    // Validate hierarchy - managers can only update permissions for their subordinates
+    await requireHierarchy(userData, managerId);
 
     // For non-master/admin users, validate they can only grant permissions they have
     if (userData.role === 'manager') {

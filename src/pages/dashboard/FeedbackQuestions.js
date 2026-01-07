@@ -282,7 +282,13 @@ const FeedbackQuestionsPage = () => {
     if (replacementSource === 'new') {
       const { data, error } = await supabase
         .from('questions')
-        .insert([{ venue_id: venueId, question: pendingNewQuestion, order: questions.length, active: true }])
+        .insert([{
+          venue_id: venueId,
+          question: pendingNewQuestion,
+          order: questions.length,
+          active: true,
+          conditional_tags: newQuestionConditionalTags
+        }])
         .select();
 
       if (error) {
@@ -291,6 +297,7 @@ const FeedbackQuestionsPage = () => {
         const updatedQuestions = questions.filter((q) => q.id !== questionIdToReplace);
         setQuestions([...updatedQuestions, data[0]]);
         setNewQuestion('');
+        setNewQuestionConditionalTags(null);
       }
     } else if (replacementSource === 'inactive') {
       await supabase
@@ -306,6 +313,7 @@ const FeedbackQuestionsPage = () => {
     setSelectedInactiveQuestion(null);
     setReplacementSource(null);
     setIsReplaceModalOpen(false);
+    setNewQuestionConditionalTags(null);
   };
 
   const handleAddInactiveQuestion = async (inactiveQuestion) => {

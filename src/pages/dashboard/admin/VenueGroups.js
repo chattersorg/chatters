@@ -4,6 +4,7 @@ import { supabase } from '../../../utils/supabase';
 import { useVenue } from '../../../context/VenueContext';
 import usePageTitle from '../../../hooks/usePageTitle';
 import { Button } from '../../../components/ui/button';
+import toast from 'react-hot-toast';
 import {
   FolderKanban,
   Plus,
@@ -13,7 +14,6 @@ import {
   RefreshCw,
   Pencil,
   Building2,
-  Check,
   ChevronRight
 } from 'lucide-react';
 
@@ -32,7 +32,6 @@ const VenueGroups = () => {
   const [editGroup, setEditGroup] = useState({ id: '', name: '', description: '' });
   const [saving, setSaving] = useState(false);
   const [deleting, setDeleting] = useState(false);
-  const [message, setMessage] = useState('');
   const [accountId, setAccountId] = useState(null);
 
   useEffect(() => {
@@ -49,13 +48,23 @@ const VenueGroups = () => {
       setLoading(true);
 
       const { data: { user } } = await supabase.auth.getUser();
-      const { data: userData } = await supabase
+      if (!user) {
+        toast.error('Failed to get user information');
+        setLoading(false);
+        return;
+      }
+
+      const { data: userData, error: userError } = await supabase
         .from('users')
         .select('account_id')
         .eq('id', user.id)
         .single();
 
-      if (!userData?.account_id) return;
+      if (userError || !userData?.account_id) {
+        toast.error('Failed to load account information');
+        setLoading(false);
+        return;
+      }
       setAccountId(userData.account_id);
 
       // Fetch venue groups with their members
@@ -85,7 +94,7 @@ const VenueGroups = () => {
       }
     } catch (error) {
       console.error('Error fetching data:', error);
-      setMessage('Failed to load venue groups');
+      toast.error('Failed to load venue groups');
     } finally {
       setLoading(false);
     }
@@ -93,12 +102,11 @@ const VenueGroups = () => {
 
   const handleCreateGroup = async () => {
     if (!newGroup.name.trim()) {
-      setMessage('Please enter a group name');
+      toast.error('Please enter a group name');
       return;
     }
 
     setSaving(true);
-    setMessage('');
 
     try {
       const { data, error } = await supabase
@@ -117,10 +125,10 @@ const VenueGroups = () => {
       setSelectedGroup(data.id);
       setShowCreateModal(false);
       setNewGroup({ name: '', description: '' });
-      setMessage('Group created successfully!');
+      toast.success('Group created successfully!');
     } catch (error) {
       console.error('Error creating group:', error);
-      setMessage('Failed to create group: ' + error.message);
+      toast.error('Failed to create group: ' + error.message);
     } finally {
       setSaving(false);
     }
@@ -128,12 +136,11 @@ const VenueGroups = () => {
 
   const handleEditGroup = async () => {
     if (!editGroup.name.trim()) {
-      setMessage('Please enter a group name');
+      toast.error('Please enter a group name');
       return;
     }
 
     setSaving(true);
-    setMessage('');
 
     try {
       const { error } = await supabase
@@ -152,10 +159,10 @@ const VenueGroups = () => {
           : g
       ));
       setShowEditModal(false);
-      setMessage('Group updated successfully!');
+      toast.success('Group updated successfully!');
     } catch (error) {
       console.error('Error updating group:', error);
-      setMessage('Failed to update group: ' + error.message);
+      toast.error('Failed to update group: ' + error.message);
     } finally {
       setSaving(false);
     }
@@ -163,7 +170,6 @@ const VenueGroups = () => {
 
   const handleDeleteGroup = async () => {
     setDeleting(true);
-    setMessage('');
 
     try {
       const { error } = await supabase
@@ -173,13 +179,17 @@ const VenueGroups = () => {
 
       if (error) throw error;
 
-      setGroups(prev => prev.filter(g => g.id !== selectedGroup));
-      setSelectedGroup(groups.length > 1 ? groups.find(g => g.id !== selectedGroup)?.id : null);
+      // Calculate next group to select before updating state
+      const remainingGroups = groups.filter(g => g.id !== selectedGroup);
+      const nextSelectedGroup = remainingGroups.length > 0 ? remainingGroups[0].id : null;
+
+      setGroups(remainingGroups);
+      setSelectedGroup(nextSelectedGroup);
       setShowDeleteModal(false);
-      setMessage('Group deleted successfully!');
+      toast.success('Group deleted successfully!');
     } catch (error) {
       console.error('Error deleting group:', error);
-      setMessage('Failed to delete group: ' + error.message);
+      toast.error('Failed to delete group: ' + error.message);
     } finally {
       setDeleting(false);
     }
@@ -209,6 +219,12 @@ const VenueGroups = () => {
         ));
       } else {
         // Add venue to group
+        const venue = allVenues.find(v => v.id === venueId);
+        if (!venue) {
+          toast.error('Failed to find venue information');
+          return;
+        }
+
         const { error } = await supabase
           .from('venue_group_members')
           .insert({
@@ -218,7 +234,6 @@ const VenueGroups = () => {
 
         if (error) throw error;
 
-        const venue = allVenues.find(v => v.id === venueId);
         setGroups(prev => prev.map(g =>
           g.id === selectedGroup
             ? { ...g, venues: [...g.venues, venue] }
@@ -227,7 +242,7 @@ const VenueGroups = () => {
       }
     } catch (error) {
       console.error('Error toggling venue:', error);
-      setMessage('Failed to update venue: ' + error.message);
+      toast.error('Failed to update venue: ' + error.message);
     }
   };
 
@@ -256,17 +271,6 @@ const VenueGroups = () => {
           Create Group
         </Button>
       </div>
-
-      {/* Message */}
-      {message && (
-        <div className={`p-4 rounded-lg text-sm ${
-          message.includes('success')
-            ? 'bg-green-50 dark:bg-green-900/30 text-green-700 dark:text-green-400 border border-green-200 dark:border-green-800'
-            : 'bg-red-50 dark:bg-red-900/30 text-red-700 dark:text-red-400 border border-red-200 dark:border-red-800'
-        }`}>
-          {message}
-        </div>
-      )}
 
       {/* Main Content */}
       <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl overflow-hidden">

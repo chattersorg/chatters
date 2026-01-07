@@ -5,9 +5,10 @@ import { useVenue } from '../../context/VenueContext';
 import FeedbackTimeSelection from '../../components/dashboard/settings/venuetabcomponents/FeedbackTimeSelection';
 import { Button } from '../../components/ui/button';
 import { RefreshCw } from 'lucide-react';
+import toast from 'react-hot-toast';
 
 // Reusable card component - defined outside to prevent re-creation on every render
-const SettingsCard = ({ title, description, children, onSave, loading, message, saveLabel = 'Save' }) => (
+const SettingsCard = ({ title, description, children, onSave, loading, saveLabel = 'Save' }) => (
   <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl overflow-hidden">
     <div className="px-6 py-4 border-b border-gray-100 dark:border-gray-800">
       <h3 className="text-base font-semibold text-gray-900 dark:text-white">{title}</h3>
@@ -29,15 +30,6 @@ const SettingsCard = ({ title, description, children, onSave, loading, message, 
           {loading ? 'Saving...' : saveLabel}
         </Button>
       </div>
-      {message && (
-        <div className={`text-xs p-2 rounded-lg mt-3 ${
-          message.includes('success') || message.includes('regenerated')
-            ? 'text-green-700 dark:text-green-300 bg-green-50 dark:bg-green-900/30 border border-green-200 dark:border-green-800'
-            : 'text-red-700 dark:text-red-300 bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-800'
-        }`}>
-          {message}
-        </div>
-      )}
     </div>
   </div>
 );
@@ -50,7 +42,6 @@ const FeedbackSettings = () => {
   const [tripadvisorLink, setTripadvisorLink] = useState('');
   const [googleReviewLink, setGoogleReviewLink] = useState('');
   const [reviewLinksLoading, setReviewLinksLoading] = useState(false);
-  const [reviewLinksMessage, setReviewLinksMessage] = useState('');
   const [placeId, setPlaceId] = useState('');
   const [tripadvisorLocationId, setTripadvisorLocationId] = useState('');
 
@@ -58,17 +49,14 @@ const FeedbackSettings = () => {
   const [sessionTimeoutHours, setSessionTimeoutHours] = useState(2);
   const [selectedTimeoutHours, setSelectedTimeoutHours] = useState(2);
   const [sessionTimeoutLoading, setSessionTimeoutLoading] = useState(false);
-  const [sessionTimeoutMessage, setSessionTimeoutMessage] = useState('');
 
   // Co-resolver state
   const [enableCoResolving, setEnableCoResolving] = useState(false);
   const [coResolverLoading, setCoResolverLoading] = useState(false);
-  const [coResolverMessage, setCoResolverMessage] = useState('');
 
   // Review threshold state
   const [feedbackReviewThreshold, setFeedbackReviewThreshold] = useState(4);
   const [reviewThresholdLoading, setReviewThresholdLoading] = useState(false);
-  const [reviewThresholdMessage, setReviewThresholdMessage] = useState('');
 
   useEffect(() => {
     if (!venueId) return;
@@ -105,9 +93,9 @@ const FeedbackSettings = () => {
     if (placeId) {
       const generatedUrl = `https://search.google.com/local/writereview?placeid=${placeId}`;
       setGoogleReviewLink(generatedUrl);
-      setReviewLinksMessage('Google review URL regenerated! Click "Save" to save.');
+      toast.success('Google review URL regenerated! Click "Save" to save.');
     } else {
-      setReviewLinksMessage('No Google Place ID found. Please link your venue in Settings > Integrations first.');
+      toast.error('No Google Place ID found. Please link your venue in Settings > Integrations first.');
     }
   };
 
@@ -115,16 +103,15 @@ const FeedbackSettings = () => {
     if (tripadvisorLocationId) {
       const generatedUrl = `https://www.tripadvisor.com/UserReviewEdit-d${tripadvisorLocationId}`;
       setTripadvisorLink(generatedUrl);
-      setReviewLinksMessage('TripAdvisor review URL regenerated! Click "Save" to save.');
+      toast.success('TripAdvisor review URL regenerated! Click "Save" to save.');
     } else {
-      setReviewLinksMessage('No TripAdvisor Location ID found. Please link your venue in Settings > Integrations first.');
+      toast.error('No TripAdvisor Location ID found. Please link your venue in Settings > Integrations first.');
     }
   };
 
   const saveReviewLinks = async () => {
     if (!venueId) return;
     setReviewLinksLoading(true);
-    setReviewLinksMessage('');
 
     try {
       const { error } = await supabase
@@ -136,10 +123,10 @@ const FeedbackSettings = () => {
         .eq('id', venueId);
 
       if (error) throw error;
-      setReviewLinksMessage('Review links updated successfully!');
+      toast.success('Review links saved successfully!');
     } catch (error) {
       console.error('Error updating review links:', error);
-      setReviewLinksMessage('Failed to update review links: ' + error.message);
+      toast.error('Failed to save review links: ' + error.message);
     } finally {
       setReviewLinksLoading(false);
     }
@@ -148,7 +135,6 @@ const FeedbackSettings = () => {
   const saveSessionTimeout = async () => {
     if (!venueId) return;
     setSessionTimeoutLoading(true);
-    setSessionTimeoutMessage('');
 
     try {
       const { data, error, count } = await supabase
@@ -163,10 +149,10 @@ const FeedbackSettings = () => {
       }
 
       setSessionTimeoutHours(selectedTimeoutHours);
-      setSessionTimeoutMessage('Session timeout updated successfully!');
+      toast.success('Session timeout saved successfully!');
     } catch (error) {
       console.error('Error saving session timeout:', error);
-      setSessionTimeoutMessage(`Failed to save session timeout: ${error.message}`);
+      toast.error(`Failed to save session timeout: ${error.message}`);
     } finally {
       setSessionTimeoutLoading(false);
     }
@@ -175,7 +161,6 @@ const FeedbackSettings = () => {
   const saveCoResolverSettings = async () => {
     if (!venueId) return;
     setCoResolverLoading(true);
-    setCoResolverMessage('');
 
     try {
       const { error } = await supabase
@@ -184,10 +169,10 @@ const FeedbackSettings = () => {
         .eq('id', venueId);
 
       if (error) throw error;
-      setCoResolverMessage('Co-resolver settings updated successfully!');
+      toast.success('Co-resolver settings saved successfully!');
     } catch (error) {
       console.error('Error saving co-resolver settings:', error);
-      setCoResolverMessage(`Failed to save co-resolver settings: ${error.message}`);
+      toast.error(`Failed to save co-resolver settings: ${error.message}`);
     } finally {
       setCoResolverLoading(false);
     }
@@ -196,7 +181,6 @@ const FeedbackSettings = () => {
   const saveReviewThreshold = async () => {
     if (!venueId) return;
     setReviewThresholdLoading(true);
-    setReviewThresholdMessage('');
 
     try {
       const { error } = await supabase
@@ -207,10 +191,10 @@ const FeedbackSettings = () => {
         .eq('id', venueId);
 
       if (error) throw error;
-      setReviewThresholdMessage('Review threshold updated successfully!');
+      toast.success('Review threshold saved successfully!');
     } catch (error) {
       console.error('Error saving review threshold:', error);
-      setReviewThresholdMessage(`Failed to save review threshold: ${error.message}`);
+      toast.error(`Failed to save review threshold: ${error.message}`);
     } finally {
       setReviewThresholdLoading(false);
     }
@@ -232,7 +216,6 @@ const FeedbackSettings = () => {
         description="Direct satisfied customers to leave positive reviews"
         onSave={saveReviewLinks}
         loading={reviewLinksLoading}
-        message={reviewLinksMessage}
       >
         <div className="space-y-6">
           {/* Google Reviews */}
@@ -303,7 +286,6 @@ const FeedbackSettings = () => {
         description="Set the minimum star rating required to show Google/TripAdvisor review links after feedback"
         onSave={saveReviewThreshold}
         loading={reviewThresholdLoading}
-        message={reviewThresholdMessage}
       >
         <div className="space-y-4">
           <div>
@@ -346,7 +328,6 @@ const FeedbackSettings = () => {
         description="How long feedback stays visible in kiosk view"
         onSave={saveSessionTimeout}
         loading={sessionTimeoutLoading}
-        message={sessionTimeoutMessage}
       >
         <div className="space-y-3">
           {[1, 2, 4, 6, 8, 12, 24].map((hours) => (
@@ -376,7 +357,6 @@ const FeedbackSettings = () => {
         description="Allow staff to assign a secondary team member who helped resolve feedback"
         onSave={saveCoResolverSettings}
         loading={coResolverLoading}
-        message={coResolverMessage}
       >
         <div className="space-y-4">
           {/* Enable Toggle */}

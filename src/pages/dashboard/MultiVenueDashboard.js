@@ -126,7 +126,7 @@ const NPSSectionHeader = ({ title, viewMode, onViewModeChange, dateRange, onDate
   </div>
 );
 
-const MultiVenueDashboardNew = () => {
+const MultiVenueDashboard = () => {
   usePageTitle('Multi-Venue Dashboard');
   const { allVenues } = useVenue();
 
@@ -470,4 +470,4 @@ const MultiVenueDashboardNew = () => {
   );
 };
 
-export default MultiVenueDashboardNew;
+export default MultiVenueDashboard;

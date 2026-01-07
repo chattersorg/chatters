@@ -497,13 +497,19 @@ async function fetchFollowUpTags(supabase, venueId, dateFrom, dateTo) {
   const questionIds = (questionsData || []).map(q => q.id);
   if (questionIds.length === 0) return [];
 
+  // Convert date strings to full ISO timestamps to include entire day
+  const startDate = new Date(dateFrom);
+  startDate.setHours(0, 0, 0, 0);
+  const endDate = new Date(dateTo);
+  endDate.setHours(23, 59, 59, 999);
+
   // Fetch tag responses for this venue's questions
   const { data: tagResponses, error: tagError } = await supabase
     .from('feedback_tag_responses')
     .select('question_id, tag, created_at')
     .in('question_id', questionIds)
-    .gte('created_at', dateFrom)
-    .lte('created_at', dateTo);
+    .gte('created_at', startDate.toISOString())
+    .lte('created_at', endDate.toISOString());
 
   if (tagError) {
     console.error('[AI Insights] Error fetching tag responses:', tagError);

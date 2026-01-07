@@ -122,8 +122,12 @@ const ConditionalTagsEditor = ({ conditionalTags, onUpdate }) => {
   const [tags, setTags] = useState(conditionalTags?.tags || []);
   const [newTag, setNewTag] = useState('');
 
+  // Use ref to store onUpdate to avoid infinite loops in useEffect
+  const onUpdateRef = React.useRef(onUpdate);
+  onUpdateRef.current = onUpdate;
+
   useEffect(() => {
-    onUpdate({
+    onUpdateRef.current({
       enabled,
       threshold,
       tags
@@ -131,8 +135,11 @@ const ConditionalTagsEditor = ({ conditionalTags, onUpdate }) => {
   }, [enabled, threshold, tags]);
 
   const addTag = () => {
-    if (newTag.trim() && !tags.includes(newTag.trim())) {
-      setTags([...tags, newTag.trim()]);
+    const trimmedTag = newTag.trim();
+    // Case-insensitive duplicate check
+    const isDuplicate = tags.some(t => t.toLowerCase() === trimmedTag.toLowerCase());
+    if (trimmedTag && !isDuplicate) {
+      setTags([...tags, trimmedTag]);
       setNewTag('');
     }
   };

@@ -13,16 +13,16 @@ import {
 } from 'lucide-react';
 
 const TABS = [
-  { id: 'personal', label: 'Personal Information', icon: User },
-  { id: 'venues', label: 'Venues', icon: Building2 },
-  { id: 'permissions', label: 'Permissions', icon: Shield },
+  { id: 'personal', label: 'Personal Information', icon: User, permission: null },
+  { id: 'venues', label: 'Venues', icon: Building2, permission: 'managers.venues' },
+  { id: 'permissions', label: 'Permissions', icon: Shield, permission: 'managers.permissions' },
 ];
 
 const ManagerDetail = () => {
   const { managerId } = useParams();
   const navigate = useNavigate();
   const { allVenues, impersonatedAccountId, userRole } = useVenue();
-  const { permissions: currentUserPermissions } = usePermissions();
+  const { permissions: currentUserPermissions, hasPermission } = usePermissions();
 
   const [activeTab, setActiveTab] = useState('personal');
   const [manager, setManager] = useState(null);
@@ -61,6 +61,10 @@ const ManagerDetail = () => {
   const [originalTemplate, setOriginalTemplate] = useState(null);
   const [originalCustomPermissions, setOriginalCustomPermissions] = useState([]);
 
+  // Hierarchy state
+  const [isInHierarchy, setIsInHierarchy] = useState(true); // Default to true until checked
+  const [currentUserId, setCurrentUserId] = useState(null);
+
   // Check if user can manage billing permissions
   const canManageBilling = userRole === 'master' || userRole === 'admin';
 
@@ -95,9 +99,13 @@ const ManagerDetail = () => {
   const fetchManager = async () => {
     setLoading(true);
     try {
+      // Get current user ID for hierarchy check
+      const { data: { user: authUser } } = await supabase.auth.getUser();
+      setCurrentUserId(authUser?.id);
+
       const { data: userData, error: userError } = await supabase
         .from('users')
-        .select('id, email, first_name, last_name, phone, date_of_birth, role, created_at')
+        .select('id, email, first_name, last_name, phone, date_of_birth, role, created_at, reports_to, invited_by, account_id')
         .eq('id', managerId)
         .is('deleted_at', null)
         .single();
@@ -119,6 +127,35 @@ const ManagerDetail = () => {
       setEditedLastName(userData.last_name || '');
       setEditedPhone(userData.phone || '');
       setEditedDateOfBirth(userData.date_of_birth || '');
+
+      // Check if target manager is in current user's hierarchy (for non-master users)
+      if (userRole !== 'master' && userRole !== 'admin' && authUser?.id) {
+        // Get all managers in the same account to build hierarchy tree
+        const { data: allManagers } = await supabase
+          .from('users')
+          .select('id, reports_to, invited_by')
+          .eq('account_id', userData.account_id)
+          .eq('role', 'manager')
+          .is('deleted_at', null);
+
+        // Check if managerId is in the hierarchy of current user
+        const subordinateIds = new Set();
+        const findSubordinates = (parentId) => {
+          (allManagers || []).forEach(m => {
+            const mParentId = m.reports_to || m.invited_by;
+            if (mParentId === parentId && !subordinateIds.has(m.id)) {
+              subordinateIds.add(m.id);
+              findSubordinates(m.id);
+            }
+          });
+        };
+        findSubordinates(authUser.id);
+
+        setIsInHierarchy(subordinateIds.has(managerId));
+      } else {
+        // Master/admin users can access all managers
+        setIsInHierarchy(true);
+      }
     } catch (error) {
       console.error('Error fetching manager:', error);
       setMessage('Failed to load manager details');
@@ -306,30 +343,28 @@ const ManagerDetail = () => {
     setMessage('');
 
     try {
-      const { error: deleteError } = await supabase
-        .from('staff')
-        .delete()
-        .eq('user_id', managerId);
+      const { data: { session } } = await supabase.auth.getSession();
+      const res = await fetch('/api/admin/update-manager-venues', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session?.access_token}`
+        },
+        body: JSON.stringify({
+          managerId,
+          venueIds: editedVenueIds
+        }),
+      });
 
-      if (deleteError) throw deleteError;
-
-      if (editedVenueIds.length > 0) {
-        const newStaffRecords = editedVenueIds.map(vid => ({
-          user_id: managerId,
-          venue_id: vid,
-          role: 'manager'
-        }));
-
-        const { error: insertError } = await supabase.from('staff').insert(newStaffRecords);
-        if (insertError) throw insertError;
-      }
+      const result = await res.json();
+      if (!res.ok) throw new Error(result.error || 'Failed to update venue assignments');
 
       setMessage('Venue assignments updated successfully!');
       setManagerVenues(editedVenueIds);
       setHasVenueChanges(false);
     } catch (error) {
       console.error('Error updating manager venues:', error);
-      setMessage('Failed to update venue assignments. Please try again.');
+      setMessage('Failed to update venue assignments: ' + error.message);
     } finally {
       setSaving(false);
     }
@@ -424,6 +459,38 @@ const ManagerDetail = () => {
     }
   };
 
+  // Helper to find child permissions that depend on a base permission
+  const getChildPermissions = (baseCode) => {
+    const children = [];
+    permissionSections.forEach(section => {
+      section.permissions.forEach(perm => {
+        if (perm.requiresBase === baseCode) {
+          children.push(perm.code);
+        }
+      });
+    });
+    return children;
+  };
+
+  // Helper to calculate nesting depth by following requiresBase chain
+  const getPermissionDepth = (perm) => {
+    let depth = 0;
+    let currentBase = perm.requiresBase;
+
+    while (currentBase) {
+      depth++;
+      // Find the permission with this code to check its requiresBase
+      let foundPerm = null;
+      for (const section of permissionSections) {
+        foundPerm = section.permissions.find(p => p.code === currentBase);
+        if (foundPerm) break;
+      }
+      currentBase = foundPerm?.requiresBase;
+    }
+
+    return depth;
+  };
+
   const togglePermission = (code) => {
     // If a template is selected, switch to custom mode with current template permissions
     if (selectedTemplate) {
@@ -431,7 +498,9 @@ const ManagerDetail = () => {
       setSelectedTemplate(null);
       // Toggle the clicked permission
       if (currentPerms.includes(code)) {
-        setCustomPermissions(currentPerms.filter(c => c !== code));
+        // Removing permission - also remove child permissions that depend on this one
+        const childPerms = getChildPermissions(code);
+        setCustomPermissions(currentPerms.filter(c => c !== code && !childPerms.includes(c)));
       } else {
         setCustomPermissions([...currentPerms, code]);
       }
@@ -439,7 +508,9 @@ const ManagerDetail = () => {
       // Already in custom mode, just toggle the permission
       setCustomPermissions(prev => {
         if (prev.includes(code)) {
-          return prev.filter(c => c !== code);
+          // Removing permission - also remove child permissions that depend on this one
+          const childPerms = getChildPermissions(code);
+          return prev.filter(c => c !== code && !childPerms.includes(c));
         }
         return [...prev, code];
       });
@@ -519,6 +590,29 @@ const ManagerDetail = () => {
     );
   }
 
+  // Check if user has access to this manager (hierarchy check)
+  if (!isInHierarchy && userRole === 'manager') {
+    return (
+      <div className="space-y-6">
+        <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl p-8 text-center">
+          <div className="w-12 h-12 bg-amber-100 dark:bg-amber-900/30 rounded-full flex items-center justify-center mx-auto mb-4">
+            <AlertTriangle className="w-6 h-6 text-amber-600 dark:text-amber-400" />
+          </div>
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">Access Restricted</h3>
+          <p className="text-gray-500 dark:text-gray-400 mb-4">
+            You can only view and manage managers who report to you in the hierarchy.
+          </p>
+          <button
+            onClick={() => navigate('/staff/managers')}
+            className="text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 font-medium"
+          >
+            ← Back to Managers
+          </button>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -556,7 +650,7 @@ const ManagerDetail = () => {
       {/* Tabs */}
       <div className="border-b border-gray-200 dark:border-gray-800">
         <nav className="flex gap-6">
-          {TABS.map((tab) => {
+          {TABS.filter(tab => !tab.permission || hasPermission(tab.permission)).map((tab) => {
             const Icon = tab.icon;
             return (
               <button
@@ -667,7 +761,7 @@ const ManagerDetail = () => {
 
         {/* Venues Tab */}
         {activeTab === 'venues' && (
-          <PermissionGate permission="managers.invite" fallback={
+          <PermissionGate permission="managers.venues" fallback={
             <div className="p-6 text-center text-gray-500 dark:text-gray-400">
               You don't have permission to manage venue assignments.
             </div>
@@ -864,25 +958,33 @@ const ManagerDetail = () => {
                               const enabled = isPermissionEnabled(perm.code);
                               const isBillingPerm = perm.code.startsWith('billing.');
                               const isDisabled = isBillingPerm && !canManageBilling;
+                              const depth = getPermissionDepth(perm);
+                              const baseEnabled = perm.requiresBase ? isPermissionEnabled(perm.requiresBase) : true;
+
+                              // Calculate indentation based on depth (using explicit classes for Tailwind)
+                              // ml-6 = 1.5rem, ml-12 = 3rem for nested permissions
+                              const indentClasses = ['', 'ml-6', 'ml-12'];
+                              const indentClass = indentClasses[Math.min(depth, indentClasses.length - 1)];
 
                               return (
                                 <label
                                   key={perm.code}
-                                  className={`flex items-center gap-3 p-2 rounded-lg transition-colors ${
-                                    isDisabled
-                                      ? 'cursor-not-allowed opacity-60'
+                                  className={`flex items-center gap-3 p-2 rounded-lg transition-colors ${indentClass} ${
+                                    isDisabled || (depth > 0 && !baseEnabled)
+                                      ? 'cursor-not-allowed opacity-50'
                                       : 'cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800'
                                   }`}
+                                  title={depth > 0 && !baseEnabled ? `Requires ${perm.requiresBase} to be enabled` : undefined}
                                 >
                                   <input
                                     type="checkbox"
                                     checked={enabled}
-                                    onChange={() => !isDisabled && togglePermission(perm.code)}
-                                    disabled={isDisabled}
+                                    onChange={() => !isDisabled && baseEnabled && togglePermission(perm.code)}
+                                    disabled={isDisabled || (depth > 0 && !baseEnabled)}
                                     className="w-4 h-4 rounded border-gray-300 dark:border-gray-600 text-blue-600 focus:ring-blue-500"
                                   />
                                   <div className="flex-1 min-w-0">
-                                    <div className="text-sm text-gray-900 dark:text-white">
+                                    <div className={`text-sm ${depth > 0 && !baseEnabled ? 'text-gray-400 dark:text-gray-500' : 'text-gray-900 dark:text-white'}`}>
                                       {perm.label}
                                     </div>
                                   </div>

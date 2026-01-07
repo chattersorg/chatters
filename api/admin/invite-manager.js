@@ -86,7 +86,7 @@ module.exports = async function handler(req, res) {
       return res.status(400).json({ error: 'A user with this email already exists' });
     }
 
-    // Validate reportsTo - must be within the inviter's hierarchy
+    // Validate reportsTo - must be within the inviter's hierarchy and have venue access
     let validatedReportsTo = reportsTo;
     if (reportsTo) {
       // For masters, they can place under any manager in the account
@@ -104,6 +104,23 @@ module.exports = async function handler(req, res) {
 
         if (targetManager.account_id !== userData.account_id) {
           return res.status(403).json({ error: 'Cannot assign to a manager outside your account' });
+        }
+
+        // For non-master reportsTo targets, check they have access to at least one of the assigned venues
+        if (targetManager.role === 'manager') {
+          const { data: targetVenues } = await supabaseAdmin
+            .from('staff')
+            .select('venue_id')
+            .eq('user_id', reportsTo);
+
+          const targetVenueIds = new Set((targetVenues || []).map(v => v.venue_id));
+          const hasCommonVenue = venueIds.some(vid => targetVenueIds.has(vid));
+
+          if (!hasCommonVenue) {
+            return res.status(400).json({
+              error: 'The selected manager does not have access to any of the assigned venues. Choose a manager who has access to at least one of the same venues.'
+            });
+          }
         }
       } else {
         // For managers, validate they can only place under themselves or their subordinates
@@ -134,6 +151,21 @@ module.exports = async function handler(req, res) {
           if (!subordinateIds.has(reportsTo)) {
             return res.status(403).json({
               error: 'You can only place new managers under yourself or managers you have invited'
+            });
+          }
+
+          // Also check that the target manager has access to at least one of the assigned venues
+          const { data: targetVenues } = await supabaseAdmin
+            .from('staff')
+            .select('venue_id')
+            .eq('user_id', reportsTo);
+
+          const targetVenueIds = new Set((targetVenues || []).map(v => v.venue_id));
+          const hasCommonVenue = venueIds.some(vid => targetVenueIds.has(vid));
+
+          if (!hasCommonVenue) {
+            return res.status(400).json({
+              error: 'The selected manager does not have access to any of the assigned venues. Choose a manager who has access to at least one of the same venues.'
             });
           }
         }

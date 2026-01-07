@@ -1,7 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useVenue } from '../../../context/VenueContext';
 import { supabase } from '../../../utils/supabase';
-import { CheckCircle2, XCircle, Search, ExternalLink, Unlink, AlertCircle, Star, TrendingUp, Link2 } from 'lucide-react';
+import { CheckCircle2, XCircle, Search, ExternalLink, Unlink, AlertCircle, Star, TrendingUp, Link2, ChevronRight } from 'lucide-react';
+import ModernCard from '../layout/ModernCard';
 
 const IntegrationsTab = () => {
   const { venueId, userRole } = useVenue();
@@ -59,7 +60,6 @@ const IntegrationsTab = () => {
 
       if (!error && venue) {
         setVenueData(venue);
-        // Pre-fill search fields with venue name and postcode if not connected
         const postcode = venue.address?.postalCode || venue.address?.postcode || '';
         const suggestedSearch = postcode ? `${venue.name}, ${postcode}` : venue.name;
 
@@ -390,420 +390,276 @@ const IntegrationsTab = () => {
   const googleConnected = venueData?.place_id && venueData.place_id.trim() !== '';
   const tripadvisorConnected = venueData?.tripadvisor_location_id && venueData.tripadvisor_location_id.trim() !== '';
 
+  // Integration card component for connected state
+  const IntegrationRow = ({
+    name,
+    description,
+    icon,
+    connected,
+    locked,
+    onDisconnect,
+    disconnecting,
+    searchQuery,
+    onSearchInput,
+    onSearchButton,
+    isSearching,
+    searchError,
+    results,
+    showDropdown,
+    dropdownRef,
+    onSelect,
+    renderResult,
+    accentColor = 'blue'
+  }) => (
+    <ModernCard className="overflow-hidden" padding="p-0">
+      <div className="flex items-center justify-between p-5">
+        <div className="flex items-center gap-4">
+          <div className="w-10 h-10 bg-gray-50 dark:bg-gray-800 rounded-lg flex items-center justify-center">
+            {icon}
+          </div>
+          <div>
+            <h3 className="text-sm font-semibold text-gray-900 dark:text-white">{name}</h3>
+            <p className="text-xs text-gray-500 dark:text-gray-400">{description}</p>
+          </div>
+        </div>
+
+        <div className="flex items-center gap-3">
+          {connected ? (
+            <>
+              <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-400 border border-green-200 dark:border-green-800">
+                <div className="w-1.5 h-1.5 rounded-full bg-green-500" />
+                Connected
+              </span>
+              {!locked && (
+                <button
+                  onClick={onDisconnect}
+                  disabled={disconnecting}
+                  className="p-2 text-gray-400 hover:text-red-500 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors disabled:opacity-50"
+                  title="Disconnect"
+                >
+                  <Unlink className="w-4 h-4" />
+                </button>
+              )}
+            </>
+          ) : (
+            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-gray-50 dark:bg-gray-800 text-gray-500 dark:text-gray-400 border border-gray-200 dark:border-gray-700">
+              <div className="w-1.5 h-1.5 rounded-full bg-gray-400" />
+              Not connected
+            </span>
+          )}
+        </div>
+      </div>
+
+      {/* Search section when not connected */}
+      {!connected && (
+        <div className="px-5 pb-5 pt-0">
+          <div className="relative" ref={dropdownRef}>
+            <div className="flex gap-2">
+              <div className="relative flex-1">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                <input
+                  type="text"
+                  value={searchQuery}
+                  onChange={(e) => onSearchInput(e.target.value)}
+                  placeholder="Search for your business..."
+                  className="w-full pl-9 pr-4 py-2.5 border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+                />
+              </div>
+              <button
+                onClick={onSearchButton}
+                disabled={searchQuery.length < 3 || isSearching}
+                className={`px-4 py-2.5 text-white rounded-lg font-medium text-sm transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 ${
+                  accentColor === 'green'
+                    ? 'bg-green-600 hover:bg-green-700'
+                    : 'bg-blue-600 hover:bg-blue-700'
+                }`}
+              >
+                {isSearching ? (
+                  <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                ) : (
+                  'Search'
+                )}
+              </button>
+            </div>
+
+            {showDropdown && (
+              <div className="absolute z-50 w-full mt-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg max-h-64 overflow-y-auto">
+                {isSearching ? (
+                  <div className="flex items-center gap-2 px-4 py-3 text-sm text-gray-500 dark:text-gray-400">
+                    <div className="w-4 h-4 border-2 border-gray-300 border-t-blue-500 rounded-full animate-spin" />
+                    Searching...
+                  </div>
+                ) : searchError ? (
+                  <div className="px-4 py-3 text-sm text-amber-600 dark:text-amber-400 flex items-start gap-2">
+                    <AlertCircle className="w-4 h-4 flex-shrink-0 mt-0.5" />
+                    <span>{searchError}</span>
+                  </div>
+                ) : results.length > 0 ? (
+                  results.map((result, index) => renderResult(result, index, onSelect))
+                ) : (
+                  <div className="px-4 py-3 text-sm text-gray-500 dark:text-gray-400">
+                    No results found
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+    </ModernCard>
+  );
+
   return (
-    <div className="space-y-6">
+    <div className="space-y-4">
       {/* Message Display */}
       {message.text && (
-        <div className={`flex items-center gap-3 p-4 rounded-xl text-sm ${
+        <div className={`flex items-center gap-3 p-4 rounded-lg text-sm ${
           message.type === 'error'
             ? 'bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-300'
             : 'bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 text-green-700 dark:text-green-300'
         }`}>
           {message.type === 'error' ? (
-            <XCircle className="w-5 h-5 flex-shrink-0" />
+            <XCircle className="w-4 h-4 flex-shrink-0" />
           ) : (
-            <CheckCircle2 className="w-5 h-5 flex-shrink-0" />
+            <CheckCircle2 className="w-4 h-4 flex-shrink-0" />
           )}
           {message.text}
         </div>
       )}
 
-      {/* Integration Cards Grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Google Business Profile Card */}
-        <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl shadow-sm hover:shadow-md transition-shadow">
-          {/* Card Header */}
-          <div className="px-6 py-5 border-b border-gray-100 dark:border-gray-800 bg-gradient-to-r from-gray-50 to-white dark:from-gray-900 dark:to-gray-900">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-4">
-                <div className="w-12 h-12 bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 flex items-center justify-center shadow-sm">
-                  <svg className="w-7 h-7" viewBox="0 0 24 24">
-                    <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
-                    <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
-                    <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
-                    <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
-                  </svg>
-                </div>
-                <div>
-                  <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Google Business Profile</h3>
-                  <p className="text-sm text-gray-500 dark:text-gray-400">Rating tracking</p>
-                </div>
+      {/* Review Platforms Section */}
+      <div className="space-y-3">
+        <h2 className="text-sm font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+          Review Platforms
+        </h2>
+
+        {/* Google Business Profile */}
+        <IntegrationRow
+          name="Google Business Profile"
+          description="Track your Google rating and reviews"
+          icon={
+            <svg className="w-5 h-5" viewBox="0 0 24 24">
+              <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+              <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+              <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
+              <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+            </svg>
+          }
+          connected={googleConnected}
+          locked={venueData?.google_integration_locked}
+          onDisconnect={handleUnlinkGoogle}
+          disconnecting={unlinkingGoogle}
+          searchQuery={googleSearchQuery}
+          onSearchInput={handleGoogleSearchInput}
+          onSearchButton={handleGoogleSearchButton}
+          isSearching={isSearchingGoogle}
+          searchError={googleSearchError}
+          results={googleResults}
+          showDropdown={showGoogleDropdown}
+          dropdownRef={googleDropdownRef}
+          onSelect={selectGoogleVenue}
+          accentColor="blue"
+          renderResult={(result, index, onSelect) => (
+            <button
+              key={`google-${index}`}
+              onClick={() => onSelect(result)}
+              className="w-full px-4 py-3 text-left hover:bg-gray-50 dark:hover:bg-gray-700 border-b border-gray-100 dark:border-gray-700 last:border-b-0 transition-colors"
+            >
+              <div className="font-medium text-sm text-gray-900 dark:text-white">
+                {result.structured_formatting?.main_text || result.description}
               </div>
-              <div className={`flex items-center gap-2 px-3 py-1.5 rounded-full text-sm font-medium ${
-                googleConnected
-                  ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400'
-                  : 'bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400'
-              }`}>
-                <div className={`w-2 h-2 rounded-full ${googleConnected ? 'bg-green-500' : 'bg-gray-400'}`} />
-                {googleConnected ? 'Connected' : 'Not Connected'}
-              </div>
-            </div>
-          </div>
-
-          {/* Card Body */}
-          <div className="p-6">
-            {googleConnected ? (
-              <div className="space-y-5">
-                {/* Connected Info */}
-                <div className="flex items-center gap-3 p-4 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-xl">
-                  <CheckCircle2 className="w-5 h-5 text-green-600 dark:text-green-400 flex-shrink-0" />
-                  <div>
-                    <p className="font-medium text-green-900 dark:text-green-300">Google listing connected</p>
-                    <p className="text-sm text-green-700 dark:text-green-400">Ratings are being tracked automatically</p>
-                  </div>
+              {result.structured_formatting?.secondary_text && (
+                <div className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
+                  {result.structured_formatting.secondary_text}
                 </div>
+              )}
+            </button>
+          )}
+        />
 
-                {/* Features List */}
-                <div className="grid grid-cols-2 gap-3">
-                  <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
-                    <Star className="w-4 h-4 text-amber-500" />
-                    <span>Track rating</span>
-                  </div>
-                  <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
-                    <ExternalLink className="w-4 h-4 text-blue-500" />
-                    <span>Review links</span>
-                  </div>
-                  <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
-                    <TrendingUp className="w-4 h-4 text-green-500" />
-                    <span>Rating trends</span>
-                  </div>
-                </div>
-
-                {/* Disconnect Button */}
-                {venueData?.google_integration_locked ? (
-                  <p className="text-xs text-gray-500 dark:text-gray-400">
-                    This integration is locked and cannot be unlinked. Contact support if you need to change this.
-                  </p>
-                ) : (
-                  <button
-                    onClick={handleUnlinkGoogle}
-                    disabled={unlinkingGoogle}
-                    className="flex items-center gap-2 px-4 py-2.5 text-sm font-medium text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-xl hover:bg-red-100 dark:hover:bg-red-900/30 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                  >
-                    <Unlink className="w-4 h-4" />
-                    {unlinkingGoogle ? 'Unlinking...' : 'Disconnect'}
-                  </button>
+        {/* TripAdvisor */}
+        <IntegrationRow
+          name="TripAdvisor"
+          description="Track your TripAdvisor rating and reviews"
+          icon={
+            <img
+              src="https://uxwing.com/wp-content/themes/uxwing/download/brands-and-social-media/tripadvisor-icon.png"
+              alt="TripAdvisor"
+              className="w-5 h-5 object-contain"
+            />
+          }
+          connected={tripadvisorConnected}
+          locked={venueData?.tripadvisor_integration_locked}
+          onDisconnect={handleUnlinkTripAdvisor}
+          disconnecting={unlinking}
+          searchQuery={tripadvisorSearchQuery}
+          onSearchInput={handleTripadvisorSearchInput}
+          onSearchButton={handleTripadvisorSearchButton}
+          isSearching={isSearchingTripadvisor}
+          searchError={tripadvisorSearchError}
+          results={tripadvisorResults}
+          showDropdown={showTripadvisorDropdown}
+          dropdownRef={tripadvisorDropdownRef}
+          onSelect={selectTripadvisorVenue}
+          accentColor="green"
+          renderResult={(result, index, onSelect) => (
+            <button
+              key={`tripadvisor-${index}`}
+              onClick={() => onSelect(result)}
+              className="w-full px-4 py-3 text-left hover:bg-gray-50 dark:hover:bg-gray-700 border-b border-gray-100 dark:border-gray-700 last:border-b-0 transition-colors"
+            >
+              <div className="font-medium text-sm text-gray-900 dark:text-white">{result.name}</div>
+              <div className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
+                {result.address && (
+                  <>
+                    {result.address.street1 && <span>{result.address.street1}, </span>}
+                    {result.address.city && <span>{result.address.city}</span>}
+                    {result.address.postalcode && <span>, {result.address.postalcode}</span>}
+                  </>
                 )}
               </div>
-            ) : (
-              <div className="space-y-5">
-                {/* Benefits */}
-                <div className="space-y-3">
-                  <p className="text-sm font-medium text-gray-700 dark:text-gray-300">What you'll get:</p>
-                  <div className="grid grid-cols-1 gap-2">
-                    {[
-                      { icon: Star, text: 'Track Google rating automatically', color: 'text-amber-500' },
-                      { icon: ExternalLink, text: 'Generate review request links', color: 'text-blue-500' },
-                      { icon: TrendingUp, text: 'Monitor rating changes over time', color: 'text-green-500' },
-                    ].map((item, i) => (
-                      <div key={i} className="flex items-center gap-3 text-sm text-gray-600 dark:text-gray-400">
-                        <item.icon className={`w-4 h-4 ${item.color}`} />
-                        <span>{item.text}</span>
-                      </div>
-                    ))}
-                  </div>
+              {result.rating && (
+                <div className="flex items-center gap-1 text-xs text-gray-600 dark:text-gray-400 mt-1">
+                  <Star className="w-3 h-3 text-amber-500 fill-amber-500" />
+                  {result.rating} ({result.num_reviews} reviews)
                 </div>
-
-                {/* Search Input */}
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    Search for your business on Google
-                  </label>
-                  <div className="relative" ref={googleDropdownRef}>
-                    <div className="flex gap-2">
-                      <div className="relative flex-1">
-                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-                        <input
-                          type="text"
-                          value={googleSearchQuery}
-                          onChange={(e) => handleGoogleSearchInput(e.target.value)}
-                          placeholder="e.g., 'The Fox Inn, SW1A 1AA'"
-                          className="w-full pl-10 pr-4 py-3 border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm"
-                        />
-                      </div>
-                      <button
-                        onClick={handleGoogleSearchButton}
-                        disabled={googleSearchQuery.length < 3 || isSearchingGoogle}
-                        className="px-4 py-3 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-300 dark:disabled:bg-gray-700 text-white rounded-xl font-medium transition-colors disabled:cursor-not-allowed flex items-center gap-2"
-                      >
-                        {isSearchingGoogle ? (
-                          <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                        ) : (
-                          <Search className="w-4 h-4" />
-                        )}
-                        Search
-                      </button>
-                    </div>
-
-                    {showGoogleDropdown && (
-                      <div className="absolute z-50 w-full mt-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl shadow-xl max-h-64 overflow-y-auto">
-                        {isSearchingGoogle ? (
-                          <div className="flex items-center gap-2 px-4 py-3 text-sm text-gray-500 dark:text-gray-400">
-                            <div className="w-4 h-4 border-2 border-gray-300 border-t-blue-500 rounded-full animate-spin" />
-                            Searching Google...
-                          </div>
-                        ) : googleSearchError ? (
-                          <div className="px-4 py-3 text-sm text-amber-600 dark:text-amber-400 flex items-start gap-2">
-                            <AlertCircle className="w-4 h-4 flex-shrink-0 mt-0.5" />
-                            <span>{googleSearchError}</span>
-                          </div>
-                        ) : googleResults.length > 0 ? (
-                          googleResults.map((result, index) => (
-                            <button
-                              key={`google-${index}`}
-                              onClick={() => selectGoogleVenue(result)}
-                              className="w-full px-4 py-3 text-left hover:bg-gray-50 dark:hover:bg-gray-700 border-b border-gray-100 dark:border-gray-700 last:border-b-0 transition-colors"
-                            >
-                              <div className="flex items-center gap-2 mb-1">
-                                <span className="inline-flex items-center px-2 py-0.5 rounded-md text-xs font-medium bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400">
-                                  Google
-                                </span>
-                                <span className="font-medium text-sm text-gray-900 dark:text-white">
-                                  {result.structured_formatting?.main_text || result.description}
-                                </span>
-                              </div>
-                              {result.structured_formatting?.secondary_text && (
-                                <div className="text-xs text-gray-500 dark:text-gray-400">
-                                  {result.structured_formatting.secondary_text}
-                                </div>
-                              )}
-                            </button>
-                          ))
-                        ) : (
-                          <div className="px-4 py-3 text-sm text-gray-500 dark:text-gray-400">
-                            No results found. Try including your business name and postcode.
-                          </div>
-                        )}
-                      </div>
-                    )}
-                  </div>
-                  <p className="mt-2 text-xs text-gray-500 dark:text-gray-400">
-                    {venueData?.name && venueData?.address?.postalCode ? (
-                      <>We've pre-filled this based on your venue details. Click Search or adjust the query if needed.</>
-                    ) : (
-                      <>Include your business name and postcode for best results.</>
-                    )}
-                  </p>
-                </div>
-              </div>
-            )}
-          </div>
-        </div>
-
-        {/* TripAdvisor Card */}
-        <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl shadow-sm hover:shadow-md transition-shadow">
-          {/* Card Header */}
-          <div className="px-6 py-5 border-b border-gray-100 dark:border-gray-800 bg-gradient-to-r from-gray-50 to-white dark:from-gray-900 dark:to-gray-900">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-4">
-                <div className="w-12 h-12 bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 flex items-center justify-center shadow-sm p-2">
-                  <img
-                    src="https://uxwing.com/wp-content/themes/uxwing/download/brands-and-social-media/tripadvisor-icon.png"
-                    alt="TripAdvisor"
-                    className="w-full h-full object-contain"
-                  />
-                </div>
-                <div>
-                  <h3 className="text-lg font-semibold text-gray-900 dark:text-white">TripAdvisor</h3>
-                  <p className="text-sm text-gray-500 dark:text-gray-400">Listing integration</p>
-                </div>
-              </div>
-              <div className={`flex items-center gap-2 px-3 py-1.5 rounded-full text-sm font-medium ${
-                tripadvisorConnected
-                  ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400'
-                  : 'bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400'
-              }`}>
-                <div className={`w-2 h-2 rounded-full ${tripadvisorConnected ? 'bg-green-500' : 'bg-gray-400'}`} />
-                {tripadvisorConnected ? 'Connected' : 'Not Connected'}
-              </div>
-            </div>
-          </div>
-
-          {/* Card Body */}
-          <div className="p-6">
-            {tripadvisorConnected ? (
-              <div className="space-y-5">
-                {/* Connected Info */}
-                <div className="flex items-center gap-3 p-4 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-xl">
-                  <CheckCircle2 className="w-5 h-5 text-green-600 dark:text-green-400 flex-shrink-0" />
-                  <div>
-                    <p className="font-medium text-green-900 dark:text-green-300">TripAdvisor listing connected</p>
-                    <p className="text-sm text-green-700 dark:text-green-400">Reviews are being tracked automatically</p>
-                  </div>
-                </div>
-
-                {/* Features List */}
-                <div className="grid grid-cols-2 gap-3">
-                  <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
-                    <Star className="w-4 h-4 text-amber-500" />
-                    <span>Track reviews</span>
-                  </div>
-                  <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
-                    <ExternalLink className="w-4 h-4 text-blue-500" />
-                    <span>Review links</span>
-                  </div>
-                  <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
-                    <TrendingUp className="w-4 h-4 text-green-500" />
-                    <span>Rating trends</span>
-                  </div>
-                </div>
-
-                {/* Disconnect Button */}
-                {venueData?.tripadvisor_integration_locked ? (
-                  <p className="text-xs text-gray-500 dark:text-gray-400">
-                    This integration is locked and cannot be unlinked. Contact support if you need to change this.
-                  </p>
-                ) : (
-                  <button
-                    onClick={handleUnlinkTripAdvisor}
-                    disabled={unlinking}
-                    className="flex items-center gap-2 px-4 py-2.5 text-sm font-medium text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-xl hover:bg-red-100 dark:hover:bg-red-900/30 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                  >
-                    <Unlink className="w-4 h-4" />
-                    {unlinking ? 'Unlinking...' : 'Disconnect'}
-                  </button>
-                )}
-              </div>
-            ) : (
-              <div className="space-y-5">
-                {/* Benefits */}
-                <div className="space-y-3">
-                  <p className="text-sm font-medium text-gray-700 dark:text-gray-300">What you'll get:</p>
-                  <div className="grid grid-cols-1 gap-2">
-                    {[
-                      { icon: Star, text: 'Track TripAdvisor reviews automatically', color: 'text-amber-500' },
-                      { icon: ExternalLink, text: 'Generate review request links', color: 'text-blue-500' },
-                      { icon: TrendingUp, text: 'Monitor rating changes over time', color: 'text-green-500' },
-                    ].map((item, i) => (
-                      <div key={i} className="flex items-center gap-3 text-sm text-gray-600 dark:text-gray-400">
-                        <item.icon className={`w-4 h-4 ${item.color}`} />
-                        <span>{item.text}</span>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-
-                {/* Search Input */}
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    Search for your business on TripAdvisor
-                  </label>
-                  <div className="relative" ref={tripadvisorDropdownRef}>
-                    <div className="flex gap-2">
-                      <div className="relative flex-1">
-                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-                        <input
-                          type="text"
-                          value={tripadvisorSearchQuery}
-                          onChange={(e) => handleTripadvisorSearchInput(e.target.value)}
-                          placeholder="e.g., 'The Fox Inn, SW1A 1AA'"
-                          className="w-full pl-10 pr-4 py-3 border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 rounded-xl focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 text-sm"
-                        />
-                      </div>
-                      <button
-                        onClick={handleTripadvisorSearchButton}
-                        disabled={tripadvisorSearchQuery.length < 3 || isSearchingTripadvisor}
-                        className="px-4 py-3 bg-green-600 hover:bg-green-700 disabled:bg-gray-300 dark:disabled:bg-gray-700 text-white rounded-xl font-medium transition-colors disabled:cursor-not-allowed flex items-center gap-2"
-                      >
-                        {isSearchingTripadvisor ? (
-                          <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                        ) : (
-                          <Search className="w-4 h-4" />
-                        )}
-                        Search
-                      </button>
-                    </div>
-
-                    {showTripadvisorDropdown && (
-                      <div className="absolute z-50 w-full mt-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl shadow-xl max-h-64 overflow-y-auto">
-                        {isSearchingTripadvisor ? (
-                          <div className="flex items-center gap-2 px-4 py-3 text-sm text-gray-500 dark:text-gray-400">
-                            <div className="w-4 h-4 border-2 border-gray-300 border-t-green-500 rounded-full animate-spin" />
-                            Searching TripAdvisor...
-                          </div>
-                        ) : tripadvisorSearchError ? (
-                          <div className="px-4 py-3 text-sm text-amber-600 dark:text-amber-400 flex items-start gap-2">
-                            <AlertCircle className="w-4 h-4 flex-shrink-0 mt-0.5" />
-                            <span>{tripadvisorSearchError}</span>
-                          </div>
-                        ) : tripadvisorResults.length > 0 ? (
-                          tripadvisorResults.map((result, index) => (
-                            <button
-                              key={`tripadvisor-${index}`}
-                              onClick={() => selectTripadvisorVenue(result)}
-                              className="w-full px-4 py-3 text-left hover:bg-gray-50 dark:hover:bg-gray-700 border-b border-gray-100 dark:border-gray-700 last:border-b-0 transition-colors"
-                            >
-                              <div className="flex items-center gap-2 mb-1">
-                                <span className="inline-flex items-center px-2 py-0.5 rounded-md text-xs font-medium bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400">
-                                  TripAdvisor
-                                </span>
-                                <span className="font-medium text-sm text-gray-900 dark:text-white">{result.name}</span>
-                              </div>
-                              <div className="text-xs text-gray-500 dark:text-gray-400">
-                                {result.address && (
-                                  <>
-                                    {result.address.street1 && <span>{result.address.street1}, </span>}
-                                    {result.address.city && <span>{result.address.city}</span>}
-                                    {result.address.postalcode && <span>, {result.address.postalcode}</span>}
-                                  </>
-                                )}
-                              </div>
-                              {result.rating && (
-                                <div className="flex items-center gap-1 text-xs text-gray-600 dark:text-gray-400 mt-1">
-                                  <Star className="w-3 h-3 text-amber-500 fill-amber-500" />
-                                  {result.rating} ({result.num_reviews} reviews)
-                                </div>
-                              )}
-                            </button>
-                          ))
-                        ) : (
-                          <div className="px-4 py-3 text-sm text-gray-500 dark:text-gray-400">
-                            No results found. Try including your business name and postcode.
-                          </div>
-                        )}
-                      </div>
-                    )}
-                  </div>
-                  <p className="mt-2 text-xs text-gray-500 dark:text-gray-400">
-                    {venueData?.name && venueData?.address?.postalCode ? (
-                      <>We've pre-filled this based on your venue details. Click Search or adjust the query if needed.</>
-                    ) : (
-                      <>Include your business name and postcode for best results.</>
-                    )}
-                  </p>
-                </div>
-              </div>
-            )}
-          </div>
-        </div>
+              )}
+            </button>
+          )}
+        />
       </div>
 
-      {/* All Connected Banner */}
-      {googleConnected && tripadvisorConnected && (
-        <div className="flex items-center gap-4 p-5 bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 border border-green-200 dark:border-green-800 rounded-2xl">
-          <div className="w-12 h-12 bg-green-500 rounded-xl flex items-center justify-center flex-shrink-0">
-            <CheckCircle2 className="w-6 h-6 text-white" />
-          </div>
-          <div>
-            <h4 className="font-semibold text-green-900 dark:text-green-300">All integrations connected</h4>
-            <p className="text-sm text-green-700 dark:text-green-400">
-              Your Google Business Profile and TripAdvisor are both connected and tracking ratings automatically.
-            </p>
-          </div>
-        </div>
-      )}
+      {/* Coming Soon Section */}
+      <div className="space-y-3 pt-4">
+        <h2 className="text-sm font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+          Coming Soon
+        </h2>
 
-      {/* Help Text */}
-      {!googleConnected && !tripadvisorConnected && (
-        <div className="text-center py-6">
-          <div className="w-12 h-12 bg-gray-100 dark:bg-gray-800 rounded-xl flex items-center justify-center mx-auto mb-3">
-            <Link2 className="w-6 h-6 text-gray-400" />
+        <ModernCard padding="p-0">
+          <div className="divide-y divide-gray-100 dark:divide-gray-800">
+            {[
+              { name: 'SevenRooms', description: 'Reservation system integration', color: 'bg-purple-500' },
+              { name: 'ResDiary', description: 'Reservation system integration', color: 'bg-blue-500' },
+              { name: 'OpenTable', description: 'Reservation system integration', color: 'bg-red-500' },
+            ].map((integration) => (
+              <div key={integration.name} className="flex items-center justify-between p-5 opacity-60">
+                <div className="flex items-center gap-4">
+                  <div className={`w-10 h-10 ${integration.color} rounded-lg flex items-center justify-center`}>
+                    <span className="text-white font-semibold text-sm">{integration.name.charAt(0)}</span>
+                  </div>
+                  <div>
+                    <h3 className="text-sm font-semibold text-gray-900 dark:text-white">{integration.name}</h3>
+                    <p className="text-xs text-gray-500 dark:text-gray-400">{integration.description}</p>
+                  </div>
+                </div>
+                <span className="text-xs font-medium text-gray-400 dark:text-gray-500 bg-gray-100 dark:bg-gray-800 px-2.5 py-1 rounded-full">
+                  Coming soon
+                </span>
+              </div>
+            ))}
           </div>
-          <p className="text-gray-500 dark:text-gray-400 text-sm">
-            Connect your review platforms above to start tracking your ratings.
-          </p>
-        </div>
-      )}
+        </ModernCard>
+      </div>
     </div>
   );
 };

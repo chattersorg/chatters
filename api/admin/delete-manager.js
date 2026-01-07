@@ -1,6 +1,6 @@
 // /api/admin/delete-manager.js
 const { createClient } = require('@supabase/supabase-js');
-const { requireMasterRole } = require('../auth-helper');
+const { requirePermission, requireHierarchy } = require('../auth-helper');
 
 const supabaseAdmin = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.REACT_APP_SUPABASE_URL,
@@ -22,7 +22,8 @@ module.exports = async function handler(req, res) {
   }
 
   try {
-    const userData = await requireMasterRole(req);
+    // Require managers.remove permission instead of master role
+    const userData = await requirePermission(req, 'managers.remove');
     const { managerId } = req.body;
 
     if (!managerId) {
@@ -42,6 +43,9 @@ module.exports = async function handler(req, res) {
     if (managerError || !manager) {
       return res.status(404).json({ error: 'Manager not found or already deleted' });
     }
+
+    // Validate hierarchy - managers can only delete their subordinates
+    await requireHierarchy(userData, managerId);
 
     // Soft delete the manager
     const { error: deleteError } = await supabaseAdmin
