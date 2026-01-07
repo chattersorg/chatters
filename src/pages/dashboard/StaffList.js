@@ -10,6 +10,7 @@ import AddEmployeeModal from '../../components/dashboard/staff/employeetabcompon
 import EditEmployeeModal from '../../components/dashboard/staff/employeetabcomponents/EditEmployeeModal';
 import DeleteEmployeeModal from '../../components/dashboard/staff/employeetabcomponents/DeleteEmployeeModal';
 import { downloadEmployeesCSV, parseEmployeesCSV } from '../../utils/csvUtils';
+import toast from 'react-hot-toast';
 import {
   Search, X, Download, Upload, Eye,
   Users
@@ -24,19 +25,17 @@ const StaffListPage = () => {
   // Data states
   const [employees, setEmployees] = useState([]);
   const [loading, setLoading] = useState(false);
-  const [message, setMessage] = useState('');
-  const [messageType, setMessageType] = useState('success');
 
   // Handle success message from CSV import page
   useEffect(() => {
     if (location.state?.message) {
-      setMessage(location.state.message);
-      setMessageType(location.state.success ? 'success' : 'error');
+      if (location.state.success) {
+        toast.success(location.state.message);
+      } else {
+        toast.error(location.state.message);
+      }
       // Clear the state so message doesn't reappear on refresh
       window.history.replaceState({}, document.title);
-      // Auto-clear message after 5 seconds
-      const timer = setTimeout(() => setMessage(''), 5000);
-      return () => clearTimeout(timer);
     }
   }, [location.state]);
 
@@ -125,7 +124,7 @@ const StaffListPage = () => {
         setEmployees(employeesData || []);
       }
     } catch (error) {
-      setMessage('Failed to load employee data');
+      toast.error('Failed to load employee data');
     } finally {
       setLoading(false);
     }
@@ -196,11 +195,11 @@ const StaffListPage = () => {
     try {
       const { error } = await supabase.from('employees').delete().eq('id', employeeId);
       if (error) throw error;
-      setMessage('Employee deleted successfully!');
+      toast.success('Employee deleted successfully!');
       setEmployeeToDelete(null);
       await fetchEmployeeData();
     } catch (error) {
-      setMessage('Failed to delete employee. Please try again.');
+      toast.error('Failed to delete employee. Please try again.');
     } finally {
       setDeleteLoading(false);
     }
@@ -218,12 +217,12 @@ const StaffListPage = () => {
     try {
       const { employees: parsedEmployees, errors } = await parseEmployeesCSV(file);
       if (errors.length > 0) {
-        setMessage(`CSV parsing errors: ${errors.join('; ')}`);
+        toast.error(`CSV parsing errors: ${errors.join('; ')}`);
         setUploading(false);
         return;
       }
       if (parsedEmployees.length === 0) {
-        setMessage('No valid employee data found in CSV file');
+        toast.error('No valid employee data found in CSV file');
         setUploading(false);
         return;
       }
@@ -242,7 +241,7 @@ const StaffListPage = () => {
       });
 
       if (csvDuplicateEmails.length > 0) {
-        setMessage(`CSV contains duplicate emails: ${csvDuplicateEmails.join(', ')}. Please remove duplicates and try again.`);
+        toast.error(`CSV contains duplicate emails: ${csvDuplicateEmails.join(', ')}. Please remove duplicates and try again.`);
         setUploading(false);
         return;
       }
@@ -308,7 +307,7 @@ const StaffListPage = () => {
       setUploading(false);
 
     } catch (error) {
-      setMessage(`Failed to process CSV: ${error.message}`);
+      toast.error(`Failed to process CSV: ${error.message}`);
       setUploading(false);
     }
   };
@@ -328,17 +327,6 @@ const StaffListPage = () => {
       <ChartCard
         title="Employees"
         subtitle="Manage employees at your venue"
-        titleRight={
-          message && (
-            <span className={`text-sm font-medium ${
-              messageType === 'success' || message.includes('success') || message.includes('recovered')
-                ? 'text-green-600 dark:text-green-400'
-                : 'text-red-600 dark:text-red-400'
-            }`}>
-              {message}
-            </span>
-          )
-        }
       >
         {loading && (
           <div className="flex items-center justify-center py-12">
@@ -554,7 +542,6 @@ const StaffListPage = () => {
         userRole={userRole}
         employees={employees}
         fetchStaffData={fetchEmployeeData}
-        setMessage={setMessage}
       />
 
       {/* Edit Employee Modal */}
@@ -567,7 +554,6 @@ const StaffListPage = () => {
         userRole={userRole}
         employees={employees}
         fetchStaffData={fetchEmployeeData}
-        setMessage={setMessage}
       />
 
       {/* Delete Employee Modal */}

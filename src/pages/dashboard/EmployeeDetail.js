@@ -4,6 +4,7 @@ import { supabase } from '../../utils/supabase';
 import usePageTitle from '../../hooks/usePageTitle';
 import { useVenue } from '../../context/VenueContext';
 import { PermissionGate } from '../../context/PermissionsContext';
+import toast from 'react-hot-toast';
 import { ArrowLeft, Save, ChevronDown, ChevronUp, History, User, Pause, Play, Trash2, BarChart3 } from 'lucide-react';
 
 // Custom Select component to match site styling
@@ -79,7 +80,6 @@ const EmployeeDetail = () => {
   const [employee, setEmployee] = useState(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
-  const [message, setMessage] = useState('');
   const [hasChanges, setHasChanges] = useState(false);
 
   const [roles, setRoles] = useState([]);
@@ -132,7 +132,7 @@ const EmployeeDetail = () => {
       });
     } catch (error) {
       console.error('Error fetching employee:', error);
-      setMessage('Failed to load employee details');
+      toast.error('Failed to load employee details');
     } finally {
       setLoading(false);
     }
@@ -166,7 +166,6 @@ const EmployeeDetail = () => {
   const handleInputChange = (field, value) => {
     setFormData(prev => ({ ...prev, [field]: value }));
     setHasChanges(true);
-    setMessage(''); // Clear any previous messages
   };
 
   const fetchChangeLogs = async () => {
@@ -235,7 +234,6 @@ const EmployeeDetail = () => {
 
   const handleSave = async () => {
     setSaving(true);
-    setMessage('');
 
     try {
       // Log all changes before updating
@@ -281,7 +279,7 @@ const EmployeeDetail = () => {
         );
       }
 
-      setMessage('Employee updated successfully!');
+      toast.success('Employee updated successfully!');
       setHasChanges(false);
 
       // Refresh employee and change logs after updates are complete
@@ -289,7 +287,7 @@ const EmployeeDetail = () => {
       await fetchChangeLogs();
     } catch (error) {
       console.error('Error updating employee:', error);
-      setMessage('Failed to update employee. Please try again.');
+      toast.error('Failed to update employee. Please try again.');
     } finally {
       setSaving(false);
     }
@@ -298,7 +296,6 @@ const EmployeeDetail = () => {
   const handleTogglePause = async () => {
     const newStatus = !employee.is_active;
     setSaving(true);
-    setMessage('');
 
     try {
       const { error } = await supabase
@@ -311,13 +308,13 @@ const EmployeeDetail = () => {
       // Log the status change
       await logChange('is_active', employee.is_active ? 'active' : 'paused', newStatus ? 'active' : 'paused');
 
-      setMessage(`Employee ${newStatus ? 'activated' : 'paused'} successfully!`);
+      toast.success(`Employee ${newStatus ? 'activated' : 'paused'} successfully!`);
 
       await fetchEmployee();
       await fetchChangeLogs();
     } catch (error) {
       console.error('Error updating employee status:', error);
-      setMessage('Failed to update employee status. Please try again.');
+      toast.error('Failed to update employee status. Please try again.');
     } finally {
       setSaving(false);
     }
@@ -337,7 +334,7 @@ const EmployeeDetail = () => {
       navigate('/staff/employees');
     } catch (error) {
       console.error('Error deleting employee:', error);
-      setMessage('Failed to delete employee. Please try again.');
+      toast.error('Failed to delete employee. Please try again.');
       setDeleting(false);
       setShowDeleteModal(false);
     }
@@ -507,17 +504,6 @@ const EmployeeDetail = () => {
               />
             </div>
           </div>
-
-          {/* Success/Error Message */}
-          {message && (
-            <div className={`mt-6 p-4 rounded-lg text-sm ${
-              message.includes('success')
-                ? 'bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-400 border border-green-200 dark:border-green-800'
-                : 'bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-400 border border-red-200 dark:border-red-800'
-            }`}>
-              {message}
-            </div>
-          )}
         </div>
 
         {/* Actions Footer */}

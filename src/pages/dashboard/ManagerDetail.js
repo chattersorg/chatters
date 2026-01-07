@@ -6,6 +6,7 @@ import { useVenue } from '../../context/VenueContext';
 import { PermissionGate, usePermissions } from '../../context/PermissionsContext';
 import { Button } from '../../components/ui/button';
 import { permissionSections } from '../../config/permissions';
+import toast from 'react-hot-toast';
 import {
   ArrowLeft, Mail, Building2, Save, Trash2, Shield,
   Check, RefreshCw, Phone, Calendar, User, Archive, AlertTriangle,
@@ -29,7 +30,6 @@ const ManagerDetail = () => {
   const [managerVenues, setManagerVenues] = useState([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
-  const [message, setMessage] = useState('');
 
   // Manager edit state
   const [editedVenueIds, setEditedVenueIds] = useState([]);
@@ -158,7 +158,7 @@ const ManagerDetail = () => {
       }
     } catch (error) {
       console.error('Error fetching manager:', error);
-      setMessage('Failed to load manager details');
+      toast.error('Failed to load manager details');
     } finally {
       setLoading(false);
     }
@@ -340,7 +340,6 @@ const ManagerDetail = () => {
 
   const handleSaveVenues = async () => {
     setSaving(true);
-    setMessage('');
 
     try {
       const { data: { session } } = await supabase.auth.getSession();
@@ -359,12 +358,12 @@ const ManagerDetail = () => {
       const result = await res.json();
       if (!res.ok) throw new Error(result.error || 'Failed to update venue assignments');
 
-      setMessage('Venue assignments updated successfully!');
+      toast.success('Venue assignments updated successfully!');
       setManagerVenues(editedVenueIds);
       setHasVenueChanges(false);
     } catch (error) {
       console.error('Error updating manager venues:', error);
-      setMessage('Failed to update venue assignments: ' + error.message);
+      toast.error('Failed to update venue assignments: ' + error.message);
     } finally {
       setSaving(false);
     }
@@ -389,7 +388,7 @@ const ManagerDetail = () => {
       navigate('/staff/managers');
     } catch (error) {
       console.error('Error archiving manager:', error);
-      setMessage('Failed to archive manager: ' + error.message);
+      toast.error('Failed to archive manager: ' + error.message);
       setArchiving(false);
       setShowArchiveModal(false);
     }
@@ -414,7 +413,7 @@ const ManagerDetail = () => {
       navigate('/staff/managers');
     } catch (error) {
       console.error('Error deleting manager:', error);
-      setMessage('Failed to delete manager: ' + error.message);
+      toast.error('Failed to delete manager: ' + error.message);
       setDeleting(false);
       setShowDeleteModal(false);
     }
@@ -422,12 +421,11 @@ const ManagerDetail = () => {
 
   const handleSaveDetails = async () => {
     if (!editedFirstName.trim() || !editedLastName.trim()) {
-      setMessage('First name and last name are required');
+      toast.error('First name and last name are required');
       return;
     }
 
     setSavingDetails(true);
-    setMessage('');
 
     try {
       const { data: { session } } = await supabase.auth.getSession();
@@ -449,11 +447,11 @@ const ManagerDetail = () => {
       const result = await res.json();
       if (!res.ok) throw new Error(result.error || 'Failed to update manager');
 
-      setMessage('Personal information updated successfully!');
+      toast.success('Personal information updated successfully!');
       await fetchManager();
     } catch (error) {
       console.error('Error updating manager:', error);
-      setMessage('Failed to update manager: ' + error.message);
+      toast.error('Failed to update manager: ' + error.message);
     } finally {
       setSavingDetails(false);
     }
@@ -553,14 +551,14 @@ const ManagerDetail = () => {
         throw new Error(result.error || 'Failed to update permissions');
       }
 
-      setMessage('Permissions saved successfully!');
+      toast.success('Permissions saved successfully!');
       setOriginalTemplate(selectedTemplate);
       setOriginalCustomPermissions([...customPermissions]);
       setHasPermissionChanges(false);
       await fetchPermissionsData();
     } catch (err) {
       console.error('Error saving permissions:', err);
-      setMessage('Failed to save permissions: ' + err.message);
+      toast.error('Failed to save permissions: ' + err.message);
     } finally {
       setPermissionsSaving(false);
     }
@@ -635,17 +633,6 @@ const ManagerDetail = () => {
           </div>
         </div>
       </div>
-
-      {/* Message */}
-      {message && (
-        <div className={`p-4 rounded-lg text-sm ${
-          message.includes('success')
-            ? 'bg-green-50 dark:bg-green-900/30 text-green-700 dark:text-green-400 border border-green-200 dark:border-green-800'
-            : 'bg-red-50 dark:bg-red-900/30 text-red-700 dark:text-red-400 border border-red-200 dark:border-red-800'
-        }`}>
-          {message}
-        </div>
-      )}
 
       {/* Tabs */}
       <div className="border-b border-gray-200 dark:border-gray-800">

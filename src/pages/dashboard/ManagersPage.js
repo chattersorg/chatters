@@ -5,6 +5,7 @@ import { useVenue } from '../../context/VenueContext';
 import { usePermissions, PermissionGate } from '../../context/PermissionsContext';
 import usePageTitle from '../../hooks/usePageTitle';
 import { Button } from '../../components/ui/button';
+import toast from 'react-hot-toast';
 import {
   Users,
   Search,
@@ -38,7 +39,6 @@ const ManagersPage = () => {
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [expandedNodes, setExpandedNodes] = useState(new Set());
-  const [message, setMessage] = useState('');
 
   // Pending invitations
   const [pendingInvitations, setPendingInvitations] = useState([]);
@@ -258,11 +258,9 @@ const ManagersPage = () => {
       const result = await res.json();
       if (!res.ok) throw new Error(result.error || 'Failed to resend invitation');
 
-      setMessage(`Invitation resent to ${email}`);
-      setTimeout(() => setMessage(''), 5000);
+      toast.success(`Invitation resent to ${email}`);
     } catch (error) {
-      setMessage('Failed to resend: ' + error.message);
-      setTimeout(() => setMessage(''), 5000);
+      toast.error('Failed to resend: ' + error.message);
     } finally {
       setResendingEmail(null);
     }
@@ -284,12 +282,10 @@ const ManagersPage = () => {
       const result = await res.json();
       if (!res.ok) throw new Error(result.error || 'Failed to revoke invitation');
 
-      setMessage('Invitation revoked');
-      setTimeout(() => setMessage(''), 5000);
+      toast.success('Invitation revoked');
       await fetchPendingInvitations();
     } catch (error) {
-      setMessage('Failed to revoke: ' + error.message);
-      setTimeout(() => setMessage(''), 5000);
+      toast.error('Failed to revoke: ' + error.message);
     } finally {
       setRevokingInvitation(null);
     }
@@ -311,13 +307,11 @@ const ManagersPage = () => {
       const result = await res.json();
       if (!res.ok) throw new Error(result.error || 'Failed to recover manager');
 
-      setMessage(result.message || 'Manager recovered');
-      setTimeout(() => setMessage(''), 5000);
+      toast.success(result.message || 'Manager recovered');
       await fetchDeletedManagers();
       await fetchManagers();
     } catch (error) {
-      setMessage('Failed to recover: ' + error.message);
-      setTimeout(() => setMessage(''), 5000);
+      toast.error('Failed to recover: ' + error.message);
     } finally {
       setRecoveringManager(null);
     }
@@ -522,17 +516,6 @@ const ManagersPage = () => {
           </Button>
         </PermissionGate>
       </div>
-
-      {/* Message */}
-      {message && (
-        <div className={`px-4 py-3 rounded-lg text-sm font-medium ${
-          message.includes('Failed') || message.includes('Error')
-            ? 'bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-400 border border-red-200 dark:border-red-800'
-            : 'bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-400 border border-green-200 dark:border-green-800'
-        }`}>
-          {message}
-        </div>
-      )}
 
       {/* Search */}
       <div className="flex flex-col sm:flex-row sm:items-center gap-4">

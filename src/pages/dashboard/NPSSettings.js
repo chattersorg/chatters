@@ -5,9 +5,10 @@ import { useVenue } from '../../context/VenueContext';
 import { Button } from '../../components/ui/button';
 import FilterSelect from '../../components/ui/FilterSelect';
 import { Send } from 'lucide-react';
+import toast from 'react-hot-toast';
 
 // Reusable card component
-const SettingsCard = ({ title, description, children, onSave, loading, message, saveLabel = 'Save' }) => (
+const SettingsCard = ({ title, description, children, onSave, loading, saveLabel = 'Save' }) => (
   <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl">
     <div className="px-6 py-4 border-b border-gray-100 dark:border-gray-800">
       <h3 className="text-base font-semibold text-gray-900 dark:text-white">{title}</h3>
@@ -29,15 +30,6 @@ const SettingsCard = ({ title, description, children, onSave, loading, message, 
           {loading ? 'Saving...' : saveLabel}
         </Button>
       </div>
-      {message && (
-        <div className={`text-xs p-2 rounded-lg mt-3 ${
-          message.includes('success')
-            ? 'text-green-700 dark:text-green-300 bg-green-50 dark:bg-green-900/30 border border-green-200 dark:border-green-800'
-            : 'text-red-700 dark:text-red-300 bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-800'
-        }`}>
-          {message}
-        </div>
-      )}
     </div>
   </div>
 );
@@ -51,12 +43,10 @@ const NPSSettings = () => {
   const [npsDelayHours, setNpsDelayHours] = useState(24);
   const [npsQuestion, setNpsQuestion] = useState('How likely are you to recommend us to a friend or colleague?');
   const [npsLoading, setNpsLoading] = useState(false);
-  const [npsMessage, setNpsMessage] = useState('');
 
   // NPS Review threshold state
   const [npsReviewThreshold, setNpsReviewThreshold] = useState(9);
   const [reviewThresholdLoading, setReviewThresholdLoading] = useState(false);
-  const [reviewThresholdMessage, setReviewThresholdMessage] = useState('');
 
   // NPS Email customisation state
   const [npsEmailSubject, setNpsEmailSubject] = useState('How was your visit to {venue_name}?');
@@ -64,11 +54,9 @@ const NPSSettings = () => {
   const [npsEmailBody, setNpsEmailBody] = useState('We hope you had a great experience. We\'d love to hear your feedback.');
   const [npsEmailButtonText, setNpsEmailButtonText] = useState('Rate Your Experience');
   const [emailCustomLoading, setEmailCustomLoading] = useState(false);
-  const [emailCustomMessage, setEmailCustomMessage] = useState('');
 
   // Test email state
   const [sendingTestEmail, setSendingTestEmail] = useState(false);
-  const [testEmailMessage, setTestEmailMessage] = useState('');
 
   useEffect(() => {
     if (!venueId) return;
@@ -104,7 +92,6 @@ const NPSSettings = () => {
   const saveNPSSettings = async () => {
     if (!venueId) return;
     setNpsLoading(true);
-    setNpsMessage('');
 
     try {
       const { error } = await supabase
@@ -117,10 +104,10 @@ const NPSSettings = () => {
         .eq('id', venueId);
 
       if (error) throw error;
-      setNpsMessage('NPS settings updated successfully!');
+      toast.success('NPS settings updated successfully!');
     } catch (error) {
       console.error('Error saving NPS settings:', error);
-      setNpsMessage(`Failed to save NPS settings: ${error.message}`);
+      toast.error(`Failed to save NPS settings: ${error.message}`);
     } finally {
       setNpsLoading(false);
     }
@@ -129,7 +116,6 @@ const NPSSettings = () => {
   const saveReviewThresholds = async () => {
     if (!venueId) return;
     setReviewThresholdLoading(true);
-    setReviewThresholdMessage('');
 
     try {
       const { error } = await supabase
@@ -140,10 +126,10 @@ const NPSSettings = () => {
         .eq('id', venueId);
 
       if (error) throw error;
-      setReviewThresholdMessage('Review thresholds updated successfully!');
+      toast.success('Review thresholds updated successfully!');
     } catch (error) {
       console.error('Error saving review thresholds:', error);
-      setReviewThresholdMessage(`Failed to save review thresholds: ${error.message}`);
+      toast.error(`Failed to save review thresholds: ${error.message}`);
     } finally {
       setReviewThresholdLoading(false);
     }
@@ -152,7 +138,6 @@ const NPSSettings = () => {
   const saveEmailCustomization = async () => {
     if (!venueId) return;
     setEmailCustomLoading(true);
-    setEmailCustomMessage('');
 
     try {
       const { error } = await supabase
@@ -166,10 +151,10 @@ const NPSSettings = () => {
         .eq('id', venueId);
 
       if (error) throw error;
-      setEmailCustomMessage('Email customisation updated successfully!');
+      toast.success('Email customisation updated successfully!');
     } catch (error) {
       console.error('Error saving email customization:', error);
-      setEmailCustomMessage(`Failed to save email customisation: ${error.message}`);
+      toast.error(`Failed to save email customisation: ${error.message}`);
     } finally {
       setEmailCustomLoading(false);
     }
@@ -178,7 +163,6 @@ const NPSSettings = () => {
   const sendTestEmail = async () => {
     if (!venueId) return;
     setSendingTestEmail(true);
-    setTestEmailMessage('');
 
     try {
       const { data: { session } } = await supabase.auth.getSession();
@@ -201,10 +185,10 @@ const NPSSettings = () => {
         throw new Error(data.error || 'Failed to send test email');
       }
 
-      setTestEmailMessage(data.message);
+      toast.success(data.message);
     } catch (error) {
       console.error('Error sending test email:', error);
-      setTestEmailMessage(`Failed to send test email: ${error.message}`);
+      toast.error(`Failed to send test email: ${error.message}`);
     } finally {
       setSendingTestEmail(false);
     }
@@ -226,7 +210,6 @@ const NPSSettings = () => {
         description="Send automated follow-up emails to gather customer loyalty insights"
         onSave={saveNPSSettings}
         loading={npsLoading}
-        message={npsMessage}
       >
         <div className="space-y-6">
           {/* Enable Toggle */}
@@ -308,7 +291,6 @@ const NPSSettings = () => {
           description="Customise the content of your NPS survey emails"
           onSave={saveEmailCustomization}
           loading={emailCustomLoading}
-          message={emailCustomMessage}
         >
           <div className="space-y-6">
             {/* Email Subject */}
@@ -421,15 +403,6 @@ const NPSSettings = () => {
                   {sendingTestEmail ? 'Sending...' : 'Send Test'}
                 </Button>
               </div>
-              {testEmailMessage && (
-                <div className={`text-xs p-2 rounded-lg mt-3 ${
-                  testEmailMessage.includes('sent to')
-                    ? 'text-green-700 dark:text-green-300 bg-green-50 dark:bg-green-900/30 border border-green-200 dark:border-green-800'
-                    : 'text-red-700 dark:text-red-300 bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-800'
-                }`}>
-                  {testEmailMessage}
-                </div>
-              )}
             </div>
           </div>
         </SettingsCard>
@@ -442,7 +415,6 @@ const NPSSettings = () => {
           description="Set the minimum NPS score required to show Google/TripAdvisor review links after NPS surveys"
           onSave={saveReviewThresholds}
           loading={reviewThresholdLoading}
-          message={reviewThresholdMessage}
         >
         <div className="space-y-6">
           {/* NPS Threshold */}

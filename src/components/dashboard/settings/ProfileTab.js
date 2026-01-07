@@ -3,6 +3,7 @@ import { supabase } from '../../../utils/supabase';
 import { Button } from '../../ui/button';
 import { useDarkMode } from '../../../context/DarkModeContext';
 import { Moon, Sun, Mail } from 'lucide-react';
+import toast from 'react-hot-toast';
 
 const ProfileTab = ({
   firstName, setFirstName,
@@ -13,11 +14,8 @@ const ProfileTab = ({
   setWeeklyReportEnabled
 }) => {
   const [loading, setLoading] = useState(false);
-  const [message, setMessage] = useState('');
   const [passwordResetLoading, setPasswordResetLoading] = useState(false);
-  const [passwordResetMessage, setPasswordResetMessage] = useState('');
   const [emailChangeLoading, setEmailChangeLoading] = useState(false);
-  const [emailChangeMessage, setEmailChangeMessage] = useState('');
   const [newEmail, setNewEmail] = useState('');
   const [showEmailChange, setShowEmailChange] = useState(false);
 
@@ -55,7 +53,6 @@ const ProfileTab = ({
     if (!venueId) return;
 
     setLoading(true);
-    setMessage('');
 
     try {
       // Get current user ID
@@ -81,10 +78,10 @@ const ProfileTab = ({
         throw userError;
       }
 
-      setMessage('Profile updated successfully!');
+      toast.success('Profile updated successfully!');
     } catch (error) {
       console.error('Error updating profile:', error);
-      setMessage(`Error updating profile: ${error.message}`);
+      toast.error(`Error updating profile: ${error.message}`);
     } finally {
       setLoading(false);
     }
@@ -92,7 +89,6 @@ const ProfileTab = ({
 
   const sendPasswordResetEmail = async () => {
     setPasswordResetLoading(true);
-    setPasswordResetMessage('');
 
     try {
       const res = await fetch('/api/send-password-reset', {
@@ -108,10 +104,10 @@ const ProfileTab = ({
         throw new Error(data.error || 'Failed to send password reset email');
       }
 
-      setPasswordResetMessage('Password reset email sent! Please check your inbox (and spam folder).');
+      toast.success('Password reset email sent! Please check your inbox (and spam folder).');
     } catch (error) {
       console.error('Error sending password reset:', error);
-      setPasswordResetMessage(`Error: ${error.message}`);
+      toast.error(`Error: ${error.message}`);
     } finally {
       setPasswordResetLoading(false);
     }
@@ -119,24 +115,23 @@ const ProfileTab = ({
 
   const sendEmailChangeVerification = async () => {
     if (!newEmail || !newEmail.trim()) {
-      setEmailChangeMessage('Please enter a new email address');
+      toast.error('Please enter a new email address');
       return;
     }
 
     if (newEmail.toLowerCase() === email.toLowerCase()) {
-      setEmailChangeMessage('New email must be different from current email');
+      toast.error('New email must be different from current email');
       return;
     }
 
     // Basic email validation
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(newEmail)) {
-      setEmailChangeMessage('Please enter a valid email address');
+      toast.error('Please enter a valid email address');
       return;
     }
 
     setEmailChangeLoading(true);
-    setEmailChangeMessage('');
 
     try {
       const res = await fetch('/api/send-email-change', {
@@ -153,12 +148,12 @@ const ProfileTab = ({
         throw new Error(data.error || 'Failed to send verification email');
       }
 
-      setEmailChangeMessage(`Verification email sent to ${newEmail}! Please check your inbox to confirm the change.`);
+      toast.success(`Verification email sent to ${newEmail}! Please check your inbox to confirm the change.`);
       setNewEmail('');
       setShowEmailChange(false);
     } catch (error) {
       console.error('Error sending email change:', error);
-      setEmailChangeMessage(`Error: ${error.message}`);
+      toast.error(`Error: ${error.message}`);
     } finally {
       setEmailChangeLoading(false);
     }
@@ -249,22 +244,11 @@ const ProfileTab = ({
                     onClick={() => {
                       setShowEmailChange(false);
                       setNewEmail('');
-                      setEmailChangeMessage('');
                     }}
                     className="text-sm text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200"
                   >
                     Cancel
                   </button>
-                </div>
-              )}
-
-              {emailChangeMessage && (
-                <div className={`text-xs mt-2 p-3 rounded-lg ${
-                  emailChangeMessage.includes('sent') || emailChangeMessage.includes('Verification')
-                    ? 'text-green-700 bg-green-50 border border-green-200'
-                    : 'text-red-700 bg-red-50 border border-red-200'
-                }`}>
-                  {emailChangeMessage}
                 </div>
               )}
             </div>
@@ -285,15 +269,6 @@ const ProfileTab = ({
               {loading ? 'Saving...' : 'Save'}
             </Button>
           </div>
-          {message && (
-            <div className={`text-xs p-2 rounded-lg mt-3 ${
-              message.includes('success')
-                ? 'text-green-700 bg-green-50 border border-green-200'
-                : 'text-red-700 bg-red-50 border border-red-200'
-            }`}>
-              {message}
-            </div>
-          )}
         </div>
       </div>
 
@@ -368,16 +343,6 @@ const ProfileTab = ({
               >
                 {passwordResetLoading ? 'Sending...' : 'Send password reset email'}
               </Button>
-
-              {passwordResetMessage && (
-                <div className={`text-xs mt-3 p-3 rounded-lg ${
-                  passwordResetMessage.includes('sent')
-                    ? 'text-green-700 dark:text-green-400 bg-green-50 dark:bg-green-900/30 border border-green-200 dark:border-green-800'
-                    : 'text-red-700 dark:text-red-400 bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-800'
-                }`}>
-                  {passwordResetMessage}
-                </div>
-              )}
             </div>
           </div>
         </div>

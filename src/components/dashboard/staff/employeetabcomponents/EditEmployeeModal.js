@@ -4,6 +4,7 @@ import React, { useState, useCallback, useEffect } from 'react';
 import { supabase } from '../../../../utils/supabase';
 import { Edit3, X, AlertCircle, CheckCircle } from 'lucide-react';
 import { Button } from '../../../ui/button';
+import toast from 'react-hot-toast';
 
 const EditEmployeeModal = ({
   showEditForm,
@@ -13,8 +14,7 @@ const EditEmployeeModal = ({
   allVenues,
   userRole,
   employees,
-  fetchStaffData,
-  setMessage
+  fetchStaffData
 }) => {
   const [submitting, setSubmitting] = useState(false);
   const [formData, setFormData] = useState({
@@ -164,11 +164,11 @@ const EditEmployeeModal = ({
       if (error) throw error;
 
       // Success
-      setMessage('Employee updated successfully!');
+      toast.success('Employee updated successfully!');
       setShowEditForm(false);
       setEditingEmployee(null);
       resetForm();
-      
+
       // Refresh the staff data
       if (fetchStaffData) {
         await fetchStaffData();
@@ -179,7 +179,7 @@ const EditEmployeeModal = ({
       if (error.code === '23505') {
         setFormErrors({ email: 'An employee with this email already exists' });
       } else {
-        setMessage('Failed to update employee. Please try again.');
+        toast.error('Failed to update employee. Please try again.');
       }
     } finally {
       setSubmitting(false);

@@ -4,6 +4,7 @@ import { supabase } from '../../../utils/supabase';
 import { useVenue } from '../../../context/VenueContext';
 import usePageTitle from '../../../hooks/usePageTitle';
 import { Button } from '../../../components/ui/button';
+import toast from 'react-hot-toast';
 import {
   Key,
   Check,
@@ -29,7 +30,6 @@ const RoleTemplates = () => {
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [newTemplate, setNewTemplate] = useState({ name: '', description: '', permissions: [] });
   const [saving, setSaving] = useState(false);
-  const [message, setMessage] = useState('');
   const [accountId, setAccountId] = useState(null);
 
   useEffect(() => {
@@ -89,7 +89,7 @@ const RoleTemplates = () => {
       }
     } catch (error) {
       console.error('Error fetching data:', error);
-      setMessage('Failed to load templates');
+      toast.error('Failed to load templates');
     } finally {
       setLoading(false);
     }
@@ -168,8 +168,7 @@ const RoleTemplates = () => {
       await Promise.all([dbOperation(), minDelay]);
     } catch (error) {
       console.error('Error toggling permission:', error);
-      setMessage('Failed to update permission');
-      setTimeout(() => setMessage(''), 3000);
+      toast.error('Failed to update permission');
     } finally {
       setSavingPermission(null);
     }
@@ -217,15 +216,14 @@ const RoleTemplates = () => {
         }
       }
 
-      setMessage('Template created successfully!');
-      setTimeout(() => setMessage(''), 3000);
+      toast.success('Template created successfully!');
       setNewTemplate({ name: '', description: '', permissions: [] });
       setShowCreateModal(false);
       await fetchData();
       setSelectedTemplate(createdTemplate.id);
     } catch (error) {
       console.error('Error creating template:', error);
-      setMessage('Failed to create template: ' + error.message);
+      toast.error('Failed to create template: ' + error.message);
     } finally {
       setSaving(false);
     }
@@ -248,8 +246,7 @@ const RoleTemplates = () => {
         .delete()
         .eq('id', templateId);
 
-      setMessage('Template deleted successfully!');
-      setTimeout(() => setMessage(''), 3000);
+      toast.success('Template deleted successfully!');
       setTemplates(prev => prev.filter(t => t.id !== templateId));
 
       const remaining = templates.filter(t => t.id !== templateId);
@@ -260,7 +257,7 @@ const RoleTemplates = () => {
       }
     } catch (error) {
       console.error('Error deleting template:', error);
-      setMessage('Failed to delete template: ' + error.message);
+      toast.error('Failed to delete template: ' + error.message);
     }
   };
 
@@ -354,17 +351,6 @@ const RoleTemplates = () => {
           Create Template
         </Button>
       </div>
-
-      {/* Message */}
-      {message && (
-        <div className={`p-3 rounded-lg text-sm ${
-          message.includes('success')
-            ? 'bg-green-50 dark:bg-green-900/30 text-green-700 dark:text-green-400 border border-green-200 dark:border-green-800'
-            : 'bg-red-50 dark:bg-red-900/30 text-red-700 dark:text-red-400 border border-red-200 dark:border-red-800'
-        }`}>
-          {message}
-        </div>
-      )}
 
       {loading ? (
         <div className="flex items-center justify-center py-12">
