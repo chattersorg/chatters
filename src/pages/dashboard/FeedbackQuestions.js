@@ -15,6 +15,7 @@ const FeedbackQuestionsPage = () => {
   const [newQuestion, setNewQuestion] = useState('');
   const [editingQuestionId, setEditingQuestionId] = useState(null);
   const [editingQuestionText, setEditingQuestionText] = useState('');
+  const [editingConditionalTags, setEditingConditionalTags] = useState(null);
   const [inactiveQuestions, setInactiveQuestions] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [isReplaceModalOpen, setIsReplaceModalOpen] = useState(false);
@@ -24,6 +25,7 @@ const FeedbackQuestionsPage = () => {
   const [duplicateError, setDuplicateError] = useState('');
   const [addedSuggestedQuestions, setAddedSuggestedQuestions] = useState([]);
   const [alertModal, setAlertModal] = useState(null);
+  const [newQuestionConditionalTags, setNewQuestionConditionalTags] = useState(null);
 
   const qrCodeRef = useRef(null);
 
@@ -113,7 +115,13 @@ const FeedbackQuestionsPage = () => {
 
     const { data, error } = await supabase
       .from('questions')
-      .insert([{ venue_id: venueId, question: newQuestion, order: questions.length, active: true }])
+      .insert([{
+        venue_id: venueId,
+        question: newQuestion,
+        order: questions.length,
+        active: true,
+        conditional_tags: newQuestionConditionalTags
+      }])
       .select();
 
     if (error) {
@@ -121,6 +129,7 @@ const FeedbackQuestionsPage = () => {
     } else {
       setQuestions([...questions, data[0]]);
       setNewQuestion('');
+      setNewQuestionConditionalTags(null);
 
       if (suggestedQuestions.includes(newQuestion)) {
         setAddedSuggestedQuestions([...addedSuggestedQuestions, newQuestion]);
@@ -273,7 +282,13 @@ const FeedbackQuestionsPage = () => {
     if (replacementSource === 'new') {
       const { data, error } = await supabase
         .from('questions')
-        .insert([{ venue_id: venueId, question: pendingNewQuestion, order: questions.length, active: true }])
+        .insert([{
+          venue_id: venueId,
+          question: pendingNewQuestion,
+          order: questions.length,
+          active: true,
+          conditional_tags: newQuestionConditionalTags
+        }])
         .select();
 
       if (error) {
@@ -282,6 +297,7 @@ const FeedbackQuestionsPage = () => {
         const updatedQuestions = questions.filter((q) => q.id !== questionIdToReplace);
         setQuestions([...updatedQuestions, data[0]]);
         setNewQuestion('');
+        setNewQuestionConditionalTags(null);
       }
     } else if (replacementSource === 'inactive') {
       await supabase
@@ -297,6 +313,7 @@ const FeedbackQuestionsPage = () => {
     setSelectedInactiveQuestion(null);
     setReplacementSource(null);
     setIsReplaceModalOpen(false);
+    setNewQuestionConditionalTags(null);
   };
 
   const handleAddInactiveQuestion = async (inactiveQuestion) => {
@@ -319,17 +336,28 @@ const FeedbackQuestionsPage = () => {
   };
 
   const startEditingQuestion = (questionId, questionText) => {
+    const question = questions.find(q => q.id === questionId);
     setEditingQuestionId(questionId);
     setEditingQuestionText(questionText);
+    setEditingConditionalTags(question?.conditional_tags || null);
   };
 
   const cancelEditingQuestion = () => {
     setEditingQuestionId(null);
     setEditingQuestionText('');
+    setEditingConditionalTags(null);
   };
 
   const handleEditTextChange = (newText) => {
     setEditingQuestionText(newText);
+  };
+
+  const handleConditionalTagsChange = (newTags) => {
+    setEditingConditionalTags(newTags);
+  };
+
+  const handleNewQuestionConditionalTagsChange = (newTags) => {
+    setNewQuestionConditionalTags(newTags);
   };
 
   const saveEditedQuestion = async () => {
@@ -353,18 +381,24 @@ const FeedbackQuestionsPage = () => {
 
     const { error } = await supabase
       .from('questions')
-      .update({ question: editingQuestionText })
+      .update({
+        question: editingQuestionText,
+        conditional_tags: editingConditionalTags
+      })
       .eq('id', editingQuestionId);
 
     if (error) {
       console.error('Error updating question:', error);
     } else {
       const updatedQuestions = questions.map((q) =>
-        q.id === editingQuestionId ? { ...q, question: editingQuestionText } : q
+        q.id === editingQuestionId
+          ? { ...q, question: editingQuestionText, conditional_tags: editingConditionalTags }
+          : q
       );
       setQuestions(updatedQuestions);
       setEditingQuestionId(null);
       setEditingQuestionText('');
+      setEditingConditionalTags(null);
     }
   };
 
@@ -424,6 +458,7 @@ const FeedbackQuestionsPage = () => {
             setEditingQuestionId={setEditingQuestionId}
             editingQuestionText={editingQuestionText}
             setEditingQuestionText={setEditingQuestionText}
+            editingConditionalTags={editingConditionalTags}
             inactiveQuestions={inactiveQuestions}
             setInactiveQuestions={setInactiveQuestions}
             searchTerm={searchTerm}
@@ -456,7 +491,10 @@ const FeedbackQuestionsPage = () => {
             startEditingQuestion={startEditingQuestion}
             cancelEditingQuestion={cancelEditingQuestion}
             handleEditTextChange={handleEditTextChange}
+            handleConditionalTagsChange={handleConditionalTagsChange}
             saveEditedQuestion={saveEditedQuestion}
+            newQuestionConditionalTags={newQuestionConditionalTags}
+            handleNewQuestionConditionalTagsChange={handleNewQuestionConditionalTagsChange}
           />
         </DragDropContext>
       </div>

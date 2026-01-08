@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import { supabase, supabaseAnon } from '../../utils/supabase';
 import { v4 as uuidv4 } from 'uuid';
-import { Star } from 'lucide-react';
+import { Star, Check } from 'lucide-react';
 import AlertModal from '../../components/ui/AlertModal';
 import { LanguageProvider, useLanguage } from '../../context/LanguageContext';
 import LanguageSelector from '../../components/ui/LanguageSelector';
@@ -27,8 +27,13 @@ const CustomerFeedbackContent = () => {
   const [assistanceRequested, setAssistanceRequested] = useState(false);
   const [alertModal, setAlertModal] = useState(null);
   const [customerEmail, setCustomerEmail] = useState('');
+  const [customerName, setCustomerName] = useState('');
   const [hasStarted, setHasStarted] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [showTagSelection, setShowTagSelection] = useState(false);
+  const [currentRating, setCurrentRating] = useState(null);
+  const [selectedTags, setSelectedTags] = useState([]);
+  const [pendingTagResponses, setPendingTagResponses] = useState([]);
 
 
   // Utility function to check if current time is within feedback hours
@@ -166,6 +171,41 @@ const CustomerFeedbackContent = () => {
 
   const handleStarAnswer = (rating) => {
     const question = questions[current];
+    const conditionalTags = question.conditional_tags;
+
+    // Check if we should show tag selection
+    if (conditionalTags?.enabled &&
+        conditionalTags.tags?.length > 0 &&
+        rating < conditionalTags.threshold) {
+      // Store the rating and show tag selection
+      setCurrentRating(rating);
+      setShowTagSelection(true);
+      setSelectedTags([]);
+    } else {
+      // No tags needed, proceed normally
+      recordAnswerAndProceed(rating, []);
+    }
+  };
+
+  const handleTagToggle = (tag) => {
+    setSelectedTags(prev =>
+      prev.includes(tag)
+        ? prev.filter(t => t !== tag)
+        : [...prev, tag]
+    );
+  };
+
+  const handleTagSelectionComplete = () => {
+    recordAnswerAndProceed(currentRating, selectedTags);
+    setShowTagSelection(false);
+    setCurrentRating(null);
+    setSelectedTags([]);
+  };
+
+  const recordAnswerAndProceed = (rating, tags) => {
+    const question = questions[current];
+
+    // Record the feedback answer
     setFeedbackAnswers(prev => [...prev, {
       venue_id: venueId,
       question_id: question.id,
@@ -174,6 +214,14 @@ const CustomerFeedbackContent = () => {
       rating,
       table_number: tableNumber || null,
     }]);
+
+    // Record tag responses if any
+    if (tags.length > 0) {
+      setPendingTagResponses(prev => [...prev, {
+        question_id: question.id,
+        tags: tags
+      }]);
+    }
 
     if (current < questions.length - 1) setCurrent(current + 1);
     else setCurrent(-1); // Move to free-text input
@@ -237,6 +285,7 @@ const CustomerFeedbackContent = () => {
                 venue_id: venueId,
                 session_id: sessionId,
                 customer_email: customerEmail.trim().toLowerCase(),
+                customer_name: customerName.trim() || null,
                 scheduled_send_at: scheduledSendAt.toISOString()
               });
 
@@ -247,7 +296,7 @@ const CustomerFeedbackContent = () => {
         }
       }
 
-      const { error } = await supabase.from('feedback').insert(entries);
+      const { data: feedbackData, error } = await supabase.from('feedback').insert(entries).select();
       if (error) {
         console.error('Error submitting feedback:', error);
         setAlertModal({
@@ -256,6 +305,43 @@ const CustomerFeedbackContent = () => {
           message: t('failedToSubmitFeedback')
         });
         return;
+      }
+
+      // Save tag responses if any
+      if (pendingTagResponses.length > 0 && feedbackData) {
+        // Create a map of question_id to feedback_id from the inserted feedback
+        const feedbackMap = {};
+        feedbackData.forEach(f => {
+          if (f.question_id) {
+            feedbackMap[f.question_id] = f.id;
+          }
+        });
+
+        // Build tag response entries
+        const tagEntries = [];
+        pendingTagResponses.forEach(tagResponse => {
+          const feedbackId = feedbackMap[tagResponse.question_id];
+          if (feedbackId) {
+            tagResponse.tags.forEach(tag => {
+              tagEntries.push({
+                feedback_id: feedbackId,
+                question_id: tagResponse.question_id,
+                tag: tag
+              });
+            });
+          }
+        });
+
+        if (tagEntries.length > 0) {
+          const { error: tagError } = await supabase
+            .from('feedback_tag_responses')
+            .insert(tagEntries);
+
+          if (tagError) {
+            console.error('Error saving tag responses:', tagError);
+            // Don't fail the whole submission for tag errors
+          }
+        }
       }
 
       setIsFinished(true);
@@ -602,9 +688,28 @@ const CustomerFeedbackContent = () => {
           <div>
             <h2 className="text-2xl font-bold mb-6" style={{ color: textColor }}>{t('welcome')}</h2>
 
-            {/* Email input - optional but prominent - only show if NPS is enabled */}
+            {/* Email and name inputs - optional but prominent - only show if NPS is enabled */}
             {venue?.nps_enabled && (
               <div className="mb-6 text-left">
+                {/* First name input */}
+                <div className="mb-4">
+                  <label className="block text-sm font-medium mb-2" style={{ color: textColor }}>
+                    {t('firstName') || 'First name'} <span style={{ color: textColor, opacity: 0.6 }}>({t('optional')})</span>
+                  </label>
+                  <input
+                    type="text"
+                    value={customerName}
+                    onChange={(e) => setCustomerName(e.target.value)}
+                    placeholder={t('firstNamePlaceholder') || 'Enter your first name'}
+                    className="w-full border-2 px-4 py-3 rounded-xl text-base focus:outline-none focus:ring-2 focus:ring-offset-2 transition-all"
+                    style={{
+                      borderColor: primary,
+                      backgroundColor: 'rgba(255, 255, 255, 0.9)',
+                      color: textColor,
+                    }}
+                  />
+                </div>
+                {/* Email input */}
                 <label className="block text-sm font-medium mb-2" style={{ color: textColor }}>
                   {t('email')} <span style={{ color: textColor, opacity: 0.6 }}>({t('optional')})</span>
                 </label>
@@ -699,67 +804,120 @@ const CustomerFeedbackContent = () => {
             )}
 
             <h2 className="text-2xl font-bold mb-8" style={{ color: textColor }}>{questions[current].question}</h2>
-            
-            {/* Star rating system */}
-            <div className="space-y-8">
-              <div className="flex justify-center items-center space-x-3 px-2">
-                {[1, 2, 3, 4, 5].map((rating) => (
-                  <div key={rating} className="flex flex-col items-center">
+
+            {showTagSelection ? (
+              /* Tag Selection UI */
+              <div className="space-y-6">
+                <div className="text-center mb-4">
+                  <div className="flex justify-center items-center gap-1 mb-2">
+                    {[1, 2, 3, 4, 5].map((star) => (
+                      <Star
+                        key={star}
+                        className="w-6 h-6"
+                        style={{ color: star <= currentRating ? primary : `${textColor}30` }}
+                        fill={star <= currentRating ? primary : 'none'}
+                      />
+                    ))}
+                  </div>
+                  <p className="text-sm" style={{ color: textColor, opacity: 0.7 }}>
+                    {t('helpUsUnderstand') || "Help us understand what went wrong"}
+                  </p>
+                </div>
+
+                <div className="flex flex-wrap justify-center gap-3">
+                  {questions[current].conditional_tags?.tags?.map((tag) => (
                     <button
-                      onClick={() => handleStarAnswer(rating)}
-                      className="p-3 rounded-full hover:scale-110 transition transform active:scale-95 flex items-center justify-center shadow-md"
+                      key={tag}
+                      onClick={() => handleTagToggle(tag)}
+                      className={`px-4 py-2 rounded-full text-sm font-medium transition-all duration-200 border-2 flex items-center gap-2 ${
+                        selectedTags.includes(tag)
+                          ? 'shadow-md'
+                          : 'hover:shadow-sm'
+                      }`}
                       style={{
-                        backgroundColor: `${primary}15`,
+                        backgroundColor: selectedTags.includes(tag) ? primary : 'white',
+                        borderColor: primary,
+                        color: selectedTags.includes(tag) ? buttonTextColor : primary,
                       }}
                     >
-                      <Star
-                        className="w-9 h-9 sm:w-11 sm:h-11"
-                        style={{ color: primary }}
-                        fill={primary}
-                      />
+                      {selectedTags.includes(tag) && <Check className="w-4 h-4" />}
+                      {tag}
                     </button>
-                    <span className="text-sm mt-2 font-medium" style={{ color: textColor }}>
-                      {rating}
-                    </span>
-                  </div>
-                ))}
-              </div>
+                  ))}
+                </div>
 
-              <div className="text-center">
-                <p className="text-sm mb-2 font-medium" style={{ color: textColor, opacity: 0.8 }}>{t('tapStarToRate')}</p>
-                <div className="flex justify-center space-x-6 text-xs" style={{ color: textColor, opacity: 0.6 }}>
-                  <span>1 = {t('poor')}</span>
-                  <span>5 = {t('excellent')}</span>
+                <div className="pt-4">
+                  <button
+                    onClick={handleTagSelectionComplete}
+                    className="w-full py-4 rounded-xl font-bold text-lg transition-all hover:opacity-90 hover:scale-105 active:scale-95 shadow-lg"
+                    style={{ backgroundColor: primary, color: buttonTextColor }}
+                  >
+                    {selectedTags.length > 0 ? t('continue') : (t('skipAndContinue') || 'Skip & Continue')}
+                  </button>
                 </div>
               </div>
+            ) : (
+              /* Star rating system */
+              <div className="space-y-8">
+                <div className="flex justify-center items-center space-x-3 px-2">
+                  {[1, 2, 3, 4, 5].map((rating) => (
+                    <div key={rating} className="flex flex-col items-center">
+                      <button
+                        onClick={() => handleStarAnswer(rating)}
+                        className="p-3 rounded-full hover:scale-110 transition transform active:scale-95 flex items-center justify-center shadow-md"
+                        style={{
+                          backgroundColor: `${primary}15`,
+                        }}
+                      >
+                        <Star
+                          className="w-9 h-9 sm:w-11 sm:h-11"
+                          style={{ color: primary }}
+                          fill={primary}
+                        />
+                      </button>
+                      <span className="text-sm mt-2 font-medium" style={{ color: textColor }}>
+                        {rating}
+                      </span>
+                    </div>
+                  ))}
+                </div>
 
-              {/* Assistance Request Button */}
-              <div className="pt-6 mt-6" style={{ borderTop: `2px solid ${textColor}20` }}>
-                <p className="text-sm mb-3 text-center" style={{ color: textColor, opacity: 0.8 }}>{t('dontWantFeedback')}</p>
-                <button
-                  onClick={handleAssistanceRequest}
-                  disabled={assistanceLoading}
-                  className="w-full py-3 px-4 rounded-xl font-semibold transition-all hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed border-2 shadow-md"
-                  style={{
-                    backgroundColor: `${primary}10`,
-                    borderColor: primary,
-                    color: primary,
-                  }}
-                >
-                  {assistanceLoading ? (
-                    <div className="flex items-center justify-center">
-                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 mr-2" style={{ borderColor: primary }}></div>
-                      {t('requesting')}
-                    </div>
-                  ) : (
-                    <div className="text-center">
-                      <div className="font-bold">{t('justNeedAssistance')}</div>
-                      <div className="text-xs opacity-80">{t('ourTeamWillBeRightWithYou')}</div>
-                    </div>
-                  )}
-                </button>
+                <div className="text-center">
+                  <p className="text-sm mb-2 font-medium" style={{ color: textColor, opacity: 0.8 }}>{t('tapStarToRate')}</p>
+                  <div className="flex justify-center space-x-6 text-xs" style={{ color: textColor, opacity: 0.6 }}>
+                    <span>1 = {t('poor')}</span>
+                    <span>5 = {t('excellent')}</span>
+                  </div>
+                </div>
+
+                {/* Assistance Request Button */}
+                <div className="pt-6 mt-6" style={{ borderTop: `2px solid ${textColor}20` }}>
+                  <p className="text-sm mb-3 text-center" style={{ color: textColor, opacity: 0.8 }}>{t('dontWantFeedback')}</p>
+                  <button
+                    onClick={handleAssistanceRequest}
+                    disabled={assistanceLoading}
+                    className="w-full py-3 px-4 rounded-xl font-semibold transition-all hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed border-2 shadow-md"
+                    style={{
+                      backgroundColor: `${primary}10`,
+                      borderColor: primary,
+                      color: primary,
+                    }}
+                  >
+                    {assistanceLoading ? (
+                      <div className="flex items-center justify-center">
+                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 mr-2" style={{ borderColor: primary }}></div>
+                        {t('requesting')}
+                      </div>
+                    ) : (
+                      <div className="text-center">
+                        <div className="font-bold">{t('justNeedAssistance')}</div>
+                        <div className="text-xs opacity-80">{t('ourTeamWillBeRightWithYou')}</div>
+                      </div>
+                    )}
+                  </button>
+                </div>
               </div>
-            </div>
+            )}
           </div>
         ) : (
           <div>

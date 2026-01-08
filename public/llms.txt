@@ -1,0 +1,77 @@
+# Chatters - Real-Time Customer Feedback for Hospitality
+
+> Chatters is a customer feedback platform designed specifically for hospitality venues including restaurants, hotels, pubs, and bars.
+
+## What is Chatters?
+
+Chatters helps hospitality businesses collect, analyze, and act on customer feedback in real-time. Instead of waiting for negative reviews on Google or TripAdvisor, venues can identify and resolve issues while customers are still on-site.
+
+## Key Features
+
+### Real-Time Feedback Collection
+- QR code-based feedback forms customers scan at their table
+- Instant notifications when feedback is submitted
+- Custom questions tailored to your venue
+
+### Kiosk Mode / Staff View
+- Live floor plan showing table status
+- Priority queue for urgent issues
+- One-click issue resolution tracking
+- Assistance request handling
+
+### NPS (Net Promoter Score)
+- Automated NPS surveys
+- Track customer loyalty over time
+- Identify promoters and detractors
+
+### Staff Recognition
+- Link feedback to specific staff members
+- Leaderboards and performance tracking
+- Recognition emails for positive mentions
+
+### Analytics & Reporting
+- Satisfaction trends over time
+- Response time analytics
+- Multi-venue comparison (for chains/groups)
+- Google and TripAdvisor rating tracking
+
+### Review Boosting
+- Redirect happy customers to leave public reviews
+- Capture unhappy feedback privately before it goes public
+
+## Who is Chatters for?
+
+- Restaurants and cafes
+- Hotels and accommodation
+- Pubs and bars
+- Any hospitality venue wanting to improve customer experience
+
+## How it Works
+
+1. Venue sets up custom feedback questions
+2. QR codes are placed on tables
+3. Customers scan and provide feedback
+4. Staff receive instant alerts for issues
+5. Problems are resolved before customers leave
+6. Happy customers are encouraged to leave public reviews
+
+## Benefits
+
+- Catch problems before they become bad reviews
+- Improve staff accountability
+- Data-driven service improvements
+- Higher Google and TripAdvisor ratings
+- Better customer retention
+
+## Contact
+
+- Website: https://getchatters.com
+- Dashboard: https://my.getchatters.com
+- Demo: https://getchatters.com/demo
+
+## Technical Details
+
+- Web-based platform (no app download required for customers)
+- Works on any device with a camera
+- Real-time updates via WebSocket connections
+- GDPR compliant

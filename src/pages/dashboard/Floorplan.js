@@ -57,6 +57,7 @@ const Floorplan = () => {
       .from('zones')
       .select('*')
       .eq('venue_id', venueId)
+      .is('deleted_at', null)
       .order('order');
 
     if (error) {

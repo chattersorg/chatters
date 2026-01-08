@@ -24,95 +24,178 @@ There are three user roles in Chatters:
 
 **Note:** `admin` and `master` users bypass permission checks entirely and have full access.
 
+---
+
 ## Available Permissions
 
 ### Feedback
-| Code | Name | Description |
-|------|------|-------------|
-| `feedback.view` | View Feedback | View customer feedback and responses |
-| `feedback.respond` | Respond to Feedback | Reply to customer feedback |
-| `feedback.delete` | Delete Feedback | Delete feedback entries |
-| `feedback.export` | Export Feedback | Export feedback data to CSV/Excel |
 
-### Questions
-| Code | Name | Description |
-|------|------|-------------|
-| `questions.view` | View Questions | View feedback questions |
-| `questions.edit` | Edit Questions | Create, edit, and delete feedback questions |
+| Code | Name | Requires | Gatekeeps |
+|------|------|----------|-----------|
+| `feedback.view` | View Feedback | - | Route: `/feedback/all`, Sidebar: Feedback menu |
+| `feedback.respond` | Respond to Feedback | `feedback.view` | UI: Reply button in AllFeedback.js |
+| `feedback.export` | Export Feedback | `feedback.view` | UI: Export button in StaffMemberDetails.js |
+| `feedback.settings` | Edit Feedback Settings | `feedback.view` | Route: `/feedback/settings` |
+| `questions.view` | View Questions | - | Routes: `/questions`, `/feedback/questions`, Sidebar: Questions menu item |
+| `questions.edit` | Edit Questions | `questions.view` | UI: Add/Edit/Delete buttons in QuestionManagementTab.js |
 
 ### Reports
-| Code | Name | Description |
-|------|------|-------------|
-| `reports.view` | View Reports | Access reporting dashboards |
-| `reports.export` | Export Reports | Export report data |
-| `reports.create` | Create Custom Reports | Create and save custom reports |
+
+| Code | Name | Requires | Gatekeeps |
+|------|------|----------|-----------|
+| `reports.view` | View Reports | - | Routes: `/reports/*`, Sidebar: Reports menu |
+| `reports.export` | Export Reports | `reports.view` | UI: Export buttons in Staff_Leaderboard.js, StaffMemberDetails.js, RecognitionHistory.js |
+| `reports.create` | Create Custom Reports | `reports.view` | Route: `/reports/builder` |
 
 ### NPS
-| Code | Name | Description |
-|------|------|-------------|
-| `nps.view` | View NPS | View NPS scores and submissions |
-| `nps.export` | Export NPS | Export NPS data |
+
+| Code | Name | Requires | Gatekeeps |
+|------|------|----------|-----------|
+| `nps.view` | View NPS Score | - | Routes: `/nps/score`, `/nps-report/:venueId`, Sidebar: NPS menu |
+| `nps.insights` | View NPS Insights | `nps.view` | Route: `/nps/insights` |
+| `nps.edit` | Edit NPS Settings | `nps.view` | Route: `/nps/settings` |
+| `nps.export` | Export NPS Data | `nps.view` | UI: Export button in ReportsNPS.js |
 
 ### Staff
-| Code | Name | Description |
-|------|------|-------------|
-| `staff.view` | View Staff | View employee list and details |
-| `staff.edit` | Edit Staff | Add, edit, and remove employees |
-| `staff.leaderboard` | View Leaderboard | Access staff leaderboard |
-| `staff.recognition` | Manage Recognition | Give and manage staff recognition |
+
+| Code | Name | Requires | Gatekeeps |
+|------|------|----------|-----------|
+| `staff.view` | View Staff | - | Route: `/staff/employees`, Sidebar: Employees menu item |
+| `staff.edit` | Edit Staff | `staff.view` | UI: Add/Import buttons in StaffList.js, Route: `/staff/import` |
+| `staff.leaderboard` | View Leaderboard | `staff.view` | Route: `/staff/leaderboard`, Sidebar: Leaderboard menu item |
+| `staff.recognition` | Manage Recognition | `staff.view` | Route: `/staff/recognition`, Sidebar: Recognition menu item |
+| `staff.roles` | Manage Roles | `staff.view` | Route: `/staff/roles`, Sidebar: Roles menu item |
+| `staff.locations` | Manage Locations | `staff.view` | Route: `/staff/locations`, Sidebar: Locations menu item |
 
 ### Managers
-| Code | Name | Description |
-|------|------|-------------|
-| `managers.view` | View Managers | View manager list |
-| `managers.invite` | Invite Managers | Invite new managers to the venue |
-| `managers.remove` | Remove Managers | Remove managers from the venue |
-| `managers.permissions` | Manage Permissions | Change manager permissions |
+
+| Code | Name | Requires | Gatekeeps |
+|------|------|----------|-----------|
+| `managers.view` | View Managers | - | Routes: `/staff/managers`, `/admin/managers`, Sidebar: Managers menu item |
+| `managers.invite` | Invite Managers | `managers.view` | Route: `/staff/managers/add`, UI: Invite button in ManagersPage.js |
+| `managers.venues` | Manage Venue Access | `managers.view` | UI: Venues tab in ManagerDetail.js |
+| `managers.remove` | Remove Managers | `managers.view` | UI: Delete button in ManagerDetail.js, ManagersTab.js |
+| `managers.permissions` | Manage Permissions | `managers.view` | Routes: `/admin/permissions/*`, UI: Permissions tab in ManagerDetail.js, Settings icon in ManagersPage.js |
 
 ### Venue Settings
-| Code | Name | Description |
-|------|------|-------------|
-| `venue.view` | View Venue Settings | View venue configuration |
-| `venue.edit` | Edit Venue Settings | Edit venue details and settings |
-| `venue.branding` | Edit Branding | Customize venue branding and colors |
-| `venue.integrations` | Manage Integrations | Connect and manage third-party integrations |
 
-### Floor Plan
-| Code | Name | Description |
-|------|------|-------------|
-| `floorplan.view` | View Floor Plan | View the venue floor plan |
-| `floorplan.edit` | Edit Floor Plan | Edit table layout and zones |
+| Code | Name | Requires | Gatekeeps |
+|------|------|----------|-----------|
+| `venue.view` | View Venue Settings | - | Route: `/settings/venue`, Sidebar: Venue Settings |
+| `venue.edit` | Edit Venue Settings | - | UI: Save button in VenueTab.js |
+| `venue.branding` | Edit Branding | - | Route: `/settings/branding`, Sidebar: Branding menu item, UI: Upload/Save buttons in BrandingTab.js |
+| `venue.integrations` | Manage Integrations | - | Route: `/settings/integrations`, Sidebar: Integrations menu item |
 
 ### QR Codes
-| Code | Name | Description |
-|------|------|-------------|
-| `qr.view` | View QR Codes | View and download QR codes |
-| `qr.generate` | Generate QR Codes | Generate new QR codes |
+
+| Code | Name | Requires | Gatekeeps |
+|------|------|----------|-----------|
+| `qr.view` | View QR Code & URL | - | Route: `/settings/qr-code`, Sidebar: QR Code menu item |
+| `qr.generate` | Download QR Code | `qr.view` | UI: Download button in QRCodeSection.js |
+
+### Floor Plan
+
+| Code | Name | Requires | Gatekeeps |
+|------|------|----------|-----------|
+| `floorplan.view` | View Floor Plan | - | Route: `/floorplan`, Sidebar: Floor Plan menu |
+| `floorplan.edit` | Edit Floor Plan | `floorplan.view` | Route: `/floorplan/edit`, UI: Add Table, Save, Clear buttons in EditControls.js |
 
 ### AI Features
-| Code | Name | Description |
-|------|------|-------------|
-| `ai.insights` | View AI Insights | Access AI-powered insights |
-| `ai.chat` | Use AI Chat | Use the AI chat assistant |
-| `ai.regenerate` | Regenerate AI Insights | Request new AI analysis |
+
+| Code | Name | Requires | Gatekeeps |
+|------|------|----------|-----------|
+| `ai.insights` | View Weekly Insights | - | Route: `/ai/insights`, Sidebar: AI Insights menu item |
+| `ai.regenerate` | Generate Insights | `ai.insights` | UI: Regenerate button in AIInsights.js |
+| `ai.chat` | Use AI Chat | - | Routes: `/ai/chat`, `/ai/intelligence`, Sidebar: AI Chat menu item |
 
 ### Reviews
-| Code | Name | Description |
-|------|------|-------------|
-| `reviews.view` | View Reviews | View external reviews (Google, etc.) |
-| `reviews.respond` | Respond to Reviews | Reply to external reviews |
+
+| Code | Name | Requires | Gatekeeps |
+|------|------|----------|-----------|
+| `reviews.view` | View Reviews | - | Route: `/reviews`, Sidebar: Reviews menu (currently commented out) |
 
 ### Billing
-| Code | Name | Description |
-|------|------|-------------|
-| `billing.view` | View Billing | View subscription and billing info |
-| `billing.manage` | Manage Billing | Update payment methods and subscription |
+
+| Code | Name | Requires | Gatekeeps |
+|------|------|----------|-----------|
+| `billing.view` | View Billing | - | Route: `/account/billing`, Sidebar: Billing menu item |
+| `billing.manage` | Manage Billing | `billing.view` | UI: Upgrade/Manage subscription buttons in BillingTab.js |
+| `venue.create` | Create Venues | `billing.manage` | UI: Create Venue form in VenueSettings.js (multi-venue mode) |
 
 ### Multi-Venue
-| Code | Name | Description |
-|------|------|-------------|
-| `multivenue.view` | View All Venues | Access multi-venue overview |
-| `multivenue.compare` | Compare Venues | Compare performance across venues |
+
+| Code | Name | Requires | Gatekeeps |
+|------|------|----------|-----------|
+| `multivenue.view` | View All Venues | - | Routes: `/multi-venue/*`, Sidebar: Multi-Venue Dashboard and Reporting menu items |
+
+### Venue Groups
+
+| Code | Name | Requires | Gatekeeps |
+|------|------|----------|-----------|
+| `venuegroups.view` | View Venue Groups | - | UI: View venue groups (read-only) |
+| `venuegroups.edit` | Manage Venue Groups | `venuegroups.view` | Route: `/admin/venue-groups` |
+
+### Menu
+
+| Code | Name | Requires | Gatekeeps |
+|------|------|----------|-----------|
+| `menu.edit` | Edit Menu | - | Route: `/venue-settings/menu-builder` |
+
+---
+
+## Permission Dependencies
+
+When a permission has a dependency (`requiresBase`), the base permission must be enabled for the child permission to work. When a base permission is disabled, all child permissions are automatically disabled.
+
+```
+feedback.view
+├── feedback.respond
+├── feedback.export
+└── feedback.settings
+
+questions.view
+└── questions.edit
+
+reports.view
+├── reports.export
+└── reports.create
+
+nps.view
+├── nps.insights
+├── nps.edit
+└── nps.export
+
+staff.view
+├── staff.edit
+├── staff.leaderboard
+├── staff.recognition
+├── staff.roles
+└── staff.locations
+
+managers.view
+├── managers.invite
+├── managers.venues
+├── managers.remove
+└── managers.permissions
+
+qr.view
+└── qr.generate
+
+floorplan.view
+└── floorplan.edit
+
+ai.insights
+└── ai.regenerate
+
+billing.view
+└── billing.manage
+    └── venue.create
+
+venuegroups.view
+└── venuegroups.edit
+```
+
+---
 
 ## Role Templates
 
@@ -123,32 +206,37 @@ These are predefined templates that cannot be modified:
 #### Viewer
 Read-only access to feedback and reports.
 - `feedback.view`, `questions.view`, `reports.view`, `nps.view`
-- `staff.view`, `staff.leaderboard`, `venue.view`, `floorplan.view`
+- `staff.view`, `staff.leaderboard`, `managers.view`
+- `venue.view`, `floorplan.view`
 - `qr.view`, `ai.insights`, `reviews.view`, `multivenue.view`
 
 #### Editor
 Can respond to feedback and manage staff.
 - Everything in Viewer, plus:
 - `feedback.respond`, `feedback.export`
-- `reports.export`, `nps.export`
+- `reports.export`
 - `staff.edit`, `staff.recognition`
-- `qr.generate`, `ai.chat`, `reviews.respond`
+- `qr.generate`, `ai.chat`
 
 #### Manager
-Full venue management except billing and permissions.
+Full venue management except permissions.
 - Everything in Editor, plus:
-- `feedback.delete`, `questions.edit`, `reports.create`
-- `managers.view`, `managers.invite`
+- `feedback.settings`, `questions.edit`, `reports.create`
+- `nps.insights`, `nps.edit`, `nps.export`
+- `staff.roles`, `staff.locations`
+- `managers.invite`, `managers.venues`, `managers.remove`
 - `venue.edit`, `venue.branding`, `venue.integrations`
-- `floorplan.edit`, `ai.regenerate`, `multivenue.compare`
+- `floorplan.edit`, `ai.regenerate`, `menu.edit`
 
 #### Admin
-Full access including billing and user management.
-- All permissions
+Full access including user management.
+- All permissions including `managers.permissions`, `billing.*`, `venuegroups.*`, `venue.create`
 
 ### Custom Templates
 
 Account owners (master users) can create custom role templates specific to their account. These appear in the "Custom Templates" section when assigning permissions.
+
+---
 
 ## Database Schema
 
@@ -194,6 +282,8 @@ user_permissions (
 )
 ```
 
+---
+
 ## Frontend Implementation
 
 ### PermissionsContext
@@ -229,8 +319,8 @@ Use `PermissionGate` to conditionally render based on permissions:
 import { PermissionGate } from '../context/PermissionsContext';
 
 // Single permission
-<PermissionGate permission="feedback.delete">
-  <DeleteButton />
+<PermissionGate permission="feedback.respond">
+  <ReplyButton />
 </PermissionGate>
 
 // Multiple permissions (any)
@@ -247,21 +337,6 @@ import { PermissionGate } from '../context/PermissionsContext';
 <PermissionGate permission="billing.view" fallback={<UpgradePrompt />}>
   <BillingDashboard />
 </PermissionGate>
-```
-
-### withPermission HOC
-
-For class components or wrapping entire pages:
-
-```jsx
-import { withPermission } from '../context/PermissionsContext';
-
-const BillingPage = () => { /* ... */ };
-
-export default withPermission('billing.view')(BillingPage);
-
-// Multiple permissions
-export default withPermission(['billing.view', 'billing.manage'], 'all')(BillingPage);
 ```
 
 ### Route Protection
@@ -283,24 +358,29 @@ The sidebar automatically filters navigation items based on permissions. Each na
 ```javascript
 const venueNavItems = [
   { id: 'overview', label: 'Overview', path: '/dashboard' },  // No permission = always visible
-  { id: 'feedback', label: 'Questions', path: '/feedback/questions', permission: 'questions.view' },
+  { id: 'feedback', label: 'Feedback', path: '/feedback/all', permission: 'feedback.view' },
   { id: 'staff', label: 'Staff', path: '/staff/leaderboard', permission: 'staff.leaderboard',
     subItems: [
       { label: 'Leaderboard', path: '/staff/leaderboard', permission: 'staff.leaderboard' },
-      { label: 'Staff List', path: '/staff/list', permission: 'staff.view' },
+      { label: 'Employees', path: '/staff/employees', permission: 'staff.view' },
+      { label: 'Roles', path: '/staff/roles', permission: 'staff.roles' },
+      { label: 'Locations', path: '/staff/locations', permission: 'staff.locations' },
     ]
   },
 ];
 ```
 
+---
+
 ## Managing Permissions
 
 ### For Master Users
 
-1. Go to **Administration > Permissions > Manager Access**
+1. Go to **Staff > Managers**
 2. Click on a manager to view/edit their permissions
-3. Choose a role template OR toggle individual permissions
-4. Click **Save Permissions**
+3. Go to the **Permissions** tab
+4. Choose a role template OR toggle individual permissions
+5. Click **Save Permissions**
 
 ### Creating Custom Templates
 
@@ -310,29 +390,7 @@ const venueNavItems = [
 4. Select the permissions to include
 5. Click **Save**
 
-### Assigning Permissions via API
-
-```javascript
-// Assign a role template
-await supabase
-  .from('user_permissions')
-  .upsert({
-    user_id: managerId,
-    account_id: accountId,
-    role_template_id: templateId,
-    custom_permissions: []
-  });
-
-// Assign custom permissions
-await supabase
-  .from('user_permissions')
-  .upsert({
-    user_id: managerId,
-    account_id: accountId,
-    role_template_id: null,
-    custom_permissions: ['feedback.view', 'feedback.respond', 'staff.view']
-  });
-```
+---
 
 ## Default Behavior
 
@@ -340,8 +398,12 @@ await supabase
 - **Master/Admin users**: Always have full access (bypass permission checks)
 - **New managers**: Start with viewer permissions until explicitly changed
 
+---
+
 ## Migrations
 
 The permissions system was created in:
 - `20251203000000_create_permissions_system.sql` - Initial schema and data
 - `20251203000001_remove_venue_specific_permissions.sql` - Removed venue-specific permissions (now account-wide only)
+- `20260107000000_add_managers_venues_permission.sql` - Added `managers.venues` permission and RLS policies
+- `20260107000001_update_viewer_template.sql` - Added `managers.view` to Viewer template

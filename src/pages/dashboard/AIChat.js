@@ -48,8 +48,25 @@ const ChattersLogo = ({ className = "w-4 h-4" }) => (
 const TypewriterText = ({ content, onComplete, speed = 15 }) => {
   const [displayedContent, setDisplayedContent] = useState('');
   const [isComplete, setIsComplete] = useState(false);
+  const contentRef = useRef(content);
+  const onCompleteRef = useRef(onComplete);
+
+  // Update refs without triggering re-render
+  useEffect(() => {
+    onCompleteRef.current = onComplete;
+  }, [onComplete]);
 
   useEffect(() => {
+    // Only restart if content actually changed (not just a re-render)
+    if (content === contentRef.current && isComplete) return;
+
+    // Content changed - reset and start typing
+    if (content !== contentRef.current) {
+      contentRef.current = content;
+      setIsComplete(false);
+      setDisplayedContent('');
+    }
+
     if (isComplete) return;
 
     let index = 0;
@@ -60,12 +77,12 @@ const TypewriterText = ({ content, onComplete, speed = 15 }) => {
       } else {
         clearInterval(timer);
         setIsComplete(true);
-        onComplete?.();
+        onCompleteRef.current?.();
       }
     }, speed);
 
     return () => clearInterval(timer);
-  }, [content, speed, onComplete, isComplete]);
+  }, [content, speed, isComplete]);
 
   return <FormattedMessage content={displayedContent} />;
 };
@@ -167,13 +184,30 @@ const parseChartFromMessage = (content) => {
     const textContent = content.replace(/<!--CHART:.*?-->/s, '').trim();
     return { text: textContent, chart: chartData };
   } catch (e) {
+    console.warn('[AIChat] Failed to parse chart data:', e.message, chartMatch[1]?.substring(0, 100));
     return { text: content, chart: null };
   }
 };
 
 // AI Chat Visualisation Component
 const AIChartVisualisation = ({ chartData }) => {
-  const isDark = document.documentElement.classList.contains('dark');
+  const [isDark, setIsDark] = useState(() =>
+    document.documentElement.classList.contains('dark')
+  );
+
+  // Listen for theme changes
+  useEffect(() => {
+    const observer = new MutationObserver((mutations) => {
+      mutations.forEach((mutation) => {
+        if (mutation.attributeName === 'class') {
+          setIsDark(document.documentElement.classList.contains('dark'));
+        }
+      });
+    });
+
+    observer.observe(document.documentElement, { attributes: true });
+    return () => observer.disconnect();
+  }, []);
 
   const chartOptions = useMemo(() => ({
     responsive: true,
@@ -482,7 +516,7 @@ const AIChat = () => {
       const savedId = await saveConversation(updatedMessages, currentConversationId);
       if (savedId && !currentConversationId) {
         setCurrentConversationId(savedId);
-        loadConversations();
+        await loadConversations();
       }
     } catch (err) {
       setError(err.message || 'Something went wrong. Please try again.');

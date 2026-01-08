@@ -159,60 +159,7 @@ const ReviewCard = ({ review, venueId, onReplySuccess }) => {
           </div>
           <p className="text-blue-900 dark:text-blue-100 text-sm leading-relaxed">{review.review_reply}</p>
         </div>
-      ) : (
-        <div className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
-          {!showReplyBox ? (
-            <PermissionGate permission="reviews.respond">
-              <button
-                onClick={() => setShowReplyBox(true)}
-                disabled={!canReply}
-                className="inline-flex items-center px-4 py-2 bg-custom-black text-white rounded-lg hover:bg-gray-800 dark:hover:bg-gray-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                title={!canReply ? 'You do not have permission to reply to reviews' : ''}
-              >
-                <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6" />
-                </svg>
-                Reply to Review
-              </button>
-            </PermissionGate>
-          ) : (
-            <div className="space-y-3">
-              <textarea
-                value={replyText}
-                onChange={(e) => setReplyText(e.target.value)}
-                placeholder="Write a thoughtful reply to this review..."
-                maxLength={4096}
-                rows={4}
-                className="w-full px-4 py-3 bg-white dark:bg-gray-900 text-gray-900 dark:text-white border border-gray-300 dark:border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-blue-500 dark:focus:border-blue-400 resize-none placeholder:text-gray-500 dark:placeholder:text-gray-400"
-              />
-              <div className="flex items-center justify-between">
-                <span className="text-sm text-gray-500 dark:text-gray-400">
-                  {replyText.length} / 4096 characters
-                </span>
-                <div className="flex gap-2">
-                  <button
-                    onClick={() => {
-                      setShowReplyBox(false);
-                      setReplyText('');
-                    }}
-                    disabled={submitting}
-                    className="px-4 py-2 text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors disabled:opacity-50"
-                  >
-                    Cancel
-                  </button>
-                  <button
-                    onClick={handleSubmitReply}
-                    disabled={submitting || !replyText.trim()}
-                    className="px-4 py-2 bg-custom-black text-white rounded-lg hover:bg-gray-800 dark:hover:bg-gray-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                  >
-                    {submitting ? 'Sending...' : 'Send Reply'}
-                  </button>
-                </div>
-              </div>
-            </div>
-          )}
-        </div>
-      )}
+      ) : null /* Reply functionality not yet implemented */}
     </div>
   );
 };

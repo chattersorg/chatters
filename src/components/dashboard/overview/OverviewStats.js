@@ -1,8 +1,7 @@
 import React from 'react';
-import { TrendingUp, Users, Star, Clock, AlertTriangle, CheckCircle, Activity, Target } from 'lucide-react';
 import useOverviewStats from '../../../hooks/useOverviewStats';
 import { useVenue } from '../../../context/VenueContext';
-import { MetricCard, SparklineMetricCard, ChartCard } from '../layout/ModernCard';
+import { UnifiedMetricsRow } from '../layout/ModernCard';
 
 // StatCard component removed - using MetricCard from ModernCard instead
 
@@ -44,105 +43,93 @@ const OverviewStats = ({
   }
 
 
+  // Prepare metrics for unified row
+  const unifiedMetrics = [
+    {
+      title: "Today's Sessions",
+      value: stats?.todaySessions || '0',
+      trend: stats?.sessionsTrend,
+      trendDirection: stats?.sessionsTrendDirection,
+      comparisonText: 'compared to last week',
+      sparklineData: stats?.sessionsSparkline || [],
+      color: 'purple'
+    },
+    {
+      title: 'Satisfaction Score',
+      value: stats?.avgSatisfaction ? `${stats.avgSatisfaction}/5` : '--',
+      trend: stats?.satisfactionTrend,
+      trendDirection: stats?.satisfactionTrendDirection,
+      comparisonText: 'compared to last week',
+      sparklineData: stats?.satisfactionSparkline || [],
+      color: 'orange'
+    },
+    {
+      title: 'Avg Response Time',
+      value: stats?.avgResponseTime || '--',
+      trend: stats?.responseTimeTrend,
+      trendDirection: stats?.responseTimeTrendDirection,
+      comparisonText: 'compared to last week',
+      sparklineData: stats?.responseTimeSparkline || [],
+      color: 'green'
+    },
+    {
+      title: 'Completion Rate',
+      value: stats?.completionRate ? `${stats.completionRate}%` : '--',
+      trend: stats?.completionTrend,
+      trendDirection: stats?.completionTrendDirection,
+      comparisonText: 'compared to last week',
+      sparklineData: stats?.completionRateSparkline || [],
+      color: 'blue'
+    }
+  ];
+
+  // Prepare activity & alerts metrics for unified row
+  const activityMetrics = [
+    {
+      title: 'Active Alerts',
+      value: stats?.activeAlerts || '0',
+      trend: stats?.alertsTrend,
+      trendDirection: stats?.alertsTrendDirection,
+      comparisonText: 'compared to last week',
+      color: 'orange'
+    },
+    {
+      title: 'Resolved Today',
+      value: stats?.resolvedToday || '0',
+      trend: stats?.resolvedTrend,
+      trendDirection: stats?.resolvedTrendDirection,
+      comparisonText: 'compared to last week',
+      color: 'green'
+    },
+    {
+      title: 'NPS Score',
+      value: stats?.npsScore !== null && stats?.npsScore !== undefined ? stats.npsScore : '--',
+      trend: stats?.npsTrend,
+      trendDirection: stats?.npsTrendDirection,
+      comparisonText: 'compared to last week',
+      color: 'purple'
+    },
+    {
+      title: "Today's Peak",
+      value: stats?.peakHour || '--',
+      comparisonText: `Last week: ${stats?.lastWeekPeakHour || 'N/A'}`,
+      color: 'blue'
+    }
+  ];
+
   return (
     <div>
-      {/* Header */}
-      <ChartCard
-        title="Today's Overview"
-        className="mb-8"
-      >
-        {/* Stats Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-          {/* Today's Sessions */}
-          <SparklineMetricCard
-            title="Today's Sessions"
-            value={stats?.todaySessions || '0'}
-            trend={stats?.sessionsTrend}
-            trendDirection={stats?.sessionsTrendDirection}
-            yesterdayValue={stats?.yesterdaySessions || 0}
-            sparklineData={stats?.sessionsSparkline || []}
-          />
+      {/* Today's Overview - Unified metrics row */}
+      <div className="mb-8">
+        <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Today's Overview</h2>
+        <UnifiedMetricsRow metrics={unifiedMetrics} />
+      </div>
 
-          {/* Average Satisfaction */}
-          <SparklineMetricCard
-            title="Satisfaction Score"
-            value={stats?.avgSatisfaction ? `${stats.avgSatisfaction}/5` : '--'}
-            trend={stats?.satisfactionTrend}
-            trendDirection={stats?.satisfactionTrendDirection}
-            sparklineData={stats?.satisfactionSparkline || []}
-          />
-
-          {/* Response Time */}
-          <SparklineMetricCard
-            title="Avg Response Time"
-            value={stats?.avgResponseTime || '--'}
-            trend={stats?.responseTimeTrend}
-            trendDirection={stats?.responseTimeTrendDirection}
-            sparklineData={stats?.responseTimeSparkline || []}
-          />
-
-          {/* Completion Rate */}
-          <SparklineMetricCard
-            title="Completion Rate"
-            value={stats?.completionRate ? `${stats.completionRate}%` : '--'}
-            trend={stats?.completionTrend}
-            trendDirection={stats?.completionTrendDirection}
-            sparklineData={stats?.completionRateSparkline || []}
-          />
-
-          {/* Active Alerts */}
-          <MetricCard
-            icon={AlertTriangle}
-            title="Active Alerts"
-            value={stats?.activeAlerts || '0'}
-            trend={stats?.alertsTrend}
-            trendDirection={stats?.alertsTrendDirection}
-            yesterdayValue={stats?.yesterdayActiveAlerts || 0}
-            color={stats?.activeAlerts > 0 ? 'red' : 'green'}
-            venueBreakdowns={venueBreakdowns}
-            allVenues={allVenues}
-            field="activeAlerts"
-          />
-
-          {/* Resolved Today */}
-          <MetricCard
-            icon={CheckCircle}
-            title="Resolved Today"
-            value={stats?.resolvedToday || '0'}
-            trend={stats?.resolvedTrend}
-            trendDirection={stats?.resolvedTrendDirection}
-            yesterdayValue={stats?.yesterdayResolved || 0}
-            color="green"
-            venueBreakdowns={venueBreakdowns}
-            allVenues={allVenues}
-            field="resolvedToday"
-          />
-
-          {/* Current Activity */}
-          <MetricCard
-            icon={Activity}
-            title="Current Activity"
-            value={stats?.currentActivity || 'Low'}
-            subtitle={`Yesterday: ${stats?.yesterdayActivity || 'N/A'}`}
-            color="indigo"
-            venueBreakdowns={venueBreakdowns}
-            allVenues={allVenues}
-            field="currentActivity"
-          />
-
-          {/* Peak Hour */}
-          <MetricCard
-            icon={TrendingUp}
-            title="Today's Peak"
-            value={stats?.peakHour || '--'}
-            subtitle={`Yesterday: ${stats?.yesterdayPeakHour || 'N/A'}`}
-            color="purple"
-            venueBreakdowns={venueBreakdowns}
-            allVenues={allVenues}
-            field="peakHour"
-          />
-        </div>
-      </ChartCard>
+      {/* Activity & Alerts - Unified metrics row */}
+      <div className="mb-8">
+        <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Activity & Alerts</h2>
+        <UnifiedMetricsRow metrics={activityMetrics} />
+      </div>
     </div>
   );
 };

@@ -1,6 +1,6 @@
 import React from 'react';
-import { TrendingUp, TrendingDown } from 'lucide-react';
-import { LineChart, Line, ResponsiveContainer } from 'recharts';
+import { TrendingUp, TrendingDown, ArrowUp, ArrowDown } from 'lucide-react';
+import { LineChart, Line, AreaChart, Area, ResponsiveContainer, YAxis } from 'recharts';
 
 const ModernCard = ({
   children,
@@ -188,6 +188,155 @@ const SparklineMetricCard = ({
   );
 };
 
+// Single metric item for the unified row
+const UnifiedMetricItem = ({
+  title,
+  value,
+  trend,
+  trendDirection = 'neutral',
+  comparisonText = 'compared to last week',
+  sparklineData = [],
+  color = 'purple',
+  isLast = false,
+  index = 0
+}) => {
+  // Normalize sparkline data - proportional to actual variation
+  const normalizeData = (data) => {
+    if (!data || data.length === 0) return [];
+
+    const min = Math.min(...data);
+    const max = Math.max(...data);
+    const range = max - min;
+    const avg = data.reduce((a, b) => a + b, 0) / data.length;
+
+    // If all values are the same or very close, create a flat line at 50%
+    if (range < 0.001) {
+      return data.map((_, idx) => ({ index: idx, value: 50 }));
+    }
+
+    // Calculate coefficient of variation (how much variation relative to average)
+    const coefficientOfVariation = avg > 0 ? range / avg : 0;
+
+    // Scale visual variation proportionally to actual variation
+    // Max visual swing of 40 points (30-70) only for high variation data
+    // Small variations (like 98-100%) get proportionally smaller visual swings
+    const maxVisualSwing = Math.min(40, coefficientOfVariation * 200);
+    const visualBaseline = 50 - (maxVisualSwing / 2);
+
+    return data.map((val, idx) => ({
+      index: idx,
+      value: visualBaseline + ((val - min) / range) * maxVisualSwing
+    }));
+  };
+
+  const chartData = normalizeData(sparklineData);
+
+  // Unique gradient ID for each metric
+  const gradientId = `gradient-${color}-${index}`;
+
+  // Color configurations for sparklines
+  const colorConfig = {
+    purple: { stroke: '#8b5cf6', fill: '#8b5cf6' },
+    orange: { stroke: '#f97316', fill: '#f97316' },
+    green: { stroke: '#22c55e', fill: '#22c55e' },
+    blue: { stroke: '#3b82f6', fill: '#3b82f6' }
+  };
+
+  const sparkColor = colorConfig[color] || colorConfig.purple;
+
+  return (
+    <div className={`flex-1 px-6 py-5 ${!isLast ? 'border-r border-gray-200 dark:border-gray-700' : ''}`}>
+      <div className="flex items-stretch justify-between">
+        <div className="flex-1">
+          {/* Title */}
+          <p className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-2">
+            {title}
+          </p>
+
+          {/* Value and Badge */}
+          <div className="flex items-center gap-2 mb-1">
+            <span className="text-3xl font-bold text-gray-900 dark:text-white">
+              {value}
+            </span>
+            {trend && (
+              <span className={`inline-flex items-center gap-0.5 px-2 py-0.5 rounded-full text-xs font-semibold ${
+                trendDirection === 'up'
+                  ? 'bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-400'
+                  : trendDirection === 'down'
+                  ? 'bg-orange-100 text-orange-700 dark:bg-orange-900/40 dark:text-orange-400'
+                  : 'bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-400'
+              }`}>
+                {trendDirection === 'up' && <ArrowUp className="w-3 h-3" />}
+                {trendDirection === 'down' && <ArrowDown className="w-3 h-3" />}
+                {trend}
+              </span>
+            )}
+          </div>
+
+          {/* Comparison text */}
+          <p className="text-xs text-gray-500 dark:text-gray-500">
+            {comparisonText}
+          </p>
+        </div>
+
+        {/* Sparkline - Full height from title to comparison text */}
+        {chartData.length > 0 && (
+          <div className="w-28 ml-4 self-stretch">
+            <ResponsiveContainer width="100%" height="100%">
+              <AreaChart data={chartData}>
+                <defs>
+                  <linearGradient id={gradientId} x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor={sparkColor.fill} stopOpacity={0.3} />
+                    <stop offset="100%" stopColor={sparkColor.fill} stopOpacity={0.05} />
+                  </linearGradient>
+                </defs>
+                <YAxis domain={[0, 100]} hide />
+                <Area
+                  type="monotone"
+                  dataKey="value"
+                  stroke={sparkColor.stroke}
+                  strokeWidth={2}
+                  fill={`url(#${gradientId})`}
+                  dot={false}
+                  isAnimationActive={false}
+                />
+              </AreaChart>
+            </ResponsiveContainer>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};
+
+// Unified metrics row component - shows multiple metrics in one card with dividers
+const UnifiedMetricsRow = ({ metrics = [], className = '' }) => {
+  return (
+    <ModernCard
+      className={className}
+      padding="p-0"
+      shadow="shadow-sm"
+    >
+      <div className="flex flex-col lg:flex-row">
+        {metrics.map((metric, index) => (
+          <UnifiedMetricItem
+            key={index}
+            index={index}
+            title={metric.title}
+            value={metric.value}
+            trend={metric.trend}
+            trendDirection={metric.trendDirection}
+            comparisonText={metric.comparisonText}
+            sparklineData={metric.sparklineData}
+            color={metric.color}
+            isLast={index === metrics.length - 1}
+          />
+        ))}
+      </div>
+    </ModernCard>
+  );
+};
+
 const ChartCard = ({
   title,
   subtitle,
@@ -285,4 +434,4 @@ const StatsGrid = ({ children, className = '' }) => {
 };
 
 export default ModernCard;
-export { MetricCard, SparklineMetricCard, ChartCard, ActivityCard, StatsGrid };
+export { MetricCard, SparklineMetricCard, ChartCard, ActivityCard, StatsGrid, UnifiedMetricsRow };

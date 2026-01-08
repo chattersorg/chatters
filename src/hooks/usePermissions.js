@@ -186,7 +186,6 @@ export default usePermissions;
  * FEEDBACK:
  * - feedback.view     - View customer feedback
  * - feedback.respond  - Reply to feedback
- * - feedback.delete   - Delete feedback entries
  * - feedback.export   - Export feedback data
  *
  * QUESTIONS:
@@ -199,12 +198,13 @@ export default usePermissions;
  * - reports.create    - Create custom reports
  *
  * NPS:
- * - nps.view          - View NPS data
- * - nps.export        - Export NPS data
+ * - nps.view          - View NPS score
+ * - nps.insights      - View NPS insights
+ * - nps.edit          - Edit NPS settings
  *
  * STAFF:
  * - staff.view        - View employee list
- * - staff.edit        - Manage employees
+ * - staff.edit        - Manage employees (includes roles & locations)
  * - staff.leaderboard - View leaderboard
  * - staff.recognition - Manage recognition
  *
@@ -216,7 +216,7 @@ export default usePermissions;
  *
  * VENUE:
  * - venue.view         - View settings
- * - venue.edit         - Edit settings
+ * - venue.edit         - Edit settings (includes menu)
  * - venue.branding     - Edit branding
  * - venue.integrations - Manage integrations
  *
@@ -235,13 +235,11 @@ export default usePermissions;
  *
  * REVIEWS:
  * - reviews.view      - View external reviews
- * - reviews.respond   - Reply to reviews
  *
  * BILLING:
  * - billing.view      - View billing info
  * - billing.manage    - Manage subscription
  *
  * MULTIVENUE:
- * - multivenue.view    - Access multi-venue overview
- * - multivenue.compare - Compare venues
+ * - multivenue.view   - Access multi-venue overview
  */

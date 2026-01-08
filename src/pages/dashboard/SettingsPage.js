@@ -3,6 +3,7 @@ import { supabase } from '../../utils/supabase';
 import PageContainer from '../../components/dashboard/layout/PageContainer';
 import usePageTitle from '../../hooks/usePageTitle';
 import { useVenue } from '../../context/VenueContext';
+import toast from 'react-hot-toast';
 
 // Import tab components
 import ProfileTab from '../../components/dashboard/settings/ProfileTab';
@@ -42,9 +43,7 @@ const SettingsPage = () => {
     postalCode: '',
     country: '',
   });
-  const [message, setMessage] = useState('');
   const [reviewLinksLoading, setReviewLinksLoading] = useState(false);
-  const [reviewLinksMessage, setReviewLinksMessage] = useState('');
 
   // Sidebar navigation items - conditionally include Billing for master users
   const navItems = [
@@ -138,7 +137,6 @@ const SettingsPage = () => {
     if (!venueId) return;
 
     setLoading(true);
-    setMessage('');
 
     try {
       // Get current user ID and email
@@ -190,12 +188,11 @@ const SettingsPage = () => {
         throw venueError;
       }
 
-      setMessage('Settings updated successfully!');
+      toast.success('Settings saved successfully!');
     } catch (error) {
       console.error('Error updating settings:', error);
-      // Show detailed error info to user for support purposes
       const errorDetails = error.code ? `Error ${error.code}: ${error.message}` : error.message;
-      setMessage(`Failed to update settings: ${errorDetails}. Please contact support with this error code.`);
+      toast.error(`Failed to save settings: ${errorDetails}`);
     } finally {
       setLoading(false);
     }
@@ -206,7 +203,6 @@ const SettingsPage = () => {
     if (!venueId) return;
 
     setReviewLinksLoading(true);
-    setReviewLinksMessage('');
 
     try {
       // Update only review links in venues table
@@ -222,10 +218,10 @@ const SettingsPage = () => {
         throw venueError;
       }
 
-      setReviewLinksMessage('Review links updated successfully!');
+      toast.success('Review links saved successfully!');
     } catch (error) {
       console.error('Error updating review links:', error);
-      setReviewLinksMessage(`Error updating review links: ${error.message}`);
+      toast.error(`Failed to save review links: ${error.message}`);
     } finally {
       setReviewLinksLoading(false);
     }
@@ -253,11 +249,9 @@ const SettingsPage = () => {
     saveReviewLinks,
     loading,
     reviewLinksLoading,
-    message,
-    reviewLinksMessage,
     venueId,
     userRole,
-    currentVenueId: venueId, // Add this line - pass venueId as currentVenueId
+    currentVenueId: venueId,
   };
 
   const renderActiveTab = () => {

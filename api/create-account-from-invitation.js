@@ -134,7 +134,9 @@ module.exports = async function handler(req, res) {
           phone: invitation.phone || null,
           date_of_birth: invitation.date_of_birth || null,
           role: 'manager',
-          account_id: invitation.account_id
+          account_id: invitation.account_id,
+          invited_by: invitation.invited_by,
+          reports_to: invitation.reports_to || invitation.invited_by
         })
         .eq('id', softDeletedUser.id);
 
@@ -224,7 +226,9 @@ module.exports = async function handler(req, res) {
             last_name: invitation.last_name || existingUserByEmail.last_name,
             phone: invitation.phone || null,
             date_of_birth: invitation.date_of_birth || null,
-            deleted_at: null
+            deleted_at: null,
+            invited_by: invitation.invited_by,
+            reports_to: invitation.reports_to || invitation.invited_by
             // Preserve the existing role (master/manager)
           })
           .eq('id', existingUserByEmail.id);
@@ -240,6 +244,9 @@ module.exports = async function handler(req, res) {
         authUserId = existingUserByEmail.id;
       } else {
         // No existing user - create new auth user with auto-generated ID
+        console.log('=== CREATE ACCOUNT: No existing user, creating new auth user ===');
+        console.log('Invitation invited_by:', invitation.invited_by);
+
         const { data: authData, error: authError } = await supabaseAdmin.auth.admin.createUser({
           email: invitation.email,
           password: password,
@@ -252,6 +259,7 @@ module.exports = async function handler(req, res) {
 
         if (authError) {
           if (authError.message?.includes('already been registered') || authError.message?.includes('already exists')) {
+            console.log('=== CREATE ACCOUNT: Auth user already exists, updating ===');
             const { data: listData } = await supabaseAdmin.auth.admin.listUsers();
             const existingAuthUser = listData?.users?.find(u => u.email === invitation.email);
 
@@ -292,60 +300,80 @@ module.exports = async function handler(req, res) {
           }
         } else {
           authUserId = authData.user.id;
+          console.log('=== CREATE ACCOUNT: Auth user created with ID:', authUserId);
         }
-        // Check if record exists by auth user ID
-        const { data: existingUserRecord } = await supabaseAdmin
+
+        // Small delay to ensure any Supabase auth triggers complete first
+        // This handles race conditions with automatic user record creation
+        await new Promise(resolve => setTimeout(resolve, 500));
+
+        // Use upsert to handle both insert and update cases
+        // This ensures invited_by is always set correctly, even if a record was created by a trigger
+        console.log('=== CREATE ACCOUNT: Upserting user record ===');
+        console.log('Upsert data:', {
+          id: authUserId,
+          email: invitation.email,
+          invited_by: invitation.invited_by,
+          account_id: invitation.account_id
+        });
+
+        const { data: upsertData, error: upsertError } = await supabaseAdmin
           .from('users')
-          .select('id')
+          .upsert({
+            id: authUserId,
+            email: invitation.email,
+            first_name: invitation.first_name,
+            last_name: invitation.last_name,
+            phone: invitation.phone || null,
+            date_of_birth: invitation.date_of_birth || null,
+            role: 'manager',
+            account_id: invitation.account_id,
+            deleted_at: null,
+            invited_by: invitation.invited_by,
+            reports_to: invitation.reports_to || invitation.invited_by
+          }, {
+            onConflict: 'id'
+          })
+          .select();
+
+        console.log('=== CREATE ACCOUNT: Upsert result ===');
+        console.log('Upsert data returned:', upsertData);
+        console.log('Upsert error:', upsertError);
+
+        if (upsertError) {
+          console.error('User table upsert error:', upsertError);
+          // Try to delete the auth user since we failed to create the database record
+          await supabaseAdmin.auth.admin.deleteUser(authUserId);
+          return res.status(500).json({
+            success: false,
+            message: 'Failed to create user record: ' + upsertError.message
+          });
+        }
+
+        // Verify the record was created/updated correctly
+        const { data: verifyUser } = await supabaseAdmin
+          .from('users')
+          .select('id, email, invited_by')
           .eq('id', authUserId)
           .single();
+        console.log('=== CREATE ACCOUNT: Verification of user record ===');
+        console.log('User after upsert:', verifyUser);
 
-        if (existingUserRecord) {
-          // Update existing record (might have been hard-deleted and we're reusing the auth user)
+        // If invited_by is still null after upsert, try an explicit update
+        if (!verifyUser?.invited_by && invitation.invited_by) {
+          console.log('=== CREATE ACCOUNT: invited_by is null after upsert, trying explicit update ===');
           const { error: updateError } = await supabaseAdmin
             .from('users')
             .update({
-              email: invitation.email,
-              first_name: invitation.first_name,
-              last_name: invitation.last_name,
-              phone: invitation.phone || null,
-              date_of_birth: invitation.date_of_birth || null,
-              role: 'manager',
-              account_id: invitation.account_id,
-              deleted_at: null
+              invited_by: invitation.invited_by,
+              reports_to: invitation.reports_to || invitation.invited_by
             })
             .eq('id', authUserId);
 
           if (updateError) {
-            console.error('User table update error:', updateError);
-            return res.status(500).json({
-              success: false,
-              message: 'Failed to update user record: ' + updateError.message
-            });
-          }
-        } else {
-          // Create new record
-          const { error: userError } = await supabaseAdmin
-            .from('users')
-            .insert({
-              id: authUserId,
-              email: invitation.email,
-              first_name: invitation.first_name,
-              last_name: invitation.last_name,
-              phone: invitation.phone || null,
-              date_of_birth: invitation.date_of_birth || null,
-              role: 'manager',
-              account_id: invitation.account_id
-            });
-
-          if (userError) {
-            console.error('User table insertion error:', userError);
-            // Try to delete the auth user since we failed to create the database record
-            await supabaseAdmin.auth.admin.deleteUser(authUserId);
-            return res.status(500).json({
-              success: false,
-              message: 'Failed to create user record: ' + userError.message
-            });
+            console.error('Explicit update error:', updateError);
+          } else {
+            console.log('=== CREATE ACCOUNT: Explicit update successful ===');
           }
         }
       }
@@ -398,6 +426,26 @@ module.exports = async function handler(req, res) {
       if (permError) {
         console.error('User permissions creation error:', permError);
         // Don't fail the whole request, but log it
+      }
+
+      // Log the permission creation for audit
+      try {
+        await supabaseAdmin
+          .from('permission_audit_log')
+          .insert({
+            target_user_id: authUserId,
+            changed_by_user_id: invitation.invited_by,
+            action: 'create',
+            previous_role_template_id: null,
+            previous_custom_permissions: [],
+            new_role_template_id: invitation.permission_template_id,
+            new_custom_permissions: [],
+            account_id: invitation.account_id,
+            ip_address: req.headers['x-forwarded-for'] || req.connection?.remoteAddress || null,
+            user_agent: req.headers['user-agent'] || null
+          });
+      } catch (auditError) {
+        console.error('Failed to write audit log:', auditError);
       }
     }
 

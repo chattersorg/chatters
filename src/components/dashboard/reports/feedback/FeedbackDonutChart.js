@@ -9,8 +9,8 @@ const FeedbackDonutChart = ({ feedbackData, loading }) => {
     return (
       <div className="flex-1 flex items-center justify-center">
         <div className="text-center">
-          <div className="w-8 h-8 border-2 border-gray-300 border-t-blue-600 rounded-full animate-spin mx-auto mb-2" />
-          <p className="text-sm text-gray-500">Loading feedback data...</p>
+          <div className="w-8 h-8 border-2 border-gray-300 dark:border-gray-700 border-t-blue-600 dark:border-t-blue-400 rounded-full animate-spin mx-auto mb-2" />
+          <p className="text-sm text-gray-500 dark:text-gray-400">Loading feedback data...</p>
         </div>
       </div>
     );
@@ -21,8 +21,8 @@ const FeedbackDonutChart = ({ feedbackData, loading }) => {
       <div className="flex-1 flex items-center justify-center">
         <div className="text-center py-8">
           <div className="text-4xl mb-2">📊</div>
-          <p className="text-gray-500 text-sm">No feedback data available</p>
-          <p className="text-gray-400 text-xs mt-1">for this period</p>
+          <p className="text-gray-500 dark:text-gray-400 text-sm">No feedback data available</p>
+          <p className="text-gray-400 dark:text-gray-500 text-xs mt-1">for this period</p>
         </div>
       </div>
     );
@@ -89,11 +89,11 @@ const FeedbackDonutChart = ({ feedbackData, loading }) => {
 
           {/* Center Stats */}
           <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-            <div className="text-4xl font-bold text-gray-900">
+            <div className="text-4xl font-bold text-gray-900 dark:text-white">
               {feedbackData.avgRating.toFixed(1)}
             </div>
-            <div className="text-xs text-gray-500 mt-1">Avg Rating</div>
-            <div className="text-sm text-gray-600 mt-2">
+            <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">Avg Rating</div>
+            <div className="text-sm text-gray-600 dark:text-gray-400 mt-2">
               {feedbackData.totalSessions} sessions
             </div>
           </div>
@@ -101,7 +101,7 @@ const FeedbackDonutChart = ({ feedbackData, loading }) => {
       </div>
 
       {/* Legend */}
-      <div className="mt-4 pt-4 border-t border-gray-100">
+      <div className="mt-4 pt-4 border-t border-gray-100 dark:border-gray-700">
         <div className="grid grid-cols-5 gap-2 text-center">
           {[5, 4, 3, 2, 1].map((rating, idx) => {
             const colors = ['green', 'lime', 'yellow', 'orange', 'red'];
@@ -114,10 +114,10 @@ const FeedbackDonutChart = ({ feedbackData, loading }) => {
               <div key={rating}>
                 <div className="flex items-center justify-center gap-1.5 mb-1">
                   <div className={`w-3 h-3 rounded-full bg-${color}-500`}></div>
-                  <span className="text-xs font-medium text-gray-700">{rating}★</span>
+                  <span className="text-xs font-medium text-gray-700 dark:text-gray-300">{rating}★</span>
                 </div>
-                <div className="text-lg font-bold text-gray-900">{count}</div>
-                <div className="text-xs text-gray-500">{percentage}%</div>
+                <div className="text-lg font-bold text-gray-900 dark:text-white">{count}</div>
+                <div className="text-xs text-gray-500 dark:text-gray-400">{percentage}%</div>
               </div>
             );
           })}
@@ -125,13 +125,13 @@ const FeedbackDonutChart = ({ feedbackData, loading }) => {
 
         {/* Venue Breakdown (if multiple venues) */}
         {feedbackData.venueBreakdown && feedbackData.venueBreakdown.length > 0 && (
-          <div className="mt-4 pt-4 border-t border-gray-100">
-            <h4 className="text-xs font-semibold text-gray-700 mb-2 uppercase tracking-wider">Venue Breakdown</h4>
+          <div className="mt-4 pt-4 border-t border-gray-100 dark:border-gray-700">
+            <h4 className="text-xs font-semibold text-gray-700 dark:text-gray-300 mb-2 uppercase tracking-wider">Venue Breakdown</h4>
             <div className="space-y-2 max-h-24 overflow-y-auto">
               {feedbackData.venueBreakdown.map(venue => (
                 <div key={venue.venueId} className="flex items-center justify-between text-xs">
-                  <span className="text-gray-700 truncate flex-1">{venue.venueName}</span>
-                  <span className="font-semibold text-gray-900 ml-2">{venue.avgRating.toFixed(1)}/5</span>
+                  <span className="text-gray-700 dark:text-gray-300 truncate flex-1">{venue.venueName}</span>
+                  <span className="font-semibold text-gray-900 dark:text-white ml-2">{venue.avgRating.toFixed(1)}/5</span>
                 </div>
               ))}
             </div>

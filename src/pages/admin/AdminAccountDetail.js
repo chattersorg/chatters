@@ -326,9 +326,7 @@ const AdminAccountDetail = () => {
     try {
       const { data: { session } } = await supabase.auth.getSession();
 
-      const apiUrl = window.location.hostname === 'localhost'
-        ? 'https://my.getchatters.com/api/admin/seed-demo-feedback'
-        : '/api/admin/seed-demo-feedback';
+      const apiUrl = '/api/admin/seed-demo-feedback';
 
       // Generate array of dates to process
       const allDates = [];
@@ -478,9 +476,7 @@ const AdminAccountDetail = () => {
     try {
       const { data: { session } } = await supabase.auth.getSession();
 
-      const apiUrl = window.location.hostname === 'localhost'
-        ? 'https://my.getchatters.com/api/admin/seed-demo-ratings'
-        : '/api/admin/seed-demo-ratings';
+      const apiUrl = '/api/admin/seed-demo-ratings';
 
       const progressToast = toast.loading(
         `Processing ${dayCount} days of ratings data...`,

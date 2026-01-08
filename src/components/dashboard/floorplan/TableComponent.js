@@ -10,6 +10,7 @@ const TableComponent = ({
   onTableResize, // (id, width, height) -> parent persists immutably
   onTableMove,   // (id, dx, dy) to adjust x/y when resizing from left/top
   zoom = 1,      // Current zoom level for position calculations
+  isSelected = false, // Whether this table is selected
 }) => {
   const [isResizing, setIsResizing] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
@@ -62,6 +63,18 @@ const TableComponent = ({
     }
   }, [isResizing, table.id]);
 
+  // Cleanup event listeners on unmount to prevent memory leaks
+  useEffect(() => {
+    return () => {
+      if (listenersRef.current.cleanUp) {
+        window.removeEventListener('pointermove', listenersRef.current.trackLast);
+        window.removeEventListener('pointermove', listenersRef.current.onMove);
+        window.removeEventListener('pointerup', listenersRef.current.cleanUp);
+        window.removeEventListener('pointercancel', listenersRef.current.cleanUp);
+      }
+    };
+  }, []);
+
   const dragRef = useRef({
     startX: 0,
     startY: 0,
@@ -74,15 +87,38 @@ const TableComponent = ({
   const captureElRef = useRef(null);
   const pointerIdRef = useRef(null);
 
+  // Track last pointer position per-instance (not global) to avoid race conditions
+  const lastPointerRef = useRef({ x: 0, y: 0 });
+
+  // Store event listener refs for proper cleanup
+  const listenersRef = useRef({ trackLast: null, onMove: null, cleanUp: null });
+
   const roundToGrid = (v) => Math.round(v / GRID) * GRID;
 
   const startResize = useCallback((e, direction, circle = false) => {
     e.stopPropagation();
     e.preventDefault();
 
+    // Clean up any existing listeners from interrupted resize
+    if (listenersRef.current.cleanUp) {
+      window.removeEventListener('pointermove', listenersRef.current.trackLast);
+      window.removeEventListener('pointermove', listenersRef.current.onMove);
+      window.removeEventListener('pointerup', listenersRef.current.cleanUp);
+      window.removeEventListener('pointercancel', listenersRef.current.cleanUp);
+    }
+
     captureElRef.current = e.currentTarget;
     pointerIdRef.current = e.pointerId;
-    captureElRef.current?.setPointerCapture?.(pointerIdRef.current);
+
+    // Only capture if the API exists
+    if (captureElRef.current?.setPointerCapture) {
+      try {
+        captureElRef.current.setPointerCapture(pointerIdRef.current);
+      } catch (err) {
+        // Pointer capture can fail in some edge cases, continue without it
+        console.warn('Could not capture pointer:', err);
+      }
+    }
 
     dragRef.current = {
       startX: e.clientX,
@@ -139,16 +175,16 @@ const TableComponent = ({
       setLiveOffsetY(liveOffY);
     };
 
-    // Track last pointer position for reliable final commit
+    // Track last pointer position for reliable final commit (per-instance, not global)
     const trackLast = (ev) => {
-      window.__lastPX = ev.clientX;
-      window.__lastPY = ev.clientY;
+      lastPointerRef.current.x = ev.clientX;
+      lastPointerRef.current.y = ev.clientY;
     };
 
     const cleanUp = () => {
       const { startX, startY, startW, startH, direction: dir } = dragRef.current;
-      const lastX = window.__lastPX ?? startX;
-      const lastY = window.__lastPY ?? startY;
+      const lastX = lastPointerRef.current.x || startX;
+      const lastY = lastPointerRef.current.y || startY;
       const dx = lastX - startX;
       const dy = lastY - startY;
 
@@ -197,28 +233,44 @@ const TableComponent = ({
       // Persist the new size
       onTableResize?.(table.id, finalW, finalH);
 
-      // Clean up pointer capture
-      captureElRef.current?.releasePointerCapture?.(pointerIdRef.current);
+      // Clean up pointer capture safely
+      if (captureElRef.current?.releasePointerCapture && pointerIdRef.current !== null) {
+        try {
+          captureElRef.current.releasePointerCapture(pointerIdRef.current);
+        } catch (err) {
+          // Pointer may already be released, ignore
+        }
+      }
       captureElRef.current = null;
       pointerIdRef.current = null;
 
       setIsResizing(false);
       // Live offsets will be reset by useEffect when position updates
 
-      // Remove event listeners
-      window.removeEventListener('pointermove', trackLast);
-      window.removeEventListener('pointermove', onMove);
-      window.removeEventListener('pointerup', cleanUp);
-      window.removeEventListener('pointercancel', cleanUp);
-      delete window.__lastPX;
-      delete window.__lastPY;
+      // Remove event listeners using stored refs
+      window.removeEventListener('pointermove', listenersRef.current.trackLast);
+      window.removeEventListener('pointermove', listenersRef.current.onMove);
+      window.removeEventListener('pointerup', listenersRef.current.cleanUp);
+      window.removeEventListener('pointercancel', listenersRef.current.cleanUp);
+
+      // Clear listener refs
+      listenersRef.current = { trackLast: null, onMove: null, cleanUp: null };
+
+      // Reset last pointer position
+      lastPointerRef.current = { x: 0, y: 0 };
     };
+
+    // Store listener refs for proper cleanup
+    listenersRef.current = { trackLast, onMove, cleanUp };
+
+    // Initialize last pointer position
+    lastPointerRef.current = { x: e.clientX, y: e.clientY };
 
     window.addEventListener('pointermove', trackLast, { passive: true });
     window.addEventListener('pointermove', onMove, { passive: true });
     window.addEventListener('pointerup', cleanUp, { passive: true });
     window.addEventListener('pointercancel', cleanUp, { passive: true });
-  }, [onTableResize, onTableMove, table.id, table.width, table.height]);
+  }, [onTableResize, onTableMove, table.id, table.w, table.h, zoom]);
 
   const handleRemoveClick = (e) => {
     e.stopPropagation();
@@ -231,7 +283,7 @@ const TableComponent = ({
     return `${base} ${isCircle ? 'rounded-full' : 'rounded-lg'}`;
   };
 
-  const showHandles = isHovered || isResizing;
+  const showHandles = isHovered || isResizing || isSelected;
 
   return (
     <div
@@ -252,10 +304,10 @@ const TableComponent = ({
 
       {editMode && (
         <>
-          {/* Remove button */}
+          {/* Remove button - z-30 to be above resize handles (z-20) */}
           <button
             onClick={handleRemoveClick}
-            className={`absolute -top-2 -right-2 w-6 h-6 bg-red-500 hover:bg-red-600 text-white rounded-full text-xs font-bold shadow-lg transition-all duration-200 z-10 ${showHandles ? 'opacity-100' : 'opacity-0'}`}
+            className={`absolute -top-2 -right-2 w-6 h-6 bg-red-500 hover:bg-red-600 text-white rounded-full text-xs font-bold shadow-lg transition-all duration-200 z-30 ${showHandles ? 'opacity-100' : 'opacity-0'}`}
             title="Remove table"
             type="button"
           >

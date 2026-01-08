@@ -1,7 +1,7 @@
 // QuestionManagementTab.js — Comprehensive question management with better UX
 
-import React, { useState } from 'react';
-import { Plus, Search, Edit3, Trash2, GripVertical, Archive, RotateCcw } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Plus, Search, Edit3, Trash2, GripVertical, Archive, RotateCcw, X, Tag, ChevronDown, ChevronUp } from 'lucide-react';
 import { Draggable, Droppable } from 'react-beautiful-dnd';
 import ReplaceModal from '../../common/ReplaceModal';
 import { PermissionGate } from '../../../context/PermissionsContext';
@@ -43,7 +43,9 @@ const CreateQuestionSection = ({
   handleNewQuestionChange,
   questions,
   duplicateError,
-  handleAddQuestion
+  handleAddQuestion,
+  newQuestionConditionalTags,
+  handleNewQuestionConditionalTagsChange
 }) => (
     <div className="mb-8">
       <h3 className="text-base font-semibold text-gray-900 dark:text-gray-100 mb-4 flex items-center gap-2">
@@ -73,6 +75,13 @@ const CreateQuestionSection = ({
               </span>
             </div>
           </div>
+
+          {newQuestion.trim() && (
+            <ConditionalTagsEditor
+              conditionalTags={newQuestionConditionalTags}
+              onUpdate={handleNewQuestionConditionalTagsChange}
+            />
+          )}
 
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-4">
@@ -106,12 +115,149 @@ const CreateQuestionSection = ({
     </div>
   );
 
+// Conditional Tags Editor Component
+const ConditionalTagsEditor = ({ conditionalTags, onUpdate }) => {
+  const [enabled, setEnabled] = useState(conditionalTags?.enabled || false);
+  const [threshold, setThreshold] = useState(conditionalTags?.threshold || 3);
+  const [tags, setTags] = useState(conditionalTags?.tags || []);
+  const [newTag, setNewTag] = useState('');
+
+  // Use ref to store onUpdate to avoid infinite loops in useEffect
+  const onUpdateRef = React.useRef(onUpdate);
+  onUpdateRef.current = onUpdate;
+
+  useEffect(() => {
+    onUpdateRef.current({
+      enabled,
+      threshold,
+      tags
+    });
+  }, [enabled, threshold, tags]);
+
+  const addTag = () => {
+    const trimmedTag = newTag.trim();
+    // Case-insensitive duplicate check
+    const isDuplicate = tags.some(t => t.toLowerCase() === trimmedTag.toLowerCase());
+    if (trimmedTag && !isDuplicate) {
+      setTags([...tags, trimmedTag]);
+      setNewTag('');
+    }
+  };
+
+  const removeTag = (tagToRemove) => {
+    setTags(tags.filter(t => t !== tagToRemove));
+  };
+
+  const handleKeyPress = (e) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      addTag();
+    }
+  };
+
+  return (
+    <div className="mt-4 p-4 bg-gray-50 dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
+      <div className="flex items-center justify-between mb-4">
+        <div className="flex items-center gap-2">
+          <Tag className="w-4 h-4 text-purple-600 dark:text-purple-400" />
+          <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Follow-up Tags</span>
+        </div>
+        <label className="relative inline-flex items-center cursor-pointer">
+          <input
+            type="checkbox"
+            checked={enabled}
+            onChange={(e) => setEnabled(e.target.checked)}
+            className="sr-only peer"
+          />
+          <div className="w-9 h-5 bg-gray-300 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-gray-600 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all dark:border-gray-600 peer-checked:bg-blue-600"></div>
+        </label>
+      </div>
+
+      {enabled && (
+        <div className="space-y-4">
+          <div>
+            <label className="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-2">
+              Show tags when rating is below
+            </label>
+            <div className="flex items-center gap-2">
+              <select
+                value={threshold}
+                onChange={(e) => setThreshold(Number(e.target.value))}
+                className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              >
+                <option value={2}>2 stars</option>
+                <option value={3}>3 stars</option>
+                <option value={4}>4 stars</option>
+                <option value={5}>5 stars</option>
+              </select>
+              <span className="text-xs text-gray-500 dark:text-gray-400">
+                (ratings of {threshold - 1} or lower will show tags)
+              </span>
+            </div>
+          </div>
+
+          <div>
+            <label className="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-2">
+              Tags to show
+            </label>
+            <div className="flex flex-wrap gap-2 mb-2">
+              {tags.map((tag, index) => (
+                <span
+                  key={index}
+                  className="inline-flex items-center gap-1 px-3 py-1 bg-purple-100 dark:bg-purple-900/30 text-purple-800 dark:text-purple-300 text-sm rounded-full"
+                >
+                  {tag}
+                  <button
+                    type="button"
+                    onClick={() => removeTag(tag)}
+                    className="hover:text-purple-600 dark:hover:text-purple-200"
+                  >
+                    <X className="w-3 h-3" />
+                  </button>
+                </span>
+              ))}
+              {tags.length === 0 && (
+                <span className="text-xs text-gray-400 dark:text-gray-500 italic">No tags added yet</span>
+              )}
+            </div>
+            <div className="flex gap-2">
+              <input
+                type="text"
+                value={newTag}
+                onChange={(e) => setNewTag(e.target.value)}
+                onKeyPress={handleKeyPress}
+                placeholder="Add a tag (e.g., Too slow, Too cold)"
+                className="flex-1 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                maxLength={50}
+              />
+              <button
+                type="button"
+                onClick={addTag}
+                disabled={!newTag.trim()}
+                className="px-3 py-2 bg-purple-600 text-white rounded-lg text-sm font-medium hover:bg-purple-700 disabled:bg-gray-300 disabled:text-gray-500 dark:disabled:bg-gray-600 dark:disabled:text-gray-400 transition-colors"
+              >
+                Add
+              </button>
+            </div>
+          </div>
+
+          <p className="text-xs text-gray-500 dark:text-gray-400">
+            When customers rate this question below {threshold} stars, they'll be prompted to select one or more tags to provide additional context.
+          </p>
+        </div>
+      )}
+    </div>
+  );
+};
+
 // Active Questions Component - moved outside to prevent re-creation
 const ActiveQuestionsSection = ({
   questions,
   editingQuestionId,
   editingQuestionText,
+  editingConditionalTags,
   handleEditTextChange,
+  handleConditionalTagsChange,
   cancelEditingQuestion,
   saveEditedQuestion,
   startEditingQuestion,
@@ -181,6 +327,12 @@ const ActiveQuestionsSection = ({
                                 </span>
                               </div>
                             </div>
+
+                            <ConditionalTagsEditor
+                              conditionalTags={editingConditionalTags}
+                              onUpdate={handleConditionalTagsChange}
+                            />
+
                             <div className="flex items-center justify-end space-x-3">
                               <button
                                 onClick={cancelEditingQuestion}
@@ -212,8 +364,19 @@ const ActiveQuestionsSection = ({
                                   {index + 1}
                                 </span>
                                 <h4 className="font-medium text-gray-900 dark:text-gray-100">{q.question}</h4>
+                                {q.conditional_tags?.enabled && (
+                                  <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300 text-xs rounded-full">
+                                    <Tag className="w-3 h-3" />
+                                    {q.conditional_tags.tags?.length || 0} tags
+                                  </span>
+                                )}
                               </div>
-                              <p className="text-xs text-gray-500 dark:text-gray-400">Customers will rate this 1-5 stars</p>
+                              <p className="text-xs text-gray-500 dark:text-gray-400">
+                                Customers will rate this 1-5 stars
+                                {q.conditional_tags?.enabled && (
+                                  <span className="ml-1">• Tags shown for ratings below {q.conditional_tags.threshold} stars</span>
+                                )}
+                              </p>
                             </div>
 
                             <div className="flex items-center space-x-2">
@@ -341,6 +504,7 @@ const QuestionManagementTab = ({
   newQuestion,
   editingQuestionId,
   editingQuestionText,
+  editingConditionalTags,
   inactiveQuestions,
   searchTerm,
   isReplaceModalOpen,
@@ -361,8 +525,11 @@ const QuestionManagementTab = ({
   saveEditedQuestion,
   cancelEditingQuestion,
   handleEditTextChange,
+  handleConditionalTagsChange,
   handleAddInactiveQuestion,
   handleReplaceQuestion,
+  newQuestionConditionalTags,
+  handleNewQuestionConditionalTagsChange,
 }) => {
   const [view, setView] = useState('active'); // 'active', 'create', 'archive'
 
@@ -402,6 +569,8 @@ const QuestionManagementTab = ({
             questions={questions}
             duplicateError={duplicateError}
             handleAddQuestion={handleAddQuestion}
+            newQuestionConditionalTags={newQuestionConditionalTags}
+            handleNewQuestionConditionalTagsChange={handleNewQuestionConditionalTagsChange}
           />
 
           <SuggestedQuestionsSection
@@ -416,7 +585,9 @@ const QuestionManagementTab = ({
             questions={questions}
             editingQuestionId={editingQuestionId}
             editingQuestionText={editingQuestionText}
+            editingConditionalTags={editingConditionalTags}
             handleEditTextChange={handleEditTextChange}
+            handleConditionalTagsChange={handleConditionalTagsChange}
             cancelEditingQuestion={cancelEditingQuestion}
             saveEditedQuestion={saveEditedQuestion}
             startEditingQuestion={startEditingQuestion}

@@ -1,20 +1,21 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../../../utils/supabase';
 import { useVenue } from '../../../context/VenueContext';
 import usePageTitle from '../../../hooks/usePageTitle';
-import { ChartCard } from '../../../components/dashboard/layout/ModernCard';
 import { Button } from '../../../components/ui/button';
+import toast from 'react-hot-toast';
 import {
   Key,
-  ChevronDown,
   Check,
   Plus,
   Trash2,
   X,
   Save,
-  RefreshCw
+  RefreshCw,
+  Loader2
 } from 'lucide-react';
+import { permissionSections } from '../../../config/permissions';
 
 const RoleTemplates = () => {
   usePageTitle('Role Templates');
@@ -22,16 +23,13 @@ const RoleTemplates = () => {
   const { userRole } = useVenue();
 
   const [templates, setTemplates] = useState([]);
-  const [originalTemplates, setOriginalTemplates] = useState([]); // Track original state for comparison
   const [allPermissions, setAllPermissions] = useState([]);
-  const [permissionsByCategory, setPermissionsByCategory] = useState({});
   const [loading, setLoading] = useState(true);
-  const [saving, setSaving] = useState(false);
-  const [savingTemplateId, setSavingTemplateId] = useState(null);
-  const [expandedTemplate, setExpandedTemplate] = useState(null);
+  const [savingPermission, setSavingPermission] = useState(null);
+  const [selectedTemplate, setSelectedTemplate] = useState(null);
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [newTemplate, setNewTemplate] = useState({ name: '', description: '', permissions: [] });
-  const [message, setMessage] = useState('');
+  const [saving, setSaving] = useState(false);
   const [accountId, setAccountId] = useState(null);
 
   useEffect(() => {
@@ -46,7 +44,6 @@ const RoleTemplates = () => {
     try {
       setLoading(true);
 
-      // Get current user's account
       const { data: { user } } = await supabase.auth.getUser();
       const { data: userData } = await supabase
         .from('users')
@@ -57,23 +54,16 @@ const RoleTemplates = () => {
       if (!userData?.account_id) return;
       setAccountId(userData.account_id);
 
-      // Fetch all permissions
+      // Fetch all permissions (excluding billing)
       const { data: perms } = await supabase
         .from('permissions')
         .select('*')
+        .neq('category', 'billing')
         .order('category', { ascending: true });
 
       setAllPermissions(perms || []);
 
-      // Group permissions by category
-      const grouped = {};
-      (perms || []).forEach(perm => {
-        if (!grouped[perm.category]) grouped[perm.category] = [];
-        grouped[perm.category].push(perm);
-      });
-      setPermissionsByCategory(grouped);
-
-      // Fetch role templates (system + account-specific)
+      // Fetch role templates
       const { data: templatesData } = await supabase
         .from('role_templates')
         .select(`
@@ -87,117 +77,102 @@ const RoleTemplates = () => {
         .order('is_system', { ascending: false })
         .order('name', { ascending: true });
 
-      // Transform templates to include permissions array
       const transformedTemplates = (templatesData || []).map(t => ({
         ...t,
         permissions: t.role_template_permissions?.map(rtp => rtp.permissions?.code).filter(Boolean) || []
       }));
 
       setTemplates(transformedTemplates);
-      setOriginalTemplates(JSON.parse(JSON.stringify(transformedTemplates))); // Deep copy for comparison
+
+      if (transformedTemplates.length > 0 && !selectedTemplate) {
+        setSelectedTemplate(transformedTemplates[0].id);
+      }
     } catch (error) {
       console.error('Error fetching data:', error);
-      setMessage('Failed to load templates');
+      toast.error('Failed to load templates');
     } finally {
       setLoading(false);
     }
   };
 
-  const toggleTemplateExpanded = (templateId) => {
-    setExpandedTemplate(expandedTemplate === templateId ? null : templateId);
-  };
+  // Get permission details by code
+  const getPermission = useCallback((code) => {
+    return allPermissions.find(p => p.code === code);
+  }, [allPermissions]);
 
-  // Check if a template has unsaved changes
-  const hasUnsavedChanges = (templateId) => {
-    const current = templates.find(t => t.id === templateId);
-    const original = originalTemplates.find(t => t.id === templateId);
-    if (!current || !original) return false;
-
-    const currentPerms = [...current.permissions].sort();
-    const originalPerms = [...original.permissions].sort();
-    return JSON.stringify(currentPerms) !== JSON.stringify(originalPerms);
-  };
-
-  const handlePermissionToggle = (templateId, permissionCode) => {
+  // Handle permission toggle with dependency logic
+  const handlePermissionToggle = useCallback(async (templateId, permissionCode, requiresBase) => {
     const template = templates.find(t => t.id === templateId);
     if (template?.is_system) return;
 
     const hasPermission = template.permissions.includes(permissionCode);
-    const newPermissions = hasPermission
-      ? template.permissions.filter(p => p !== permissionCode)
-      : [...template.permissions, permissionCode];
+    const perm = getPermission(permissionCode);
+    if (!perm) return;
 
-    // Update locally only - no database save yet
-    setTemplates(prev => prev.map(t =>
-      t.id === templateId ? { ...t, permissions: newPermissions } : t
-    ));
-  };
+    setSavingPermission(permissionCode);
 
-  const handleSaveTemplate = async (templateId) => {
-    const template = templates.find(t => t.id === templateId);
-    const original = originalTemplates.find(t => t.id === templateId);
-    if (!template || template.is_system) return;
+    // Minimum delay to show loading state
+    const minDelay = new Promise(resolve => setTimeout(resolve, 400));
 
     try {
-      setSavingTemplateId(templateId);
+      const dbOperation = async () => {
+        if (hasPermission) {
+          // Removing permission
+          const permissionsToRemove = [permissionCode];
 
-      // Get current permissions from database
-      const currentPerms = new Set(original.permissions);
-      const newPerms = new Set(template.permissions);
+          // If removing a base permission, also remove all permissions that depend on it
+          const dependentPermissions = permissionSections
+            .flatMap(s => s.permissions)
+            .filter(p => p.requiresBase === permissionCode)
+            .map(p => p.code)
+            .filter(code => template.permissions.includes(code));
 
-      // Find permissions to add
-      const toAdd = template.permissions.filter(p => !currentPerms.has(p));
-      // Find permissions to remove
-      const toRemove = original.permissions.filter(p => !newPerms.has(p));
+          permissionsToRemove.push(...dependentPermissions);
 
-      // Remove permissions
-      for (const code of toRemove) {
-        const perm = allPermissions.find(p => p.code === code);
-        if (perm) {
-          await supabase
-            .from('role_template_permissions')
-            .delete()
-            .eq('role_template_id', templateId)
-            .eq('permission_id', perm.id);
-        }
-      }
+          // Remove from database
+          for (const code of permissionsToRemove) {
+            const p = getPermission(code);
+            if (p) {
+              await supabase
+                .from('role_template_permissions')
+                .delete()
+                .eq('role_template_id', templateId)
+                .eq('permission_id', p.id);
+            }
+          }
 
-      // Add permissions
-      for (const code of toAdd) {
-        const perm = allPermissions.find(p => p.code === code);
-        if (perm) {
+          // Update local state
+          setTemplates(prev => prev.map(t =>
+            t.id === templateId
+              ? { ...t, permissions: t.permissions.filter(p => !permissionsToRemove.includes(p)) }
+              : t
+          ));
+        } else {
+          // Adding permission
           await supabase
             .from('role_template_permissions')
             .insert({
               role_template_id: templateId,
               permission_id: perm.id
             });
+
+          setTemplates(prev => prev.map(t =>
+            t.id === templateId
+              ? { ...t, permissions: [...t.permissions, permissionCode] }
+              : t
+          ));
         }
-      }
+      };
 
-      // Update original state to match current
-      setOriginalTemplates(prev => prev.map(t =>
-        t.id === templateId ? { ...t, permissions: [...template.permissions] } : t
-      ));
-
-      setMessage('Template saved successfully!');
-      setTimeout(() => setMessage(''), 3000);
+      // Wait for both the database operation and minimum delay
+      await Promise.all([dbOperation(), minDelay]);
     } catch (error) {
-      console.error('Error saving template:', error);
-      setMessage('Failed to save template: ' + error.message);
+      console.error('Error toggling permission:', error);
+      toast.error('Failed to update permission');
     } finally {
-      setSavingTemplateId(null);
+      setSavingPermission(null);
     }
-  };
-
-  const handleDiscardChanges = (templateId) => {
-    const original = originalTemplates.find(t => t.id === templateId);
-    if (!original) return;
-
-    setTemplates(prev => prev.map(t =>
-      t.id === templateId ? { ...t, permissions: [...original.permissions] } : t
-    ));
-  };
+  }, [templates, getPermission]);
 
   const handleCreateTemplate = async () => {
     if (!newTemplate.name || !accountId) return;
@@ -205,14 +180,12 @@ const RoleTemplates = () => {
     try {
       setSaving(true);
 
-      // Generate a unique code from the name
       const baseCode = newTemplate.name
         .toLowerCase()
         .replace(/[^a-z0-9]+/g, '_')
         .replace(/^_|_$/g, '');
       const uniqueCode = `custom_${baseCode}_${Date.now()}`;
 
-      // Create the template
       const { data: createdTemplate, error: templateError } = await supabase
         .from('role_templates')
         .insert({
@@ -227,7 +200,6 @@ const RoleTemplates = () => {
 
       if (templateError) throw templateError;
 
-      // Add permissions to the template
       if (newTemplate.permissions.length > 0) {
         const permissionInserts = newTemplate.permissions.map(code => {
           const perm = allPermissions.find(p => p.code === code);
@@ -238,21 +210,20 @@ const RoleTemplates = () => {
         }).filter(Boolean);
 
         if (permissionInserts.length > 0) {
-          const { error: permsError } = await supabase
+          await supabase
             .from('role_template_permissions')
             .insert(permissionInserts);
-
-          if (permsError) throw permsError;
         }
       }
 
-      setMessage('Template created successfully!');
+      toast.success('Template created successfully!');
       setNewTemplate({ name: '', description: '', permissions: [] });
       setShowCreateModal(false);
-      await fetchData(); // Refresh the list
+      await fetchData();
+      setSelectedTemplate(createdTemplate.id);
     } catch (error) {
       console.error('Error creating template:', error);
-      setMessage('Failed to create template: ' + error.message);
+      toast.error('Failed to create template: ' + error.message);
     } finally {
       setSaving(false);
     }
@@ -265,44 +236,97 @@ const RoleTemplates = () => {
     if (!window.confirm('Are you sure you want to delete this template?')) return;
 
     try {
-      // Delete permissions first (foreign key)
       await supabase
         .from('role_template_permissions')
         .delete()
         .eq('role_template_id', templateId);
 
-      // Delete the template
-      const { error } = await supabase
+      await supabase
         .from('role_templates')
         .delete()
         .eq('id', templateId);
 
-      if (error) throw error;
-
-      setMessage('Template deleted successfully!');
+      toast.success('Template deleted successfully!');
       setTemplates(prev => prev.filter(t => t.id !== templateId));
-      setOriginalTemplates(prev => prev.filter(t => t.id !== templateId));
+
+      const remaining = templates.filter(t => t.id !== templateId);
+      if (remaining.length > 0) {
+        setSelectedTemplate(remaining[0].id);
+      } else {
+        setSelectedTemplate(null);
+      }
     } catch (error) {
       console.error('Error deleting template:', error);
-      setMessage('Failed to delete template: ' + error.message);
+      toast.error('Failed to delete template: ' + error.message);
     }
   };
 
-  // Get category labels
-  const categoryLabels = {
-    feedback: 'Feedback',
-    questions: 'Questions',
-    reports: 'Reports',
-    nps: 'NPS',
-    staff: 'Staff',
-    managers: 'Managers',
-    venue: 'Venue Settings',
-    floorplan: 'Floor Plan',
-    qr: 'QR Codes',
-    ai: 'AI Features',
-    reviews: 'Reviews',
-    billing: 'Billing',
-    multivenue: 'Multi-Venue'
+  const currentTemplate = templates.find(t => t.id === selectedTemplate);
+
+  // Render a permission row with checkbox, label and description
+  const PermissionRow = ({ code, label, description, requiresBase }) => {
+    if (!currentTemplate) return null;
+
+    const hasPermission = currentTemplate.permissions.includes(code);
+    const isSaving = savingPermission === code;
+    const isSystemTemplate = currentTemplate.is_system;
+    // Disable if requires a base permission that isn't granted
+    const isDisabled = requiresBase && !currentTemplate.permissions.includes(requiresBase);
+    const permissionExists = getPermission(code);
+    const isChild = !!requiresBase;
+
+    // Don't render if permission doesn't exist in database
+    if (!permissionExists) return null;
+
+    return (
+      <div
+        className={`flex items-start gap-3 p-3 rounded-lg border transition-colors ${
+          isChild ? 'ml-6' : ''
+        } ${
+          isDisabled
+            ? 'cursor-not-allowed opacity-50 border-gray-100 dark:border-gray-800 bg-gray-50 dark:bg-gray-900'
+            : isSystemTemplate
+              ? 'cursor-default border-gray-200 dark:border-gray-700'
+              : 'cursor-pointer border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-800'
+        }`}
+        onClick={(e) => {
+          e.preventDefault();
+          if (!isDisabled && !isSystemTemplate && !isSaving) {
+            handlePermissionToggle(currentTemplate.id, code, requiresBase);
+          }
+        }}
+      >
+        <div className={`w-5 h-5 rounded flex items-center justify-center flex-shrink-0 mt-0.5 transition-colors ${
+          hasPermission && !isDisabled
+            ? 'bg-blue-500'
+            : isDisabled
+              ? 'border border-gray-200 dark:border-gray-700 bg-gray-100 dark:bg-gray-800'
+              : 'border-2 border-gray-300 dark:border-gray-600'
+        }`}>
+          {isSaving ? (
+            <Loader2 className="w-3 h-3 text-white animate-spin" />
+          ) : hasPermission && !isDisabled ? (
+            <Check className="w-3 h-3 text-white" />
+          ) : null}
+        </div>
+        <div className="flex-1 min-w-0">
+          <div className={`text-sm font-medium ${
+            isDisabled
+              ? 'text-gray-400 dark:text-gray-600'
+              : 'text-gray-900 dark:text-white'
+          }`}>
+            {label}
+          </div>
+          <div className={`text-xs mt-0.5 ${
+            isDisabled
+              ? 'text-gray-400 dark:text-gray-600'
+              : 'text-gray-500 dark:text-gray-400'
+          }`}>
+            {description}
+          </div>
+        </div>
+      </div>
+    );
   };
 
   if (userRole !== 'master') {
@@ -312,209 +336,153 @@ const RoleTemplates = () => {
   return (
     <div className="space-y-6">
       {/* Page Header */}
-      <div className="mb-2">
-        <h1 className="text-2xl font-semibold text-gray-900 dark:text-white">Role Templates</h1>
-        <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
-          Create and manage permission templates for quick manager setup
-        </p>
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-2xl font-semibold text-gray-900 dark:text-white">Role Templates</h1>
+          <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+            Define reusable permission sets for your managers
+          </p>
+        </div>
+        <Button
+          variant="primary"
+          onClick={() => setShowCreateModal(true)}
+        >
+          <Plus className="w-4 h-4 mr-2" />
+          Create Template
+        </Button>
       </div>
 
-      {/* Message */}
-      {message && (
-        <div className={`p-4 rounded-lg text-sm ${
-          message.includes('success')
-            ? 'bg-green-50 dark:bg-green-900/30 text-green-700 dark:text-green-400 border border-green-200 dark:border-green-800'
-            : 'bg-red-50 dark:bg-red-900/30 text-red-700 dark:text-red-400 border border-red-200 dark:border-red-800'
-        }`}>
-          {message}
+      {loading ? (
+        <div className="flex items-center justify-center py-12">
+          <RefreshCw className="w-8 h-8 text-blue-600 animate-spin" />
         </div>
-      )}
-
-      {/* Main Content Card */}
-      <ChartCard
-        title="Permission Templates"
-        subtitle="Define reusable permission sets for your managers"
-        actions={
-          <Button
-            variant="primary"
+      ) : templates.length === 0 ? (
+        <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl p-12 text-center">
+          <Key className="w-12 h-12 text-gray-300 dark:text-gray-600 mx-auto mb-3" />
+          <p className="text-gray-500 dark:text-gray-400 mb-4">No templates found</p>
+          <button
             onClick={() => setShowCreateModal(true)}
+            className="text-blue-600 dark:text-blue-400 hover:underline text-sm font-medium"
           >
-            <Plus className="w-4 h-4 mr-2" />
-            Create Template
-          </Button>
-        }
-      >
-        {loading ? (
-          <div className="flex items-center justify-center py-12">
-            <RefreshCw className="w-8 h-8 text-blue-600 animate-spin" />
-          </div>
-        ) : templates.length === 0 ? (
-          <div className="text-center py-12">
-            <Key className="w-12 h-12 text-gray-300 dark:text-gray-600 mx-auto mb-3" />
-            <p className="text-gray-500 dark:text-gray-400 mb-4">No templates found</p>
-            <button
-              onClick={() => setShowCreateModal(true)}
-              className="text-blue-600 dark:text-blue-400 hover:underline text-sm font-medium"
-            >
-              Create your first template
-            </button>
-          </div>
-        ) : (
-          <div className="space-y-3">
-            {templates.map((template) => {
-              const templateHasChanges = hasUnsavedChanges(template.id);
-
-              return (
-                <div
-                  key={template.id}
-                  className={`border rounded-lg overflow-hidden ${
-                    templateHasChanges
-                      ? 'border-yellow-400 dark:border-yellow-600'
-                      : 'border-gray-200 dark:border-gray-700'
-                  }`}
-                >
-                  {/* Template Header */}
-                  <div
-                    className="flex items-center justify-between p-4 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors"
-                    onClick={() => toggleTemplateExpanded(template.id)}
+            Create your first template
+          </button>
+        </div>
+      ) : (
+        <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl overflow-hidden">
+          <div className="flex min-h-[600px]">
+            {/* Left Sidebar - Template Tabs */}
+            <div className="w-56 border-r border-gray-200 dark:border-gray-800 bg-gray-50 dark:bg-gray-800/50">
+              <div className="p-3 border-b border-gray-200 dark:border-gray-800">
+                <h3 className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                  Templates
+                </h3>
+              </div>
+              <div className="p-2 space-y-1">
+                {templates.map((template) => (
+                  <button
+                    key={template.id}
+                    onClick={() => setSelectedTemplate(template.id)}
+                    className={`w-full text-left px-3 py-2.5 rounded-lg transition-colors ${
+                      selectedTemplate === template.id
+                        ? 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300'
+                        : 'hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-700 dark:text-gray-300'
+                    }`}
                   >
-                    <div className="flex items-center gap-3">
-                      <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${
-                        template.is_system
-                          ? 'bg-gray-100 dark:bg-gray-800'
-                          : 'bg-blue-100 dark:bg-blue-900/30'
-                      }`}>
-                        <Key className={`w-5 h-5 ${
-                          template.is_system
-                            ? 'text-gray-600 dark:text-gray-400'
-                            : 'text-blue-600 dark:text-blue-400'
-                        }`} />
-                      </div>
-                      <div>
-                        <div className="flex items-center gap-2">
-                          <h3 className="font-medium text-gray-900 dark:text-white">{template.name}</h3>
+                    <div className="flex items-center gap-2">
+                      <Key className={`w-4 h-4 flex-shrink-0 ${
+                        selectedTemplate === template.id
+                          ? 'text-blue-600 dark:text-blue-400'
+                          : 'text-gray-400'
+                      }`} />
+                      <div className="min-w-0 flex-1">
+                        <div className="flex items-center gap-1.5">
+                          <span className="font-medium text-sm truncate">{template.name}</span>
                           {template.is_system && (
-                            <span className="px-2 py-0.5 text-xs font-medium bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 rounded">
+                            <span className="px-1.5 py-0.5 text-[10px] font-medium bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-400 rounded flex-shrink-0">
                               System
                             </span>
                           )}
-                          {templateHasChanges && (
-                            <span className="px-2 py-0.5 text-xs font-medium bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-400 rounded">
-                              Unsaved
-                            </span>
-                          )}
                         </div>
-                        <p className="text-sm text-gray-500 dark:text-gray-400">{template.description}</p>
+                        <div className="text-xs text-gray-500 dark:text-gray-400">
+                          {template.permissions.length} permissions
+                        </div>
                       </div>
                     </div>
-                    <div className="flex items-center gap-3">
-                      <span className="text-sm text-gray-500 dark:text-gray-400">
-                        {template.permissions.length} permissions
-                      </span>
-                      <ChevronDown className={`w-5 h-5 text-gray-400 transition-transform ${
-                        expandedTemplate === template.id ? 'rotate-180' : ''
-                      }`} />
-                    </div>
-                  </div>
+                  </button>
+                ))}
+              </div>
+            </div>
 
-                  {/* Expanded Permissions */}
-                  {expandedTemplate === template.id && (
-                    <div className="border-t border-gray-200 dark:border-gray-700 p-4 bg-gray-50 dark:bg-gray-800/30">
-                      <div className="space-y-4">
-                        {Object.entries(permissionsByCategory).map(([categoryKey, perms]) => (
-                          <div key={categoryKey}>
-                            <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                              {categoryLabels[categoryKey] || categoryKey}
-                            </h4>
-                            <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
-                              {perms.map((permission) => {
-                                const hasPermission = template.permissions.includes(permission.code);
-                                return (
-                                  <label
-                                    key={permission.code}
-                                    className={`flex items-center gap-2 p-2 rounded-lg border transition-colors ${
-                                      template.is_system
-                                        ? 'cursor-not-allowed opacity-75'
-                                        : 'cursor-pointer hover:bg-white dark:hover:bg-gray-800'
-                                    } ${
-                                      hasPermission
-                                        ? 'border-green-200 dark:border-green-800 bg-green-50 dark:bg-green-900/20'
-                                        : 'border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900'
-                                    }`}
-                                    onClick={(e) => {
-                                      e.stopPropagation();
-                                      if (!template.is_system) {
-                                        handlePermissionToggle(template.id, permission.code);
-                                      }
-                                    }}
-                                  >
-                                    <div className={`w-4 h-4 rounded flex items-center justify-center ${
-                                      hasPermission
-                                        ? 'bg-green-500'
-                                        : 'border border-gray-300 dark:border-gray-600'
-                                    }`}>
-                                      {hasPermission && <Check className="w-3 h-3 text-white" />}
-                                    </div>
-                                    <span className="text-sm text-gray-700 dark:text-gray-300">
-                                      {permission.name}
-                                    </span>
-                                  </label>
-                                );
-                              })}
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-
-                      {/* Action buttons for custom templates */}
-                      {!template.is_system && (
-                        <div className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700 flex items-center justify-between">
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleDeleteTemplate(template.id);
-                            }}
-                            className="inline-flex items-center gap-2 px-3 py-1.5 text-sm font-medium text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/30 rounded-lg transition-colors"
-                          >
-                            <Trash2 className="w-4 h-4" />
-                            Delete Template
-                          </button>
-
-                          <div className="flex items-center gap-2">
-                            {templateHasChanges && (
-                              <button
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  handleDiscardChanges(template.id);
-                                }}
-                                className="px-3 py-1.5 text-sm font-medium text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors"
-                              >
-                                Discard
-                              </button>
-                            )}
-                            <Button
-                              variant="primary"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                handleSaveTemplate(template.id);
-                              }}
-                              disabled={!templateHasChanges || savingTemplateId === template.id}
-                              loading={savingTemplateId === template.id}
-                            >
-                              <Save className="w-4 h-4 mr-2" />
-                              {savingTemplateId === template.id ? 'Saving...' : 'Save Changes'}
-                            </Button>
-                          </div>
-                        </div>
+            {/* Right Panel - Hierarchical Permissions */}
+            <div className="flex-1 overflow-auto">
+              {currentTemplate ? (
+                <div className="p-4">
+                  {/* Template Header */}
+                  <div className="flex items-start justify-between mb-4 pb-4 border-b border-gray-200 dark:border-gray-700">
+                    <div>
+                      <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
+                        {currentTemplate.name}
+                      </h2>
+                      {currentTemplate.description && (
+                        <p className="text-sm text-gray-500 dark:text-gray-400 mt-0.5">
+                          {currentTemplate.description}
+                        </p>
                       )}
                     </div>
+                    {!currentTemplate.is_system && (
+                      <button
+                        onClick={() => handleDeleteTemplate(currentTemplate.id)}
+                        className="p-2 text-gray-400 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/30 rounded-lg transition-colors"
+                        title="Delete template"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    )}
+                  </div>
+
+                  {currentTemplate.is_system && (
+                    <div className="mb-6 p-3 bg-gray-50 dark:bg-gray-800 rounded-lg text-sm text-gray-600 dark:text-gray-400">
+                      System templates cannot be modified. Create a custom template to customize permissions.
+                    </div>
                   )}
+
+                  {/* Permissions List */}
+                  <div className="space-y-6">
+                    {permissionSections.map((section) => {
+                      // Check if any permission in this section exists in the database
+                      const hasAnyPermission = section.permissions.some(p => getPermission(p.code));
+                      if (!hasAnyPermission) return null;
+
+                      return (
+                        <div key={section.title}>
+                          <h3 className="text-sm font-semibold text-gray-900 dark:text-white mb-3">
+                            {section.title}
+                          </h3>
+                          <div className="space-y-2">
+                            {section.permissions.map(perm => (
+                              <PermissionRow
+                                key={perm.code}
+                                code={perm.code}
+                                label={perm.label}
+                                description={perm.description}
+                                requiresBase={perm.requiresBase}
+                              />
+                            ))}
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
                 </div>
-              );
-            })}
+              ) : (
+                <div className="flex items-center justify-center h-full text-gray-500 dark:text-gray-400">
+                  Select a template to view permissions
+                </div>
+              )}
+            </div>
           </div>
-        )}
-      </ChartCard>
+        </div>
+      )}
 
       {/* Create Template Modal */}
       {showCreateModal && (

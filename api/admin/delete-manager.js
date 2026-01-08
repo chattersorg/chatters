@@ -1,6 +1,6 @@
 // /api/admin/delete-manager.js
 const { createClient } = require('@supabase/supabase-js');
-const { requireMasterRole } = require('../auth-helper');
+const { requirePermission, requireHierarchy } = require('../auth-helper');
 
 const supabaseAdmin = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.REACT_APP_SUPABASE_URL,
@@ -22,7 +22,8 @@ module.exports = async function handler(req, res) {
   }
 
   try {
-    const userData = await requireMasterRole(req);
+    // Require managers.remove permission instead of master role
+    const userData = await requirePermission(req, 'managers.remove');
     const { managerId } = req.body;
 
     if (!managerId) {
@@ -42,6 +43,9 @@ module.exports = async function handler(req, res) {
     if (managerError || !manager) {
       return res.status(404).json({ error: 'Manager not found or already deleted' });
     }
+
+    // Validate hierarchy - managers can only delete their subordinates
+    await requireHierarchy(userData, managerId);
 
     // Soft delete the manager
     const { error: deleteError } = await supabaseAdmin
@@ -63,6 +67,33 @@ module.exports = async function handler(req, res) {
       .update({ status: 'rejected' })
       .eq('email', manager.email)
       .eq('status', 'pending');
+
+    // Get the manager's current permissions before deletion for audit log
+    const { data: existingPerm } = await supabaseAdmin
+      .from('user_permissions')
+      .select('role_template_id, custom_permissions')
+      .eq('user_id', managerId)
+      .single();
+
+    // Log the permission deletion for audit
+    try {
+      await supabaseAdmin
+        .from('permission_audit_log')
+        .insert({
+          target_user_id: managerId,
+          changed_by_user_id: userData.id,
+          action: 'delete',
+          previous_role_template_id: existingPerm?.role_template_id || null,
+          previous_custom_permissions: existingPerm?.custom_permissions || [],
+          new_role_template_id: null,
+          new_custom_permissions: [],
+          account_id: userData.account_id,
+          ip_address: req.headers['x-forwarded-for'] || req.connection?.remoteAddress || null,
+          user_agent: req.headers['user-agent'] || null
+        });
+    } catch (auditError) {
+      console.error('Failed to write audit log:', auditError);
+    }
 
     console.log(`Manager ${manager.email} soft-deleted by ${userData.id}`);
 

@@ -29,7 +29,7 @@ const CSVImportReview = () => {
   // Redirect if no import data
   useEffect(() => {
     if (!importData || !importData.parsedEmployees) {
-      navigate('/staff/team');
+      navigate('/staff/employees');
     }
   }, [importData, navigate]);
 
@@ -131,7 +131,7 @@ const CSVImportReview = () => {
       await new Promise(resolve => setTimeout(resolve, 800));
 
       // Navigate back with success message
-      navigate('/staff/team', {
+      navigate('/staff/employees', {
         state: {
           message: `Successfully ${insertedCount > 0 ? `added ${insertedCount} employee${insertedCount !== 1 ? 's' : ''}` : ''}${insertedCount > 0 && updatedCount > 0 ? ' and ' : ''}${updatedCount > 0 ? `updated ${updatedCount} employee${updatedCount !== 1 ? 's' : ''}` : ''}`,
           success: true
@@ -186,7 +186,7 @@ const CSVImportReview = () => {
         {/* Back button */}
         <div className="mb-6">
           <button
-            onClick={() => navigate('/staff/team')}
+            onClick={() => navigate('/staff/employees')}
             className="inline-flex items-center text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors"
           >
             <ArrowLeft className="w-4 h-4 mr-2" />
@@ -430,7 +430,7 @@ const CSVImportReview = () => {
           <div className="flex gap-3">
             <Button
               variant="secondary"
-              onClick={() => navigate('/staff/team')}
+              onClick={() => navigate('/staff/employees')}
               disabled={isProcessing}
             >
               Cancel
