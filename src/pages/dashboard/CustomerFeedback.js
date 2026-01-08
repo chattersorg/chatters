@@ -27,6 +27,7 @@ const CustomerFeedbackContent = () => {
   const [assistanceRequested, setAssistanceRequested] = useState(false);
   const [alertModal, setAlertModal] = useState(null);
   const [customerEmail, setCustomerEmail] = useState('');
+  const [customerName, setCustomerName] = useState('');
   const [hasStarted, setHasStarted] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showTagSelection, setShowTagSelection] = useState(false);
@@ -284,6 +285,7 @@ const CustomerFeedbackContent = () => {
                 venue_id: venueId,
                 session_id: sessionId,
                 customer_email: customerEmail.trim().toLowerCase(),
+                customer_name: customerName.trim() || null,
                 scheduled_send_at: scheduledSendAt.toISOString()
               });
 
@@ -686,9 +688,28 @@ const CustomerFeedbackContent = () => {
           <div>
             <h2 className="text-2xl font-bold mb-6" style={{ color: textColor }}>{t('welcome')}</h2>
 
-            {/* Email input - optional but prominent - only show if NPS is enabled */}
+            {/* Email and name inputs - optional but prominent - only show if NPS is enabled */}
             {venue?.nps_enabled && (
               <div className="mb-6 text-left">
+                {/* First name input */}
+                <div className="mb-4">
+                  <label className="block text-sm font-medium mb-2" style={{ color: textColor }}>
+                    {t('firstName') || 'First name'} <span style={{ color: textColor, opacity: 0.6 }}>({t('optional')})</span>
+                  </label>
+                  <input
+                    type="text"
+                    value={customerName}
+                    onChange={(e) => setCustomerName(e.target.value)}
+                    placeholder={t('firstNamePlaceholder') || 'Enter your first name'}
+                    className="w-full border-2 px-4 py-3 rounded-xl text-base focus:outline-none focus:ring-2 focus:ring-offset-2 transition-all"
+                    style={{
+                      borderColor: primary,
+                      backgroundColor: 'rgba(255, 255, 255, 0.9)',
+                      color: textColor,
+                    }}
+                  />
+                </div>
+                {/* Email input */}
                 <label className="block text-sm font-medium mb-2" style={{ color: textColor }}>
                   {t('email')} <span style={{ color: textColor, opacity: 0.6 }}>({t('optional')})</span>
                 </label>
