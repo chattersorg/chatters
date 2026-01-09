@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useKiosk } from '../context/KioskContext';
-import { Loader2, AlertCircle, CheckCircle2 } from 'lucide-react';
+import { Tablet, Loader2, AlertCircle, CheckCircle2 } from 'lucide-react';
 
 const PairingScreen = () => {
   const { pairDevice, isLoading, error } = useKiosk();
@@ -101,12 +101,8 @@ const PairingScreen = () => {
       <div className="max-w-md w-full">
         {/* Header */}
         <div className="text-center mb-10">
-          <div className="mx-auto mb-6">
-            <img
-              src="/img/logo/chatters-logo-black-2025.svg"
-              alt="Chatters"
-              className="h-10 mx-auto"
-            />
+          <div className="w-20 h-20 bg-gray-900 rounded-2xl flex items-center justify-center mx-auto mb-6">
+            <Tablet className="w-10 h-10 text-white" />
           </div>
           <h1 className="text-3xl font-bold text-gray-900 mb-2">
             Set Up Kiosk
@@ -172,7 +168,7 @@ const PairingScreen = () => {
             Don't have a code? Generate one from your venue settings
           </p>
           <p>
-            Go to <span className="font-medium">Settings → Venue → Kiosk Devices</span>
+            Go to <span className="font-medium">Settings → Kiosk Devices</span>
           </p>
         </div>
       </div>
