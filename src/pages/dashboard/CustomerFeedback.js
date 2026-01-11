@@ -72,9 +72,10 @@ const CustomerFeedbackContent = () => {
     const loadData = async () => {
       try {
         // Load venue data first (including feedback_hours, review links, NPS settings, branding colors, assistance message, and thank you message)
+        // Also load account_id to check for NPS module access
         const { data: venueData, error: venueError } = await supabase
           .from('venues')
-          .select('name, logo, primary_color, background_color, background_image, text_color, button_text_color, feedback_hours, google_review_link, tripadvisor_link, nps_enabled, assistance_title, assistance_message, assistance_icon, thank_you_title, thank_you_message, thank_you_icon, feedback_review_threshold')
+          .select('name, logo, primary_color, background_color, background_image, text_color, button_text_color, feedback_hours, google_review_link, tripadvisor_link, nps_enabled, assistance_title, assistance_message, assistance_icon, thank_you_title, thank_you_message, thank_you_icon, feedback_review_threshold, account_id')
           .eq('id', venueId);
 
         if (venueError) {
@@ -88,6 +89,36 @@ const CustomerFeedbackContent = () => {
 
         // Use the first venue (or only venue)
         const venue = venueData[0];
+
+        // Check if account has NPS module enabled (for accounts not on legacy pricing)
+        let accountHasNpsModule = false;
+        if (venue.account_id) {
+          // First check if account is on legacy pricing (gets all modules)
+          const { data: accountData } = await supabase
+            .from('accounts')
+            .select('is_legacy_pricing')
+            .eq('id', venue.account_id)
+            .single();
+
+          if (accountData?.is_legacy_pricing) {
+            accountHasNpsModule = true;
+          } else {
+            // Check account_modules for NPS
+            const { data: npsModule } = await supabase
+              .from('account_modules')
+              .select('module_code, disabled_at')
+              .eq('account_id', venue.account_id)
+              .eq('module_code', 'nps')
+              .single();
+
+            // Module is enabled if it exists and is not disabled
+            const now = new Date();
+            accountHasNpsModule = npsModule && (!npsModule.disabled_at || new Date(npsModule.disabled_at) > now);
+          }
+        }
+
+        // Store NPS availability (both account module AND venue setting must be enabled)
+        venue.nps_available = accountHasNpsModule && venue.nps_enabled;
 
         // Check if feedback is currently allowed
         const feedbackAllowed = isFeedbackTimeAllowed(venue.feedback_hours);
@@ -259,25 +290,26 @@ const CustomerFeedbackContent = () => {
         }
 
         // Check if venue has NPS enabled and if customer is within cooldown
-        const { data: venueData } = await supabase
+        // Use venue.nps_available which combines account module check + venue setting
+        const { data: npsVenueData } = await supabase
           .from('venues')
-          .select('nps_enabled, nps_delay_hours, nps_cooldown_hours')
+          .select('nps_delay_hours, nps_cooldown_hours')
           .eq('id', venueId)
           .single();
 
-        if (venueData?.nps_enabled) {
+        if (venue?.nps_available && npsVenueData) {
           // Check cooldown using the database function
           const { data: canSend } = await supabase
             .rpc('check_nps_cooldown', {
               p_venue_id: venueId,
               p_customer_email: customerEmail.trim().toLowerCase(),
-              p_cooldown_hours: venueData.nps_cooldown_hours
+              p_cooldown_hours: npsVenueData.nps_cooldown_hours
             });
 
           if (canSend) {
             // Schedule NPS email
             const scheduledSendAt = new Date();
-            scheduledSendAt.setHours(scheduledSendAt.getHours() + venueData.nps_delay_hours);
+            scheduledSendAt.setHours(scheduledSendAt.getHours() + npsVenueData.nps_delay_hours);
 
             const { error: npsError } = await supabase
               .from('nps_submissions')
@@ -599,7 +631,9 @@ const CustomerFeedbackContent = () => {
     }
 
     // Default success state for non-positive feedback or no review links
-    const thankYouEmoji = venue?.thank_you_icon || '✅';
+    // Handle legacy icon names (like 'check-circle') by falling back to emoji
+    const rawIcon = venue?.thank_you_icon;
+    const thankYouEmoji = (rawIcon && !rawIcon.includes('-') && rawIcon.length <= 4) ? rawIcon : '✅';
     const thankYouTitle = venue?.thank_you_title || t('defaultThankYouTitle');
     const thankYouMessage = venue?.thank_you_message || t('defaultThankYouMessage');
 
@@ -625,9 +659,11 @@ const CustomerFeedbackContent = () => {
     const textColor = venue?.text_color || '#111827';
 
     // Get custom assistance message settings with defaults
+    // Handle legacy icon names (like 'hand-heart') by falling back to emoji
     const assistanceTitle = venue?.assistance_title || t('defaultAssistanceTitle');
     const assistanceMessage = venue?.assistance_message || t('defaultAssistanceMessage');
-    const assistanceEmoji = venue?.assistance_icon || '🙋';
+    const rawAssistIcon = venue?.assistance_icon;
+    const assistanceEmoji = (rawAssistIcon && !rawAssistIcon.includes('-') && rawAssistIcon.length <= 4) ? rawAssistIcon : '🙋';
 
     // Replace {table} placeholder with actual table number in both title and message
     const formattedTitle = assistanceTitle.replace(/\{table\}/g, tableNumber);
@@ -688,8 +724,8 @@ const CustomerFeedbackContent = () => {
           <div>
             <h2 className="text-2xl font-bold mb-6" style={{ color: textColor }}>{t('welcome')}</h2>
 
-            {/* Email and name inputs - optional but prominent - only show if NPS is enabled */}
-            {venue?.nps_enabled && (
+            {/* Email and name inputs - optional but prominent - only show if NPS is available (account module + venue setting) */}
+            {venue?.nps_available && (
               <div className="mb-6 text-left">
                 {/* First name input */}
                 <div className="mb-4">

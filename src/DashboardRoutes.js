@@ -70,6 +70,7 @@ import MenuBuilderPage from './pages/dashboard/MenuBuilderPage';
 import ManagerPermissions from './pages/dashboard/admin/ManagerPermissions';
 import RoleTemplates from './pages/dashboard/admin/RoleTemplates';
 import VenueGroups from './pages/dashboard/admin/VenueGroups';
+import FeatureManagement from './pages/dashboard/admin/FeatureManagement';
 import ManagersPage from './pages/dashboard/ManagersPage';
 
 // Kiosk (venue‑aware, no dashboard frame)
@@ -92,6 +93,8 @@ import ModernDashboardFrame from './components/dashboard/layout/ModernDashboardF
 import { VenueProvider } from './context/VenueContext';
 import { PermissionsProvider, PermissionGate } from './context/PermissionsContext';
 import SubscriptionGuard from './components/guards/SubscriptionGuard';
+import ModuleGate from './components/guards/ModuleGate';
+import ModuleUpgradePage from './pages/dashboard/ModuleUpgradePage';
 
 // Trial expired page (outside subscription guard)
 import TrialExpired from './pages/dashboard/TrialExpired';
@@ -293,26 +296,34 @@ const DashboardRoutes = () => {
             <ReportsFollowUpTagsPage />
           </ProtectedRoute>
         } />
-        {/* NPS Section */}
+        {/* NPS Section - Gated by NPS module */}
         <Route path="/nps/score" element={
-          <ProtectedRoute permission="nps.view">
-            <ReportsNPSPage />
-          </ProtectedRoute>
+          <ModuleGate module="nps" fallback={<ModuleUpgradePage module="nps" />}>
+            <ProtectedRoute permission="nps.view">
+              <ReportsNPSPage />
+            </ProtectedRoute>
+          </ModuleGate>
         } />
         <Route path="/nps/insights" element={
-          <ProtectedRoute permission="nps.insights">
-            <NPSInsightsPage />
-          </ProtectedRoute>
+          <ModuleGate module="nps" fallback={<ModuleUpgradePage module="nps" />}>
+            <ProtectedRoute permission="nps.insights">
+              <NPSInsightsPage />
+            </ProtectedRoute>
+          </ModuleGate>
         } />
         <Route path="/nps/settings" element={
-          <ProtectedRoute permission="nps.edit">
-            <NPSSettingsPage />
-          </ProtectedRoute>
+          <ModuleGate module="nps" fallback={<ModuleUpgradePage module="nps" />}>
+            <ProtectedRoute permission="nps.edit">
+              <NPSSettingsPage />
+            </ProtectedRoute>
+          </ModuleGate>
         } />
         <Route path="/nps-report/:venueId" element={
-          <ProtectedRoute permission="nps.view">
-            <NPSReportDetail />
-          </ProtectedRoute>
+          <ModuleGate module="nps" fallback={<ModuleUpgradePage module="nps" />}>
+            <ProtectedRoute permission="nps.view">
+              <NPSReportDetail />
+            </ProtectedRoute>
+          </ModuleGate>
         } />
         {/* Legacy NPS routes */}
         <Route path="/reports/nps" element={<Navigate to="/nps/score" replace />} />
@@ -495,6 +506,9 @@ const DashboardRoutes = () => {
           <ProtectedRoute permission="venuegroups.edit">
             <VenueGroups />
           </ProtectedRoute>
+        } />
+        <Route path="/admin/features" element={
+          <FeatureManagement />
         } />
 
         {/* Floor Plan */}

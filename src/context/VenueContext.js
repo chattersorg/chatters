@@ -22,6 +22,11 @@ export const VenueProvider = ({ children }) => {
   const [initialized, setInitialized] = useState(false);
   const isInitializingRef = useRef(false);
 
+  // Module management state
+  const [accountId, setAccountId] = useState(null);
+  const [enabledModules, setEnabledModules] = useState([]);
+  const [isLegacyPricing, setIsLegacyPricing] = useState(false);
+
   // Helper function to initialize venue selection from localStorage or defaults
   const initializeVenueSelection = (venues) => {
     if (!venues || venues.length === 0) return;
@@ -97,6 +102,71 @@ export const VenueProvider = ({ children }) => {
     }
   };
 
+  // Helper function to fetch account modules and legacy pricing status
+  const fetchAccountModules = async (accId) => {
+    if (!accId) {
+      setEnabledModules(['feedback']); // Default to feedback if no account
+      setIsLegacyPricing(false);
+      return;
+    }
+
+    try {
+      // Fetch account's legacy pricing status
+      const { data: accountData, error: accountError } = await logQuery(
+        'accounts:fetch_legacy_pricing',
+        supabase
+          .from('accounts')
+          .select('is_legacy_pricing')
+          .eq('id', accId)
+          .single()
+      );
+
+      if (accountError) {
+        console.error('Error fetching account data:', accountError);
+      }
+
+      const legacyPricing = accountData?.is_legacy_pricing || false;
+      setIsLegacyPricing(legacyPricing);
+
+      // Legacy accounts get all modules
+      if (legacyPricing) {
+        setEnabledModules(['feedback', 'nps']);
+        return;
+      }
+
+      // Fetch account modules
+      const { data: accountModules, error: modulesError } = await logQuery(
+        'account_modules:fetch',
+        supabase
+          .from('account_modules')
+          .select('module_code, disabled_at')
+          .eq('account_id', accId)
+      );
+
+      if (modulesError) {
+        console.error('Error fetching account modules:', modulesError);
+        setEnabledModules(['feedback']); // Default to feedback on error
+        return;
+      }
+
+      // Filter out modules that are disabled (past their access period)
+      const now = new Date();
+      const activeModules = (accountModules || [])
+        .filter(m => !m.disabled_at || new Date(m.disabled_at) > now)
+        .map(m => m.module_code);
+
+      // Ensure feedback is always included (core module)
+      if (!activeModules.includes('feedback')) {
+        activeModules.unshift('feedback');
+      }
+
+      setEnabledModules(activeModules);
+    } catch (error) {
+      console.error('Error in fetchAccountModules:', error);
+      setEnabledModules(['feedback']); // Default to feedback on error
+    }
+  };
+
   useEffect(() => {
     if (initialized) return;
 
@@ -143,6 +213,10 @@ export const VenueProvider = ({ children }) => {
             setActualUserRole('admin'); // But actual role is admin
             setIsImpersonating(true);
             setAllVenues(venues || []);
+            setAccountId(accountId);
+
+            // Fetch account modules for impersonated account
+            await fetchAccountModules(accountId);
 
             // Initialize multi-venue selection
             initializeVenueSelection(venues);
@@ -183,12 +257,13 @@ export const VenueProvider = ({ children }) => {
         }
 
         const role = userRow.role;
-        const accountId = userRow.account_id ?? null;
+        const userAccountId = userRow.account_id ?? null;
         // Use the user's ID from the users table (may differ from session.user.id)
         const actualUserId = userRow.id;
         setUserRole(role);
         setActualUserRole(role); // Same as userRole when not impersonating
         setIsImpersonating(false);
+        setAccountId(userAccountId);
 
         // Admins should not load VenueContext at all; bail out
         if (role === 'admin') {
@@ -197,7 +272,7 @@ export const VenueProvider = ({ children }) => {
 
         // MASTER: require account_id; otherwise fallback via staff membership
         if (role === 'master') {
-          if (!accountId) {
+          if (!userAccountId) {
             const staffResult = await logQuery(
               'staff:master_fallback',
               supabase
@@ -227,7 +302,7 @@ export const VenueProvider = ({ children }) => {
             supabase
               .from('venues')
               .select('id, name, address, phone, website')
-              .eq('account_id', accountId)
+              .eq('account_id', userAccountId)
           );
           const venues = venuesResult.data;
           const venueError = venuesResult.error;
@@ -237,6 +312,9 @@ export const VenueProvider = ({ children }) => {
           }
 
           setAllVenues(venues || []);
+
+          // Fetch account modules for master user
+          await fetchAccountModules(userAccountId);
 
           // Initialize multi-venue selection
           initializeVenueSelection(venues);
@@ -272,8 +350,8 @@ export const VenueProvider = ({ children }) => {
           }
 
           // If we know accountId, constrain client-side
-          const filtered = accountId
-            ? staffRows.filter(r => r.venues?.account_id === accountId)
+          const filtered = userAccountId
+            ? staffRows.filter(r => r.venues?.account_id === userAccountId)
             : staffRows;
 
           const userVenues = filtered
@@ -285,6 +363,13 @@ export const VenueProvider = ({ children }) => {
           );
 
           setAllVenues(uniqueVenues);
+
+          // For managers, get account_id from the first venue if not set on user
+          const managerAccountId = userAccountId || filtered[0]?.venues?.account_id;
+          if (managerAccountId) {
+            setAccountId(managerAccountId);
+            await fetchAccountModules(managerAccountId);
+          }
 
           // Initialize multi-venue selection
           initializeVenueSelection(uniqueVenues);
@@ -412,6 +497,11 @@ export const VenueProvider = ({ children }) => {
     }));
   };
 
+  // Helper function to check if a module is enabled
+  const hasModule = (moduleCode) => {
+    return enabledModules.includes(moduleCode);
+  };
+
   return (
     <VenueContext.Provider
       value={{
@@ -435,6 +525,12 @@ export const VenueProvider = ({ children }) => {
           ? JSON.parse(localStorage.getItem('impersonation') || '{}').accountId
           : null,
         loading,
+
+        // Module management
+        accountId,
+        enabledModules,
+        hasModule,
+        isLegacyPricing,
       }}
     >
       {children}

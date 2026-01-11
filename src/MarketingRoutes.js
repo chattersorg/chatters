@@ -37,6 +37,7 @@ import RestaurantSolution from './pages/marketing/solutions/RestaurantSolution';
 import HotelSolution from './pages/marketing/solutions/HotelSolution';
 import PubsBarsSolution from './pages/marketing/solutions/PubsBarsSolution';
 import NotFoundPage from './pages/marketing/NotFoundPage';
+import StyleGuidePage from './pages/dashboard/StyleGuide';
 
 const MarketingRoutes = () => {
   return (
@@ -83,6 +84,9 @@ const MarketingRoutes = () => {
       <Route path="/solutions/restaurants" element={<RestaurantSolution />} />
       <Route path="/solutions/hotels" element={<HotelSolution />} />
       <Route path="/solutions/pubs-bars" element={<PubsBarsSolution />} />
+
+      {/* 🎨 Style Guide */}
+      <Route path="/styleguide" element={<StyleGuidePage />} />
 
       {/* 404 - Must be last */}
       <Route path="*" element={<NotFoundPage />} />

@@ -36,6 +36,7 @@ const ReportsNPS = () => {
   const [exportStartDate, setExportStartDate] = useState('');
   const [exportEndDate, setExportEndDate] = useState('');
   const [exporting, setExporting] = useState(false);
+  const [comparison, setComparison] = useState(null);
 
   // Always show single venue view - /nps/score shows current venue only
   // Multi-venue view is available via /multi-venue routes
@@ -50,10 +51,16 @@ const ReportsNPS = () => {
     try {
       setLoading(true);
 
+      const days = parseInt(dateRange);
       const startDate = new Date();
-      startDate.setDate(startDate.getDate() - parseInt(dateRange));
+      startDate.setDate(startDate.getDate() - days);
 
-      // Get all NPS submissions for the venue
+      // Calculate previous period for comparison
+      const prevEndDate = new Date(startDate);
+      const prevStartDate = new Date(startDate);
+      prevStartDate.setDate(prevStartDate.getDate() - days);
+
+      // Get all NPS submissions for the venue (current period)
       const { data, error } = await supabase
         .from('nps_submissions')
         .select('*')
@@ -62,6 +69,29 @@ const ReportsNPS = () => {
         .order('created_at', { ascending: true });
 
       if (error) throw error;
+
+      // Get previous period data for comparison
+      const { data: prevData, error: prevError } = await supabase
+        .from('nps_submissions')
+        .select('score, responded_at')
+        .eq('venue_id', venueId)
+        .gte('created_at', prevStartDate.toISOString())
+        .lt('created_at', prevEndDate.toISOString());
+
+      if (!prevError && prevData) {
+        const prevResponses = prevData.filter(s => s.score !== null);
+        const prevPromoters = prevResponses.filter(s => s.score >= 9).length;
+        const prevDetractors = prevResponses.filter(s => s.score <= 6).length;
+        const prevNPS = prevResponses.length > 0
+          ? Math.round(((prevPromoters - prevDetractors) / prevResponses.length) * 100)
+          : null;
+
+        setComparison({
+          prevNPS,
+          prevResponses: prevResponses.length,
+          periodLabel: days === 7 ? 'vs last week' : days === 30 ? 'vs last month' : days === 90 ? 'vs prev quarter' : 'vs prev year'
+        });
+      }
 
       // Fetch linked feedback to get table numbers
       const sessionIds = (data || []).filter(s => s.session_id).map(s => s.session_id);
@@ -533,9 +563,27 @@ const ReportsNPS = () => {
                 <span className={`text-3xl font-bold ${getNPSColor(npsData.npsScore)}`}>
                   {npsData.npsScore !== null ? (npsData.npsScore >= 0 ? `+${npsData.npsScore}` : npsData.npsScore) : '—'}
                 </span>
+                {/* Period comparison */}
+                {comparison && comparison.prevNPS !== null && npsData.npsScore !== null && (
+                  <span className={`inline-flex items-center text-sm font-medium ${
+                    npsData.npsScore > comparison.prevNPS ? 'text-emerald-600' :
+                    npsData.npsScore < comparison.prevNPS ? 'text-rose-600' :
+                    'text-gray-500'
+                  }`}>
+                    {npsData.npsScore > comparison.prevNPS ? (
+                      <ArrowUp className="w-4 h-4 mr-0.5" />
+                    ) : npsData.npsScore < comparison.prevNPS ? (
+                      <ArrowDown className="w-4 h-4 mr-0.5" />
+                    ) : null}
+                    {Math.abs(npsData.npsScore - comparison.prevNPS)}
+                  </span>
+                )}
               </div>
               <p className="text-xs text-gray-500 dark:text-gray-500 mt-1">
                 {npsData.responded} responses
+                {comparison && comparison.prevNPS !== null && (
+                  <span className="text-gray-400"> · {comparison.periodLabel}: {comparison.prevNPS >= 0 ? '+' : ''}{comparison.prevNPS}</span>
+                )}
               </p>
             </div>
           </div>

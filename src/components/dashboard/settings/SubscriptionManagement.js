@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../../../utils/supabase';
+import toast from 'react-hot-toast';
 import {
   CreditCard,
   Download,
@@ -163,11 +164,140 @@ const UpdatePaymentMethodForm = ({ onSuccess, onCancel }) => {
   );
 };
 
-// Pricing configuration (must match BillingTab)
-const PRICE_PER_VENUE_MONTHLY = 149;
-const PRICE_PER_VENUE_YEARLY = 1430;
+// Legacy pricing configuration
+const LEGACY_PRICE_PER_VENUE_MONTHLY = 149;
+const LEGACY_PRICE_PER_VENUE_YEARLY = 1430;
 
-const SubscriptionManagement = ({ accountId, userEmail }) => {
+// Module-based pricing
+const MODULE_PRICING = {
+  feedback: { monthly: 99, yearly: 1008 },
+  nps: { monthly: 49, yearly: 492 },
+};
+
+// Change Plan Modal Component
+const ChangePlanModal = ({ subscription, venueCount, isLegacyPricing, changePlanLoading, onChangePlan, onClose }) => {
+  // Calculate pricing based on account type
+  // For legacy accounts, use legacy prices
+  // For module-based, we use the current subscription amount as a base since we don't know the exact modules here
+  const monthlyPrice = isLegacyPricing
+    ? venueCount * LEGACY_PRICE_PER_VENUE_MONTHLY
+    : subscription.interval === 'month'
+      ? subscription.amount / 100
+      : Math.round((subscription.amount / 100) / 12 * 1.15); // Approximate monthly from yearly
+
+  const yearlyPrice = isLegacyPricing
+    ? venueCount * LEGACY_PRICE_PER_VENUE_YEARLY
+    : subscription.interval === 'year'
+      ? subscription.amount / 100
+      : Math.round((subscription.amount / 100) * 12 * 0.85); // Approximate yearly from monthly with ~15% discount
+
+  const yearlySavings = Math.round(((monthlyPrice * 12) - yearlyPrice) / (monthlyPrice * 12) * 100);
+
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+      <div className="bg-white dark:bg-gray-900 rounded-xl p-6 max-w-lg w-full shadow-2xl border border-gray-200 dark:border-gray-800">
+        <div className="flex items-center justify-between mb-6">
+          <h3 className="text-xl font-bold text-gray-900 dark:text-white">Change Your Plan</h3>
+          <button
+            onClick={onClose}
+            className="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors"
+          >
+            <X className="w-5 h-5 text-gray-500 dark:text-gray-400" />
+          </button>
+        </div>
+
+        <p className="text-gray-600 dark:text-gray-400 mb-6">
+          Switch between monthly and yearly billing. Changes are prorated automatically.
+        </p>
+
+        {/* Current Plan Info */}
+        <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-4 mb-6">
+          <p className="text-sm text-gray-500 dark:text-gray-400 mb-1">Current Plan</p>
+          <p className="font-semibold text-gray-900 dark:text-white">
+            {subscription.interval === 'month' ? 'Monthly' : 'Yearly'} - £{(subscription.amount / 100).toLocaleString()}/{subscription.interval === 'month' ? 'mo' : 'yr'}
+          </p>
+        </div>
+
+        {/* Plan Options */}
+        <div className="space-y-3 mb-6">
+          {/* Monthly Option */}
+          <button
+            onClick={() => onChangePlan('monthly')}
+            disabled={subscription.interval === 'month' || changePlanLoading}
+            className={`w-full p-4 rounded-xl border-2 text-left transition-all ${
+              subscription.interval === 'month'
+                ? 'border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 opacity-60 cursor-not-allowed'
+                : 'border-blue-200 dark:border-blue-800 hover:border-blue-400 dark:hover:border-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20'
+            }`}
+          >
+            <div className="flex justify-between items-center">
+              <div>
+                <p className="font-semibold text-gray-900 dark:text-white">Monthly Plan</p>
+                <p className="text-sm text-gray-600 dark:text-gray-400">
+                  Flexible monthly billing
+                </p>
+              </div>
+              <div className="text-right">
+                <p className="font-bold text-gray-900 dark:text-white">
+                  £{monthlyPrice.toLocaleString()}/mo
+                </p>
+                {subscription.interval === 'month' && (
+                  <span className="text-xs text-gray-500 dark:text-gray-400">Current</span>
+                )}
+              </div>
+            </div>
+          </button>
+
+          {/* Yearly Option */}
+          <button
+            onClick={() => onChangePlan('yearly')}
+            disabled={subscription.interval === 'year' || changePlanLoading}
+            className={`w-full p-4 rounded-xl border-2 text-left transition-all relative ${
+              subscription.interval === 'year'
+                ? 'border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 opacity-60 cursor-not-allowed'
+                : 'border-green-200 dark:border-green-800 hover:border-green-400 dark:hover:border-green-600 hover:bg-green-50 dark:hover:bg-green-900/20'
+            }`}
+          >
+            {yearlySavings > 0 && (
+              <div className="absolute -top-2 left-4 bg-green-600 text-white text-xs font-bold px-2 py-0.5 rounded-full">
+                SAVE {yearlySavings}%
+              </div>
+            )}
+            <div className="flex justify-between items-center">
+              <div>
+                <p className="font-semibold text-gray-900 dark:text-white">Yearly Plan</p>
+                <p className="text-sm text-gray-600 dark:text-gray-400">
+                  Best value, billed annually
+                </p>
+              </div>
+              <div className="text-right">
+                <p className="font-bold text-gray-900 dark:text-white">
+                  £{yearlyPrice.toLocaleString()}/yr
+                </p>
+                {subscription.interval === 'year' && (
+                  <span className="text-xs text-gray-500 dark:text-gray-400">Current</span>
+                )}
+              </div>
+            </div>
+          </button>
+        </div>
+
+        {changePlanLoading && (
+          <div className="text-center py-4">
+            <div className="w-8 h-8 border-4 border-gray-200 dark:border-gray-700 border-t-blue-600 rounded-full animate-spin mx-auto mb-2"></div>
+            <p className="text-sm text-gray-600 dark:text-gray-400">Updating your plan...</p>
+          </div>
+        )}
+
+        <p className="text-xs text-gray-500 dark:text-gray-400 text-center">
+          Plan changes are prorated. You'll be charged or credited the difference.
+        </p>
+      </div>
+    </div>
+  );
+};
+
+const SubscriptionManagement = ({ accountId, userEmail, isLegacyPricing = false }) => {
   const [subscription, setSubscription] = useState(null);
   const [paymentMethod, setPaymentMethod] = useState(null);
   const [invoices, setInvoices] = useState([]);
@@ -240,7 +370,7 @@ const SubscriptionManagement = ({ accountId, userEmail }) => {
     try {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) {
-        alert('Please sign in again to update your payment method.');
+        toast.error('Please sign in again to update your payment method.');
         return;
       }
 
@@ -261,14 +391,14 @@ const SubscriptionManagement = ({ accountId, userEmail }) => {
       }
     } catch (error) {
       console.error('Error creating setup intent:', error);
-      alert('Failed to initialize payment update. Please try again.');
+      toast.error('Failed to initialize payment update. Please try again.');
     }
   };
 
   const handlePaymentUpdateSuccess = () => {
     setShowUpdatePayment(false);
     setSetupSecret(null);
-    alert('Payment method updated successfully!');
+    toast.success('Payment method updated successfully!');
     loadSubscriptionData();
   };
 
@@ -278,7 +408,7 @@ const SubscriptionManagement = ({ accountId, userEmail }) => {
     try {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) {
-        alert('Please sign in again to cancel your subscription.');
+        toast.error('Please sign in again to cancel your subscription.');
         setCancelLoading(false);
         return;
       }
@@ -295,15 +425,15 @@ const SubscriptionManagement = ({ accountId, userEmail }) => {
       const data = await response.json();
 
       if (data.success) {
-        alert('Subscription cancelled. You\'ll have access until the end of your current billing period.');
+        toast.success('Subscription cancelled. You\'ll have access until the end of your billing period.');
         setShowCancelConfirm(false);
         loadSubscriptionData();
       } else {
-        alert(data.error || 'Failed to cancel subscription');
+        toast.error(data.error || 'Failed to cancel subscription');
       }
     } catch (error) {
       console.error('Error cancelling subscription:', error);
-      alert('Failed to cancel subscription. Please try again.');
+      toast.error('Failed to cancel subscription. Please try again.');
     } finally {
       setCancelLoading(false);
     }
@@ -315,7 +445,7 @@ const SubscriptionManagement = ({ accountId, userEmail }) => {
     try {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) {
-        alert('Please sign in again to change your plan.');
+        toast.error('Please sign in again to change your plan.');
         setChangePlanLoading(false);
         return;
       }
@@ -336,15 +466,15 @@ const SubscriptionManagement = ({ accountId, userEmail }) => {
       const data = await response.json();
 
       if (data.success) {
-        alert(`Successfully switched to ${newPlan} plan! Your next invoice will be prorated.`);
+        toast.success(`Switched to ${newPlan} plan! Your next invoice will be prorated.`);
         setShowChangePlan(false);
         loadSubscriptionData();
       } else {
-        alert(data.error || 'Failed to change plan');
+        toast.error(data.error || 'Failed to change plan');
       }
     } catch (error) {
       console.error('Error changing plan:', error);
-      alert('Failed to change plan. Please try again.');
+      toast.error('Failed to change plan. Please try again.');
     } finally {
       setChangePlanLoading(false);
     }
@@ -354,7 +484,7 @@ const SubscriptionManagement = ({ accountId, userEmail }) => {
     try {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) {
-        alert('Please sign in again to download invoices.');
+        toast.error('Please sign in again to download invoices.');
         return;
       }
 
@@ -374,7 +504,7 @@ const SubscriptionManagement = ({ accountId, userEmail }) => {
       }
     } catch (error) {
       console.error('Error downloading invoice:', error);
-      alert('Failed to download invoice');
+      toast.error('Failed to download invoice');
     }
   };
 
@@ -584,104 +714,14 @@ const SubscriptionManagement = ({ accountId, userEmail }) => {
 
       {/* Change Plan Modal */}
       {showChangePlan && subscription && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white dark:bg-gray-900 rounded-xl p-6 max-w-lg w-full shadow-2xl border border-gray-200 dark:border-gray-800">
-            <div className="flex items-center justify-between mb-6">
-              <h3 className="text-xl font-bold text-gray-900 dark:text-white">Change Your Plan</h3>
-              <button
-                onClick={() => setShowChangePlan(false)}
-                className="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors"
-              >
-                <X className="w-5 h-5 text-gray-500 dark:text-gray-400" />
-              </button>
-            </div>
-
-            <p className="text-gray-600 dark:text-gray-400 mb-6">
-              Switch between monthly and yearly billing. Changes are prorated automatically.
-            </p>
-
-            {/* Current Plan Info */}
-            <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-4 mb-6">
-              <p className="text-sm text-gray-500 dark:text-gray-400 mb-1">Current Plan</p>
-              <p className="font-semibold text-gray-900 dark:text-white">
-                {subscription.interval === 'month' ? 'Monthly' : 'Yearly'} - £{(subscription.amount / 100).toFixed(2)}/{subscription.interval === 'month' ? 'mo' : 'yr'}
-              </p>
-            </div>
-
-            {/* Plan Options */}
-            <div className="space-y-3 mb-6">
-              {/* Monthly Option */}
-              <button
-                onClick={() => handleChangePlan('monthly')}
-                disabled={subscription.interval === 'month' || changePlanLoading}
-                className={`w-full p-4 rounded-xl border-2 text-left transition-all ${
-                  subscription.interval === 'month'
-                    ? 'border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 opacity-60 cursor-not-allowed'
-                    : 'border-blue-200 dark:border-blue-800 hover:border-blue-400 dark:hover:border-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20'
-                }`}
-              >
-                <div className="flex justify-between items-center">
-                  <div>
-                    <p className="font-semibold text-gray-900 dark:text-white">Monthly Plan</p>
-                    <p className="text-sm text-gray-600 dark:text-gray-400">
-                      £{PRICE_PER_VENUE_MONTHLY} per venue/month
-                    </p>
-                  </div>
-                  <div className="text-right">
-                    <p className="font-bold text-gray-900 dark:text-white">
-                      £{(venueCount * PRICE_PER_VENUE_MONTHLY).toLocaleString()}/mo
-                    </p>
-                    {subscription.interval === 'month' && (
-                      <span className="text-xs text-gray-500 dark:text-gray-400">Current</span>
-                    )}
-                  </div>
-                </div>
-              </button>
-
-              {/* Yearly Option */}
-              <button
-                onClick={() => handleChangePlan('yearly')}
-                disabled={subscription.interval === 'year' || changePlanLoading}
-                className={`w-full p-4 rounded-xl border-2 text-left transition-all relative ${
-                  subscription.interval === 'year'
-                    ? 'border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 opacity-60 cursor-not-allowed'
-                    : 'border-green-200 dark:border-green-800 hover:border-green-400 dark:hover:border-green-600 hover:bg-green-50 dark:hover:bg-green-900/20'
-                }`}
-              >
-                <div className="absolute -top-2 left-4 bg-green-600 text-white text-xs font-bold px-2 py-0.5 rounded-full">
-                  SAVE 20%
-                </div>
-                <div className="flex justify-between items-center">
-                  <div>
-                    <p className="font-semibold text-gray-900 dark:text-white">Yearly Plan</p>
-                    <p className="text-sm text-gray-600 dark:text-gray-400">
-                      £{PRICE_PER_VENUE_YEARLY} per venue/year
-                    </p>
-                  </div>
-                  <div className="text-right">
-                    <p className="font-bold text-gray-900 dark:text-white">
-                      £{(venueCount * PRICE_PER_VENUE_YEARLY).toLocaleString()}/yr
-                    </p>
-                    {subscription.interval === 'year' && (
-                      <span className="text-xs text-gray-500 dark:text-gray-400">Current</span>
-                    )}
-                  </div>
-                </div>
-              </button>
-            </div>
-
-            {changePlanLoading && (
-              <div className="text-center py-4">
-                <div className="w-8 h-8 border-4 border-gray-200 dark:border-gray-700 border-t-blue-600 rounded-full animate-spin mx-auto mb-2"></div>
-                <p className="text-sm text-gray-600 dark:text-gray-400">Updating your plan...</p>
-              </div>
-            )}
-
-            <p className="text-xs text-gray-500 dark:text-gray-400 text-center">
-              Plan changes are prorated. You'll be charged or credited the difference.
-            </p>
-          </div>
-        </div>
+        <ChangePlanModal
+          subscription={subscription}
+          venueCount={venueCount}
+          isLegacyPricing={isLegacyPricing}
+          changePlanLoading={changePlanLoading}
+          onChangePlan={handleChangePlan}
+          onClose={() => setShowChangePlan(false)}
+        />
       )}
     </div>
   );

@@ -3,6 +3,13 @@ const { Resend } = require('resend');
 const Stripe = require('stripe');
 const crypto = require('crypto');
 
+// Client for user auth verification
+const supabaseClient = createClient(
+  process.env.REACT_APP_SUPABASE_URL,
+  process.env.REACT_APP_SUPABASE_ANON_KEY
+);
+
+// Admin client for database operations
 const supabase = createClient(
   process.env.REACT_APP_SUPABASE_URL,
   process.env.SUPABASE_SERVICE_ROLE_KEY
@@ -16,6 +23,42 @@ module.exports = async (req, res) => {
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
+  // Authenticate user and verify admin role
+  const authHeader = req.headers.authorization;
+  if (!authHeader || !authHeader.startsWith('Bearer ')) {
+    return res.status(401).json({ error: 'Missing authorization token' });
+  }
+
+  const token = authHeader.replace('Bearer ', '');
+
+  try {
+    // Verify the user's session
+    const { data: { user: authUser }, error: authError } = await supabaseClient.auth.getUser(token);
+
+    if (authError || !authUser) {
+      return res.status(401).json({ error: 'Invalid authorization token' });
+    }
+
+    // Get user's role from users table
+    const { data: userData, error: userError } = await supabase
+      .from('users')
+      .select('role')
+      .eq('id', authUser.id)
+      .single();
+
+    if (userError || !userData) {
+      return res.status(401).json({ error: 'User not found' });
+    }
+
+    // Only admins can create accounts via this endpoint
+    if (userData.role !== 'admin') {
+      return res.status(403).json({ error: 'Forbidden - admin access required' });
+    }
+  } catch (authCheckError) {
+    console.error('Auth check error:', authCheckError);
+    return res.status(401).json({ error: 'Authentication failed' });
+  }
+
   const {
     firstName,
     lastName,
@@ -27,6 +70,7 @@ module.exports = async (req, res) => {
     country,
     startTrial,
     trialDays,
+    modules,
     venues
   } = req.body;
 
@@ -93,6 +137,30 @@ module.exports = async (req, res) => {
       .single();
 
     if (accountError) throw accountError;
+
+    // Create account_modules for trial access
+    // Default to feedback module if no modules specified
+    const modulesToEnable = modules && modules.length > 0 ? modules : ['feedback'];
+    const now = new Date().toISOString();
+
+    for (const moduleCode of modulesToEnable) {
+      const { error: moduleError } = await supabase
+        .from('account_modules')
+        .insert({
+          account_id: account.id,
+          module_code: moduleCode,
+          enabled_at: now,
+          disabled_at: null,
+          stripe_subscription_item_id: null // Trial accounts don't have Stripe items yet
+        });
+
+      if (moduleError) {
+        console.error(`Error enabling module ${moduleCode}:`, moduleError);
+        // Continue with other modules even if one fails
+      }
+    }
+
+    console.log(`Enabled ${modulesToEnable.length} modules for account ${account.id}:`, modulesToEnable);
 
     // Create user (without password - they'll set it via invitation)
     const { data: user, error: userError } = await supabase
@@ -321,7 +389,8 @@ module.exports = async (req, res) => {
       venues: createdVenues.map(v => ({
         id: v.id,
         name: v.name
-      }))
+      })),
+      modules: modulesToEnable
     });
 
   } catch (error) {

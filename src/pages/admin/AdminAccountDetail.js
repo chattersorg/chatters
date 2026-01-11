@@ -20,7 +20,8 @@ import {
   Mail,
   UserCircle2,
   MessageSquare,
-  Star
+  Star,
+  Database
 } from 'lucide-react';
 
 const AdminAccountDetail = () => {
@@ -44,6 +45,10 @@ const AdminAccountDetail = () => {
   const [seedingRatingsDemo, setSeedingRatingsDemo] = useState(false);
   const [showDemoTools, setShowDemoTools] = useState(false);
   const [activeTab, setActiveTab] = useState('overview');
+  // Full demo data state
+  const [showFullDemoPicker, setShowFullDemoPicker] = useState(false);
+  const [fullDemoConfig, setFullDemoConfig] = useState({ days: 60, clearExisting: false });
+  const [seedingFullDemo, setSeedingFullDemo] = useState(false);
 
   useEffect(() => {
     loadAccountData();
@@ -523,6 +528,79 @@ const AdminAccountDetail = () => {
       toast.error('Failed to populate ratings data: ' + error.message);
     } finally {
       setSeedingRatingsDemo(false);
+    }
+  };
+
+  const populateFullDemoData = async () => {
+    if (fullDemoConfig.days < 7 || fullDemoConfig.days > 90) {
+      toast.error('Please enter a number between 7 and 90');
+      return;
+    }
+
+    if (!window.confirm(
+      `Generate full demo data for "${account.name}"?\n\n` +
+      `Days: ${fullDemoConfig.days}\n` +
+      `Clear existing: ${fullDemoConfig.clearExisting ? 'Yes' : 'No'}\n\n` +
+      `This will generate:\n` +
+      `• Feedback with resolutions & co-resolvers\n` +
+      `• NPS submissions (linked + standalone)\n` +
+      `• Tag responses for low ratings\n` +
+      `• Assistance requests\n\n` +
+      `Using existing employees & questions from the account.\n\n` +
+      `This may take 1-2 minutes.`
+    )) {
+      return;
+    }
+
+    setSeedingFullDemo(true);
+    setShowFullDemoPicker(false);
+
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+
+      const apiUrl = '/api/admin/generate-demo-data';
+
+      const progressToast = toast.loading(
+        `Generating ${fullDemoConfig.days} days of demo data...`,
+        { duration: Infinity }
+      );
+
+      const response = await fetch(apiUrl, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session?.access_token}`
+        },
+        body: JSON.stringify({
+          accountId: account.id,
+          days: fullDemoConfig.days,
+          clearExisting: fullDemoConfig.clearExisting
+        })
+      });
+
+      const result = await response.json();
+
+      toast.dismiss(progressToast);
+
+      if (!response.ok) {
+        throw new Error(result.error || 'API request failed');
+      }
+
+      toast.success(
+        `Demo data created!\n` +
+        `${result.summary.feedbackRecords.toLocaleString()} feedback, ` +
+        `${result.summary.npsSubmissions.toLocaleString()} NPS (score: ${result.summary.npsScore}), ` +
+        `${result.summary.tagResponses.toLocaleString()} tags`,
+        { duration: 6000 }
+      );
+
+      console.log('Full demo results:', result.summary);
+
+    } catch (error) {
+      console.error('Error populating full demo data:', error);
+      toast.error('Failed to generate demo data: ' + error.message);
+    } finally {
+      setSeedingFullDemo(false);
     }
   };
 
@@ -1036,10 +1114,28 @@ const AdminAccountDetail = () => {
                     </p>
                   </div>
 
-                  <div className="flex gap-3">
+                  <div className="flex gap-3 flex-wrap">
+                    <button
+                      onClick={() => setShowFullDemoPicker(true)}
+                      disabled={seedingFullDemo || seedingFeedbackDemo || seedingRatingsDemo}
+                      className="inline-flex items-center justify-center gap-2 px-4 py-2 bg-green-600 text-white hover:bg-green-700 rounded-lg transition-colors disabled:opacity-50 text-sm font-medium"
+                      title="Full demo data: feedback, NPS, tags, resolutions - uses existing employees & questions"
+                    >
+                      {seedingFullDemo ? (
+                        <>
+                          <Loader2 className="w-4 h-4 animate-spin" />
+                          Processing...
+                        </>
+                      ) : (
+                        <>
+                          <Database className="w-4 h-4" />
+                          Full Demo
+                        </>
+                      )}
+                    </button>
                     <button
                       onClick={openFeedbackDemoPicker}
-                      disabled={seedingFeedbackDemo || seedingRatingsDemo}
+                      disabled={seedingFeedbackDemo || seedingRatingsDemo || seedingFullDemo}
                       className="inline-flex items-center justify-center gap-2 px-4 py-2 bg-blue-600 text-white hover:bg-blue-700 rounded-lg transition-colors disabled:opacity-50 text-sm font-medium"
                       title="High-quality feedback & assistance data (45-50 sessions/day, 95% resolution)"
                     >
@@ -1057,7 +1153,7 @@ const AdminAccountDetail = () => {
                     </button>
                     <button
                       onClick={openRatingsDemoPicker}
-                      disabled={seedingRatingsDemo || seedingFeedbackDemo}
+                      disabled={seedingRatingsDemo || seedingFeedbackDemo || seedingFullDemo}
                       className="inline-flex items-center justify-center gap-2 px-4 py-2 bg-orange-600 text-white hover:bg-orange-700 rounded-lg transition-colors disabled:opacity-50 text-sm font-medium"
                       title="Google & TripAdvisor ratings with upward trend"
                     >
@@ -1232,6 +1328,89 @@ const AdminAccountDetail = () => {
                 className="flex-1 px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {seedingRatingsDemo ? 'Populating...' : 'Populate Data'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Full Demo Data Modal */}
+      {showFullDemoPicker && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg shadow-xl p-6 max-w-md w-full mx-4">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-semibold text-gray-900">
+                Full Demo Data
+              </h3>
+              <button
+                onClick={() => setShowFullDemoPicker(false)}
+                className="text-gray-400 hover:text-gray-600"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <p className="text-sm text-gray-600 mb-4">
+              Generate comprehensive demo data for {account?.name}
+            </p>
+
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Number of Days
+                </label>
+                <input
+                  type="number"
+                  min="7"
+                  max="90"
+                  value={fullDemoConfig.days}
+                  onChange={(e) => setFullDemoConfig(prev => ({ ...prev, days: parseInt(e.target.value) || 60 }))}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                />
+                <p className="text-xs text-gray-500 mt-1">Historical data range (7-90 days)</p>
+              </div>
+
+              <div className="flex items-center gap-2">
+                <input
+                  type="checkbox"
+                  id="clearExisting"
+                  checked={fullDemoConfig.clearExisting}
+                  onChange={(e) => setFullDemoConfig(prev => ({ ...prev, clearExisting: e.target.checked }))}
+                  className="w-4 h-4 text-green-600 border-gray-300 rounded focus:ring-green-500"
+                />
+                <label htmlFor="clearExisting" className="text-sm text-gray-700">
+                  Clear existing demo data first
+                </label>
+              </div>
+
+              <div className="p-3 rounded-lg bg-green-50">
+                <p className="text-sm text-gray-700 font-medium mb-2">Per venue, this generates:</p>
+                <ul className="text-sm text-gray-600 space-y-1">
+                  <li>• 35-70 feedback items per day</li>
+                  <li>• NPS submissions (linked + standalone)</li>
+                  <li>• Tag responses for low ratings</li>
+                  <li>• Resolution data with co-resolvers</li>
+                  <li>• Assistance requests</li>
+                </ul>
+                <p className="text-xs text-gray-500 mt-2">
+                  <strong>Uses existing employees & questions from the account.</strong>
+                </p>
+              </div>
+            </div>
+
+            <div className="flex gap-3 mt-6">
+              <button
+                onClick={() => setShowFullDemoPicker(false)}
+                className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={populateFullDemoData}
+                disabled={seedingFullDemo}
+                className="flex-1 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {seedingFullDemo ? 'Generating...' : 'Generate Data'}
               </button>
             </div>
           </div>

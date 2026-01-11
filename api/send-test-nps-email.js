@@ -7,6 +7,11 @@ const supabaseClient = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || process.env.REACT_APP_SUPABASE_ANON_KEY
 );
 
+const supabaseAdmin = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.REACT_APP_SUPABASE_URL,
+  process.env.SUPABASE_SERVICE_ROLE_KEY
+);
+
 const resend = new Resend(process.env.RESEND_API_KEY);
 
 const APP_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://my.getchatters.com';
@@ -58,6 +63,41 @@ module.exports = async function handler(req, res) {
 
     if (venueError || !venue) {
       return res.status(404).json({ error: 'Venue not found' });
+    }
+
+    // Get venue's account to check NPS module access
+    const { data: venueWithAccount, error: accountError } = await supabaseAdmin
+      .from('venues')
+      .select('account_id, accounts!inner(id, is_legacy_pricing)')
+      .eq('id', venueId)
+      .single();
+
+    if (accountError || !venueWithAccount) {
+      return res.status(404).json({ error: 'Venue account not found' });
+    }
+
+    const accountId = venueWithAccount.account_id;
+    const isLegacyPricing = venueWithAccount.accounts?.is_legacy_pricing;
+
+    // Check if NPS module is enabled (legacy accounts have all modules)
+    if (!isLegacyPricing) {
+      const now = new Date().toISOString();
+      const { data: npsModule, error: moduleError } = await supabaseAdmin
+        .from('account_modules')
+        .select('id, disabled_at')
+        .eq('account_id', accountId)
+        .eq('module_code', 'nps')
+        .single();
+
+      // Check if module exists and is not disabled
+      const moduleEnabled = npsModule && (!npsModule.disabled_at || npsModule.disabled_at > now);
+
+      if (!moduleEnabled) {
+        return res.status(403).json({
+          error: 'NPS module is not enabled for this account',
+          code: 'NPS_MODULE_REQUIRED'
+        });
+      }
     }
 
     const venueName = venue.name || 'Our venue';
