@@ -42,7 +42,8 @@ import {
   Sparkles,
   Key,
   FolderKanban,
-  Tag
+  Tag,
+  Puzzle
 } from 'lucide-react';
 
 // Venue Management Section - Single venue context
@@ -89,6 +90,7 @@ const venueNavItems = [
     path: '/nps/score',
     color: 'text-amber-600',
     permission: 'nps.view',
+    module: 'nps', // Requires NPS module to be enabled
     subItems: [
       { label: 'Score', path: '/nps/score', icon: Star, permission: 'nps.view' },
       { label: 'Insights', path: '/nps/insights', icon: TrendingUp, permission: 'nps.insights' },
@@ -193,6 +195,13 @@ const multiVenueNavItems = [
 // Administration Section - Master-only for account-wide management
 const adminNavItems = [
   {
+    id: 'admin-features',
+    label: 'Features',
+    icon: Puzzle,
+    path: '/admin/features',
+    color: 'text-rose-600'
+  },
+  {
     id: 'admin-managers',
     label: 'Managers',
     icon: Users,
@@ -240,20 +249,26 @@ const Sidebar = ({ collapsed, setCollapsed }) => {
     venueName,
     allVenues,
     setCurrentVenue,
-    userRole
+    userRole,
+    hasModule
   } = useVenue();
   const { hasPermission } = usePermissions();
 
   // Check if user has billing permission
   const hasBillingPermission = hasPermission('billing.view');
 
-  // Helper to check if item should be visible based on permission
-  // Master users see everything, otherwise check permission
+  // Helper to check if item should be visible based on permission and module access
+  // Master users see everything permission-wise, but still need module check
   const canSeeItem = useCallback((item) => {
+    // Check module access first (applies to all roles including master)
+    if (item.module && !hasModule(item.module)) {
+      return false;
+    }
+    // Master users see everything permission-wise
     if (userRole === 'master') return true;
     if (!item.permission) return true;
     return hasPermission(item.permission);
-  }, [userRole, hasPermission]);
+  }, [userRole, hasPermission, hasModule]);
 
   // Helper to resolve path - handles both static paths and dynamic path functions
   const resolvePath = useCallback((path) => {

@@ -48,24 +48,29 @@ const ReportsFollowUpTags = () => {
       const venueQuestionIds = (allQuestionsData || []).map(q => q.id);
 
       // Fetch tag responses only for this venue's questions
+      // Join with feedback to get the created_at date for filtering
       let tagQuery = supabase
         .from('feedback_tag_responses')
-        .select('question_id, tag, created_at')
+        .select('question_id, tag, feedback:feedback_id(created_at)')
         .in('question_id', venueQuestionIds.length > 0 ? venueQuestionIds : [-1]);
 
-      // Apply date filter unless "all time" is selected
-      if (dateRange !== 'all') {
-        const startDate = new Date();
-        startDate.setDate(startDate.getDate() - parseInt(dateRange));
-        tagQuery = tagQuery.gte('created_at', startDate.toISOString());
-      }
-
-      const { data: allTagResponses, error: allTagError } = await tagQuery;
+      const { data: rawTagResponses, error: allTagError } = await tagQuery;
 
       if (allTagError) throw allTagError;
 
+      // Apply date filter client-side (since we joined with feedback)
+      let allTagResponses = rawTagResponses || [];
+      if (dateRange !== 'all') {
+        const startDate = new Date();
+        startDate.setDate(startDate.getDate() - parseInt(dateRange));
+        allTagResponses = allTagResponses.filter(r => {
+          const feedbackDate = r.feedback?.created_at;
+          return feedbackDate && new Date(feedbackDate) >= startDate;
+        });
+      }
+
       // Get unique question IDs that have tag responses
-      const questionIdsWithResponses = [...new Set((allTagResponses || []).map(r => r.question_id))];
+      const questionIdsWithResponses = [...new Set(allTagResponses.map(r => r.question_id))];
 
       // Filter to questions that either have tags configured OR have tag responses
       const questionsWithTags = (allQuestionsData || []).filter(q =>

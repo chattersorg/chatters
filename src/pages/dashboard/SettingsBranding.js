@@ -24,7 +24,7 @@ const SettingsBrandingPage = () => {
   // Thank you message customization
   const [thankYouTitle, setThankYouTitle] = useState('Thanks for your feedback!');
   const [thankYouMessage, setThankYouMessage] = useState('Your response has been submitted successfully.');
-  const [thankYouIcon, setThankYouIcon] = useState('check-circle');
+  const [thankYouIcon, setThankYouIcon] = useState('✅');
 
   // Fetch venue branding data
   useEffect(() => {
@@ -61,7 +61,7 @@ const SettingsBrandingPage = () => {
       // Set thank you message data
       setThankYouTitle(venueData.thank_you_title || 'Thanks for your feedback!');
       setThankYouMessage(venueData.thank_you_message || 'Your response has been submitted successfully.');
-      setThankYouIcon(venueData.thank_you_icon || 'check-circle');
+      setThankYouIcon(venueData.thank_you_icon || '✅');
     };
 
     fetchBrandingData();

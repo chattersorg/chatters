@@ -47,7 +47,8 @@ export const permissionSections = [
     icon: Star,
     permissions: [
       { code: 'nps.view', label: 'View NPS Score', description: 'Access the NPS score page showing your Net Promoter Score, response breakdown, and submission history.' },
-      { code: 'nps.insights', label: 'View NPS Insights', description: 'Access AI-powered analysis of your NPS data, including trends, sentiment analysis, and recommendations.', requiresBase: 'nps.view' },
+      { code: 'nps.insights', label: 'View NPS Insights', description: 'Access NPS predictions, goal tracking, industry benchmarks, and feedback theme analysis.', requiresBase: 'nps.view' },
+      { code: 'nps.set_goal', label: 'Set NPS Goals', description: 'Set and modify NPS targets for the venue to track progress over time.', requiresBase: 'nps.insights' },
       { code: 'nps.edit', label: 'Edit NPS Settings', description: 'Configure NPS survey settings, enable or disable NPS collection, and customise the survey questions.', requiresBase: 'nps.view' },
       { code: 'nps.export', label: 'Export NPS Data', description: 'Download NPS responses and scores as CSV or Excel files for external analysis or record-keeping.', requiresBase: 'nps.view' }
     ]

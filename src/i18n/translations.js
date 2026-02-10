@@ -11,7 +11,7 @@ const translations = {
     close: 'Close',
     submit: 'Submit',
     continue: 'Continue',
-    optional: 'optional',
+    optional: 'Optional',
 
     // FeedbackSplash page
     welcomeTo: 'Welcome to',
@@ -21,6 +21,8 @@ const translations = {
 
     // CustomerFeedback page
     welcome: 'Welcome!',
+    firstName: 'First Name',
+    firstNamePlaceholder: 'Enter your first name',
     email: 'Email',
     emailPlaceholder: 'your@email.com',
     emailHelperText: 'Share your email to help us follow up and improve your experience',
@@ -109,7 +111,7 @@ const translations = {
     close: 'Închide',
     submit: 'Trimite',
     continue: 'Continuă',
-    optional: 'opțional',
+    optional: 'Opțional',
 
     // FeedbackSplash page
     welcomeTo: 'Bine ați venit la',
@@ -119,6 +121,8 @@ const translations = {
 
     // CustomerFeedback page
     welcome: 'Bine ați venit!',
+    firstName: 'Prenume',
+    firstNamePlaceholder: 'Introduceți prenumele',
     email: 'Email',
     emailPlaceholder: 'email@exemplu.ro',
     emailHelperText: 'Împărtășește-ne emailul pentru a te ajuta să îmbunătățim experiența ta',
@@ -207,7 +211,7 @@ const translations = {
     close: 'Cerrar',
     submit: 'Enviar',
     continue: 'Continuar',
-    optional: 'opcional',
+    optional: 'Opcional',
 
     // FeedbackSplash page
     welcomeTo: 'Bienvenido a',
@@ -217,6 +221,8 @@ const translations = {
 
     // CustomerFeedback page
     welcome: '¡Bienvenido!',
+    firstName: 'Nombre',
+    firstNamePlaceholder: 'Introduce tu nombre',
     email: 'Correo electrónico',
     emailPlaceholder: 'tu@email.com',
     emailHelperText: 'Comparte tu email para ayudarnos a mejorar tu experiencia',

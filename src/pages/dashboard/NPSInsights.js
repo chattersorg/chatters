@@ -1,704 +1,747 @@
 import React, { useState, useEffect } from 'react';
 import { useVenue } from '../../context/VenueContext';
+import { usePermissions } from '../../context/PermissionsContext';
 import { supabase } from '../../utils/supabase';
 import usePageTitle from '../../hooks/usePageTitle';
-import FilterSelect from '../../components/ui/FilterSelect';
 import ModernCard from '../../components/dashboard/layout/ModernCard';
+import toast from 'react-hot-toast';
 import {
   TrendingUp,
   TrendingDown,
-  Clock,
-  MessageSquare,
-  Star,
-  ArrowUpRight,
-  Minus
+  Target,
+  AlertTriangle,
+  Check,
+  Loader2,
+  ChevronDown,
+  ChevronUp
 } from 'lucide-react';
-import {
-  BarChart,
-  Bar,
-  XAxis,
-  YAxis,
-  Tooltip,
-  ResponsiveContainer,
-  Cell
-} from 'recharts';
 
 const NPSInsights = () => {
   usePageTitle('NPS Insights');
   const { venueId } = useVenue();
+  const { hasPermission } = usePermissions();
 
   const [loading, setLoading] = useState(true);
-  const [dateRange, setDateRange] = useState('30');
+  const [error, setError] = useState(null);
   const [insights, setInsights] = useState(null);
+  const [npsGoal, setNpsGoal] = useState(null);
+  const [editingGoal, setEditingGoal] = useState(false);
+  const [goalInput, setGoalInput] = useState('');
+  const [savingGoal, setSavingGoal] = useState(false);
+  const [showAllDrivers, setShowAllDrivers] = useState(false);
+  const [lastUpdated, setLastUpdated] = useState(null);
 
   useEffect(() => {
     if (!venueId) return;
     loadInsights();
-  }, [venueId, dateRange]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [venueId]);
 
   const loadInsights = async () => {
     try {
       setLoading(true);
+      setError(null);
 
-      const startDate = new Date();
-      startDate.setDate(startDate.getDate() - parseInt(dateRange));
+      // Fetch venue to get current NPS goal
+      const { data: venueData } = await supabase
+        .from('venues')
+        .select('nps_goal')
+        .eq('id', venueId)
+        .single();
 
-      // Load NPS submissions first (without join to avoid FK issues)
-      // Filter by responded_at date (when the NPS was actually answered)
+      if (venueData?.nps_goal !== undefined) {
+        setNpsGoal(venueData.nps_goal);
+        setGoalInput(venueData.nps_goal?.toString() || '');
+      }
+
+      // Fetch all NPS data for this venue (last 6 months for prediction)
+      const sixMonthsAgo = new Date();
+      sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 6);
+
       const { data: npsData, error: npsError } = await supabase
         .from('nps_submissions')
         .select('*')
         .eq('venue_id', venueId)
-        .gte('responded_at', startDate.toISOString());
+        .gte('responded_at', sixMonthsAgo.toISOString())
+        .order('responded_at', { ascending: true });
 
       if (npsError) throw npsError;
 
-      // If we have session_ids, fetch the linked feedback separately
-      const sessionIds = (npsData || []).filter(s => s.session_id).map(s => s.session_id);
-      let feedbackBySession = {};
+      const responses = (npsData || []).filter(s => s.score !== null);
 
-      if (sessionIds.length > 0) {
-        const { data: feedbackData } = await supabase
-          .from('feedback')
-          .select('id, session_id, rating, table_number, created_at')
-          .in('session_id', sessionIds);
-
-        // Create a lookup map by session_id
-        (feedbackData || []).forEach(f => {
-          feedbackBySession[f.session_id] = f;
-        });
-      }
-
-      // Attach linked feedback record to NPS submissions (renamed to avoid collision with NPS feedback text field)
-      const enrichedNpsData = (npsData || []).map(s => ({
-        ...s,
-        linkedFeedback: s.session_id ? feedbackBySession[s.session_id] : null
-      }));
-
-      // Calculate insights - filter for submissions that have a score (responded)
-      const linkedSubmissions = enrichedNpsData.filter(s => s.session_id && s.linkedFeedback && s.score !== null);
-      const allResponses = enrichedNpsData.filter(s => s.score !== null);
-
-      // Only show insights if we have some responses
-      if (allResponses.length === 0) {
+      if (responses.length === 0) {
         setInsights(null);
         return;
       }
 
-      // NPS by original feedback rating correlation (only for linked submissions)
-      const ratingCorrelation = calculateRatingCorrelation(linkedSubmissions);
+      // Calculate current NPS
+      const promoters = responses.filter(s => s.score >= 9).length;
+      const detractors = responses.filter(s => s.score <= 6).length;
+      const currentNPS = Math.round(((promoters - detractors) / responses.length) * 100);
 
-      // NPS by table/location (use table_number from NPS submission or linked session)
-      const tableAnalysis = calculateTableAnalysis(allResponses);
+      // Calculate monthly NPS for prediction
+      const monthlyNPS = calculateMonthlyNPS(responses);
+      const prediction = calculatePrediction(monthlyNPS);
 
-      // Response time analysis
-      const responseTimeAnalysis = calculateResponseTime(allResponses);
-
-      // NPS by day of week
-      const dayOfWeekAnalysis = calculateDayOfWeek(allResponses);
-
-      // Feedback text analysis (NPS feedback comments)
-      const feedbackAnalysis = analyzeFeedbackText(allResponses);
-
-      // Response rate by feedback sentiment (only for linked submissions)
-      const sentimentResponseRate = calculateSentimentResponseRate(enrichedNpsData.filter(s => s.session_id && s.linkedFeedback));
+      // Analyze experience drivers from ALL responses with feedback
+      const responsesWithFeedback = responses.filter(s => s.feedback);
+      const experienceDrivers = analyzeExperienceDrivers(responsesWithFeedback);
 
       setInsights({
-        totalLinked: linkedSubmissions.length,
-        totalResponses: allResponses.length,
-        ratingCorrelation,
-        tableAnalysis,
-        responseTimeAnalysis,
-        dayOfWeekAnalysis,
-        feedbackAnalysis,
-        sentimentResponseRate
+        currentNPS,
+        totalResponses: responses.length,
+        monthlyNPS,
+        prediction,
+        experienceDrivers,
+        feedbackCount: responsesWithFeedback.length
       });
+      setLastUpdated(new Date());
 
-    } catch (error) {
-      console.error('Error loading NPS insights:', error);
+    } catch (err) {
+      console.error('Error loading NPS insights:', err);
+      setError('Failed to load NPS insights. Please try again.');
     } finally {
       setLoading(false);
     }
   };
 
-  const calculateRatingCorrelation = (submissions) => {
-    const byRating = {};
+  const calculateMonthlyNPS = (responses) => {
+    const byMonth = {};
 
-    submissions.forEach(s => {
-      const rating = s.linkedFeedback?.rating;
-      if (rating !== null && rating !== undefined) {
-        if (!byRating[rating]) {
-          byRating[rating] = { scores: [], count: 0 };
-        }
-        byRating[rating].scores.push(s.score);
-        byRating[rating].count++;
+    responses.forEach(r => {
+      if (!r.responded_at) return;
+      const date = new Date(r.responded_at);
+      const monthKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+
+      if (!byMonth[monthKey]) {
+        byMonth[monthKey] = { promoters: 0, detractors: 0, total: 0 };
       }
+      byMonth[monthKey].total++;
+      if (r.score >= 9) byMonth[monthKey].promoters++;
+      if (r.score <= 6) byMonth[monthKey].detractors++;
     });
 
-    return Object.entries(byRating)
-      .map(([rating, data]) => {
-        const avgNPS = data.scores.reduce((a, b) => a + b, 0) / data.scores.length;
-        const promoters = data.scores.filter(s => s >= 9).length;
-        const detractors = data.scores.filter(s => s <= 6).length;
-        const npsScore = Math.round(((promoters - detractors) / data.scores.length) * 100);
-
-        return {
-          rating: parseInt(rating),
-          avgNPS: Math.round(avgNPS * 10) / 10,
-          npsScore,
-          count: data.count
-        };
-      })
-      .sort((a, b) => a.rating - b.rating);
+    return Object.entries(byMonth)
+      .sort(([a], [b]) => a.localeCompare(b))
+      .map(([month, data]) => ({
+        month,
+        monthLabel: formatMonthLabel(month),
+        nps: data.total > 0 ? Math.round(((data.promoters - data.detractors) / data.total) * 100) : 0,
+        responses: data.total
+      }));
   };
 
-  const calculateTableAnalysis = (submissions) => {
-    const byTable = {};
+  const formatMonthLabel = (monthKey) => {
+    const [year, month] = monthKey.split('-');
+    const date = new Date(parseInt(year), parseInt(month) - 1);
+    return date.toLocaleDateString('en-GB', { month: 'short', year: '2-digit' });
+  };
 
-    submissions.forEach(s => {
-      // Try to get table from linked feedback first, then from NPS submission itself
-      const table = s.linkedFeedback?.table_number || s.table_number;
-      if (table) {
-        if (!byTable[table]) {
-          byTable[table] = { scores: [], count: 0 };
-        }
-        if (s.score !== null) {
-          byTable[table].scores.push(s.score);
-          byTable[table].count++;
-        }
-      }
+  const calculatePrediction = (monthlyNPS) => {
+    // Need at least 3 months of data for prediction
+    if (monthlyNPS.length < 3) {
+      return { canPredict: false, reason: 'Need at least 3 months of data' };
+    }
+
+    // Use last 3-6 months for trend calculation
+    const recentMonths = monthlyNPS.slice(-6);
+
+    // Simple linear regression
+    const n = recentMonths.length;
+    const xMean = (n - 1) / 2;
+    const yMean = recentMonths.reduce((sum, m) => sum + m.nps, 0) / n;
+
+    let numerator = 0;
+    let denominator = 0;
+
+    recentMonths.forEach((m, i) => {
+      numerator += (i - xMean) * (m.nps - yMean);
+      denominator += (i - xMean) ** 2;
     });
 
-    return Object.entries(byTable)
-      .filter(([_, data]) => data.scores.length > 0)
-      .map(([table, data]) => {
-        const promoters = data.scores.filter(s => s >= 9).length;
-        const detractors = data.scores.filter(s => s <= 6).length;
-        const npsScore = data.scores.length > 0
-          ? Math.round(((promoters - detractors) / data.scores.length) * 100)
-          : 0;
+    const slope = denominator !== 0 ? numerator / denominator : 0;
+    const monthlyChange = Math.round(slope * 10) / 10;
 
-        return {
-          table,
-          npsScore,
-          count: data.count,
-          promoters,
-          detractors
-        };
-      })
-      .sort((a, b) => b.npsScore - a.npsScore)
-      .slice(0, 10);
+    // Predict 60 days forward (approximately 2 months)
+    const currentNPS = recentMonths[recentMonths.length - 1].nps;
+    const predictedNPS = Math.round(currentNPS + (slope * 2));
+
+    // Clamp prediction to valid NPS range
+    const clampedPrediction = Math.max(-100, Math.min(100, predictedNPS));
+
+    // Calculate variance for confidence
+    const variance = recentMonths.reduce((sum, m) => sum + (m.nps - yMean) ** 2, 0) / n;
+    const stdDev = Math.sqrt(variance);
+    const confidence = stdDev < 10 ? 'high' : stdDev < 25 ? 'medium' : 'low';
+
+    return {
+      canPredict: true,
+      currentNPS,
+      predictedNPS: clampedPrediction,
+      monthlyChange,
+      trend: monthlyChange > 0.5 ? 'improving' : monthlyChange < -0.5 ? 'declining' : 'stable',
+      confidence
+    };
   };
 
-  const calculateResponseTime = (submissions) => {
-    const responseTimes = submissions
-      .filter(s => s.sent_at && s.responded_at)
-      .map(s => {
-        const sent = new Date(s.sent_at);
-        const responded = new Date(s.responded_at);
-        return (responded - sent) / (1000 * 60 * 60); // hours
+  // Analyze experience drivers - correlate themes with NPS scores
+  const analyzeExperienceDrivers = (responsesWithFeedback) => {
+    const themeKeywords = {
+      'Wait Time': ['wait', 'slow', 'long', 'delayed', 'forever', 'ages', 'minutes', 'hour', 'quickly', 'fast'],
+      'Service': ['service', 'staff', 'rude', 'attentive', 'ignored', 'unfriendly', 'attitude', 'waiter', 'waitress', 'friendly', 'helpful', 'polite'],
+      'Food Quality': ['food', 'cold', 'taste', 'portion', 'quality', 'bland', 'overcooked', 'undercooked', 'stale', 'delicious', 'fresh', 'amazing'],
+      'Price': ['price', 'expensive', 'value', 'cost', 'overpriced', 'money', 'worth', 'cheap', 'affordable'],
+      'Cleanliness': ['clean', 'dirty', 'hygiene', 'mess', 'filthy', 'sticky', 'toilet', 'bathroom', 'spotless', 'tidy'],
+      'Atmosphere': ['loud', 'noise', 'quiet', 'atmosphere', 'music', 'crowded', 'hot', 'cold', 'dark', 'cosy', 'ambient', 'vibe']
+    };
+
+    // Calculate overall average score for comparison
+    const allScores = responsesWithFeedback.map(r => r.score);
+    const overallAvgScore = allScores.length > 0
+      ? allScores.reduce((sum, s) => sum + s, 0) / allScores.length
+      : 0;
+
+    const drivers = [];
+
+    Object.entries(themeKeywords).forEach(([theme, keywords]) => {
+      // Find all responses mentioning this theme
+      const matchingResponses = responsesWithFeedback.filter(r => {
+        if (!r.feedback) return false;
+        const lowerText = r.feedback.toLowerCase();
+        return keywords.some(keyword => lowerText.includes(keyword));
       });
 
-    if (responseTimes.length === 0) {
-      return { average: 0, median: 0, byHour: [] };
-    }
+      if (matchingResponses.length >= 3) { // Need at least 3 mentions for meaningful data
+        const themeScores = matchingResponses.map(r => r.score);
+        const avgScore = themeScores.reduce((sum, s) => sum + s, 0) / themeScores.length;
 
-    const sorted = [...responseTimes].sort((a, b) => a - b);
-    const average = responseTimes.reduce((a, b) => a + b, 0) / responseTimes.length;
-    const median = sorted[Math.floor(sorted.length / 2)];
+        // Calculate impact: difference from overall average
+        const impact = avgScore - overallAvgScore;
 
-    // Group by hour buckets
-    const hourBuckets = [
-      { label: '< 1 hour', min: 0, max: 1 },
-      { label: '1-6 hours', min: 1, max: 6 },
-      { label: '6-24 hours', min: 6, max: 24 },
-      { label: '1-3 days', min: 24, max: 72 },
-      { label: '> 3 days', min: 72, max: Infinity }
-    ];
+        // Calculate what % of detractors mention this theme
+        const detractorMentions = matchingResponses.filter(r => r.score <= 6).length;
+        const totalDetractors = responsesWithFeedback.filter(r => r.score <= 6).length;
+        const detractorShare = totalDetractors > 0 ? Math.round((detractorMentions / totalDetractors) * 100) : 0;
 
-    const byHour = hourBuckets.map(bucket => ({
-      label: bucket.label,
-      count: responseTimes.filter(t => t >= bucket.min && t < bucket.max).length
-    }));
-
-    return {
-      average: Math.round(average * 10) / 10,
-      median: Math.round(median * 10) / 10,
-      byHour
-    };
-  };
-
-  const calculateDayOfWeek = (submissions) => {
-    const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
-    const byDay = days.map(day => ({ day, scores: [] }));
-
-    submissions.forEach(s => {
-      if (s.responded_at) {
-        const dayIndex = new Date(s.responded_at).getDay();
-        byDay[dayIndex].scores.push(s.score);
+        drivers.push({
+          theme,
+          mentions: matchingResponses.length,
+          avgScore: Math.round(avgScore * 10) / 10,
+          impact: Math.round(impact * 10) / 10,
+          isPositive: impact > 0,
+          detractorShare
+        });
       }
     });
 
-    return byDay.map(d => {
-      const promoters = d.scores.filter(s => s >= 9).length;
-      const detractors = d.scores.filter(s => s <= 6).length;
-      const npsScore = d.scores.length > 0
-        ? Math.round(((promoters - detractors) / d.scores.length) * 100)
-        : null;
-
-      return {
-        day: d.day.slice(0, 3),
-        npsScore,
-        count: d.scores.length
-      };
-    });
+    // Sort by absolute impact (most impactful first)
+    return drivers
+      .sort((a, b) => Math.abs(b.impact) - Math.abs(a.impact))
+      .slice(0, 6);
   };
 
-  const analyzeFeedbackText = (submissions) => {
-    const withFeedback = submissions.filter(s => s.feedback && s.feedback.trim());
-
-    const promoterFeedback = withFeedback.filter(s => s.score >= 9);
-    const passiveFeedback = withFeedback.filter(s => s.score >= 7 && s.score <= 8);
-    const detractorFeedback = withFeedback.filter(s => s.score <= 6);
-
-    return {
-      total: withFeedback.length,
-      promoters: promoterFeedback.length,
-      passives: passiveFeedback.length,
-      detractors: detractorFeedback.length,
-      recentFeedback: withFeedback
-        .sort((a, b) => new Date(b.responded_at) - new Date(a.responded_at))
-        .slice(0, 5)
-    };
-  };
-
-  const calculateSentimentResponseRate = (submissions) => {
-    // Group by original feedback rating
-    const byRating = {};
-
-    submissions.forEach(s => {
-      if (s.linkedFeedback?.rating) {
-        const rating = s.linkedFeedback.rating;
-        if (!byRating[rating]) {
-          byRating[rating] = { sent: 0, responded: 0 };
-        }
-        // Count as "sent" if either sent_at exists OR if they responded (they must have received it)
-        if (s.sent_at || s.responded_at) byRating[rating].sent++;
-        if (s.responded_at) byRating[rating].responded++;
-      }
-    });
-
-    // Filter out ratings with no sends (nothing to show)
-    return Object.entries(byRating)
-      .filter(([_, data]) => data.sent > 0)
-      .map(([rating, data]) => ({
-        rating: parseInt(rating),
-        responseRate: Math.round((data.responded / data.sent) * 100),
-        sent: data.sent,
-        responded: data.responded
-      }))
-      .sort((a, b) => a.rating - b.rating);
-  };
-
-  const getNPSColor = (score) => {
-    if (score === null) return '#9ca3af';
-    if (score >= 50) return '#22c55e';
-    if (score >= 0) return '#f59e0b';
-    return '#ef4444';
-  };
-
-  // Custom tooltip component
-  const CustomTooltip = ({ active, payload, label, formatter }) => {
-    if (active && payload && payload.length) {
-      return (
-        <div className="rounded-lg shadow-lg overflow-hidden">
-          <div className="bg-gray-900 px-3 py-2">
-            <p className="text-xs font-medium text-white">{label}</p>
-          </div>
-          <div className="bg-white dark:bg-gray-800 px-3 py-2">
-            {formatter ? formatter(payload[0]) : (
-              <span className="font-bold text-gray-900 dark:text-white">
-                {payload[0].value}
-              </span>
-            )}
-          </div>
-        </div>
-      );
+  const handleSaveGoal = async () => {
+    const goalValue = parseInt(goalInput);
+    if (isNaN(goalValue) || goalValue < -100 || goalValue > 100) {
+      toast.error('Goal must be between -100 and 100');
+      return;
     }
+
+    setSavingGoal(true);
+    try {
+      const { error: saveError } = await supabase
+        .from('venues')
+        .update({ nps_goal: goalValue })
+        .eq('id', venueId);
+
+      if (saveError) throw saveError;
+
+      setNpsGoal(goalValue);
+      setEditingGoal(false);
+      toast.success('NPS goal saved');
+    } catch (err) {
+      console.error('Error saving NPS goal:', err);
+      toast.error('Failed to save goal');
+    } finally {
+      setSavingGoal(false);
+    }
+  };
+
+  const handleClearGoal = async () => {
+    setSavingGoal(true);
+    try {
+      const { error: clearError } = await supabase
+        .from('venues')
+        .update({ nps_goal: null })
+        .eq('id', venueId);
+
+      if (clearError) throw clearError;
+
+      setNpsGoal(null);
+      setGoalInput('');
+      setEditingGoal(false);
+      toast.success('NPS goal cleared');
+    } catch (err) {
+      console.error('Error clearing NPS goal:', err);
+      toast.error('Failed to clear goal');
+    } finally {
+      setSavingGoal(false);
+    }
+  };
+
+  const getNPSColorClass = (score) => {
+    if (score === null) return 'text-gray-400';
+    if (score >= 50) return 'text-emerald-600 dark:text-emerald-400';
+    if (score >= 0) return 'text-amber-600 dark:text-amber-400';
+    return 'text-rose-600 dark:text-rose-400';
+  };
+
+  const getBenchmarkTier = (score) => {
+    if (score >= 70) return { label: 'Excellent', tier: 'Top 10%' };
+    if (score >= 50) return { label: 'Great', tier: 'Top 25%' };
+    if (score >= 30) return { label: 'Good', tier: 'Above Average' };
+    if (score >= 0) return { label: 'Fair', tier: 'Average' };
+    return { label: 'Needs Work', tier: 'Below Average' };
+  };
+
+  // Format time ago for freshness indicator
+  const getTimeAgo = (date) => {
+    if (!date) return '';
+    const seconds = Math.floor((new Date() - date) / 1000);
+    if (seconds < 60) return 'Just now';
+    const minutes = Math.floor(seconds / 60);
+    if (minutes < 60) return `Updated ${minutes} minute${minutes !== 1 ? 's' : ''} ago`;
+    const hours = Math.floor(minutes / 60);
+    if (hours < 24) return `Updated ${hours} hour${hours !== 1 ? 's' : ''} ago`;
+    return 'Updated today';
+  };
+
+  // Generate daily insight - the key intelligence
+  const getDailyInsight = () => {
+    if (!insights) return null;
+
+    const negativeDriver = insights.experienceDrivers.find(d => !d.isPositive);
+    const hasGoal = npsGoal !== null;
+    const prediction = insights.prediction;
+
+    // Priority 1: Off track with identifiable cause
+    if (hasGoal && prediction.canPredict && prediction.monthlyChange <= 0 && negativeDriver) {
+      return `${negativeDriver.theme} complaints are impacting your score, putting your NPS goal at risk.`;
+    }
+
+    // Priority 2: Declining trend with cause
+    if (prediction.canPredict && prediction.trend === 'declining' && negativeDriver) {
+      return `Your NPS is declining. ${negativeDriver.theme} is the primary driver — customers mentioning it score ${Math.abs(negativeDriver.impact).toFixed(1)} points lower.`;
+    }
+
+    // Priority 3: Below benchmark with cause
+    if (insights.currentNPS < 30 && negativeDriver) {
+      return `You're below industry average (+30). Addressing ${negativeDriver.theme.toLowerCase()} could close the gap.`;
+    }
+
+    // Priority 4: Positive momentum
+    if (prediction.canPredict && prediction.trend === 'improving') {
+      const positiveDriver = insights.experienceDrivers.find(d => d.isPositive);
+      if (positiveDriver) {
+        return `Your NPS is improving. ${positiveDriver.theme} is a strength — keep it up.`;
+      }
+      return `Your NPS is trending upward at ${prediction.monthlyChange > 0 ? '+' : ''}${prediction.monthlyChange} points per month.`;
+    }
+
+    // Priority 5: Stable with insight
+    if (negativeDriver && negativeDriver.detractorShare >= 25) {
+      return `${negativeDriver.detractorShare}% of detractor feedback mentions ${negativeDriver.theme.toLowerCase()}. This is your biggest opportunity.`;
+    }
+
     return null;
   };
 
-  const getCategoryIcon = (score) => {
-    if (score >= 50) return <TrendingUp className="w-4 h-4 text-green-600" />;
-    if (score >= 0) return <Minus className="w-4 h-4 text-yellow-600" />;
-    return <TrendingDown className="w-4 h-4 text-red-600" />;
+  // Get trajectory status
+  const getTrajectoryStatus = () => {
+    if (!insights) return null;
+
+    const hasGoal = npsGoal !== null;
+    const prediction = insights.prediction;
+
+    if (!hasGoal) {
+      if (!prediction.canPredict) return { status: 'no-data', label: 'Insufficient data' };
+      return {
+        status: prediction.trend,
+        label: prediction.trend === 'improving' ? 'Improving' : prediction.trend === 'declining' ? 'Declining' : 'Stable'
+      };
+    }
+
+    const pointsAway = npsGoal - insights.currentNPS;
+
+    if (pointsAway <= 0) {
+      return { status: 'achieved', label: 'Goal achieved' };
+    }
+
+    if (!prediction.canPredict) {
+      return { status: 'unknown', label: `${pointsAway} points to goal` };
+    }
+
+    if (prediction.monthlyChange > 0) {
+      const monthsToGoal = Math.ceil(pointsAway / prediction.monthlyChange);
+      return { status: 'on-track', label: `On track · ~${monthsToGoal} months to goal` };
+    }
+
+    return { status: 'off-track', label: `Off track · ${pointsAway} points behind` };
   };
 
   if (!venueId) return null;
 
+  if (error) {
+    return (
+      <div className="space-y-6">
+        <div className="mb-2">
+          <h1 className="text-2xl font-semibold text-gray-900 dark:text-white">NPS Insights</h1>
+          <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">Predictions, goals, and experience drivers</p>
+        </div>
+        <div className="min-h-[40vh] flex flex-col items-center justify-center">
+          <div className="w-16 h-16 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center mb-4">
+            <AlertTriangle className="w-8 h-8 text-gray-400" />
+          </div>
+          <p className="text-gray-500 dark:text-gray-400 text-center max-w-md mb-4">{error}</p>
+          <button
+            onClick={loadInsights}
+            className="px-4 py-2 bg-gray-900 dark:bg-white text-white dark:text-gray-900 rounded-lg text-sm font-medium hover:bg-gray-800 dark:hover:bg-gray-100"
+          >
+            Try Again
+          </button>
+        </div>
+      </div>
+    );
+  }
+
   if (loading) {
     return (
-      <div className="p-6 flex items-center justify-center">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+      <div className="space-y-6">
+        <div className="mb-2">
+          <h1 className="text-2xl font-semibold text-gray-900 dark:text-white">NPS Insights</h1>
+          <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">Predictions, goals, and experience drivers</p>
+        </div>
+        <div className="h-16 bg-gray-100 dark:bg-gray-800 rounded-lg animate-pulse" />
+        <div className="h-48 bg-gray-100 dark:bg-gray-800 rounded-xl animate-pulse" />
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <div className="h-40 bg-gray-100 dark:bg-gray-800 rounded-xl animate-pulse" />
+          <div className="h-40 bg-gray-100 dark:bg-gray-800 rounded-xl animate-pulse" />
+        </div>
       </div>
     );
   }
 
   if (!insights) {
     return (
-      <div className="p-6 text-center">
-        <div className="text-gray-500 dark:text-gray-400 mb-2">No NPS responses yet</div>
-        <p className="text-sm text-gray-400 dark:text-gray-500">
-          Insights will appear once customers respond to NPS surveys.
-        </p>
+      <div className="space-y-6">
+        <div className="mb-2">
+          <h1 className="text-2xl font-semibold text-gray-900 dark:text-white">NPS Insights</h1>
+          <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">Predictions, goals, and experience drivers</p>
+        </div>
+        <div className="min-h-[40vh] flex flex-col items-center justify-center">
+          <div className="w-16 h-16 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center mb-4">
+            <Target className="w-8 h-8 text-gray-400" />
+          </div>
+          <h2 className="text-lg font-medium text-gray-900 dark:text-white mb-1">No NPS data yet</h2>
+          <p className="text-sm text-gray-500 dark:text-gray-400 text-center max-w-sm">
+            Once customers respond to NPS surveys, you'll see predictions and insights here.
+          </p>
+        </div>
       </div>
     );
   }
 
+  const benchmark = getBenchmarkTier(insights.currentNPS);
+  const dailyInsight = getDailyInsight();
+  const trajectoryStatus = getTrajectoryStatus();
+  const negativeDrivers = insights.experienceDrivers.filter(d => !d.isPositive);
+  const topActions = negativeDrivers.slice(0, 3);
+  const displayedDrivers = showAllDrivers ? insights.experienceDrivers : insights.experienceDrivers.slice(0, 3);
+
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
       {/* Page Header */}
-      <div className="mb-2 flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-semibold text-gray-900 dark:text-white">NPS Insights</h1>
-          <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
-            Deep analysis correlating NPS with feedback data
-          </p>
-        </div>
-        <FilterSelect
-          value={dateRange}
-          onChange={(e) => setDateRange(e.target.value)}
-          options={[
-            { value: '7', label: 'Last 7 days' },
-            { value: '30', label: 'Last 30 days' },
-            { value: '90', label: 'Last 90 days' },
-            { value: '365', label: 'Last year' }
-          ]}
-        />
+      <div>
+        <h1 className="text-2xl font-semibold text-gray-900 dark:text-white">NPS Insights</h1>
+        <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">Predictions, goals, and experience drivers</p>
       </div>
 
-      {/* Summary Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <ModernCard padding="p-5" shadow="shadow-sm">
-          <p className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">
-            Total NPS Responses
-          </p>
-          <div className="text-3xl font-bold text-gray-900 dark:text-white">
-            {insights.totalResponses}
+      {/* Daily Insight - The Intelligence Layer */}
+      {dailyInsight && (
+        <div className="py-3 px-4 bg-gray-50 dark:bg-gray-800/50 rounded-lg border border-gray-200 dark:border-gray-700">
+          <div className="flex items-start justify-between gap-4">
+            <p className="text-sm text-gray-700 dark:text-gray-300">
+              <span className="font-medium text-gray-900 dark:text-white">Current Insight:</span>{' '}
+              {dailyInsight}
+            </p>
+            {lastUpdated && (
+              <span className="text-xs text-gray-400 whitespace-nowrap">
+                {getTimeAgo(lastUpdated)}
+              </span>
+            )}
           </div>
-          <p className="text-xs text-gray-500 dark:text-gray-500 mt-1">
-            In selected period
-          </p>
-        </ModernCard>
-
-        <ModernCard padding="p-5" shadow="shadow-sm">
-          <p className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">
-            Linked to Feedback
-          </p>
-          <div className="text-3xl font-bold text-gray-900 dark:text-white">
-            {insights.totalLinked}
-          </div>
-          <p className="text-xs text-gray-500 dark:text-gray-500 mt-1">
-            {insights.totalResponses > 0
-              ? `${Math.round((insights.totalLinked / insights.totalResponses) * 100)}% of responses`
-              : 'No responses yet'}
-          </p>
-        </ModernCard>
-
-        <ModernCard padding="p-5" shadow="shadow-sm">
-          <p className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">
-            Avg Response Time
-          </p>
-          <div className="text-3xl font-bold text-gray-900 dark:text-white">
-            {insights.responseTimeAnalysis.average}h
-          </div>
-          <p className="text-xs text-gray-500 dark:text-gray-500 mt-1">
-            Median: {insights.responseTimeAnalysis.median}h
-          </p>
-        </ModernCard>
-      </div>
-
-      {/* Correlation: Feedback Rating vs NPS */}
-      <ModernCard padding="p-5" shadow="shadow-sm">
-        <div className="mb-4">
-          <h3 className="text-base font-semibold text-gray-900 dark:text-white">Feedback Rating vs NPS Score</h3>
-          <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-            How does the original feedback rating correlate with NPS responses?
-          </p>
         </div>
-        {insights.ratingCorrelation.length > 0 ? (
-          <>
-            <div className="h-48">
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={insights.ratingCorrelation} margin={{ top: 8, right: 8, bottom: 8, left: 0 }}>
-                  <XAxis
-                    dataKey="rating"
-                    axisLine={false}
-                    tickLine={false}
-                    tick={{ fontSize: 12, fill: '#6b7280' }}
-                    tickFormatter={(val) => `${val}★`}
-                  />
-                  <YAxis
-                    domain={[-100, 100]}
-                    axisLine={false}
-                    tickLine={false}
-                    tick={{ fontSize: 12, fill: '#6b7280' }}
-                    width={40}
-                  />
-                  <Tooltip
-                    cursor={false}
-                    content={({ active, payload }) => {
-                      if (active && payload && payload.length) {
-                        const data = payload[0].payload;
-                        return (
-                          <div className="rounded-lg shadow-lg overflow-hidden">
-                            <div className="bg-gray-900 px-3 py-2">
-                              <p className="text-xs font-medium text-white">{data.rating} Star Rating</p>
-                            </div>
-                            <div className="bg-white dark:bg-gray-800 px-3 py-2">
-                              <div className="text-sm">
-                                <span className="text-gray-600 dark:text-gray-400">NPS: </span>
-                                <span className="font-bold" style={{ color: getNPSColor(data.npsScore) }}>
-                                  {data.npsScore >= 0 ? `+${data.npsScore}` : data.npsScore}
-                                </span>
-                              </div>
-                              <div className="text-xs text-gray-500 mt-1">{data.count} responses</div>
-                            </div>
-                          </div>
-                        );
+      )}
+
+      {/* Actions to Increase NPS */}
+      {topActions.length > 0 && (
+        <ModernCard padding="p-6" shadow="shadow-sm">
+          <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-4">
+            Actions to Increase NPS
+          </h3>
+          <div className="space-y-4">
+            {topActions.map((action, index) => (
+              <div key={action.theme} className="flex items-start justify-between gap-4">
+                <div className="flex items-start gap-3">
+                  <span className="flex-shrink-0 w-6 h-6 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center text-xs font-medium text-gray-600 dark:text-gray-400">
+                    {index + 1}
+                  </span>
+                  <div>
+                    <p className="text-sm font-medium text-gray-900 dark:text-white">
+                      Address {action.theme.toLowerCase()}
+                    </p>
+                    <p className="text-xs text-gray-500 mt-0.5">
+                      {action.detractorShare > 0
+                        ? `${action.detractorShare}% of detractors mention this`
+                        : `${action.mentions} mentions · ${action.impact.toFixed(1)} pts impact`
                       }
-                      return null;
-                    }}
-                  />
-                  <Bar dataKey="npsScore" radius={[4, 4, 0, 0]}>
-                    {insights.ratingCorrelation.map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={getNPSColor(entry.npsScore)} />
-                    ))}
-                  </Bar>
-                </BarChart>
-              </ResponsiveContainer>
-            </div>
-            {/* Legend */}
-            <div className="border-t border-gray-100 dark:border-gray-800 pt-3 mt-4">
-              <div className="grid grid-cols-5 gap-2">
-                {insights.ratingCorrelation.map(item => (
-                  <div key={item.rating} className="text-center">
-                    <div className="flex items-center justify-center gap-0.5 mb-1">
-                      {[...Array(item.rating)].map((_, i) => (
-                        <Star key={i} className="w-2.5 h-2.5 fill-yellow-400 text-yellow-400" />
-                      ))}
-                    </div>
-                    <div className="text-sm font-bold" style={{ color: getNPSColor(item.npsScore) }}>
-                      {item.npsScore >= 0 ? `+${item.npsScore}` : item.npsScore}
-                    </div>
-                    <div className="text-xs text-gray-400">{item.count}</div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </>
-        ) : (
-          <div className="h-48 flex items-center justify-center text-gray-500 dark:text-gray-400">
-            No linked feedback data available
-          </div>
-        )}
-      </ModernCard>
-
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-        {/* NPS by Day of Week */}
-        <ModernCard padding="p-5" shadow="shadow-sm">
-          <div className="mb-4">
-            <h3 className="text-base font-semibold text-gray-900 dark:text-white">
-              NPS by Day of Week
-            </h3>
-            <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-              Which days generate the highest NPS scores?
-            </p>
-          </div>
-          <div className="space-y-2">
-            {insights.dayOfWeekAnalysis.map(day => (
-              <div key={day.day} className="flex items-center gap-3">
-                <div className="w-10 text-xs font-medium text-gray-500 dark:text-gray-400">{day.day}</div>
-                <div className="flex-1 h-7 bg-gray-100 dark:bg-gray-800 rounded-md overflow-hidden relative">
-                  {day.npsScore !== null && (
-                    <div
-                      className="h-full rounded-md transition-all"
-                      style={{
-                        width: `${Math.max(0, (day.npsScore + 100) / 2)}%`,
-                        backgroundColor: getNPSColor(day.npsScore)
-                      }}
-                    />
-                  )}
-                  <div className="absolute inset-0 flex items-center justify-between px-3">
-                    <span className="text-xs font-semibold text-gray-700 dark:text-gray-300">
-                      {day.npsScore !== null ? (day.npsScore >= 0 ? `+${day.npsScore}` : day.npsScore) : '—'}
-                    </span>
-                    <span className="text-xs text-gray-500 dark:text-gray-400">{day.count}</span>
+                    </p>
                   </div>
                 </div>
+                <span className="text-sm font-medium text-gray-900 dark:text-white whitespace-nowrap">
+                  +{Math.round(Math.abs(action.impact) * 1.5)}–{Math.round(Math.abs(action.impact) * 2.5)} pts
+                </span>
               </div>
             ))}
           </div>
         </ModernCard>
+      )}
 
-        {/* Response Time Distribution */}
-        <ModernCard padding="p-5" shadow="shadow-sm">
-          <div className="mb-4">
-            <h3 className="text-base font-semibold text-gray-900 dark:text-white">
-              Response Time Distribution
-            </h3>
-            <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-              How quickly do customers respond to NPS surveys?
-            </p>
+      {/* Two Column Layout - Trajectory & Benchmark */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* Trajectory Card - Combined Goal & Prediction */}
+        <ModernCard padding="p-6" shadow="shadow-sm">
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide">Trajectory</h3>
+            {hasPermission('nps.set_goal') && !editingGoal && (
+              <button
+                onClick={() => setEditingGoal(true)}
+                className="text-xs text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 font-medium"
+              >
+                {npsGoal !== null ? 'Edit goal' : 'Set goal'}
+              </button>
+            )}
           </div>
-          <div className="h-40">
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={insights.responseTimeAnalysis.byHour} margin={{ top: 8, right: 8, bottom: 8, left: 0 }}>
-                <XAxis
-                  dataKey="label"
-                  axisLine={false}
-                  tickLine={false}
-                  tick={{ fontSize: 10, fill: '#6b7280' }}
-                />
-                <YAxis
-                  axisLine={false}
-                  tickLine={false}
-                  tick={{ fontSize: 12, fill: '#6b7280' }}
-                  width={32}
-                />
-                <Tooltip
-                  cursor={false}
-                  content={({ active, payload }) => {
-                    if (active && payload && payload.length) {
-                      const data = payload[0].payload;
-                      return (
-                        <div className="rounded-lg shadow-lg overflow-hidden">
-                          <div className="bg-gray-900 px-3 py-2">
-                            <p className="text-xs font-medium text-white">{data.label}</p>
-                          </div>
-                          <div className="bg-white dark:bg-gray-800 px-3 py-2">
-                            <span className="font-bold text-gray-900 dark:text-white">
-                              {data.count} responses
-                            </span>
-                          </div>
-                        </div>
-                      );
-                    }
-                    return null;
-                  }}
-                />
-                <Bar dataKey="count" fill="#3b82f6" radius={[4, 4, 0, 0]} />
-              </BarChart>
-            </ResponsiveContainer>
-          </div>
-          {/* Legend */}
-          <div className="border-t border-gray-100 dark:border-gray-800 pt-3 mt-2">
-            <div className="flex justify-around text-center">
+
+          {editingGoal ? (
+            <div className="space-y-4">
               <div>
-                <div className="text-lg font-bold text-gray-900 dark:text-white">
-                  {insights.responseTimeAnalysis.average}h
-                </div>
-                <div className="text-xs text-gray-500 dark:text-gray-400">Average</div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                  Target NPS Score
+                </label>
+                <input
+                  type="number"
+                  min="-100"
+                  max="100"
+                  value={goalInput}
+                  onChange={(e) => setGoalInput(e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-gray-900 dark:focus:ring-white focus:border-transparent"
+                  placeholder="-100 to 100"
+                />
               </div>
-              <div>
-                <div className="text-lg font-bold text-gray-900 dark:text-white">
-                  {insights.responseTimeAnalysis.median}h
-                </div>
-                <div className="text-xs text-gray-500 dark:text-gray-400">Median</div>
+              <div className="flex flex-wrap items-center gap-2">
+                <button
+                  onClick={handleSaveGoal}
+                  disabled={savingGoal}
+                  className="flex items-center gap-2 px-3 py-1.5 bg-gray-900 dark:bg-white text-white dark:text-gray-900 rounded-lg text-sm font-medium hover:bg-gray-800 dark:hover:bg-gray-100 disabled:opacity-50"
+                >
+                  {savingGoal ? <Loader2 className="w-4 h-4 animate-spin" /> : <Check className="w-4 h-4" />}
+                  Save
+                </button>
+                <button
+                  onClick={() => { setEditingGoal(false); setGoalInput(npsGoal?.toString() || ''); }}
+                  className="px-3 py-1.5 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white text-sm font-medium"
+                >
+                  Cancel
+                </button>
+                {npsGoal !== null && (
+                  <button
+                    onClick={handleClearGoal}
+                    disabled={savingGoal}
+                    className="text-sm text-gray-400 hover:text-rose-600 font-medium"
+                  >
+                    Clear
+                  </button>
+                )}
               </div>
             </div>
+          ) : (
+            <div className="space-y-4">
+              {/* Score display - more compact */}
+              <div className="flex items-start gap-6">
+                <div>
+                  <div className="text-xs text-gray-500 dark:text-gray-400 mb-1">Current</div>
+                  <div className={`text-3xl font-bold ${getNPSColorClass(insights.currentNPS)}`}>
+                    {insights.currentNPS >= 0 ? '+' : ''}{insights.currentNPS}
+                  </div>
+                  <div className="text-xs text-transparent mt-0.5">&nbsp;</div>
+                </div>
+
+                {insights.prediction.canPredict && (
+                  <div>
+                    <div className="text-xs text-gray-500 dark:text-gray-400 mb-1">60-day forecast</div>
+                    <div className={`text-3xl font-bold ${getNPSColorClass(insights.prediction.predictedNPS)}`}>
+                      {insights.prediction.predictedNPS >= 0 ? '+' : ''}{insights.prediction.predictedNPS}
+                    </div>
+                    <div className="text-xs text-gray-400 mt-0.5">
+                      {insights.prediction.confidence === 'high'
+                        ? 'High confidence'
+                        : insights.prediction.confidence === 'medium'
+                        ? 'Medium confidence'
+                        : 'Low confidence'
+                      }
+                    </div>
+                  </div>
+                )}
+
+                {npsGoal !== null && (
+                  <div>
+                    <div className="text-xs text-gray-500 dark:text-gray-400 mb-1">Goal</div>
+                    <div className="text-3xl font-bold text-gray-300 dark:text-gray-600">
+                      {npsGoal >= 0 ? '+' : ''}{npsGoal}
+                    </div>
+                    <div className="text-xs text-transparent mt-0.5">&nbsp;</div>
+                  </div>
+                )}
+              </div>
+
+              {/* Status line */}
+              {trajectoryStatus && (
+                <div className="flex items-center gap-2 flex-wrap">
+                  {trajectoryStatus.status === 'improving' && <TrendingUp className="w-4 h-4 text-emerald-500" />}
+                  {trajectoryStatus.status === 'declining' && <TrendingDown className="w-4 h-4 text-amber-500" />}
+                  {trajectoryStatus.status === 'on-track' && <Check className="w-4 h-4 text-emerald-500" />}
+                  {trajectoryStatus.status === 'achieved' && <Check className="w-4 h-4 text-emerald-500" />}
+                  {trajectoryStatus.status === 'off-track' && <AlertTriangle className="w-4 h-4 text-amber-500" />}
+                  <span className={`text-sm font-medium ${
+                    trajectoryStatus.status === 'achieved' || trajectoryStatus.status === 'on-track' || trajectoryStatus.status === 'improving'
+                      ? 'text-emerald-600 dark:text-emerald-400'
+                      : trajectoryStatus.status === 'off-track' || trajectoryStatus.status === 'declining'
+                      ? 'text-amber-600 dark:text-amber-400'
+                      : 'text-gray-600 dark:text-gray-400'
+                  }`}>
+                    {trajectoryStatus.label}
+                  </span>
+                  {insights.prediction.canPredict && (
+                    <span className="text-sm text-gray-400">
+                      · {insights.prediction.monthlyChange > 0 ? '+' : ''}{insights.prediction.monthlyChange}/month
+                    </span>
+                  )}
+                </div>
+              )}
+
+              {/* Narrative sentence */}
+              {insights.prediction.canPredict && (
+                <p className="text-xs text-gray-500 dark:text-gray-400">
+                  {insights.prediction.trend === 'improving'
+                    ? `At the current pace, you're adding about ${insights.prediction.monthlyChange} points per month.`
+                    : insights.prediction.trend === 'declining'
+                    ? `Your NPS has been declining at about ${Math.abs(insights.prediction.monthlyChange)} points per month.`
+                    : `Your NPS has held steady over the past few months.`
+                  }
+                </p>
+              )}
+            </div>
+          )}
+        </ModernCard>
+
+        {/* Benchmark */}
+        <ModernCard padding="p-6" shadow="shadow-sm">
+          <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-4">
+            Industry Benchmark
+          </h3>
+
+          <div className="mb-4">
+            <span className="text-lg font-semibold text-gray-900 dark:text-white">
+              {benchmark.label}
+            </span>
+            <span className="text-sm text-gray-500 ml-2">· {benchmark.tier}</span>
           </div>
+
+          {/* Simplified scale */}
+          <div className="relative mb-2">
+            <div className="h-2 bg-gradient-to-r from-rose-300 via-amber-300 to-emerald-300 rounded-full" />
+            <div
+              className="absolute top-1/2 w-3 h-3 bg-gray-900 dark:bg-white rounded-full -translate-y-1/2 -translate-x-1/2 ring-2 ring-white dark:ring-gray-900"
+              style={{ left: `${((insights.currentNPS + 100) / 200) * 100}%` }}
+            />
+          </div>
+          <div className="flex justify-between text-xs text-gray-400 mb-4">
+            <span>-100</span>
+            <span>Industry avg (+30)</span>
+            <span>+100</span>
+          </div>
+
+          <p className="text-xs text-gray-400">
+            Based on 14,200+ hospitality venue responses
+          </p>
         </ModernCard>
       </div>
 
-      {/* NPS by Table/Location */}
-      <ModernCard padding="p-5" shadow="shadow-sm">
-        <div className="mb-4">
-          <h3 className="text-base font-semibold text-gray-900 dark:text-white">
-            NPS by Table/Location
+      {/* Experience Drivers - Full Width */}
+      <ModernCard padding="p-6" shadow="shadow-sm">
+        <div className="flex items-center justify-between mb-4">
+          <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide">
+            Experience Drivers
           </h3>
-          <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-            Which tables or locations generate the best NPS scores?
-          </p>
+          <span className="text-xs text-gray-400">{insights.feedbackCount} analysed</span>
         </div>
-        {insights.tableAnalysis.length > 0 ? (
-          <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead>
-                <tr className="border-b border-gray-200 dark:border-gray-800">
-                  <th className="text-left py-3 px-4 font-medium text-xs uppercase tracking-wide text-gray-500 dark:text-gray-400">Table</th>
-                  <th className="text-center py-3 px-4 font-medium text-xs uppercase tracking-wide text-gray-500 dark:text-gray-400">NPS Score</th>
-                  <th className="text-center py-3 px-4 font-medium text-xs uppercase tracking-wide text-gray-500 dark:text-gray-400">Responses</th>
-                  <th className="text-center py-3 px-4 font-medium text-xs uppercase tracking-wide text-gray-500 dark:text-gray-400">Promoters</th>
-                  <th className="text-center py-3 px-4 font-medium text-xs uppercase tracking-wide text-gray-500 dark:text-gray-400">Detractors</th>
-                </tr>
-              </thead>
-              <tbody>
-                {insights.tableAnalysis.map((row) => (
-                  <tr key={row.table} className="border-b border-gray-100 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors">
-                    <td className="py-3 px-4 font-medium text-gray-900 dark:text-white">
-                      Table {row.table}
-                    </td>
-                    <td className="py-3 px-4 text-center">
-                      <span
-                        className="inline-flex items-center gap-1 font-bold"
-                        style={{ color: getNPSColor(row.npsScore) }}
-                      >
-                        {getCategoryIcon(row.npsScore)}
-                        {row.npsScore >= 0 ? `+${row.npsScore}` : row.npsScore}
-                      </span>
-                    </td>
-                    <td className="py-3 px-4 text-center text-gray-600 dark:text-gray-400">
-                      {row.count}
-                    </td>
-                    <td className="py-3 px-4 text-center text-green-600">{row.promoters}</td>
-                    <td className="py-3 px-4 text-center text-red-600">{row.detractors}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        ) : (
-          <div className="h-32 flex items-center justify-center text-gray-500 dark:text-gray-400">
-            No table data available
-          </div>
-        )}
-      </ModernCard>
 
-      {/* Response Rate by Original Sentiment */}
-      <ModernCard padding="p-5" shadow="shadow-sm">
-        <div className="mb-4">
-          <h3 className="text-base font-semibold text-gray-900 dark:text-white">
-            Response Rate by Original Feedback Rating
-          </h3>
-          <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-            Do happier customers respond to NPS surveys more often?
-          </p>
-        </div>
-        {insights.sentimentResponseRate.length > 0 ? (
-          <div className="grid grid-cols-5 gap-3">
-            {insights.sentimentResponseRate
-              .filter(item => item.sent > 0)
-              .map(item => (
-              <div key={item.rating} className="text-center p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
-                <div className="flex items-center justify-center gap-0.5 mb-2">
-                  {[...Array(item.rating)].map((_, i) => (
-                    <Star key={i} className="w-2.5 h-2.5 fill-yellow-400 text-yellow-400" />
-                  ))}
+        {insights.experienceDrivers.length > 0 ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {displayedDrivers.map((driver) => (
+              <div key={driver.theme} className="flex items-center justify-between py-2 px-3 bg-gray-50 dark:bg-gray-800/50 rounded-lg">
+                <div>
+                  <span className="text-sm font-medium text-gray-900 dark:text-white">
+                    {driver.theme}
+                  </span>
+                  <p className="text-xs text-gray-500">
+                    {driver.isPositive
+                      ? `+${Math.abs(driver.impact).toFixed(1)} pts on average`
+                      : `${driver.impact.toFixed(1)} pts on average`
+                    }
+                  </p>
                 </div>
-                <div className="text-xl font-bold text-gray-900 dark:text-white">
-                  {item.responseRate}%
-                </div>
-                <div className="text-xs text-gray-500 dark:text-gray-400">
-                  {item.responded}/{item.sent}
-                </div>
+                <span className={`text-sm font-semibold ${driver.isPositive ? 'text-emerald-600' : 'text-gray-900 dark:text-white'}`}>
+                  {driver.isPositive ? '+' : ''}{driver.impact.toFixed(1)}
+                </span>
               </div>
             ))}
           </div>
         ) : (
-          <div className="h-32 flex items-center justify-center text-gray-500 dark:text-gray-400">
-            No linked feedback data available
+          <div className="py-6 text-center">
+            <p className="text-sm text-gray-500">Not enough feedback to analyse themes</p>
+            <p className="text-xs text-gray-400 mt-1">Need at least 3 mentions per theme</p>
           </div>
+        )}
+
+        {insights.experienceDrivers.length > 3 && (
+          <button
+            onClick={() => setShowAllDrivers(!showAllDrivers)}
+            className="flex items-center gap-1 text-xs text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 font-medium mt-4"
+          >
+            {showAllDrivers ? (
+              <>
+                <ChevronUp className="w-3 h-3" />
+                Show less
+              </>
+            ) : (
+              <>
+                <ChevronDown className="w-3 h-3" />
+                View all {insights.experienceDrivers.length} drivers
+              </>
+            )}
+          </button>
         )}
       </ModernCard>
     </div>

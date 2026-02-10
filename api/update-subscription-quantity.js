@@ -95,55 +95,83 @@ module.exports = async (req, res) => {
       });
     }
 
-    // Get the subscription item (there should be only one)
-    const subscriptionItem = subscription.items.data[0];
-    const subscriptionItemId = subscriptionItem.id;
-    const currentQuantity = subscriptionItem.quantity;
-    const price = subscriptionItem.price;
+    // Track updates across all subscription items
+    const updatedItems = [];
+    let hasTestPlan = false;
 
-    // Check if this is a test/flat-rate plan (doesn't scale with venue count)
-    const productName = price.product?.name || '';
-    const priceNickname = price.nickname || '';
+    // Update all subscription items (supports multi-item subscriptions for modules)
+    for (const subscriptionItem of subscription.items.data) {
+      const subscriptionItemId = subscriptionItem.id;
+      const currentQuantity = subscriptionItem.quantity;
+      const price = subscriptionItem.price;
 
-    // Skip quantity updates for test plans or flat-rate plans
-    if (productName.includes('Test') ||
-        productName.includes('test') ||
-        priceNickname.includes('Test') ||
-        priceNickname.includes('test') ||
-        price.metadata?.billing_type === 'flat') {
-      console.log(`Skipping quantity update for test/flat-rate plan: ${productName || priceNickname}`);
-      return res.status(200).json({
-        message: 'Test/flat-rate plan - quantity not updated',
-        productName,
-        priceNickname,
-        venueCount,
-        updated: false,
-        skipped: true
+      // Check if this is a test/flat-rate plan (doesn't scale with venue count)
+      const productName = price.product?.name || '';
+      const priceNickname = price.nickname || '';
+
+      // Skip quantity updates for test plans or flat-rate plans
+      if (productName.includes('Test') ||
+          productName.includes('test') ||
+          priceNickname.includes('Test') ||
+          priceNickname.includes('test') ||
+          price.metadata?.billing_type === 'flat') {
+        console.log(`Skipping quantity update for test/flat-rate plan: ${productName || priceNickname}`);
+        hasTestPlan = true;
+        continue;
+      }
+
+      // Skip items pending deletion
+      if (subscriptionItem.metadata?.pending_deletion === 'true') {
+        console.log(`Skipping quantity update for item pending deletion: ${subscriptionItemId}`);
+        continue;
+      }
+
+      // Only update if quantity has changed
+      if (currentQuantity === venueCount) {
+        continue;
+      }
+
+      // Update the subscription item quantity
+      await stripe.subscriptionItems.update(subscriptionItemId, {
+        quantity: venueCount,
+        proration_behavior: 'create_prorations',
       });
+
+      const moduleCode = subscriptionItem.metadata?.module_code || 'unknown';
+      updatedItems.push({
+        itemId: subscriptionItemId,
+        moduleCode,
+        previousQuantity: currentQuantity,
+        newQuantity: venueCount,
+      });
+
+      console.log(`Updated subscription item ${subscriptionItemId} (${moduleCode}) quantity from ${currentQuantity} to ${venueCount}`);
     }
 
-    // Only update if quantity has changed
-    if (currentQuantity === venueCount) {
+    // Check if any items were updated
+    if (updatedItems.length === 0) {
+      if (hasTestPlan) {
+        return res.status(200).json({
+          message: 'Test/flat-rate plan - quantity not updated',
+          venueCount,
+          updated: false,
+          skipped: true
+        });
+      }
       return res.status(200).json({
-        message: 'Quantity unchanged',
+        message: 'Quantity unchanged for all items',
         venueCount,
         updated: false
       });
     }
 
-    // Update the subscription quantity
-    await stripe.subscriptionItems.update(subscriptionItemId, {
-      quantity: venueCount,
-      proration_behavior: 'create_prorations',
-    });
-
-    console.log(`Updated subscription ${subscription.id} quantity from ${currentQuantity} to ${venueCount}`);
+    console.log(`Updated ${updatedItems.length} subscription items for subscription ${subscription.id}`);
 
     return res.status(200).json({
       success: true,
       message: 'Subscription quantity updated',
-      previousQuantity: currentQuantity,
       newQuantity: venueCount,
+      updatedItems,
       updated: true
     });
 

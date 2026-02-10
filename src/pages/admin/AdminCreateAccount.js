@@ -22,8 +22,27 @@ import {
   Check,
   Clock,
   CreditCard,
-  Globe
+  Globe,
+  Puzzle
 } from 'lucide-react';
+
+// Available modules for trial accounts
+const AVAILABLE_MODULES = [
+  {
+    code: 'feedback',
+    name: 'Feedback',
+    description: 'Collect customer feedback with customizable questions',
+    price: 99,
+    required: true
+  },
+  {
+    code: 'nps',
+    name: 'NPS',
+    description: 'Net Promoter Score surveys via email',
+    price: 49,
+    required: false
+  }
+];
 
 // Country configurations
 const COUNTRIES = [
@@ -146,6 +165,8 @@ const AdminCreateAccount = () => {
     // Trial settings
     startTrial: true,
     trialDays: 14,
+    // Module selection (feedback is always enabled)
+    modules: ['feedback'],
     // Venues
     venues: [emptyVenue('GB')]
   });
@@ -196,6 +217,18 @@ const AdminCreateAccount = () => {
 
   const addVenue = () =>
     setFormData(prev => ({ ...prev, venues: [...prev.venues, emptyVenue(prev.country)] }));
+
+  const toggleModule = (moduleCode) => {
+    const module = AVAILABLE_MODULES.find(m => m.code === moduleCode);
+    if (module?.required) return; // Can't toggle required modules
+
+    setFormData(prev => {
+      const modules = prev.modules.includes(moduleCode)
+        ? prev.modules.filter(m => m !== moduleCode)
+        : [...prev.modules, moduleCode];
+      return { ...prev, modules };
+    });
+  };
 
   const removeVenue = (index) =>
     setFormData(prev => {
@@ -326,6 +359,7 @@ const AdminCreateAccount = () => {
           country: formData.country,
           startTrial: formData.startTrial,
           trialDays: formData.trialDays,
+          modules: formData.modules,
           venues: venuesPayload
         })
       });
@@ -618,6 +652,59 @@ const AdminCreateAccount = () => {
                 </div>
               </div>
 
+              {/* Module Selection */}
+              <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
+                <div className="px-5 py-4 border-b border-gray-100 bg-gray-50">
+                  <div className="flex items-center gap-3">
+                    <div className="p-2 bg-purple-100 rounded-lg">
+                      <Puzzle className="w-4 h-4 text-purple-600" />
+                    </div>
+                    <div>
+                      <h2 className="text-sm font-semibold text-gray-900">Modules</h2>
+                      <p className="text-xs text-gray-500">Features to enable</p>
+                    </div>
+                  </div>
+                </div>
+                <div className="p-5 space-y-3">
+                  {AVAILABLE_MODULES.map((module) => (
+                    <label
+                      key={module.code}
+                      className={`flex items-start gap-3 p-3 rounded-lg border transition-colors cursor-pointer ${
+                        formData.modules.includes(module.code)
+                          ? 'border-purple-200 bg-purple-50'
+                          : 'border-gray-200 hover:bg-gray-50'
+                      } ${module.required ? 'opacity-75' : ''}`}
+                    >
+                      <input
+                        type="checkbox"
+                        checked={formData.modules.includes(module.code)}
+                        onChange={() => toggleModule(module.code)}
+                        disabled={module.required}
+                        className="mt-0.5 h-4 w-4 text-purple-600 border-gray-300 rounded focus:ring-purple-500"
+                      />
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2">
+                          <span className="text-sm font-medium text-gray-900">{module.name}</span>
+                          {module.required && (
+                            <span className="text-xs px-1.5 py-0.5 rounded bg-gray-200 text-gray-600">Required</span>
+                          )}
+                        </div>
+                        <p className="text-xs text-gray-500 mt-0.5">{module.description}</p>
+                      </div>
+                      <span className="text-xs text-gray-400 whitespace-nowrap">
+                        £{module.price}/venue/mo
+                      </span>
+                    </label>
+                  ))}
+                  <p className="text-xs text-gray-400 mt-2">
+                    Total: £{formData.modules.reduce((sum, code) => {
+                      const mod = AVAILABLE_MODULES.find(m => m.code === code);
+                      return sum + (mod?.price || 0);
+                    }, 0)}/venue/mo after trial
+                  </p>
+                </div>
+              </div>
+
               {/* Summary Card - Sticky */}
               <div className="bg-gradient-to-br from-gray-900 to-gray-800 rounded-xl p-5 text-white sticky top-24">
                 <h3 className="text-sm font-semibold mb-4">Account Summary</h3>
@@ -648,6 +735,15 @@ const AdminCreateAccount = () => {
                       <span className="text-sm font-medium text-green-400">{formData.trialDays} days</span>
                     </div>
                   )}
+                  <div className="flex justify-between items-center">
+                    <span className="text-gray-400 text-sm">Modules</span>
+                    <span className="text-sm font-medium">
+                      {formData.modules.map(code => {
+                        const mod = AVAILABLE_MODULES.find(m => m.code === code);
+                        return mod?.name || code;
+                      }).join(', ')}
+                    </span>
+                  </div>
                 </div>
               </div>
             </div>
