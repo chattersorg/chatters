@@ -132,7 +132,7 @@ const DemoPage = () => {
                   {/* HubSpot Meetings inline embed */}
                   <div
                     className="meetings-iframe-container bg-white"
-                    data-src="https://meetings.hubspot.com/will902?embed=true"
+                    data-src="https://meetings.hubspot.com/luke-von-bergen/chatters-demo?embed=true"
                   ></div>
                 </div>
 
