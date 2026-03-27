@@ -144,13 +144,12 @@ export default async function handler(req, res) {
 
     if (userError) throw new Error(userError.message);
 
-    // 6. Create venue
+    // 6. Create venue (no 'email' column in venues table)
     const { data: venue, error: venueError } = await supabase
       .from('venues')
       .insert({
         name: venueName,
         account_id: account.id,
-        email: email.toLowerCase(),
         table_count: 1,
         country: 'GB',
         primary_color: '#000000'
@@ -161,34 +160,21 @@ export default async function handler(req, res) {
     if (venueError) throw new Error(venueError.message);
 
     // 7. Create default feedback questions based on venue type
-    const questions = DEFAULT_QUESTIONS[venueType] || DEFAULT_QUESTIONS.restaurant;
-    const questionsToInsert = questions.map((q, index) => ({
+    // Table is 'questions' with columns: question, order, active, venue_id
+    const defaultQuestions = DEFAULT_QUESTIONS[venueType] || DEFAULT_QUESTIONS.restaurant;
+    const questionsToInsert = defaultQuestions.map((q, index) => ({
       venue_id: venue.id,
-      question_text: q.question,
-      question_type: q.type,
-      order_index: index,
-      is_active: true
+      question: q.question,
+      order: index,
+      active: true
     }));
 
     const { error: questionsError } = await supabase
-      .from('feedback_questions')
+      .from('questions')
       .insert(questionsToInsert);
 
     if (questionsError) {
       console.error('Error creating feedback questions:', questionsError);
-    }
-
-    // 8. Create initial table with QR code
-    const { error: tableError } = await supabase
-      .from('tables')
-      .insert({
-        venue_id: venue.id,
-        table_number: '1',
-        qr_code: `${venue.id}-1`
-      });
-
-    if (tableError) {
-      console.error('Error creating table:', tableError);
     }
 
     return res.status(200).json({ message: 'Account created with trial' });
