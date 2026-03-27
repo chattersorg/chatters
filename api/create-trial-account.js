@@ -86,10 +86,11 @@ export default async function handler(req, res) {
       return res.status(400).json({ error: 'An account with this email already exists' });
     }
 
-    // 2. Create auth user
-    const { data: authData, error: authError } = await supabase.auth.signUp({
+    // 2. Create auth user (use admin API to avoid changing client auth context)
+    const { data: authData, error: authError } = await supabase.auth.admin.createUser({
       email: email.toLowerCase(),
-      password
+      password,
+      email_confirm: true
     });
     if (authError) throw new Error(authError.message);
 
