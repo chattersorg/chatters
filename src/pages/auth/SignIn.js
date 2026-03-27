@@ -228,6 +228,14 @@ const SignInPage = () => {
               )}
             </button>
           </form>
+
+          {/* Sign up link */}
+          <div className="mt-6 text-center">
+            <span className="text-gray-500 text-sm">Don't have an account? </span>
+            <Link to="/signup" className="text-sm font-medium text-[#4E74FF] hover:text-[#2F5CFF]">
+              Start free trial
+            </Link>
+          </div>
         </div>
       </div>
     </div>
