@@ -1,6 +1,6 @@
 // /api/admin/get-pending-invitations.js
 const { createClient } = require('@supabase/supabase-js');
-const { requireMasterRole } = require('../auth-helper');
+const { requirePermission } = require('../auth-helper');
 
 const supabaseAdmin = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.REACT_APP_SUPABASE_URL,
@@ -13,7 +13,8 @@ module.exports = async function handler(req, res) {
   }
 
   try {
-    const userData = await requireMasterRole(req);
+    // Require managers.invite permission (same as invite-manager endpoint)
+    const userData = await requirePermission(req, 'managers.invite');
 
     // For admin users impersonating, get account_id from query param
     // For master users, use their own account_id
@@ -28,13 +29,21 @@ module.exports = async function handler(req, res) {
       return res.status(200).json({ invitations: [] });
     }
 
-    const { data: invitations, error } = await supabaseAdmin
+    // Build the query
+    let query = supabaseAdmin
       .from('manager_invitations')
       .select('*')
       .eq('account_id', accountId)
       .eq('status', 'pending')
       .gt('expires_at', new Date().toISOString())
       .order('created_at', { ascending: false });
+
+    // For managers (non-master/admin), only show invitations they created
+    if (userData.role === 'manager') {
+      query = query.eq('invited_by', userData.id);
+    }
+
+    const { data: invitations, error } = await query;
 
     if (error) throw error;
 

@@ -108,7 +108,32 @@ function App() {
         <LoadingProvider>
           <ImpersonationProvider>
             <ModalProvider>
-              <Toaster position="top-right" toastOptions={{ duration: 3000 }} />
+              <Toaster
+                position="bottom-right"
+                toastOptions={{
+                  duration: 2000,
+                  success: {
+                    style: {
+                      background: '#22c55e',
+                      color: '#fff',
+                    },
+                    iconTheme: {
+                      primary: '#fff',
+                      secondary: '#22c55e',
+                    },
+                  },
+                  error: {
+                    style: {
+                      background: '#ef4444',
+                      color: '#fff',
+                    },
+                    iconTheme: {
+                      primary: '#fff',
+                      secondary: '#ef4444',
+                    },
+                  },
+                }}
+              />
               <Sentry.ErrorBoundary fallback={<p>Something went wrong!</p>} showDialog>
                 {isDashboardDomain ? (
                   <AppRoutes />

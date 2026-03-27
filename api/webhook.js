@@ -44,6 +44,111 @@ async function markEventProcessed(eventId, eventType, customerId = null) {
 }
 
 /**
+ * Sync account_modules based on Stripe subscription items
+ * Creates/updates module records based on what's in the subscription
+ */
+async function syncAccountModules(accountId, subscription) {
+  const items = subscription.items?.data || [];
+  const now = new Date().toISOString();
+
+  // Get module codes from subscription item metadata
+  const moduleCodes = [];
+  const itemsByModule = {};
+
+  for (const item of items) {
+    const moduleCode = item.metadata?.module_code || item.price?.metadata?.module_code;
+    if (moduleCode) {
+      moduleCodes.push(moduleCode);
+      itemsByModule[moduleCode] = item.id;
+    }
+  }
+
+  // If no modules found in subscription, this might be a legacy pricing subscription
+  if (moduleCodes.length === 0) {
+    const isLegacy = subscription.metadata?.is_legacy_pricing === 'true';
+    if (isLegacy) {
+      // Legacy accounts get all modules - enable feedback at minimum
+      moduleCodes.push('feedback');
+      // Mark account as legacy pricing
+      await supabase
+        .from('accounts')
+        .update({ is_legacy_pricing: true })
+        .eq('id', accountId);
+    }
+    return;
+  }
+
+  // For each module in the subscription, ensure it's enabled
+  for (const moduleCode of moduleCodes) {
+    const stripeItemId = itemsByModule[moduleCode] || null;
+
+    // Check if module record exists
+    const { data: existing } = await supabase
+      .from('account_modules')
+      .select('id, disabled_at')
+      .eq('account_id', accountId)
+      .eq('module_code', moduleCode)
+      .single();
+
+    if (existing) {
+      // Update existing - clear disabled_at if it was set, update stripe item id
+      await supabase
+        .from('account_modules')
+        .update({
+          disabled_at: null,
+          stripe_subscription_item_id: stripeItemId,
+        })
+        .eq('id', existing.id);
+    } else {
+      // Create new module record
+      await supabase
+        .from('account_modules')
+        .insert({
+          account_id: accountId,
+          module_code: moduleCode,
+          enabled_at: now,
+          stripe_subscription_item_id: stripeItemId,
+        });
+    }
+  }
+
+  console.log(`Synced ${moduleCodes.length} modules for account ${accountId}:`, moduleCodes);
+}
+
+/**
+ * Handle modules marked for deletion at period end
+ * Called when subscription renews to clean up old module items
+ */
+async function processModuleDeletions(accountId, subscription) {
+  const items = subscription.items?.data || [];
+
+  for (const item of items) {
+    if (item.metadata?.pending_deletion === 'true') {
+      const moduleCode = item.metadata?.module_code || item.price?.metadata?.module_code;
+
+      // Delete the subscription item from Stripe
+      try {
+        await stripe.subscriptionItems.del(item.id);
+        console.log(`Deleted subscription item ${item.id} for module ${moduleCode}`);
+      } catch (err) {
+        console.error(`Failed to delete subscription item ${item.id}:`, err.message);
+      }
+
+      // Update account_modules record
+      if (moduleCode) {
+        await supabase
+          .from('account_modules')
+          .update({
+            stripe_subscription_item_id: null,
+          })
+          .eq('account_id', accountId)
+          .eq('module_code', moduleCode);
+      }
+    }
+  }
+}
+
+/**
  * Helper function to find account by Stripe customer ID
  * Falls back to email lookup for checkout.session.completed (first-time customers)
  */
@@ -138,6 +243,18 @@ export default async function handler(req, res) {
 
           if (updateError) throw updateError;
           console.log(`Account marked as paid: ${account.id} (found via ${source})`);
+
+          // Sync account_modules based on subscription items
+          if (subscriptionId) {
+            try {
+              const subscription = await stripe.subscriptions.retrieve(subscriptionId, {
+                expand: ['items.data.price'],
+              });
+              await syncAccountModules(account.id, subscription);
+            } catch (syncErr) {
+              console.error('Error syncing account modules:', syncErr);
+            }
+          }
         } else {
           console.warn('No account found for customer:', customerId, 'email:', customerEmail);
         }
@@ -197,6 +314,9 @@ export default async function handler(req, res) {
           break;
         }
 
+        // Find account to get account_id for module sync
+        const { account } = await findAccountByCustomer(customerId);
+
         // Update account when subscription is first created
         const { error: updateError } = await supabase
           .from('accounts')
@@ -212,6 +332,15 @@ export default async function handler(req, res) {
 
         if (updateError) throw updateError;
         console.log('Subscription created:', subscription.id, 'Status:', subscription.status);
+
+        // Sync account_modules based on subscription items
+        if (account && isActive) {
+          try {
+            await syncAccountModules(account.id, subscription);
+          } catch (syncErr) {
+            console.error('Error syncing account modules:', syncErr);
+          }
+        }
         break;
       }
 
@@ -365,6 +494,19 @@ export default async function handler(req, res) {
           .eq('stripe_customer_id', customerId);
 
         if (updateError) throw updateError;
+
+        // Process module deletions scheduled for this billing period
+        // This handles modules that were marked for removal at period end
+        if (account && subscriptionId) {
+          try {
+            const subscription = await stripe.subscriptions.retrieve(subscriptionId, {
+              expand: ['items.data.price'],
+            });
+            await processModuleDeletions(account.id, subscription);
+          } catch (delErr) {
+            console.error('Error processing module deletions:', delErr);
+          }
+        }
 
         // Send Slack notification for payment success
         if (process.env.SLACK_WEBHOOK_URL) {

@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowRight, Bell, MessageSquare, TrendingUp, Star } from 'lucide-react';
+import { getDashboardUrl } from '../../utils/domainUtils';
 
 // Table component with ping animation - styled like kiosk mode alerts
 const Table = ({ className, color, shape }) => {
@@ -160,7 +161,7 @@ const Hero = () => {
                 Catch Problems
               </span>{' '}
               Before They Become{' '}
-              <span className="text-sky-400">1-Star Reviews</span>
+              <span className="text-sky-400">1 Star Reviews</span>
             </h1>
 
             {/* Subheadline */}
@@ -177,13 +178,13 @@ const Hero = () => {
                 See Pricing
                 <ArrowRight className="ml-2 w-5 h-5" />
               </Link>
-              <Link
-                to="/demo"
+              <a
+                href={getDashboardUrl('/signup')}
                 className="inline-flex items-center justify-center px-8 py-4 text-lg font-semibold text-white bg-white/10 border border-white/20 rounded-xl hover:bg-white/20 transition-all duration-200"
               >
-                Book a Demo
+                Start Free Trial
                 <ArrowRight className="ml-2 w-5 h-5" />
-              </Link>
+              </a>
             </div>
 
             {/* Microcopy */}

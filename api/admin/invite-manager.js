@@ -1,6 +1,6 @@
 // /api/admin/invite-manager.js
 const { createClient } = require('@supabase/supabase-js');
-const { requireMasterRole } = require('../auth-helper');
+const { requirePermission } = require('../auth-helper');
 const { Resend } = require('resend');
 
 const supabaseAdmin = createClient(
@@ -22,10 +22,11 @@ module.exports = async function handler(req, res) {
   });
 
   try {
-    const userData = await requireMasterRole(req);
-    const { email, venueIds, firstName, lastName, phone, dateOfBirth, permissionTemplateId } = req.body;
+    // Require managers.invite permission instead of master role
+    const userData = await requirePermission(req, 'managers.invite');
+    const { email, venueIds, firstName, lastName, phone, dateOfBirth, permissionTemplateId, reportsTo } = req.body;
 
-    console.log('Invite manager request:', { email, firstName, lastName, phone, dateOfBirth, venueIds, permissionTemplateId, accountId: userData.account_id });
+    console.log('Invite manager request:', { email, firstName, lastName, phone, dateOfBirth, venueIds, permissionTemplateId, reportsTo, accountId: userData.account_id, invitedBy: userData.id });
 
     if (!email || !venueIds || venueIds.length === 0) {
       return res.status(400).json({ error: 'Email and venue IDs required' });
@@ -33,6 +34,28 @@ module.exports = async function handler(req, res) {
 
     if (!firstName || !lastName) {
       return res.status(400).json({ error: 'First name and last name required' });
+    }
+
+    // For non-master users, verify they have access to all selected venues
+    if (userData.role === 'manager') {
+      const { data: userVenues, error: userVenuesError } = await supabaseAdmin
+        .from('staff')
+        .select('venue_id')
+        .eq('user_id', userData.id);
+
+      if (userVenuesError) {
+        console.error('Error fetching user venues:', userVenuesError);
+        throw new Error('Failed to verify your venue access');
+      }
+
+      const userVenueIds = new Set(userVenues?.map(v => v.venue_id) || []);
+      const unauthorizedVenues = venueIds.filter(vid => !userVenueIds.has(vid));
+
+      if (unauthorizedVenues.length > 0) {
+        return res.status(403).json({
+          error: 'You can only invite managers to venues you have access to'
+        });
+      }
     }
 
     // Verify venues belong to user's account
@@ -63,6 +86,181 @@ module.exports = async function handler(req, res) {
       return res.status(400).json({ error: 'A user with this email already exists' });
     }
 
+    // Validate reportsTo - must be within the inviter's hierarchy and have venue access
+    let validatedReportsTo = reportsTo;
+    if (reportsTo) {
+      // For masters, they can place under any manager in the account
+      if (userData.role === 'master' || userData.role === 'admin') {
+        const { data: targetManager, error: targetError } = await supabaseAdmin
+          .from('users')
+          .select('id, account_id, role')
+          .eq('id', reportsTo)
+          .is('deleted_at', null)
+          .single();
+
+        if (targetError || !targetManager) {
+          return res.status(400).json({ error: 'Invalid reports to manager' });
+        }
+
+        if (targetManager.account_id !== userData.account_id) {
+          return res.status(403).json({ error: 'Cannot assign to a manager outside your account' });
+        }
+
+        // For non-master reportsTo targets, check they have access to at least one of the assigned venues
+        if (targetManager.role === 'manager') {
+          const { data: targetVenues } = await supabaseAdmin
+            .from('staff')
+            .select('venue_id')
+            .eq('user_id', reportsTo);
+
+          const targetVenueIds = new Set((targetVenues || []).map(v => v.venue_id));
+          const hasCommonVenue = venueIds.some(vid => targetVenueIds.has(vid));
+
+          if (!hasCommonVenue) {
+            return res.status(400).json({
+              error: 'The selected manager does not have access to any of the assigned venues. Choose a manager who has access to at least one of the same venues.'
+            });
+          }
+        }
+      } else {
+        // For managers, validate they can only place under themselves or their subordinates
+        // First check if reportsTo is the inviter themselves
+        if (reportsTo !== userData.id) {
+          // Get all managers this user has invited (directly or indirectly)
+          const { data: allManagers } = await supabaseAdmin
+            .from('users')
+            .select('id, reports_to, invited_by')
+            .eq('account_id', userData.account_id)
+            .eq('role', 'manager')
+            .is('deleted_at', null);
+
+          // Build a set of manager IDs that are in the inviter's subordinate chain
+          const subordinateIds = new Set();
+          const findSubordinates = (managerId) => {
+            (allManagers || []).forEach(m => {
+              // Use reports_to if available, fall back to invited_by
+              const parentId = m.reports_to || m.invited_by;
+              if (parentId === managerId && !subordinateIds.has(m.id)) {
+                subordinateIds.add(m.id);
+                findSubordinates(m.id);
+              }
+            });
+          };
+          findSubordinates(userData.id);
+
+          if (!subordinateIds.has(reportsTo)) {
+            return res.status(403).json({
+              error: 'You can only place new managers under yourself or managers you have invited'
+            });
+          }
+
+          // Also check that the target manager has access to at least one of the assigned venues
+          const { data: targetVenues } = await supabaseAdmin
+            .from('staff')
+            .select('venue_id')
+            .eq('user_id', reportsTo);
+
+          const targetVenueIds = new Set((targetVenues || []).map(v => v.venue_id));
+          const hasCommonVenue = venueIds.some(vid => targetVenueIds.has(vid));
+
+          if (!hasCommonVenue) {
+            return res.status(400).json({
+              error: 'The selected manager does not have access to any of the assigned venues. Choose a manager who has access to at least one of the same venues.'
+            });
+          }
+        }
+      }
+    } else {
+      // If no reportsTo specified, default to the inviter
+      validatedReportsTo = userData.id;
+    }
+
+    // Validate permission template assignment (prevent escalation)
+    let validatedTemplateId = permissionTemplateId;
+
+    if (userData.role === 'manager') {
+      // Check if user has managers.permissions - if not, they can't assign any template
+      const { data: inviterPerm } = await supabaseAdmin
+        .from('user_permissions')
+        .select(`
+          role_template_id,
+          custom_permissions,
+          role_templates (
+            role_template_permissions (
+              permissions (code)
+            )
+          )
+        `)
+        .eq('user_id', userData.id)
+        .single();
+
+      // Get inviter's permission codes
+      let inviterPermissions = [];
+      if (inviterPerm?.role_templates?.role_template_permissions) {
+        inviterPermissions = inviterPerm.role_templates.role_template_permissions
+          .map(rtp => rtp.permissions?.code)
+          .filter(Boolean);
+      }
+      if (inviterPerm?.custom_permissions) {
+        inviterPermissions = [...inviterPermissions, ...inviterPerm.custom_permissions];
+      }
+
+      // Check if inviter has managers.permissions
+      const canAssignPermissions = inviterPermissions.includes('managers.permissions');
+
+      if (!canAssignPermissions) {
+        // User cannot assign permissions - force to null (will default to Viewer)
+        validatedTemplateId = null;
+        console.log('Inviter lacks managers.permissions - template set to null (Viewer)');
+      } else if (permissionTemplateId) {
+        // Validate that the selected template doesn't contain permissions the inviter lacks
+        // or any master_only permissions
+        const { data: templateData } = await supabaseAdmin
+          .from('role_templates')
+          .select(`
+            id,
+            role_template_permissions (
+              permissions (code, master_only)
+            )
+          `)
+          .eq('id', permissionTemplateId)
+          .single();
+
+        if (templateData?.role_template_permissions) {
+          const templatePermCodes = templateData.role_template_permissions
+            .map(rtp => rtp.permissions)
+            .filter(Boolean);
+
+          // Check for master_only permissions or permissions the inviter doesn't have
+          const hasInvalidPermission = templatePermCodes.some(perm => {
+            if (perm.master_only) {
+              console.log(`Template contains master_only permission: ${perm.code}`);
+              return true;
+            }
+            if (!inviterPermissions.includes(perm.code)) {
+              console.log(`Inviter lacks permission: ${perm.code}`);
+              return true;
+            }
+            return false;
+          });
+
+          if (hasInvalidPermission) {
+            return res.status(403).json({
+              error: 'You cannot assign a permission template with permissions you do not have'
+            });
+          }
+        }
+      }
+    }
+
+    // Invalidate any existing pending invitations for this email
+    // This prevents old invitation links from being used
+    await supabaseAdmin
+      .from('manager_invitations')
+      .update({ status: 'revoked' })
+      .eq('email', email)
+      .eq('status', 'pending');
+
     // Create invitation
     const token = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
     const expiresAt = new Date();
@@ -82,7 +280,8 @@ module.exports = async function handler(req, res) {
         last_name: lastName,
         phone: phone || null,
         date_of_birth: dateOfBirth || null,
-        permission_template_id: permissionTemplateId || null
+        permission_template_id: validatedTemplateId || null,
+        reports_to: validatedReportsTo || null
       })
       .select()
       .single();

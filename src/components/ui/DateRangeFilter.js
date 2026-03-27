@@ -5,8 +5,6 @@ import 'react-datepicker/dist/react-datepicker.css';
 import '../dashboard/inputs/DatePicker.css';
 
 const presetOptions = [
-  { value: 'today', label: 'Today' },
-  { value: 'yesterday', label: 'Yesterday' },
   { value: 'last7', label: 'Last 7 Days' },
   { value: 'last14', label: 'Last 14 Days' },
   { value: 'last30', label: 'Last 30 Days' },

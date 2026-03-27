@@ -13,7 +13,7 @@ import TermsAndConditionsPage from './pages/marketing/Terms';
 import PrivacyPolicyPage from './pages/marketing/Privacy';
 import AboutPage from './pages/marketing/AboutPage';
 import DemoPage from './pages/marketing/DemoPage';
-import TryPage from './pages/marketing/TryPage';
+
 
 import BlogPage from './pages/marketing/BlogPage';
 import BlogPost from './pages/marketing/BlogPost';
@@ -37,6 +37,7 @@ import RestaurantSolution from './pages/marketing/solutions/RestaurantSolution';
 import HotelSolution from './pages/marketing/solutions/HotelSolution';
 import PubsBarsSolution from './pages/marketing/solutions/PubsBarsSolution';
 import NotFoundPage from './pages/marketing/NotFoundPage';
+import StyleGuidePage from './pages/dashboard/StyleGuide';
 
 const MarketingRoutes = () => {
   return (
@@ -57,7 +58,7 @@ const MarketingRoutes = () => {
       <Route path="/privacy" element={<PrivacyPolicyPage />} />
       <Route path="/about" element={<AboutPage />} />
       <Route path="/demo" element={<DemoPage />} />
-      <Route path="/try" element={<TryPage />} />
+
 
       {/* 📝 Blog Pages */}
       <Route path="/blog" element={<BlogPage />} />
@@ -83,6 +84,9 @@ const MarketingRoutes = () => {
       <Route path="/solutions/restaurants" element={<RestaurantSolution />} />
       <Route path="/solutions/hotels" element={<HotelSolution />} />
       <Route path="/solutions/pubs-bars" element={<PubsBarsSolution />} />
+
+      {/* 🎨 Style Guide */}
+      <Route path="/styleguide" element={<StyleGuidePage />} />
 
       {/* 404 - Must be last */}
       <Route path="*" element={<NotFoundPage />} />

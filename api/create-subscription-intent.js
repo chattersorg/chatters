@@ -7,10 +7,28 @@ const supabase = createClient(
   process.env.SUPABASE_SERVICE_ROLE_KEY
 );
 
-// Valid price IDs - only allow these
-const VALID_PRICE_IDS = [
+// Legacy price IDs (for backwards compatibility)
+const LEGACY_PRICE_IDS = [
   process.env.REACT_APP_STRIPE_PRICE_MONTHLY,
   process.env.REACT_APP_STRIPE_PRICE_YEARLY
+].filter(Boolean);
+
+// Module price IDs mapping
+const MODULE_PRICE_IDS = {
+  feedback: {
+    monthly: process.env.STRIPE_PRICE_FEEDBACK_MONTHLY,
+    yearly: process.env.STRIPE_PRICE_FEEDBACK_YEARLY,
+  },
+  nps: {
+    monthly: process.env.STRIPE_PRICE_NPS_MONTHLY,
+    yearly: process.env.STRIPE_PRICE_NPS_YEARLY,
+  },
+};
+
+// All valid price IDs (legacy + module-based)
+const ALL_VALID_PRICE_IDS = [
+  ...LEGACY_PRICE_IDS,
+  ...Object.values(MODULE_PRICE_IDS).flatMap(m => Object.values(m)),
 ].filter(Boolean);
 
 export default async function handler(req, res) {
@@ -25,7 +43,7 @@ export default async function handler(req, res) {
   }
 
   const token = authHeader.replace('Bearer ', '');
-  const { priceId } = req.body;
+  const { priceId, modules, billingInterval } = req.body;
 
   try {
     // Verify the user's session
@@ -51,9 +69,36 @@ export default async function handler(req, res) {
       return res.status(403).json({ error: 'Forbidden - only account owners can manage subscriptions' });
     }
 
-    // Validate price ID
-    if (!priceId || !VALID_PRICE_IDS.includes(priceId)) {
-      return res.status(400).json({ error: 'Invalid price ID' });
+    // Determine if using module-based pricing or legacy single price
+    const useModulePricing = modules && Array.isArray(modules) && modules.length > 0;
+
+    if (useModulePricing) {
+      // Validate billing interval
+      if (!billingInterval || !['monthly', 'yearly'].includes(billingInterval)) {
+        return res.status(400).json({ error: 'Invalid billing interval' });
+      }
+
+      // Validate all modules
+      const validModuleCodes = Object.keys(MODULE_PRICE_IDS);
+      for (const moduleCode of modules) {
+        if (!validModuleCodes.includes(moduleCode)) {
+          return res.status(400).json({ error: `Invalid module code: ${moduleCode}` });
+        }
+        const modulePriceId = MODULE_PRICE_IDS[moduleCode][billingInterval];
+        if (!modulePriceId) {
+          return res.status(400).json({ error: `Module pricing not configured: ${moduleCode}` });
+        }
+      }
+
+      // Feedback module is required
+      if (!modules.includes('feedback')) {
+        return res.status(400).json({ error: 'Feedback module is required' });
+      }
+    } else {
+      // Legacy single price validation
+      if (!priceId || !LEGACY_PRICE_IDS.includes(priceId)) {
+        return res.status(400).json({ error: 'Invalid price ID' });
+      }
     }
 
     // Get account
@@ -98,15 +143,34 @@ export default async function handler(req, res) {
         .eq('id', user.account_id);
     }
 
-    // Create the subscription with payment pending and automatic tax
-    const subscription = await stripe.subscriptions.create({
-      customer: customerId,
-      items: [
+    // Build subscription items based on pricing model
+    let subscriptionItems;
+    let isLegacyPricing = false;
+
+    if (useModulePricing) {
+      // Module-based pricing: one item per module
+      subscriptionItems = modules.map(moduleCode => ({
+        price: MODULE_PRICE_IDS[moduleCode][billingInterval],
+        quantity: quantity,
+        metadata: {
+          module_code: moduleCode,
+        },
+      }));
+    } else {
+      // Legacy single-price model
+      isLegacyPricing = true;
+      subscriptionItems = [
         {
           price: priceId,
           quantity: quantity,
         },
-      ],
+      ];
+    }
+
+    // Create the subscription with payment pending and automatic tax
+    const subscription = await stripe.subscriptions.create({
+      customer: customerId,
+      items: subscriptionItems,
       payment_behavior: 'default_incomplete',
       payment_settings: {
         payment_method_types: ['card'],
@@ -116,7 +180,9 @@ export default async function handler(req, res) {
         enabled: true,
       },
       metadata: {
-        chatters_account_id: user.account_id
+        chatters_account_id: user.account_id,
+        is_legacy_pricing: isLegacyPricing ? 'true' : 'false',
+        modules: useModulePricing ? modules.join(',') : '',
       },
       expand: ['latest_invoice.payment_intent', 'latest_invoice'],
     });
@@ -126,7 +192,9 @@ export default async function handler(req, res) {
     // Send Slack notification for checkout initiated
     if (process.env.SLACK_WEBHOOK_URL) {
       try {
-        const isMonthly = priceId === process.env.REACT_APP_STRIPE_PRICE_MONTHLY;
+        const isMonthly = useModulePricing
+          ? billingInterval === 'monthly'
+          : priceId === process.env.REACT_APP_STRIPE_PRICE_MONTHLY;
         const planType = isMonthly ? 'Monthly' : 'Annual';
         const period = isMonthly ? 'mo' : 'yr';
 
@@ -138,11 +206,16 @@ export default async function handler(req, res) {
 
         const taxLine = tax > 0 ? `\nTax: *£${tax.toLocaleString()}*` : '\nTax: *Calculated at checkout*';
 
+        // Add modules info for module-based pricing
+        const modulesLine = useModulePricing
+          ? `\nModules: *${modules.join(', ')}*`
+          : '\nPlan: *Legacy (All Features)*';
+
         await fetch(process.env.SLACK_WEBHOOK_URL, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            text: `Checkout started for: *${account.name || 'Unknown'}*\nPlan: *${planType}*\nVenues: *${quantity}*\nSubtotal: *£${subtotal.toLocaleString()}/${period}*${taxLine}\nTotal: *£${total.toLocaleString()}/${period}*\n\nAwaiting card details...`
+            text: `Checkout started for: *${account.name || 'Unknown'}*\nBilling: *${planType}*${modulesLine}\nVenues: *${quantity}*\nSubtotal: *£${subtotal.toLocaleString()}/${period}*${taxLine}\nTotal: *£${total.toLocaleString()}/${period}*\n\nAwaiting card details...`
           })
         });
       } catch (slackError) {
@@ -154,7 +227,9 @@ export default async function handler(req, res) {
     return res.status(200).json({
       subscriptionId: subscription.id,
       clientSecret: paymentIntent.client_secret,
-      quantity: quantity
+      quantity: quantity,
+      modules: useModulePricing ? modules : null,
+      isLegacyPricing: isLegacyPricing,
     });
   } catch (error) {
     console.error('Subscription intent creation error:', error);

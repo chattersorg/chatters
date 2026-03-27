@@ -132,6 +132,7 @@ const FeedbackDetailModal = ({
   const [resolutionMessage, setResolutionMessage] = useState('');
   const [isResolving, setIsResolving] = useState(false);
   const [alertModal, setAlertModal] = useState(null);
+  const [tagResponses, setTagResponses] = useState({});
 
   // Co-resolver state
   const [enableCoResolving, setEnableCoResolving] = useState(false);
@@ -147,11 +148,46 @@ const FeedbackDetailModal = ({
       setResolutionMessage('');
       setAddCoResolver(false);
       setSelectedCoResolver('');
+      setTagResponses({});
     }
   }, [isOpen]);
   
   const sessions = useMemo(() => groupBySession(feedbackItems), [feedbackItems]);
-  
+
+  // Fetch tag responses for the feedback items
+  useEffect(() => {
+    const fetchTagResponses = async () => {
+      if (!isOpen || feedbackItems.length === 0) return;
+
+      const feedbackIds = feedbackItems.map(item => item.id).filter(Boolean);
+      if (feedbackIds.length === 0) return;
+
+      try {
+        const { data: tags, error } = await supabase
+          .from('feedback_tag_responses')
+          .select('feedback_id, tag')
+          .in('feedback_id', feedbackIds);
+
+        if (error) throw error;
+
+        // Group tags by feedback_id
+        const tagsByFeedback = {};
+        (tags || []).forEach(t => {
+          if (!tagsByFeedback[t.feedback_id]) {
+            tagsByFeedback[t.feedback_id] = [];
+          }
+          tagsByFeedback[t.feedback_id].push(t.tag);
+        });
+
+        setTagResponses(tagsByFeedback);
+      } catch (error) {
+        console.error('Error fetching tag responses:', error);
+      }
+    };
+
+    fetchTagResponses();
+  }, [isOpen, feedbackItems]);
+
   // Helper function to determine if feedback is positive (min rating > 4)
   // Uses min_rating to match urgency calculation - any low rating means it needs resolution
   const isPositiveFeedback = (session) => {
@@ -542,6 +578,20 @@ const FeedbackDetailModal = ({
                       <p className="text-sm text-slate-700 dark:text-slate-300 leading-relaxed">
                         "{item.additional_feedback.trim()}"
                       </p>
+                    </div>
+                  )}
+
+                  {/* Display follow-up tags if any */}
+                  {tagResponses[item.id] && tagResponses[item.id].length > 0 && (
+                    <div className="mt-3 flex flex-wrap gap-2">
+                      {tagResponses[item.id].map((tag, tagIndex) => (
+                        <span
+                          key={tagIndex}
+                          className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-red-100 dark:bg-red-900/40 text-red-700 dark:text-red-300 border border-red-200 dark:border-red-800"
+                        >
+                          {tag}
+                        </span>
+                      ))}
                     </div>
                   )}
                 </div>

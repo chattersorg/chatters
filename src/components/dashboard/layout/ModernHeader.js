@@ -173,7 +173,7 @@ const ModernHeader = ({ sidebarCollapsed, setSidebarCollapsed, trialInfo }) => {
     if (currentPath.startsWith('/settings/') || currentPath.startsWith('/settings?')) {
       if (currentPath === '/settings/venues' || currentPath === '/settings?tab=Venue') return 'Manage all venues';
       if (currentPath === '/venue-settings/details') return 'Venue information and settings';
-      if (currentPath === '/settings/feedback' || currentPath === '/settings?tab=Feedback') return 'Feedback configuration';
+      if (currentPath === '/feedback/settings' || currentPath === '/settings?tab=Feedback') return 'Feedback configuration';
       if (currentPath === '/settings/branding' || currentPath === '/settings?tab=Branding') return 'Brand colors and logo';
       if (currentPath === '/settings/integrations' || currentPath === '/settings?tab=Integrations') return 'Third-party integrations';
       if (currentPath === '/settings/billing' || currentPath === '/settings?tab=Billing') return 'Subscription and billing';
@@ -206,6 +206,7 @@ const ModernHeader = ({ sidebarCollapsed, setSidebarCollapsed, trialInfo }) => {
       if (currentPath === '/reports/insights') return 'Customer insights and patterns';
       if (currentPath === '/reports/metrics') return 'Key performance indicators';
       if (currentPath === '/reports/nps') return 'Net Promoter Score analytics';
+      if (currentPath === '/reports/follow-up-tags') return 'Reasons for low ratings';
       if (currentPath.startsWith('/nps-report/')) return 'Detailed NPS report';
       if (currentPath === '/reports/builder') return 'Custom report builder';
       return 'Analytics and insights';
@@ -215,7 +216,8 @@ const ModernHeader = ({ sidebarCollapsed, setSidebarCollapsed, trialInfo }) => {
     if (currentSection.id === 'staff') {
       if (currentPath === '/staff/leaderboard') return 'Team performance rankings';
       if (currentPath === '/staff/recognition') return 'Staff recognition history';
-      if (currentPath === '/staff/list') return 'Employees and managers';
+      if (currentPath === '/staff/employees') return 'Employee directory';
+      if (currentPath === '/staff/managers') return 'Manager directory';
       if (currentPath === '/staff/roles') return 'Role configuration';
       if (currentPath === '/staff/locations') return 'Location management';
       if (currentPath.startsWith('/staff/employees/')) return 'Employee details';

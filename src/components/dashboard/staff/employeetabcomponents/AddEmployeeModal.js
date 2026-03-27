@@ -4,6 +4,7 @@ import React, { useState, useCallback, useEffect } from 'react';
 import { supabase } from '../../../../utils/supabase';
 import { Plus, X, AlertCircle, CheckCircle } from 'lucide-react';
 import { Button } from '../../../ui/button';
+import toast from 'react-hot-toast';
 
 const AddEmployeeModal = ({
   showAddForm,
@@ -12,8 +13,7 @@ const AddEmployeeModal = ({
   venueId,
   userRole,
   employees,
-  fetchStaffData,
-  setMessage
+  fetchStaffData
 }) => {
   const [submitting, setSubmitting] = useState(false);
   const [formData, setFormData] = useState({
@@ -149,10 +149,10 @@ const AddEmployeeModal = ({
       if (error) throw error;
 
       // Success
-      setMessage('Employee added successfully!');
+      toast.success('Employee added successfully!');
       setShowAddForm(false);
       resetForm();
-      
+
       // Refresh the staff data
       if (fetchStaffData) {
         await fetchStaffData();
@@ -163,7 +163,7 @@ const AddEmployeeModal = ({
       if (error.code === '23505') {
         setFormErrors({ email: 'An employee with this email already exists' });
       } else {
-        setMessage('Failed to add employee. Please try again.');
+        toast.error('Failed to add employee. Please try again.');
       }
     } finally {
       setSubmitting(false);

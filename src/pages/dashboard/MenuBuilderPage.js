@@ -7,13 +7,14 @@ import {
   Plus,
   GripVertical,
   Trash2,
-  Eye,
-  EyeOff,
   Loader2,
   ExternalLink,
   ImagePlus,
   X,
-  Pencil
+  Pencil,
+  Check,
+  Eye,
+  EyeOff
 } from 'lucide-react';
 import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
 
@@ -365,24 +366,24 @@ const MenuBuilderPage = () => {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 max-w-5xl mx-auto">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-4">
           <button
             onClick={goBack}
-            className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+            className="p-2 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
           >
             <ArrowLeft className="w-5 h-5 text-gray-600 dark:text-gray-400" />
           </button>
           <div>
-            <h1 className="text-2xl font-semibold text-gray-900 dark:text-white">Menu Builder</h1>
+            <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Menu Builder</h1>
             <p className="text-sm text-gray-500 dark:text-gray-400">Create and manage your digital menu</p>
           </div>
         </div>
         <button
           onClick={previewMenu}
-          className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700"
+          className="flex items-center gap-2 px-4 py-2.5 text-sm font-medium text-white bg-gray-900 dark:bg-white dark:text-gray-900 rounded-xl hover:bg-gray-800 dark:hover:bg-gray-100 transition-colors shadow-sm"
         >
           <ExternalLink className="w-4 h-4" />
           Preview Menu
@@ -403,9 +404,9 @@ const MenuBuilderPage = () => {
       )}
 
       {/* Category Tabs */}
-      <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl overflow-hidden">
+      <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl overflow-hidden shadow-sm">
         {/* Tab Bar */}
-        <div className="flex items-center gap-2 p-4 border-b border-gray-200 dark:border-gray-800 overflow-x-auto">
+        <div className="flex items-center gap-2 p-4 border-b border-gray-100 dark:border-gray-800 overflow-x-auto bg-gray-50 dark:bg-gray-800/50">
           {categories.map(category => (
             <div key={category.id} className="flex items-center">
               {editingCategoryId === category.id ? (
@@ -422,23 +423,27 @@ const MenuBuilderPage = () => {
                     }
                   }}
                   autoFocus
-                  className="px-3 py-2 text-sm font-medium rounded-lg border border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
+                  className="px-4 py-2 text-sm font-medium rounded-xl border-2 border-blue-500 focus:outline-none bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
                 />
               ) : (
                 <button
                   onClick={() => setActiveCategory(category.id)}
-                  className={`group flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium whitespace-nowrap transition-all ${
+                  className={`group flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium whitespace-nowrap transition-all ${
                     activeCategory === category.id
-                      ? 'bg-gray-900 dark:bg-white text-white dark:text-gray-900'
-                      : 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700'
+                      ? 'bg-gray-900 dark:bg-white text-white dark:text-gray-900 shadow-md'
+                      : 'bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-600 shadow-sm'
                   }`}
                 >
                   {category.name}
                   {!category.is_visible && (
                     <EyeOff className="w-3 h-3 opacity-50" />
                   )}
-                  <span className="text-xs opacity-60">
-                    ({category.menu_items?.length || 0})
+                  <span className={`text-xs px-1.5 py-0.5 rounded-full ${
+                    activeCategory === category.id
+                      ? 'bg-white/20 dark:bg-gray-900/20'
+                      : 'bg-gray-100 dark:bg-gray-600'
+                  }`}>
+                    {category.menu_items?.length || 0}
                   </span>
                 </button>
               )}
@@ -448,7 +453,7 @@ const MenuBuilderPage = () => {
           {/* Add Category Button */}
           <button
             onClick={addCategory}
-            className="flex items-center gap-1 px-3 py-2 text-sm font-medium text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg whitespace-nowrap transition-colors"
+            className="flex items-center gap-1.5 px-4 py-2 text-sm font-medium text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 bg-white dark:bg-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600 rounded-xl whitespace-nowrap transition-colors border-2 border-dashed border-gray-300 dark:border-gray-600"
           >
             <Plus className="w-4 h-4" />
             Add Category
@@ -457,34 +462,47 @@ const MenuBuilderPage = () => {
 
         {/* Category Controls (when a category is selected) */}
         {activeCategoryData && (
-          <div className="flex items-center justify-between px-4 py-3 bg-gray-50 dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
+          <div className="flex items-center justify-between px-5 py-3 bg-white dark:bg-gray-900 border-b border-gray-100 dark:border-gray-800">
             <div className="flex items-center gap-3">
-              <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
+              <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
                 {activeCategoryData.name}
-              </span>
+              </h2>
               <button
                 onClick={() => startEditingCategory(activeCategoryData)}
-                className="p-1.5 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 rounded"
+                className="p-1.5 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
                 title="Edit name"
               >
                 <Pencil className="w-4 h-4" />
               </button>
             </div>
-            <div className="flex items-center gap-2">
-              <button
-                onClick={() => updateCategory(activeCategoryData.id, 'is_visible', !activeCategoryData.is_visible)}
-                className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm ${
+            <div className="flex items-center gap-3">
+              <label className="flex items-center gap-2 cursor-pointer select-none">
+                <button
+                  onClick={() => updateCategory(activeCategoryData.id, 'is_visible', !activeCategoryData.is_visible)}
+                  className={`relative w-10 h-5 rounded-full transition-colors ${
+                    activeCategoryData.is_visible
+                      ? 'bg-green-500'
+                      : 'bg-gray-300 dark:bg-gray-600'
+                  }`}
+                >
+                  <span
+                    className={`absolute top-0.5 left-0.5 w-4 h-4 bg-white rounded-full shadow transition-transform ${
+                      activeCategoryData.is_visible ? 'translate-x-5' : 'translate-x-0'
+                    }`}
+                  />
+                </button>
+                <span className={`text-sm font-medium ${
                   activeCategoryData.is_visible
-                    ? 'text-green-600 dark:text-green-400 bg-green-50 dark:bg-green-900/30'
-                    : 'text-gray-500 dark:text-gray-400 bg-gray-100 dark:bg-gray-700'
-                }`}
-              >
-                {activeCategoryData.is_visible ? <Eye className="w-4 h-4" /> : <EyeOff className="w-4 h-4" />}
-                {activeCategoryData.is_visible ? 'Visible' : 'Hidden'}
-              </button>
+                    ? 'text-green-600 dark:text-green-400'
+                    : 'text-gray-500 dark:text-gray-400'
+                }`}>
+                  {activeCategoryData.is_visible ? 'Visible on menu' : 'Hidden from menu'}
+                </span>
+              </label>
+              <div className="w-px h-5 bg-gray-200 dark:bg-gray-700" />
               <button
                 onClick={() => deleteCategory(activeCategoryData.id)}
-                className="p-1.5 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/30 rounded"
+                className="p-2 text-gray-400 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/30 rounded-lg transition-colors"
                 title="Delete category"
               >
                 <Trash2 className="w-4 h-4" />
@@ -494,20 +512,24 @@ const MenuBuilderPage = () => {
         )}
 
         {/* Items List */}
-        <div className="p-4">
+        <div className="p-5">
           {categories.length === 0 ? (
-            <div className="text-center py-12">
-              <p className="text-gray-500 dark:text-gray-400 mb-4">No menu categories yet. Add your first category to get started.</p>
+            <div className="text-center py-16">
+              <div className="w-16 h-16 mx-auto mb-4 bg-gray-100 dark:bg-gray-800 rounded-2xl flex items-center justify-center">
+                <Plus className="w-8 h-8 text-gray-400" />
+              </div>
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">No categories yet</h3>
+              <p className="text-gray-500 dark:text-gray-400 mb-6">Add your first category to start building your menu.</p>
               <button
                 onClick={addCategory}
-                className="inline-flex items-center gap-2 px-4 py-2 bg-gray-900 dark:bg-white text-white dark:text-gray-900 rounded-lg hover:bg-gray-800 dark:hover:bg-gray-100"
+                className="inline-flex items-center gap-2 px-5 py-2.5 bg-gray-900 dark:bg-white text-white dark:text-gray-900 rounded-xl hover:bg-gray-800 dark:hover:bg-gray-100 font-medium transition-colors shadow-sm"
               >
                 <Plus className="w-4 h-4" />
                 Add Category
               </button>
             </div>
           ) : !activeCategoryData ? (
-            <div className="text-center py-12">
+            <div className="text-center py-16">
               <p className="text-gray-500 dark:text-gray-400">Select a category to view items</p>
             </div>
           ) : (
@@ -518,7 +540,7 @@ const MenuBuilderPage = () => {
                     <div
                       {...provided.droppableProps}
                       ref={provided.innerRef}
-                      className="space-y-3"
+                      className="space-y-4"
                     >
                       {(activeCategoryData.menu_items || []).map((item, itemIndex) => (
                         <Draggable key={item.id} draggableId={item.id} index={itemIndex}>
@@ -526,119 +548,168 @@ const MenuBuilderPage = () => {
                             <div
                               ref={provided.innerRef}
                               {...provided.draggableProps}
-                              className={`border rounded-lg p-4 ${
+                              className={`border rounded-xl overflow-hidden transition-all ${
                                 snapshot.isDragging
-                                  ? 'shadow-md bg-white dark:bg-gray-800'
-                                  : 'bg-gray-50 dark:bg-gray-800 border-gray-200 dark:border-gray-700'
+                                  ? 'shadow-lg bg-white dark:bg-gray-800 ring-2 ring-blue-500'
+                                  : item.is_available
+                                    ? 'bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700'
+                                    : 'bg-gray-50 dark:bg-gray-900 border-gray-200 dark:border-gray-700 opacity-75'
                               }`}
                             >
-                              <div className="flex items-start gap-3">
+                              {/* Item Header */}
+                              <div className="flex items-center gap-3 px-4 py-3 bg-gray-50 dark:bg-gray-800/50 border-b border-gray-100 dark:border-gray-700">
                                 <div
                                   {...provided.dragHandleProps}
-                                  className="mt-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 cursor-grab"
+                                  className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 cursor-grab active:cursor-grabbing"
                                 >
-                                  <GripVertical className="w-4 h-4" />
+                                  <GripVertical className="w-5 h-5" />
                                 </div>
 
-                                <div className="flex-1 space-y-3">
-                                  <div className="flex items-start gap-3">
-                                    <input
-                                      type="text"
-                                      value={item.name}
-                                      onChange={(e) => updateItem(activeCategory, item.id, 'name', e.target.value)}
-                                      className="flex-1 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-sm focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-900 text-gray-900 dark:text-white"
-                                      placeholder="Item name"
-                                    />
-                                    <div className="flex items-center gap-1">
-                                      <span className="text-gray-500 dark:text-gray-400 text-sm">{currencySymbol}</span>
-                                      <input
-                                        type="number"
-                                        step="0.01"
-                                        min="0"
-                                        value={item.price || ''}
-                                        onChange={(e) => updateItem(activeCategory, item.id, 'price', e.target.value ? parseFloat(e.target.value) : null)}
-                                        className="w-20 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-sm focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-900 text-gray-900 dark:text-white"
-                                        placeholder="0.00"
-                                      />
-                                    </div>
+                                <input
+                                  type="text"
+                                  value={item.name}
+                                  onChange={(e) => updateItem(activeCategory, item.id, 'name', e.target.value)}
+                                  className="flex-1 px-3 py-2 border border-gray-200 dark:border-gray-600 rounded-lg text-sm font-medium focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-900 text-gray-900 dark:text-white"
+                                  placeholder="Item name"
+                                />
+
+                                <div className="flex items-center gap-2 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-600 rounded-lg px-2">
+                                  <span className="text-gray-500 dark:text-gray-400 text-sm font-medium">{currencySymbol}</span>
+                                  <input
+                                    type="number"
+                                    step="0.01"
+                                    min="0"
+                                    value={item.price || ''}
+                                    onChange={(e) => updateItem(activeCategory, item.id, 'price', e.target.value ? parseFloat(e.target.value) : null)}
+                                    className="w-20 py-2 text-sm focus:outline-none bg-transparent text-gray-900 dark:text-white"
+                                    placeholder="0.00"
+                                  />
+                                </div>
+
+                                <button
+                                  onClick={() => deleteItem(activeCategory, item.id)}
+                                  className="p-2 text-gray-400 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/30 rounded-lg transition-colors"
+                                  title="Delete item"
+                                >
+                                  <Trash2 className="w-4 h-4" />
+                                </button>
+                              </div>
+
+                              {/* Item Body */}
+                              <div className="p-4 space-y-4">
+                                {/* Availability Toggle */}
+                                <div className="flex items-center justify-between">
+                                  <label className="flex items-center gap-3 cursor-pointer select-none">
                                     <button
                                       onClick={() => updateItem(activeCategory, item.id, 'is_available', !item.is_available)}
-                                      className={`p-2 rounded ${
+                                      className={`relative w-11 h-6 rounded-full transition-colors ${
                                         item.is_available
-                                          ? 'text-green-600 dark:text-green-400 hover:bg-green-50 dark:hover:bg-green-900/30'
-                                          : 'text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700'
+                                          ? 'bg-green-500'
+                                          : 'bg-gray-300 dark:bg-gray-600'
                                       }`}
-                                      title={item.is_available ? 'Available' : 'Unavailable'}
                                     >
-                                      {item.is_available ? <Eye className="w-4 h-4" /> : <EyeOff className="w-4 h-4" />}
+                                      <span
+                                        className={`absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform flex items-center justify-center ${
+                                          item.is_available ? 'translate-x-5' : 'translate-x-0'
+                                        }`}
+                                      >
+                                        {item.is_available && <Check className="w-3 h-3 text-green-500" />}
+                                      </span>
                                     </button>
-                                    <button
-                                      onClick={() => deleteItem(activeCategory, item.id)}
-                                      className="p-2 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/30 rounded"
-                                      title="Delete item"
-                                    >
-                                      <Trash2 className="w-4 h-4" />
-                                    </button>
+                                    <span className={`text-sm font-medium ${
+                                      item.is_available
+                                        ? 'text-green-600 dark:text-green-400'
+                                        : 'text-gray-500 dark:text-gray-400'
+                                    }`}>
+                                      {item.is_available ? 'Available' : 'Not available'}
+                                    </span>
+                                  </label>
+
+                                  {!item.is_available && (
+                                    <span className="text-xs text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-900/30 px-2 py-1 rounded-full">
+                                      Hidden from menu
+                                    </span>
+                                  )}
+                                </div>
+
+                                {/* Descriptions */}
+                                <div className="space-y-3">
+                                  <div>
+                                    <label className="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1.5">
+                                      Short description
+                                    </label>
+                                    <textarea
+                                      value={item.description || ''}
+                                      onChange={(e) => updateItem(activeCategory, item.id, 'description', e.target.value)}
+                                      className="w-full px-3 py-2.5 border border-gray-200 dark:border-gray-600 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none bg-white dark:bg-gray-900 text-gray-900 dark:text-white placeholder-gray-400"
+                                      placeholder="Brief description shown on menu cards..."
+                                      rows={2}
+                                    />
                                   </div>
 
-                                  <textarea
-                                    value={item.description || ''}
-                                    onChange={(e) => updateItem(activeCategory, item.id, 'description', e.target.value)}
-                                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-sm focus:ring-2 focus:ring-blue-500 resize-none bg-white dark:bg-gray-900 text-gray-900 dark:text-white"
-                                    placeholder="Short description (shown on menu cards)"
-                                    rows={2}
-                                  />
+                                  <div>
+                                    <label className="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1.5">
+                                      Detailed description
+                                    </label>
+                                    <textarea
+                                      value={item.long_description || ''}
+                                      onChange={(e) => updateItem(activeCategory, item.id, 'long_description', e.target.value)}
+                                      className="w-full px-3 py-2.5 border border-gray-200 dark:border-gray-600 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none bg-white dark:bg-gray-900 text-gray-900 dark:text-white placeholder-gray-400"
+                                      placeholder="Ingredients, allergen info, or other details shown when item is clicked..."
+                                      rows={2}
+                                    />
+                                  </div>
+                                </div>
 
-                                  <textarea
-                                    value={item.long_description || ''}
-                                    onChange={(e) => updateItem(activeCategory, item.id, 'long_description', e.target.value)}
-                                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-sm focus:ring-2 focus:ring-blue-500 resize-none bg-white dark:bg-gray-900 text-gray-900 dark:text-white"
-                                    placeholder="Detailed description (shown when item is clicked)"
-                                    rows={3}
-                                  />
-
+                                {/* Dietary Tags & Image Row */}
+                                <div className="flex items-start justify-between gap-4 pt-3 border-t border-gray-100 dark:border-gray-700">
                                   {/* Dietary Tags */}
-                                  <div className="flex flex-wrap gap-2">
-                                    {DIETARY_TAGS.map(tag => {
-                                      const isSelected = (item.dietary_tags || []).includes(tag.code);
-                                      return (
-                                        <button
-                                          key={tag.code}
-                                          onClick={() => toggleDietaryTag(activeCategory, item.id, tag.code)}
-                                          className={`px-2 py-1 rounded text-xs font-medium transition-all ${
-                                            isSelected
-                                              ? tag.color
-                                              : 'bg-gray-100 dark:bg-gray-700 text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-600'
-                                          }`}
-                                          title={tag.label}
-                                        >
-                                          {tag.code}
-                                        </button>
-                                      );
-                                    })}
+                                  <div className="flex-1">
+                                    <label className="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-2">
+                                      Dietary info
+                                    </label>
+                                    <div className="flex flex-wrap gap-1.5">
+                                      {DIETARY_TAGS.map(tag => {
+                                        const isSelected = (item.dietary_tags || []).includes(tag.code);
+                                        return (
+                                          <button
+                                            key={tag.code}
+                                            onClick={() => toggleDietaryTag(activeCategory, item.id, tag.code)}
+                                            className={`px-2.5 py-1.5 rounded-lg text-xs font-medium transition-all ${
+                                              isSelected
+                                                ? tag.color + ' ring-1 ring-current ring-opacity-30'
+                                                : 'bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-600'
+                                            }`}
+                                            title={tag.label}
+                                          >
+                                            {tag.label}
+                                          </button>
+                                        );
+                                      })}
+                                    </div>
                                   </div>
 
                                   {/* Image Upload */}
-                                  <div className="flex items-center gap-3 pt-2 border-t border-gray-200 dark:border-gray-700">
+                                  <div className="flex-shrink-0">
                                     {item.image_url ? (
                                       <div className="relative group">
                                         <img
                                           src={item.image_url}
                                           alt={item.name}
-                                          className="w-16 h-16 object-cover rounded-lg"
+                                          className="w-20 h-20 object-cover rounded-xl border border-gray-200 dark:border-gray-700"
                                         />
                                         <button
                                           onClick={() => removeItemImage(activeCategory, item.id, item.image_url)}
-                                          className="absolute -top-2 -right-2 p-1 bg-red-500 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+                                          className="absolute -top-2 -right-2 p-1.5 bg-red-500 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity shadow-md"
                                           title="Remove image"
                                         >
                                           <X className="w-3 h-3" />
                                         </button>
                                       </div>
                                     ) : (
-                                      <label className="flex items-center gap-2 px-3 py-2 text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-lg cursor-pointer transition-colors">
-                                        <ImagePlus className="w-4 h-4" />
-                                        <span>Add photo</span>
+                                      <label className="flex flex-col items-center justify-center w-20 h-20 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-xl cursor-pointer transition-colors border-2 border-dashed border-gray-300 dark:border-gray-600">
+                                        <ImagePlus className="w-5 h-5 mb-1" />
+                                        <span className="text-[10px] font-medium">Add photo</span>
                                         <input
                                           type="file"
                                           accept="image/*"
@@ -647,7 +718,6 @@ const MenuBuilderPage = () => {
                                         />
                                       </label>
                                     )}
-                                    <span className="text-xs text-gray-400">Optional - displayed on menu</span>
                                   </div>
                                 </div>
                               </div>
@@ -664,9 +734,9 @@ const MenuBuilderPage = () => {
               {/* Add Item Button */}
               <button
                 onClick={() => addItem(activeCategory)}
-                className="mt-4 flex items-center gap-2 px-3 py-3 text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg w-full justify-center border-2 border-dashed border-gray-200 dark:border-gray-700"
+                className="mt-6 flex items-center gap-2 px-4 py-4 text-sm font-medium text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white bg-gray-50 dark:bg-gray-800/50 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-xl w-full justify-center border-2 border-dashed border-gray-300 dark:border-gray-700 transition-colors"
               >
-                <Plus className="w-4 h-4" />
+                <Plus className="w-5 h-5" />
                 Add Item to {activeCategoryData.name}
               </button>
             </>

@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { supabase } from '../../../utils/supabase';
 import { Button } from '../../ui/button';
 import { PermissionGate } from '../../../context/PermissionsContext';
+import toast from 'react-hot-toast';
 
 // Helper component to render text with {table} highlighted
 const HighlightedInput = ({ value, onChange, placeholder, rows, className }) => {
@@ -64,7 +65,7 @@ const HighlightedInput = ({ value, onChange, placeholder, rows, className }) => 
 };
 
 // Reusable SettingsCard component matching FeedbackSettings style
-const SettingsCard = ({ title, description, children, onSave, loading, message }) => (
+const SettingsCard = ({ title, description, children, onSave, loading }) => (
   <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl overflow-hidden">
     <div className="px-6 py-4 border-b border-gray-100 dark:border-gray-800">
       <h3 className="text-base font-semibold text-gray-900 dark:text-white">{title}</h3>
@@ -88,15 +89,6 @@ const SettingsCard = ({ title, description, children, onSave, loading, message }
           </Button>
         </PermissionGate>
       </div>
-      {message && (
-        <div className={`text-xs p-2 rounded-lg mt-3 ${
-          message.includes('success')
-            ? 'text-green-700 dark:text-green-300 bg-green-50 dark:bg-green-900/30 border border-green-200 dark:border-green-800'
-            : 'text-red-700 dark:text-red-300 bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-800'
-        }`}>
-          {message}
-        </div>
-      )}
     </div>
   </div>
 );
@@ -117,22 +109,16 @@ const BrandingTab = ({
   venueId
 }) => {
   const [logoLoading, setLogoLoading] = useState(false);
-  const [logoMessage, setLogoMessage] = useState('');
   const [backgroundImageLoading, setBackgroundImageLoading] = useState(false);
-  const [backgroundImageMessage, setBackgroundImageMessage] = useState('');
   const [colorsLoading, setColorsLoading] = useState(false);
-  const [colorsMessage, setColorsMessage] = useState('');
   const [assistanceLoading, setAssistanceLoading] = useState(false);
-  const [assistanceUpdateMessage, setAssistanceUpdateMessage] = useState('');
   const [thankYouLoading, setThankYouLoading] = useState(false);
-  const [thankYouUpdateMessage, setThankYouUpdateMessage] = useState('');
 
   const handleLogoUpload = async (e) => {
     const file = e.target.files[0];
     if (!file || !venueId) return;
 
     setLogoLoading(true);
-    setLogoMessage('');
 
     try {
       const fileExt = file.name.split('.').pop();
@@ -172,10 +158,10 @@ const BrandingTab = ({
       }
 
       setLogo(cacheBustedUrl);
-      setLogoMessage('Logo updated successfully!');
+      toast.success('Logo updated successfully!');
     } catch (error) {
       console.error('Error updating logo:', error);
-      setLogoMessage('Failed to update logo: ' + error.message);
+      toast.error('Failed to update logo: ' + error.message);
     } finally {
       setLogoLoading(false);
     }
@@ -186,7 +172,6 @@ const BrandingTab = ({
     if (!file || !venueId) return;
 
     setBackgroundImageLoading(true);
-    setBackgroundImageMessage('');
 
     try {
       const fileExt = file.name.split('.').pop();
@@ -226,10 +211,10 @@ const BrandingTab = ({
       }
 
       setBackgroundImage(cacheBustedUrl);
-      setBackgroundImageMessage('Background image updated successfully!');
+      toast.success('Background image updated successfully!');
     } catch (error) {
       console.error('Error updating background:', error);
-      setBackgroundImageMessage('Failed to update background: ' + error.message);
+      toast.error('Failed to update background: ' + error.message);
     } finally {
       setBackgroundImageLoading(false);
     }
@@ -239,7 +224,6 @@ const BrandingTab = ({
     if (!venueId) return;
 
     setColorsLoading(true);
-    setColorsMessage('');
 
     try {
       const { error } = await supabase
@@ -256,10 +240,10 @@ const BrandingTab = ({
         throw new Error('Failed to save colors: ' + error.message);
       }
 
-      setColorsMessage('Colors saved successfully!');
+      toast.success('Colors saved successfully!');
     } catch (error) {
       console.error('Error saving colors:', error);
-      setColorsMessage('Failed to save colors: ' + error.message);
+      toast.error('Failed to save colors: ' + error.message);
     } finally {
       setColorsLoading(false);
     }
@@ -269,7 +253,6 @@ const BrandingTab = ({
     if (!venueId) return;
 
     setAssistanceLoading(true);
-    setAssistanceUpdateMessage('');
 
     try {
       const { error } = await supabase
@@ -285,9 +268,9 @@ const BrandingTab = ({
         throw new Error('Failed to save assistance settings: ' + error.message);
       }
 
-      setAssistanceUpdateMessage('Assistance message settings saved successfully!');
+      toast.success('Assistance message settings saved successfully!');
     } catch (error) {
-      setAssistanceUpdateMessage('Failed to save assistance settings: ' + error.message);
+      toast.error('Failed to save assistance settings: ' + error.message);
     } finally {
       setAssistanceLoading(false);
     }
@@ -297,7 +280,6 @@ const BrandingTab = ({
     if (!venueId) return;
 
     setThankYouLoading(true);
-    setThankYouUpdateMessage('');
 
     try {
       const { error } = await supabase
@@ -313,9 +295,9 @@ const BrandingTab = ({
         throw new Error('Failed to save thank you settings: ' + error.message);
       }
 
-      setThankYouUpdateMessage('Thank you message settings saved successfully!');
+      toast.success('Thank you message settings saved successfully!');
     } catch (error) {
-      setThankYouUpdateMessage('Failed to save thank you settings: ' + error.message);
+      toast.error('Failed to save thank you settings: ' + error.message);
     } finally {
       setThankYouLoading(false);
     }
@@ -391,11 +373,6 @@ const BrandingTab = ({
                 <p className="text-xs text-gray-500 dark:text-gray-400 mt-2 text-center">
                   Square image, min 100x100px
                 </p>
-                {logoMessage && (
-                  <p className={`text-xs mt-2 ${logoMessage.includes('success') ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>
-                    {logoMessage}
-                  </p>
-                )}
               </div>
             </div>
 
@@ -437,11 +414,6 @@ const BrandingTab = ({
                 <p className="text-xs text-gray-500 dark:text-gray-400 mt-2 text-center">
                   Landscape image, 1920x1080px recommended
                 </p>
-                {backgroundImageMessage && (
-                  <p className={`text-xs mt-2 ${backgroundImageMessage.includes('success') ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>
-                    {backgroundImageMessage}
-                  </p>
-                )}
               </div>
             </div>
           </div>
@@ -459,7 +431,6 @@ const BrandingTab = ({
         description="Customise the colours used on your feedback pages"
         onSave={saveColors}
         loading={colorsLoading}
-        message={colorsMessage}
       >
         <div className="flex flex-col md:flex-row gap-6">
           {/* Color Pickers - Narrow Column */}
@@ -642,11 +613,6 @@ const BrandingTab = ({
                 <p className="text-xs text-gray-400 mt-1">Use {'{table}'} for table number</p>
               </div>
 
-              {assistanceUpdateMessage && (
-                <p className={`text-xs ${assistanceUpdateMessage.includes('success') ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>
-                  {assistanceUpdateMessage}
-                </p>
-              )}
             </div>
 
             {/* Thank You Message Column */}
@@ -709,11 +675,6 @@ const BrandingTab = ({
                 />
               </div>
 
-              {thankYouUpdateMessage && (
-                <p className={`text-xs ${thankYouUpdateMessage.includes('success') ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>
-                  {thankYouUpdateMessage}
-                </p>
-              )}
             </div>
           </div>
 

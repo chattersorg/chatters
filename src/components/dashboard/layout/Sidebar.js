@@ -40,7 +40,10 @@ import {
   List,
   LayoutDashboard,
   Sparkles,
-  Key
+  Key,
+  FolderKanban,
+  Tag,
+  Puzzle
 } from 'lucide-react';
 
 // Venue Management Section - Single venue context
@@ -77,8 +80,7 @@ const venueNavItems = [
     subItems: [
       { label: 'All Feedback', path: '/feedback/all', icon: List, permission: 'feedback.view' },
       { label: 'Questions', path: '/feedback/questions', icon: HelpCircle, permission: 'questions.view' },
-      { label: 'Insights', path: '/feedback/insights', icon: Zap, permission: 'reports.view' },
-      { label: 'Settings', path: '/settings/feedback', icon: Settings, permission: 'venue.view' }
+      { label: 'Settings', path: '/feedback/settings', icon: Settings, permission: 'feedback.settings' }
     ]
   },
   {
@@ -88,13 +90,14 @@ const venueNavItems = [
     path: '/nps/score',
     color: 'text-amber-600',
     permission: 'nps.view',
+    module: 'nps', // Requires NPS module to be enabled
     subItems: [
       { label: 'Score', path: '/nps/score', icon: Star, permission: 'nps.view' },
-      { label: 'Insights', path: '/nps/insights', icon: TrendingUp, permission: 'nps.view' },
+      { label: 'Insights', path: '/nps/insights', icon: TrendingUp, permission: 'nps.insights' },
       { label: 'Settings', path: '/nps/settings', icon: Settings, permission: 'nps.edit' }
     ]
   },
-  // Reviews BETA - hidden for now
+  // Reviews section hidden for now
   // {
   //   id: 'reviews',
   //   label: 'Reviews',
@@ -113,6 +116,8 @@ const venueNavItems = [
     permission: 'reports.view',
     subItems: [
       { label: 'Performance', path: '/reports/performance', icon: TrendingUp, permission: 'reports.view' },
+      { label: 'Satisfaction', path: '/reports/satisfaction', icon: Zap, permission: 'reports.view' },
+      { label: 'Follow-up Tags', path: '/reports/follow-up-tags', icon: Tag, permission: 'feedback.view' },
       { label: 'Metrics', path: '/reports/metrics', icon: PieChart, permission: 'reports.view' },
       { label: 'Custom', path: '/reports/builder', icon: FileText, permission: 'reports.create' }
     ]
@@ -127,9 +132,10 @@ const venueNavItems = [
     subItems: [
       { label: 'Leaderboard', path: '/staff/leaderboard', icon: Trophy, permission: 'staff.leaderboard' },
       { label: 'Recognition', path: '/staff/recognition', icon: Award, permission: 'staff.recognition' },
-      { label: 'Team', path: '/staff/team', icon: Users, permission: 'staff.view' },
-      { label: 'Roles', path: '/staff/roles', icon: UserCheck, permission: 'staff.edit' },
-      { label: 'Locations', path: '/staff/locations', icon: Map, permission: 'staff.edit' }
+      { label: 'Employees', path: '/staff/employees', icon: Users, permission: 'staff.view' },
+      { label: 'Managers', path: '/staff/managers', icon: UserCheck, permission: 'managers.view' },
+      { label: 'Roles', path: '/staff/roles', icon: UserCheck, permission: 'staff.roles' },
+      { label: 'Locations', path: '/staff/locations', icon: Map, permission: 'staff.locations' }
     ]
   },
   {
@@ -189,10 +195,31 @@ const multiVenueNavItems = [
 // Administration Section - Master-only for account-wide management
 const adminNavItems = [
   {
+    id: 'admin-features',
+    label: 'Features',
+    icon: Puzzle,
+    path: '/admin/features',
+    color: 'text-rose-600'
+  },
+  {
+    id: 'admin-managers',
+    label: 'Managers',
+    icon: Users,
+    path: '/admin/managers',
+    color: 'text-rose-600'
+  },
+  {
     id: 'permission-templates',
-    label: 'Permission Templates',
+    label: 'Role Templates',
     icon: Key,
     path: '/admin/permissions/templates',
+    color: 'text-rose-600'
+  },
+  {
+    id: 'venue-groups',
+    label: 'Venue Groups',
+    icon: FolderKanban,
+    path: '/admin/venue-groups',
     color: 'text-rose-600'
   }
 ];
@@ -222,20 +249,26 @@ const Sidebar = ({ collapsed, setCollapsed }) => {
     venueName,
     allVenues,
     setCurrentVenue,
-    userRole
+    userRole,
+    hasModule
   } = useVenue();
   const { hasPermission } = usePermissions();
 
   // Check if user has billing permission
   const hasBillingPermission = hasPermission('billing.view');
 
-  // Helper to check if item should be visible based on permission
-  // Master users see everything, otherwise check permission
+  // Helper to check if item should be visible based on permission and module access
+  // Master users see everything permission-wise, but still need module check
   const canSeeItem = useCallback((item) => {
+    // Check module access first (applies to all roles including master)
+    if (item.module && !hasModule(item.module)) {
+      return false;
+    }
+    // Master users see everything permission-wise
     if (userRole === 'master') return true;
     if (!item.permission) return true;
     return hasPermission(item.permission);
-  }, [userRole, hasPermission]);
+  }, [userRole, hasPermission, hasModule]);
 
   // Helper to resolve path - handles both static paths and dynamic path functions
   const resolvePath = useCallback((path) => {
@@ -248,15 +281,16 @@ const Sidebar = ({ collapsed, setCollapsed }) => {
   // Filter nav items based on permissions - memoized to prevent unnecessary re-renders
   const filterNavItems = useCallback((items) => {
     return items
-      .filter(item => canSeeItem(item))
       .map(item => {
         if (item.subItems) {
           const filteredSubItems = item.subItems.filter(subItem => canSeeItem(subItem));
           // If no sub-items are visible, hide the parent too
           if (filteredSubItems.length === 0) return null;
+          // Show parent if user can see it OR if they have any visible sub-items
           return { ...item, subItems: filteredSubItems };
         }
-        return item;
+        // For items without subItems, check permission normally
+        return canSeeItem(item) ? item : null;
       })
       .filter(Boolean);
   }, [canSeeItem]);
@@ -542,7 +576,6 @@ const Sidebar = ({ collapsed, setCollapsed }) => {
                 {showSubmenu && (
                   <div className="ml-2 mt-1 space-y-1 border-l-2 border-gray-100 dark:border-gray-800 pl-4">
                     {item.subItems.map((subItem, idx) => {
-                      const SubIcon = subItem.icon;
                       const resolvedSubPath = resolvePath(subItem.path);
                       // Check if any sibling path starts with this path - if so, use exact match
                       const hasSiblingPrefix = item.subItems.some((other, otherIdx) => {
@@ -563,10 +596,7 @@ const Sidebar = ({ collapsed, setCollapsed }) => {
                               : 'text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800 hover:text-gray-700 dark:hover:text-gray-300'
                           }`}
                         >
-                          <div className="flex items-center">
-                            <SubIcon className="w-4 h-4 mr-2" />
-                            {subItem.label}
-                          </div>
+                          <span>{subItem.label}</span>
                           {subItem.badge && (
                             <span className="px-1.5 py-0.5 text-[10px] font-semibold text-blue-700 dark:text-blue-400 bg-blue-100 dark:bg-blue-900/30 rounded uppercase tracking-wide">
                               {subItem.badge}
@@ -648,7 +678,6 @@ const Sidebar = ({ collapsed, setCollapsed }) => {
                 {showSubmenu && (
                   <div className="ml-2 mt-1 space-y-1 border-l-2 border-gray-100 dark:border-gray-800 pl-4">
                     {item.subItems.map((subItem, idx) => {
-                      const SubIcon = subItem.icon;
                       // Check if any sibling path starts with this path - if so, use exact match
                       const hasSiblingPrefix = item.subItems.some((other, otherIdx) =>
                         otherIdx !== idx && other.path.startsWith(subItem.path + '/')
@@ -667,10 +696,7 @@ const Sidebar = ({ collapsed, setCollapsed }) => {
                               : 'text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800 hover:text-gray-700 dark:hover:text-gray-300'
                           }`}
                         >
-                          <div className="flex items-center">
-                            <SubIcon className="w-4 h-4 mr-2" />
-                            {subItem.label}
-                          </div>
+                          <span>{subItem.label}</span>
                         </Link>
                       );
                     })}
@@ -747,7 +773,6 @@ const Sidebar = ({ collapsed, setCollapsed }) => {
                 {showSubmenu && (
                   <div className="ml-2 mt-1 space-y-1 border-l-2 border-gray-100 dark:border-gray-800 pl-4">
                     {item.subItems.map((subItem, idx) => {
-                      const SubIcon = subItem.icon;
                       // Check if any sibling path starts with this path - if so, use exact match
                       const hasSiblingPrefix = item.subItems.some((other, otherIdx) =>
                         otherIdx !== idx && other.path.startsWith(subItem.path + '/')
@@ -766,10 +791,7 @@ const Sidebar = ({ collapsed, setCollapsed }) => {
                               : 'text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800 hover:text-gray-700 dark:hover:text-gray-300'
                           }`}
                         >
-                          <div className="flex items-center">
-                            <SubIcon className="w-4 h-4 mr-2" />
-                            {subItem.label}
-                          </div>
+                          <span>{subItem.label}</span>
                         </Link>
                       );
                     })}

@@ -1,17 +1,32 @@
 import React, { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { supabase } from '../../../utils/supabase';
 import { useVenue } from '../../../context/VenueContext';
 import { PermissionGate } from '../../../context/PermissionsContext';
-import { Calendar, AlertCircle } from 'lucide-react';
+import toast from 'react-hot-toast';
+import { Calendar, AlertCircle, Crown, Puzzle, ChevronRight } from 'lucide-react';
 import StripeCheckoutModal from './StripeCheckoutModal';
 import SubscriptionManagement from './SubscriptionManagement';
 import { Button } from '../../ui/button';
 
-// Pricing configuration (tax calculated by Stripe based on customer location)
-const PRICE_PER_VENUE_MONTHLY = 149; // £149 per venue per month
-const PRICE_PER_VENUE_YEARLY = 1430; // £1,430 per venue per year (20% discount)
+// Legacy pricing (grandfathered accounts)
+const LEGACY_PRICE_PER_VENUE_MONTHLY = 149; // £149 per venue per month
+const LEGACY_PRICE_PER_VENUE_YEARLY = 1430; // £1,430 per venue per year
+
+// New module-based pricing
+const MODULE_PRICING = {
+  feedback: { monthly: 99, yearly: 1008 },  // £99/mo or £1,008/yr per venue
+  nps: { monthly: 49, yearly: 492 },        // £49/mo or £492/yr per venue
+};
+
+// Module display names
+const MODULE_NAMES = {
+  feedback: 'Feedback',
+  nps: 'NPS',
+};
 
 const BillingTab = ({ allowExpiredAccess = false }) => {
+  const navigate = useNavigate();
   const { userRole } = useVenue();
   const [subscriptionType, setSubscriptionType] = useState('monthly');
   const [userEmail, setUserEmail] = useState('');
@@ -21,6 +36,8 @@ const BillingTab = ({ allowExpiredAccess = false }) => {
   const [checkoutModalOpen, setCheckoutModalOpen] = useState(false);
   const [clientSecret, setClientSecret] = useState(null);
   const [accountId, setAccountId] = useState(null);
+  const [isLegacyPricing, setIsLegacyPricing] = useState(false);
+  const [enabledModules, setEnabledModules] = useState([]);
 
   useEffect(() => {
     const fetchBillingInfo = async () => {
@@ -58,10 +75,10 @@ const BillingTab = ({ allowExpiredAccess = false }) => {
         // Store account ID for later use
         setAccountId(accountIdToCheck);
 
-        // Get account data
+        // Get account data including legacy pricing flag
         const { data: account } = await supabase
           .from('accounts')
-          .select('trial_ends_at, is_paid, demo_account, stripe_customer_id, stripe_subscription_id, name, account_type, stripe_subscription_status')
+          .select('trial_ends_at, is_paid, demo_account, stripe_customer_id, stripe_subscription_id, name, account_type, stripe_subscription_status, is_legacy_pricing')
           .eq('id', accountIdToCheck)
           .single();
 
@@ -72,6 +89,26 @@ const BillingTab = ({ allowExpiredAccess = false }) => {
           .eq('account_id', accountIdToCheck);
 
         setVenueCount(count || 0);
+
+        // Fetch enabled modules for this account
+        const { data: accountModules } = await supabase
+          .from('account_modules')
+          .select('module_code, disabled_at')
+          .eq('account_id', accountIdToCheck);
+
+        // Filter out disabled modules
+        const now = new Date();
+        const activeModules = (accountModules || [])
+          .filter(m => !m.disabled_at || new Date(m.disabled_at) > now)
+          .map(m => m.module_code);
+
+        // Ensure feedback is always included
+        if (!activeModules.includes('feedback')) {
+          activeModules.unshift('feedback');
+        }
+
+        setEnabledModules(activeModules);
+        setIsLegacyPricing(account?.is_legacy_pricing || false);
 
         if (account) {
           const trialEndDate = new Date(account.trial_ends_at);
@@ -102,7 +139,7 @@ const BillingTab = ({ allowExpiredAccess = false }) => {
       // Get auth session for API call
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) {
-        alert('Please sign in again to continue.');
+        toast.error('Please sign in again to continue.');
         setLoading(false);
         return;
       }
@@ -143,7 +180,7 @@ const BillingTab = ({ allowExpiredAccess = false }) => {
       setLoading(false);
     } catch (error) {
       console.error('Checkout error:', error);
-      alert(`Checkout failed: ${error.message}`);
+      toast.error(`Checkout failed: ${error.message}`);
       setLoading(false);
     }
   };
@@ -156,13 +193,13 @@ const BillingTab = ({ allowExpiredAccess = false }) => {
     // Show appropriate success message based on status
     if (status === 'setup_succeeded') {
       // Setup mode - card saved, no charge
-      alert('✓ Payment details saved successfully!\n\nYour card has been securely saved. You will not be charged until your trial period expires.\n\nYou can continue using Chatters throughout your trial.');
+      toast.success('Payment details saved! You won\'t be charged until your trial ends.');
     } else if (status === 'processing') {
       // Direct Debit payment processing
-      alert('Direct Debit setup successful! Your payment will be processed within 3-5 business days. You\'ll receive access once the payment clears.');
+      toast.success('Direct Debit setup successful! Payment will process within 3-5 business days.');
     } else {
       // Payment succeeded
-      alert('Payment successful! Your subscription is now active.');
+      toast.success('Payment successful! Your subscription is now active.');
     }
 
     // Refresh billing info
@@ -175,10 +212,28 @@ const BillingTab = ({ allowExpiredAccess = false }) => {
     setLoading(false);
   };
 
-  // Calculate pricing based on venue count (tax calculated by Stripe)
-  const monthlySubtotal = venueCount * PRICE_PER_VENUE_MONTHLY;
-  const yearlySubtotal = venueCount * PRICE_PER_VENUE_YEARLY;
-  const yearlyDiscount = ((monthlySubtotal * 12 - yearlySubtotal) / (monthlySubtotal * 12) * 100).toFixed(0);
+  // Calculate pricing based on venue count and pricing model
+  // Legacy accounts use the old single price, new accounts use module-based pricing
+  const calculateModuleTotal = (period) => {
+    return enabledModules.reduce((total, moduleCode) => {
+      const pricing = MODULE_PRICING[moduleCode];
+      if (pricing) {
+        return total + (period === 'monthly' ? pricing.monthly : pricing.yearly);
+      }
+      return total;
+    }, 0) * venueCount;
+  };
+
+  // For legacy pricing or if no modules set yet, use legacy prices
+  const monthlySubtotal = isLegacyPricing || enabledModules.length === 0
+    ? venueCount * LEGACY_PRICE_PER_VENUE_MONTHLY
+    : calculateModuleTotal('monthly');
+  const yearlySubtotal = isLegacyPricing || enabledModules.length === 0
+    ? venueCount * LEGACY_PRICE_PER_VENUE_YEARLY
+    : calculateModuleTotal('yearly');
+  const yearlyDiscount = monthlySubtotal > 0
+    ? ((monthlySubtotal * 12 - yearlySubtotal) / (monthlySubtotal * 12) * 100).toFixed(0)
+    : '20';
 
   // Show loading state while data is being fetched
   if (!accountData && userRole !== 'admin') {
@@ -293,7 +348,9 @@ const BillingTab = ({ allowExpiredAccess = false }) => {
                   />
                   <div>
                     <span className="font-medium text-gray-900 dark:text-white">Monthly</span>
-                    <span className="text-gray-500 dark:text-gray-400 text-sm ml-2">£{PRICE_PER_VENUE_MONTHLY}/venue/mo</span>
+                    <span className="text-gray-500 dark:text-gray-400 text-sm ml-2">
+                      £{venueCount > 0 ? Math.round(monthlySubtotal / venueCount) : 0}/venue/mo
+                    </span>
                   </div>
                 </div>
                 <div className="text-right">
@@ -318,7 +375,9 @@ const BillingTab = ({ allowExpiredAccess = false }) => {
                   />
                   <div>
                     <span className="font-medium text-gray-900 dark:text-white">Yearly</span>
-                    <span className="text-gray-500 dark:text-gray-400 text-sm ml-2">£{PRICE_PER_VENUE_YEARLY.toLocaleString()}/venue/yr</span>
+                    <span className="text-gray-500 dark:text-gray-400 text-sm ml-2">
+                      £{venueCount > 0 ? Math.round(yearlySubtotal / venueCount).toLocaleString() : 0}/venue/yr
+                    </span>
                   </div>
                 </div>
                 <div className="text-right">
@@ -327,6 +386,23 @@ const BillingTab = ({ allowExpiredAccess = false }) => {
                 </div>
               </label>
             </div>
+
+            {/* Module breakdown for non-legacy accounts */}
+            {!isLegacyPricing && enabledModules.length > 0 && (
+              <div className="mt-4 pt-4 border-t border-gray-100 dark:border-gray-800">
+                <p className="text-xs font-medium text-gray-500 dark:text-gray-400 mb-2">Includes:</p>
+                <div className="space-y-1">
+                  {enabledModules.map(moduleCode => (
+                    <div key={moduleCode} className="flex justify-between text-xs text-gray-600 dark:text-gray-400">
+                      <span>{MODULE_NAMES[moduleCode] || moduleCode}</span>
+                      <span>
+                        £{MODULE_PRICING[moduleCode]?.[subscriptionType === 'monthly' ? 'monthly' : 'yearly'] || 0}/venue/{subscriptionType === 'monthly' ? 'mo' : 'yr'}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
 
             <p className="text-xs text-gray-500 dark:text-gray-400 mt-3">
               {venueCount} venue{venueCount !== 1 ? 's' : ''} • Tax calculated based on your location • Secured by Stripe
@@ -360,13 +436,79 @@ const BillingTab = ({ allowExpiredAccess = false }) => {
       {accountData?.is_paid && accountData.stripe_customer_id && accountId && (
         <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl overflow-hidden">
           <div className="px-6 py-4 border-b border-gray-100 dark:border-gray-800">
-            <h3 className="text-base font-semibold text-gray-900 dark:text-white">Subscription Details</h3>
-            <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">Manage your active subscription and billing</p>
+            <div className="flex items-center justify-between">
+              <div>
+                <div className="flex items-center gap-2">
+                  <h3 className="text-base font-semibold text-gray-900 dark:text-white">Subscription Details</h3>
+                  {isLegacyPricing && (
+                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400">
+                      <Crown className="w-3 h-3" />
+                      Legacy Plan
+                    </span>
+                  )}
+                </div>
+                <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+                  {isLegacyPricing
+                    ? 'Your pricing and features are locked in'
+                    : 'Manage your active subscription and billing'
+                  }
+                </p>
+              </div>
+            </div>
           </div>
+
+          {/* Legacy plan info banner */}
+          {isLegacyPricing && (
+            <div className="px-6 py-4 bg-amber-50 dark:bg-amber-900/10 border-b border-amber-100 dark:border-amber-900/30">
+              <div className="flex items-start gap-3">
+                <Crown className="w-5 h-5 text-amber-600 dark:text-amber-400 flex-shrink-0 mt-0.5" />
+                <div>
+                  <p className="text-sm font-medium text-amber-800 dark:text-amber-300">Legacy Plan Benefits</p>
+                  <p className="text-xs text-amber-700 dark:text-amber-400 mt-1">
+                    You're on a legacy plan with full access to all features (Feedback + NPS) at your original pricing. These benefits are locked in for as long as you maintain your subscription.
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Module breakdown for non-legacy accounts */}
+          {!isLegacyPricing && enabledModules.length > 0 && (
+            <div className="px-6 py-4 border-b border-gray-100 dark:border-gray-800">
+              <div className="flex items-center justify-between mb-3">
+                <p className="text-sm font-medium text-gray-700 dark:text-gray-300">Active Modules</p>
+                <button
+                  onClick={() => navigate('/admin/features')}
+                  className="inline-flex items-center gap-1 text-sm text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 font-medium"
+                >
+                  <Puzzle className="w-4 h-4" />
+                  Manage Features
+                  <ChevronRight className="w-4 h-4" />
+                </button>
+              </div>
+              <div className="space-y-2">
+                {enabledModules.map(moduleCode => (
+                  <div key={moduleCode} className="flex items-center justify-between py-2 px-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
+                    <span className="text-sm font-medium text-gray-900 dark:text-white">
+                      {MODULE_NAMES[moduleCode] || moduleCode}
+                    </span>
+                    <span className="text-sm text-gray-500 dark:text-gray-400">
+                      £{MODULE_PRICING[moduleCode]?.monthly || 0}/venue/mo
+                    </span>
+                  </div>
+                ))}
+              </div>
+              <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">
+                {venueCount} venue{venueCount !== 1 ? 's' : ''} • Total: £{calculateModuleTotal('monthly').toLocaleString()}/mo
+              </p>
+            </div>
+          )}
+
           <div className="p-6">
             <SubscriptionManagement
               accountId={accountId}
               userEmail={userEmail}
+              isLegacyPricing={isLegacyPricing}
             />
           </div>
         </div>

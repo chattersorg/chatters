@@ -40,6 +40,7 @@ import ReportsFeedbackPage from './pages/dashboard/ReportsFeedback';
 import ReportsImpactPage from './pages/dashboard/ReportsImpact';
 import ReportsMetricsPage from './pages/dashboard/ReportsMetrics';
 import ReportsNPSPage from './pages/dashboard/ReportsNPS';
+import ReportsFollowUpTagsPage from './pages/dashboard/ReportsFollowUpTags';
 import NPSInsightsPage from './pages/dashboard/NPSInsights';
 import NPSSettingsPage from './pages/dashboard/NPSSettings';
 import StaffListPage from './pages/dashboard/StaffList';
@@ -53,6 +54,7 @@ import AccountBillingPage from './pages/dashboard/AccountBilling';
 import FeedbackSettings from './pages/dashboard/FeedbackSettings';
 import AllFeedback from './pages/dashboard/AllFeedback';
 import CustomDashboard from './pages/dashboard/CustomDashboard';
+import MultiVenueDashboard from './pages/dashboard/MultiVenueDashboard';
 import OverviewDetails from './pages/dashboard/OverviewDetails';
 import NPSReportDetail from './pages/dashboard/NPSReportDetail';
 // Full version (requires Google Business Profile API approval)
@@ -67,6 +69,9 @@ import MenuBuilderPage from './pages/dashboard/MenuBuilderPage';
 // Admin pages (master only)
 import ManagerPermissions from './pages/dashboard/admin/ManagerPermissions';
 import RoleTemplates from './pages/dashboard/admin/RoleTemplates';
+import VenueGroups from './pages/dashboard/admin/VenueGroups';
+import FeatureManagement from './pages/dashboard/admin/FeatureManagement';
+import ManagersPage from './pages/dashboard/ManagersPage';
 
 // Kiosk (venue‑aware, no dashboard frame)
 import KioskPage from './pages/dashboard/KioskPage';
@@ -88,6 +93,8 @@ import ModernDashboardFrame from './components/dashboard/layout/ModernDashboardF
 import { VenueProvider } from './context/VenueContext';
 import { PermissionsProvider, PermissionGate } from './context/PermissionsContext';
 import SubscriptionGuard from './components/guards/SubscriptionGuard';
+import ModuleGate from './components/guards/ModuleGate';
+import ModuleUpgradePage from './pages/dashboard/ModuleUpgradePage';
 
 // Trial expired page (outside subscription guard)
 import TrialExpired from './pages/dashboard/TrialExpired';
@@ -153,7 +160,7 @@ const DashboardRoutes = () => {
     <Routes>
       {/* Auth (no VenueProvider, no DashboardFrame) */}
       <Route path="/signin" element={<SignInPage />} />
-      {/* <Route path="/signup" element={<SignUpPage />} /> */}
+      <Route path="/signup" element={<SignUpPage />} />
       <Route path="/reset-password" element={<ResetPassword />} />
       <Route path="/forgot-password" element={<ForgotPassword />} />
       <Route path="/set-password" element={<SetPasswordPage />} />
@@ -215,7 +222,7 @@ const DashboardRoutes = () => {
         } />
         <Route path="/multi-venue/dashboard" element={
           <ProtectedRoute permission="multivenue.view">
-            <CustomDashboard />
+            <MultiVenueDashboard />
           </ProtectedRoute>
         } />
         {/* Legacy multi-venue routes */}
@@ -245,7 +252,7 @@ const DashboardRoutes = () => {
             <FeedbackQuestionsPage />
           </ProtectedRoute>
         } />
-        <Route path="/feedback/insights" element={
+        <Route path="/reports/satisfaction" element={
           <ProtectedRoute permission="reports.view">
             <CustomerInsightsPage />
           </ProtectedRoute>
@@ -284,26 +291,39 @@ const DashboardRoutes = () => {
             <ReportsMetricsPage />
           </ProtectedRoute>
         } />
-        {/* NPS Section */}
-        <Route path="/nps/score" element={
-          <ProtectedRoute permission="nps.view">
-            <ReportsNPSPage />
+        <Route path="/reports/follow-up-tags" element={
+          <ProtectedRoute permission="feedback.view">
+            <ReportsFollowUpTagsPage />
           </ProtectedRoute>
+        } />
+        {/* NPS Section - Gated by NPS module */}
+        <Route path="/nps/score" element={
+          <ModuleGate module="nps" fallback={<ModuleUpgradePage module="nps" />}>
+            <ProtectedRoute permission="nps.view">
+              <ReportsNPSPage />
+            </ProtectedRoute>
+          </ModuleGate>
         } />
         <Route path="/nps/insights" element={
-          <ProtectedRoute permission="nps.view">
-            <NPSInsightsPage />
-          </ProtectedRoute>
+          <ModuleGate module="nps" fallback={<ModuleUpgradePage module="nps" />}>
+            <ProtectedRoute permission="nps.insights">
+              <NPSInsightsPage />
+            </ProtectedRoute>
+          </ModuleGate>
         } />
         <Route path="/nps/settings" element={
-          <ProtectedRoute permission="nps.edit">
-            <NPSSettingsPage />
-          </ProtectedRoute>
+          <ModuleGate module="nps" fallback={<ModuleUpgradePage module="nps" />}>
+            <ProtectedRoute permission="nps.edit">
+              <NPSSettingsPage />
+            </ProtectedRoute>
+          </ModuleGate>
         } />
         <Route path="/nps-report/:venueId" element={
-          <ProtectedRoute permission="nps.view">
-            <NPSReportDetail />
-          </ProtectedRoute>
+          <ModuleGate module="nps" fallback={<ModuleUpgradePage module="nps" />}>
+            <ProtectedRoute permission="nps.view">
+              <NPSReportDetail />
+            </ProtectedRoute>
+          </ModuleGate>
         } />
         {/* Legacy NPS routes */}
         <Route path="/reports/nps" element={<Navigate to="/nps/score" replace />} />
@@ -336,24 +356,25 @@ const DashboardRoutes = () => {
             <RecognitionHistory />
           </ProtectedRoute>
         } />
-        <Route path="/staff/list" element={
+        <Route path="/staff/employees" element={
           <ProtectedRoute permission="staff.view">
             <StaffListPage />
           </ProtectedRoute>
         } />
-        <Route path="/staff/team" element={
-          <ProtectedRoute permission="staff.view">
-            <StaffListPage />
-          </ProtectedRoute>
-        } />
+        {/* Redirects from old paths to new /staff/employees */}
+        <Route path="/staff/list" element={<Navigate to="/staff/employees" replace />} />
+        <Route path="/staff/team" element={<Navigate to="/staff/employees" replace />} />
         <Route path="/staff/import" element={
           <ProtectedRoute permission="staff.edit">
             <CSVImportReview />
           </ProtectedRoute>
         } />
-        {/* Legacy routes - redirect to combined staff list */}
-        <Route path="/staff/managers" element={<Navigate to="/staff/list" replace />} />
-        <Route path="/staff/employees" element={<Navigate to="/staff/list" replace />} />
+        {/* Managers page - shows hierarchy for users with managers.view */}
+        <Route path="/staff/managers" element={
+          <ProtectedRoute permission="managers.view">
+            <ManagersPage />
+          </ProtectedRoute>
+        } />
         <Route path="/staff/employees/:employeeId" element={
           <ProtectedRoute permission="staff.view">
             <EmployeeDetail />
@@ -370,12 +391,12 @@ const DashboardRoutes = () => {
           </ProtectedRoute>
         } />
         <Route path="/staff/roles" element={
-          <ProtectedRoute permission="staff.edit">
+          <ProtectedRoute permission="staff.roles">
             <StaffRolesPage />
           </ProtectedRoute>
         } />
         <Route path="/staff/locations" element={
-          <ProtectedRoute permission="staff.edit">
+          <ProtectedRoute permission="staff.locations">
             <StaffLocationsPage />
           </ProtectedRoute>
         } />
@@ -394,8 +415,8 @@ const DashboardRoutes = () => {
             <VenueSettingsPage />
           </ProtectedRoute>
         } />
-        <Route path="/settings/feedback" element={
-          <ProtectedRoute permission="venue.view">
+        <Route path="/feedback/settings" element={
+          <ProtectedRoute permission="feedback.settings">
             <FeedbackSettings />
           </ProtectedRoute>
         } />
@@ -442,7 +463,7 @@ const DashboardRoutes = () => {
           </ProtectedRoute>
         } />
         <Route path="/venue-settings/menu-builder" element={
-          <ProtectedRoute permission="venue.edit">
+          <ProtectedRoute permission="menu.edit">
             <MenuBuilderPage />
           </ProtectedRoute>
         } />
@@ -465,6 +486,11 @@ const DashboardRoutes = () => {
         } />
 
         {/* Administration Section (Master only) */}
+        <Route path="/admin/managers" element={
+          <ProtectedRoute permission="managers.view">
+            <ManagersPage />
+          </ProtectedRoute>
+        } />
         <Route path="/admin/permissions" element={<Navigate to="/admin/permissions/managers" replace />} />
         <Route path="/admin/permissions/managers" element={
           <ProtectedRoute permission="managers.permissions">
@@ -475,6 +501,14 @@ const DashboardRoutes = () => {
           <ProtectedRoute permission="managers.permissions">
             <RoleTemplates />
           </ProtectedRoute>
+        } />
+        <Route path="/admin/venue-groups" element={
+          <ProtectedRoute permission="venuegroups.edit">
+            <VenueGroups />
+          </ProtectedRoute>
+        } />
+        <Route path="/admin/features" element={
+          <FeatureManagement />
         } />
 
         {/* Floor Plan */}

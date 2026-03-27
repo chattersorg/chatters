@@ -174,6 +174,7 @@ const IdleScreen = () => {
       .from('zones')
       .select('*')
       .eq('venue_id', venueId)
+      .is('deleted_at', null)
       .order('order');
     setZones(data || []);
   };

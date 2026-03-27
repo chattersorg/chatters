@@ -1,16 +1,19 @@
 import React, { useState, useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 import { supabase } from '../../utils/supabase';
-import { ChartCard } from '../../components/dashboard/layout/ModernCard';
+import ModernCard from '../../components/dashboard/layout/ModernCard';
 import usePageTitle from '../../hooks/usePageTitle';
 import { useVenue } from '../../context/VenueContext';
 import { PermissionGate } from '../../context/PermissionsContext';
+import usePermissions from '../../hooks/usePermissions';
 import VenueTab from '../../components/dashboard/settings/VenueTab';
-import { Building2, ChevronRight, MapPin, Phone, Globe, Edit2, TrendingUp, TrendingDown, MessageSquare, CheckCircle, Trash2, AlertTriangle } from 'lucide-react';
+import { ChevronRight, ChevronDown, Trash2, AlertTriangle, Info } from 'lucide-react';
+import toast from 'react-hot-toast';
 
 const VenueSettingsPage = () => {
   const location = useLocation();
-  const { venueId, allVenues, setCurrentVenue, userRole } = useVenue();
+  const { venueId, allVenues, userRole } = useVenue();
+  const { hasPermission } = usePermissions();
 
   // Determine if we're in multi-venue list mode (accessed from Multi Venue > Venues)
   // vs single-venue edit mode (accessed from Venue Settings submenu)
@@ -38,9 +41,10 @@ const VenueSettingsPage = () => {
     postalCode: '',
     country: '',
   });
-  const [message, setMessage] = useState('');
   const [venueMetrics, setVenueMetrics] = useState({});
   const [loadingMetrics, setLoadingMetrics] = useState(false);
+  const [expandedVenueId, setExpandedVenueId] = useState(null);
+  const [venueDetails, setVenueDetails] = useState({}); // { venueId: { managers: [], employees: [] } }
 
   // Venue management state (for multi-venue mode)
   const [newVenue, setNewVenue] = useState({
@@ -53,6 +57,7 @@ const VenueSettingsPage = () => {
       postalCode: '',
       country: '',
     },
+    assignedManagerId: '',
   });
   const [venueLoading, setVenueLoading] = useState(false);
   const [venueMessage, setVenueMessage] = useState('');
@@ -61,8 +66,9 @@ const VenueSettingsPage = () => {
   const [deleteConfirm, setDeleteConfirm] = useState(null); // { venueId, venueName }
   const [deleteLoading, setDeleteLoading] = useState(false);
   const [showCreateWarning, setShowCreateWarning] = useState(false);
+  const [availableManagers, setAvailableManagers] = useState([]);
 
-  // Fetch venue metrics (NPS, feedback count, resolution rate)
+  // Fetch venue staff counts (managers and employees)
   useEffect(() => {
     if (!isMultiVenueMode) {
       return;
@@ -72,64 +78,45 @@ const VenueSettingsPage = () => {
       setLoadingMetrics(true);
       const metrics = {};
 
-      // Get 30 days ago for recent metrics
-      const thirtyDaysAgo = new Date();
-      thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
-
       for (const venue of allVenues) {
-        // Fetch NPS submissions for this venue in last 30 days
-        const { data: npsSubmissions, error: npsError } = await supabase
-          .from('nps_submissions')
-          .select('score')
+        // Fetch staff records for this venue (only those with valid user_id)
+        const { data: staffData } = await supabase
+          .from('staff')
+          .select('user_id')
           .eq('venue_id', venue.id)
-          .gte('created_at', thirtyDaysAgo.toISOString());
+          .not('user_id', 'is', null);
 
-        // Calculate NPS
-        const npsScores = (npsSubmissions || [])
-          .map(s => s.score)
-          .filter(score => score !== null && score !== undefined);
-
-        let nps = null;
-        if (npsScores.length > 0) {
-          const promoters = npsScores.filter(s => s >= 9).length;
-          const detractors = npsScores.filter(s => s <= 6).length;
-          nps = Math.round(((promoters - detractors) / npsScores.length) * 100);
+        // Count actual managers by checking each user individually
+        let managerCount = 0;
+        if (staffData && staffData.length > 0) {
+          const userIds = staffData.map(s => s.user_id);
+          // Query each user to check if they're a valid manager (not deleted)
+          const userPromises = userIds.map(async (userId) => {
+            const { data } = await supabase
+              .from('users')
+              .select('id, role, deleted_at')
+              .eq('id', userId)
+              .single();
+            return data;
+          });
+          const users = await Promise.all(userPromises);
+          // Count users that exist, have manager role, and aren't deleted
+          managerCount = users.filter(u =>
+            u !== null &&
+            u.role === 'manager' &&
+            u.deleted_at === null
+          ).length;
         }
 
-        // Fetch all feedback for this venue in last 30 days
-        const { data: feedbackData, error: feedbackError } = await supabase
-          .from('feedback')
-          .select('session_id, is_actioned, dismissed')
-          .eq('venue_id', venue.id)
-          .gte('created_at', thirtyDaysAgo.toISOString());
-
-        // Calculate unique sessions (total feedback)
-        const uniqueSessions = new Set(
-          (feedbackData || []).map(f => f.session_id)
-        );
-        const totalFeedback = uniqueSessions.size;
-
-        // Calculate resolution rate
-        const sessionGroups = {};
-        (feedbackData || []).forEach(item => {
-          if (!sessionGroups[item.session_id]) {
-            sessionGroups[item.session_id] = [];
-          }
-          sessionGroups[item.session_id].push(item);
-        });
-
-        const sessionArray = Object.values(sessionGroups);
-        const resolvedSessions = sessionArray.filter(session =>
-          session.every(item => item.is_actioned === true || item.dismissed === true)
-        ).length;
-        const resolutionRate = totalFeedback > 0
-          ? Math.round((resolvedSessions / totalFeedback) * 100)
-          : 0;
+        // Fetch employees for this venue
+        const { data: employeesData } = await supabase
+          .from('employees')
+          .select('id')
+          .eq('venue_id', venue.id);
 
         metrics[venue.id] = {
-          nps,
-          totalFeedback,
-          resolutionRate
+          managers: managerCount,
+          employees: (employeesData || []).length
         };
       }
 
@@ -139,6 +126,140 @@ const VenueSettingsPage = () => {
 
     fetchVenueMetrics();
   }, [allVenues, isMultiVenueMode]);
+
+  // Fetch detailed venue data when expanding a venue
+  const fetchVenueDetails = async (venueIdToFetch) => {
+    // If already fetched, don't refetch
+    if (venueDetails[venueIdToFetch]) return;
+
+    // Get the account_id from the venue
+    const venue = allVenues.find(v => v.id === venueIdToFetch);
+    if (!venue) return;
+
+    // Fetch managers (users with staff association to this venue)
+    const { data: staffData, error: staffError } = await supabase
+      .from('staff')
+      .select('user_id')
+      .eq('venue_id', venueIdToFetch);
+
+    console.log('Staff data for venue', venueIdToFetch, ':', staffData, 'Error:', staffError);
+
+    const staffUserIds = (staffData || []).map(s => s.user_id).filter(id => id !== null);
+    console.log('Staff user IDs:', staffUserIds);
+
+    let managers = [];
+    if (staffUserIds.length > 0) {
+      // Query each user individually to work around RLS policies
+      // that may restrict which users can be seen with .in() queries
+      const userPromises = staffUserIds.map(async (userId) => {
+        const { data, error } = await supabase
+          .from('users')
+          .select('id, first_name, last_name, email, role, reports_to, invited_by, deleted_at')
+          .eq('id', userId)
+          .single();
+        if (error) {
+          console.log('Error fetching user', userId, ':', error);
+        }
+        return data;
+      });
+
+      const userResults = await Promise.all(userPromises);
+      console.log('User results:', userResults);
+      managers = userResults.filter(user => user !== null && user.deleted_at === null);
+      console.log('Filtered managers:', managers);
+    }
+
+    // Fetch employees
+    const { data: employeesData } = await supabase
+      .from('employees')
+      .select('id, first_name, last_name, email, role')
+      .eq('venue_id', venueIdToFetch);
+
+    // Build manager hierarchy
+    const buildManagerHierarchy = (managersArray) => {
+      // Find the master user (root) for this account
+      const masterIds = managersArray.filter(m => m.role === 'master').map(m => m.id);
+
+      // Organize managers by who they report to
+      const tree = [];
+      const managersById = {};
+      managersArray.forEach(m => { managersById[m.id] = { ...m, children: [] }; });
+
+      managersArray.forEach(m => {
+        const parentId = m.reports_to || m.invited_by;
+        if (!parentId || masterIds.includes(m.id) || !managersById[parentId]) {
+          // Root level manager (reports to master or no parent in this venue)
+          tree.push(managersById[m.id]);
+        } else if (managersById[parentId]) {
+          managersById[parentId].children.push(managersById[m.id]);
+        }
+      });
+
+      return tree;
+    };
+
+    setVenueDetails(prev => ({
+      ...prev,
+      [venueIdToFetch]: {
+        managers: buildManagerHierarchy(managers),
+        employees: employeesData || [],
+        rawManagers: managers
+      }
+    }));
+  };
+
+  // Handle venue row expansion toggle
+  const handleVenueExpand = async (venueIdToExpand) => {
+    if (expandedVenueId === venueIdToExpand) {
+      setExpandedVenueId(null);
+    } else {
+      setExpandedVenueId(venueIdToExpand);
+      await fetchVenueDetails(venueIdToExpand);
+    }
+  };
+
+  // Recursive component to render manager hierarchy
+  const ManagerNode = ({ manager, depth = 0 }) => {
+    const hasChildren = manager.children && manager.children.length > 0;
+    const displayName = manager.first_name && manager.last_name
+      ? `${manager.first_name} ${manager.last_name}`
+      : manager.email;
+
+    return (
+      <div>
+        <div
+          className="flex items-center gap-2 py-1.5"
+          style={{ paddingLeft: `${depth * 20}px` }}
+        >
+          {depth > 0 && (
+            <div className="w-4 h-px bg-gray-300 dark:bg-gray-600" />
+          )}
+          <div className="flex-1 min-w-0">
+            <span className="text-sm font-medium text-gray-900 dark:text-white truncate block">
+              {displayName}
+            </span>
+            {manager.email && manager.first_name && (
+              <span className="text-xs text-gray-500 dark:text-gray-400 truncate block">
+                {manager.email}
+              </span>
+            )}
+          </div>
+          {manager.role === 'master' && (
+            <span className="px-2 py-0.5 text-xs font-medium text-purple-700 dark:text-purple-300 bg-purple-100 dark:bg-purple-900 rounded-full">
+              Owner
+            </span>
+          )}
+        </div>
+        {hasChildren && (
+          <div className="border-l-2 border-gray-200 dark:border-gray-700 ml-3">
+            {manager.children.map(child => (
+              <ManagerNode key={child.id} manager={child} depth={depth + 1} />
+            ))}
+          </div>
+        )}
+      </div>
+    );
+  };
 
   // Fetch venue data
   useEffect(() => {
@@ -182,7 +303,6 @@ const VenueSettingsPage = () => {
     if (!venueId) return;
 
     setLoading(true);
-    setMessage('');
 
     try {
       // Update venues table
@@ -203,11 +323,11 @@ const VenueSettingsPage = () => {
         throw venueError;
       }
 
-      setMessage('Venue settings updated successfully!');
+      toast.success('Venue settings saved successfully!');
     } catch (error) {
       console.error('Error updating venue settings:', error);
       const errorDetails = error.code ? `Error ${error.code}: ${error.message}` : error.message;
-      setMessage(`Failed to update venue settings: ${errorDetails}`);
+      toast.error(`Failed to save venue settings: ${errorDetails}`);
     } finally {
       setLoading(false);
     }
@@ -232,6 +352,16 @@ const VenueSettingsPage = () => {
 
       if (userRow) {
         setAccountId(userRow.account_id);
+
+        // Fetch available managers for this account (include reports_to for hierarchy info)
+        const { data: managers } = await supabase
+          .from('users')
+          .select('id, first_name, last_name, email, role, reports_to')
+          .eq('account_id', userRow.account_id)
+          .eq('role', 'manager')
+          .is('deleted_at', null);
+
+        setAvailableManagers(managers || []);
       }
     };
 
@@ -291,6 +421,23 @@ const VenueSettingsPage = () => {
         throw new Error(venueError.message);
       }
 
+      // If a manager was selected, create a staff record to assign them to this venue
+      if (newVenue.assignedManagerId && venueData?.id) {
+        const { error: staffError } = await supabase
+          .from('staff')
+          .insert([
+            {
+              user_id: newVenue.assignedManagerId,
+              venue_id: venueData.id,
+            },
+          ]);
+
+        if (staffError) {
+          console.error('Error assigning manager to venue:', staffError);
+          // Don't fail the whole operation, just log the error
+        }
+      }
+
       await updateStripeQuantity();
 
       setVenueMessage('Venue created successfully! This venue will be added to your next billing cycle.');
@@ -304,6 +451,7 @@ const VenueSettingsPage = () => {
           postalCode: '',
           country: '',
         },
+        assignedManagerId: '',
       });
 
       // Refresh the page or context to show new venue
@@ -377,344 +525,412 @@ const VenueSettingsPage = () => {
     return null;
   }
 
-  // Helper function to get NPS badge styling
-  const getNPSBadge = (nps) => {
-    if (nps === null || nps === undefined) {
-      return { color: 'bg-gray-100 text-gray-600', label: 'No Data', icon: null };
-    }
-    if (nps >= 50) {
-      return { color: 'bg-green-500 text-white', label: `${nps}`, icon: TrendingUp };
-    }
-    if (nps >= 0) {
-      return { color: 'bg-yellow-500 text-gray-900', label: `${nps}`, icon: null };
-    }
-    return { color: 'bg-red-500 text-white', label: `${nps}`, icon: TrendingDown };
-  };
-
-  // Helper function to get resolution rate badge styling
-  const getResolutionBadge = (rate) => {
-    if (rate >= 75) {
-      return 'bg-green-100 text-green-700';
-    }
-    if (rate >= 50) {
-      return 'bg-yellow-100 text-yellow-700';
-    }
-    return 'bg-red-100 text-red-700';
-  };
-
   // Multi-venue list mode: Show all venues with quick switcher
   if (isMultiVenueMode) {
     return (
       <div className="space-y-6">
-        <ChartCard
-          title="Venues Quick Glance"
-          subtitle="A quick glance at your venues. Click to switch primary venue and edit venue details."
-        >
-          {loadingMetrics ? (
+        {/* Page Header */}
+        <div className="mb-2">
+          <h1 className="text-2xl font-semibold text-gray-900 dark:text-white">Venues</h1>
+          <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">Quick glance at your venues. Click to expand and see details.</p>
+        </div>
+
+        {loadingMetrics ? (
+          <ModernCard padding="p-5" shadow="shadow-sm">
             <div className="flex items-center justify-center py-12">
               <div className="text-center">
                 <div className="w-8 h-8 border-2 border-gray-300 dark:border-gray-700 border-t-blue-600 dark:border-t-blue-400 rounded-full animate-spin mx-auto mb-4" />
                 <span className="text-gray-600 dark:text-gray-400">Loading venue metrics...</span>
               </div>
             </div>
-          ) : (
-            <>
-              {/* Desktop Table */}
-              <div className="hidden lg:block overflow-x-auto">
-                <table className="w-full">
-                  <thead>
-                    <tr className="border-b border-gray-200 dark:border-gray-700">
-                      <th className="text-left py-3 px-4 text-sm font-semibold text-gray-700 dark:text-gray-300">Venue</th>
-                      <th className="text-left py-3 px-4 text-sm font-semibold text-gray-700 dark:text-gray-300">Location</th>
-                      <th className="text-center py-3 px-4 text-sm font-semibold text-gray-700 dark:text-gray-300">NPS Score</th>
-                      <th className="text-center py-3 px-4 text-sm font-semibold text-gray-700 dark:text-gray-300">Feedback</th>
-                      <th className="text-center py-3 px-4 text-sm font-semibold text-gray-700 dark:text-gray-300">Resolution</th>
-                      <th className="text-right py-3 px-4 text-sm font-semibold text-gray-700 dark:text-gray-300">Actions</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {allVenues.map((venue) => {
-                      const isActive = venue.id === venueId;
-                      const metrics = venueMetrics[venue.id] || {};
-                      const npsBadge = getNPSBadge(metrics.nps);
-                      const NPSIcon = npsBadge.icon;
+          </ModernCard>
+        ) : (
+          <div className="space-y-4">
+            {allVenues.map((venue) => {
+              const metrics = venueMetrics[venue.id] || {};
+              const isExpanded = expandedVenueId === venue.id;
+              const details = venueDetails[venue.id];
 
-                      return (
-                        <tr
-                          key={venue.id}
-                          className={`border-b border-gray-100 dark:border-gray-800 transition-colors ${
-                            isActive ? 'bg-blue-50 dark:bg-blue-900/30' : 'hover:bg-gray-50 dark:hover:bg-gray-800'
-                          }`}
+              return (
+                <ModernCard key={venue.id} padding="p-0" shadow="shadow-sm">
+                  {/* Venue Header - Clickable */}
+                  <div
+                    className={`p-5 cursor-pointer transition-colors ${isExpanded ? 'bg-gray-50 dark:bg-gray-800/50' : 'hover:bg-gray-50 dark:hover:bg-gray-800/30'}`}
+                    onClick={() => handleVenueExpand(venue.id)}
+                  >
+                    <div className="flex items-center justify-between">
+                      {/* Left side - Venue info */}
+                      <div className="flex items-center gap-3">
+                        <button
+                          onClick={(e) => { e.stopPropagation(); handleVenueExpand(venue.id); }}
+                          className="p-1 rounded hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
                         >
-                          {/* Venue Name */}
-                          <td className="py-4 px-4">
-                            <div className="flex items-center gap-3">
-                              <div className={`p-2 rounded-lg ${isActive ? 'bg-blue-100 dark:bg-blue-800' : 'bg-gray-100 dark:bg-gray-800'}`}>
-                                <Building2 className={`w-5 h-5 ${isActive ? 'text-blue-600 dark:text-blue-400' : 'text-gray-600 dark:text-gray-400'}`} />
-                              </div>
-                              <div>
-                                <div className="font-semibold text-gray-900 dark:text-white">{venue.name}</div>
-                                {isActive && (
-                                  <span className="inline-block px-2 py-0.5 text-xs font-medium text-blue-700 dark:text-blue-300 bg-blue-200 dark:bg-blue-800 rounded-full mt-1">
-                                    Active
-                                  </span>
-                                )}
-                              </div>
-                            </div>
-                          </td>
-
-                          {/* Location */}
-                          <td className="py-4 px-4">
-                            {venue.address ? (
-                              <div className="text-sm text-gray-600 dark:text-gray-400">
-                                <div>{venue.address.city || venue.address.line1}</div>
-                                {venue.address.postalCode && (
-                                  <div className="text-xs text-gray-500 dark:text-gray-500">{venue.address.postalCode}</div>
-                                )}
-                              </div>
-                            ) : (
-                              <span className="text-sm text-gray-400 dark:text-gray-500">-</span>
-                            )}
-                          </td>
-
-                          {/* NPS Score */}
-                          <td className="py-4 px-4 text-center">
-                            <div className="flex items-center justify-center gap-1">
-                              <span className={`px-3 py-1 rounded-full text-sm font-bold ${npsBadge.color} inline-flex items-center gap-1`}>
-                                {NPSIcon && <NPSIcon className="w-4 h-4" />}
-                                {npsBadge.label}
-                              </span>
-                            </div>
-                          </td>
-
-                          {/* Total Feedback */}
-                          <td className="py-4 px-4 text-center">
-                            <div className="flex items-center justify-center gap-2">
-                              <MessageSquare className="w-4 h-4 text-gray-400 dark:text-gray-500" />
-                              <span className="text-sm font-semibold text-gray-900 dark:text-white">
-                                {metrics.totalFeedback || 0}
-                              </span>
-                            </div>
-                          </td>
-
-                          {/* Resolution Rate */}
-                          <td className="py-4 px-4 text-center">
-                            <div className="flex items-center justify-center gap-2">
-                              <CheckCircle className="w-4 h-4 text-gray-400 dark:text-gray-500" />
-                              <span className={`px-2 py-1 rounded text-xs font-semibold ${getResolutionBadge(metrics.resolutionRate || 0)}`}>
-                                {metrics.resolutionRate || 0}%
-                              </span>
-                            </div>
-                          </td>
-
-                          {/* Actions */}
-                          <td className="py-4 px-4">
-                            <div className="flex items-center justify-end gap-2">
-                              {!isActive && (
-                                <button
-                                  onClick={() => setCurrentVenue(venue.id)}
-                                  className="px-3 py-1.5 text-sm font-medium text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 hover:bg-blue-50 dark:hover:bg-blue-900/30 rounded-lg transition-colors flex items-center gap-1.5"
-                                >
-                                  Switch
-                                  <ChevronRight className="w-3.5 h-3.5" />
-                                </button>
-                              )}
-                              {!isActive && allVenues.length > 1 && (
-                                <PermissionGate permission="venue.edit">
-                                  <button
-                                    onClick={() => setDeleteConfirm({ venueId: venue.id, venueName: venue.name })}
-                                    className="p-2 rounded-lg text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/30 transition-colors"
-                                    title="Delete venue"
-                                  >
-                                    <Trash2 className="w-4 h-4" />
-                                  </button>
-                                </PermissionGate>
-                              )}
-                            </div>
-                          </td>
-                        </tr>
-                      );
-                    })}
-                  </tbody>
-                </table>
-              </div>
-
-              {/* Mobile Cards */}
-              <div className="lg:hidden space-y-4">
-                {allVenues.map((venue) => {
-                  const isActive = venue.id === venueId;
-                  const metrics = venueMetrics[venue.id] || {};
-                  const npsBadge = getNPSBadge(metrics.nps);
-                  const NPSIcon = npsBadge.icon;
-
-                  return (
-                    <div
-                      key={venue.id}
-                      className={`p-4 rounded-lg border-2 transition-all ${
-                        isActive
-                          ? 'border-blue-500 dark:border-blue-600 bg-blue-50 dark:bg-blue-900/30'
-                          : 'border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800'
-                      }`}
-                    >
-                      {/* Venue Header */}
-                      <div className="flex items-start gap-3 mb-4">
-                        <div className={`p-2 rounded-lg ${isActive ? 'bg-blue-100 dark:bg-blue-800' : 'bg-gray-100 dark:bg-gray-700'}`}>
-                          <Building2 className={`w-5 h-5 ${isActive ? 'text-blue-600 dark:text-blue-400' : 'text-gray-600 dark:text-gray-400'}`} />
-                        </div>
-                        <div className="flex-1">
-                          <h3 className="font-semibold text-gray-900 dark:text-white">{venue.name}</h3>
-                          {venue.address && (
-                            <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
-                              {venue.address.city || venue.address.line1}
-                              {venue.address.postalCode && ` ${venue.address.postalCode}`}
-                            </p>
+                          {isExpanded ? (
+                            <ChevronDown className="w-4 h-4 text-gray-500 dark:text-gray-400" />
+                          ) : (
+                            <ChevronRight className="w-4 h-4 text-gray-500 dark:text-gray-400" />
                           )}
-                          {isActive && (
-                            <span className="inline-block px-2 py-0.5 text-xs font-medium text-blue-700 dark:text-blue-300 bg-blue-200 dark:bg-blue-800 rounded-full mt-2">
-                              Active
-                            </span>
+                        </button>
+                        <div>
+                          <div className="font-semibold text-gray-900 dark:text-white">{venue.name}</div>
+                          {venue.address && (
+                            <p className="text-sm text-gray-500 dark:text-gray-400">
+                              {venue.address.city || venue.address.line1}
+                              {venue.address.postalCode && `, ${venue.address.postalCode}`}
+                            </p>
                           )}
                         </div>
                       </div>
 
-                      {/* Metrics Grid */}
-                      <div className="grid grid-cols-3 gap-3 mb-4">
-                        <div className="text-center">
-                          <div className="text-xs text-gray-500 dark:text-gray-400 mb-1">NPS Score</div>
-                          <span className={`px-2 py-1 rounded-full text-sm font-bold ${npsBadge.color} inline-flex items-center gap-1`}>
-                            {NPSIcon && <NPSIcon className="w-3 h-3" />}
-                            {npsBadge.label}
-                          </span>
-                        </div>
-                        <div className="text-center">
-                          <div className="text-xs text-gray-500 dark:text-gray-400 mb-1">Feedback</div>
-                          <div className="flex items-center justify-center gap-1">
-                            <MessageSquare className="w-3 h-3 text-gray-400 dark:text-gray-500" />
+                      {/* Right side - Stats and actions */}
+                      <div className="flex items-center gap-6">
+                        {/* Stats */}
+                        <div className="hidden sm:flex items-center gap-6">
+                          <div className="text-center">
+                            <div className="text-xs text-gray-500 dark:text-gray-400 mb-0.5">Managers</div>
                             <span className="text-sm font-semibold text-gray-900 dark:text-white">
-                              {metrics.totalFeedback || 0}
+                              {metrics.managers || 0}
+                            </span>
+                          </div>
+                          <div className="text-center">
+                            <div className="text-xs text-gray-500 dark:text-gray-400 mb-0.5">Employees</div>
+                            <span className="text-sm font-semibold text-gray-900 dark:text-white">
+                              {metrics.employees || 0}
                             </span>
                           </div>
                         </div>
-                        <div className="text-center">
-                          <div className="text-xs text-gray-500 dark:text-gray-400 mb-1">Resolved</div>
-                          <span className={`px-2 py-1 rounded text-xs font-semibold ${getResolutionBadge(metrics.resolutionRate || 0)}`}>
-                            {metrics.resolutionRate || 0}%
-                          </span>
-                        </div>
-                      </div>
 
-                      {/* Actions */}
-                      <div className="flex gap-2">
-                        {!isActive && (
-                          <button
-                            onClick={() => setCurrentVenue(venue.id)}
-                            className="flex-1 px-3 py-2 text-sm font-medium text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 hover:bg-blue-50 dark:hover:bg-blue-900/30 rounded-lg transition-colors flex items-center justify-center gap-1.5"
-                          >
-                            Switch
-                            <ChevronRight className="w-4 h-4" />
-                          </button>
-                        )}
-                        {!isActive && allVenues.length > 1 && (
+                        {/* Delete action */}
+                        {allVenues.length > 1 && (
                           <PermissionGate permission="venue.edit">
                             <button
-                              onClick={() => setDeleteConfirm({ venueId: venue.id, venueName: venue.name })}
-                              className="px-3 py-2 text-sm font-medium text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/30 rounded-lg transition-colors flex items-center justify-center gap-1.5"
+                              onClick={(e) => { e.stopPropagation(); setDeleteConfirm({ venueId: venue.id, venueName: venue.name }); }}
+                              className="p-2 rounded-lg text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/30 transition-colors"
                               title="Delete venue"
                             >
                               <Trash2 className="w-4 h-4" />
-                              Delete
                             </button>
                           </PermissionGate>
                         )}
                       </div>
                     </div>
-                  );
-                })}
-              </div>
 
-              {/* Info Section */}
-              <div className="mt-6 p-4 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/30 dark:to-indigo-900/30 rounded-lg border border-blue-200 dark:border-blue-800">
-                <div className="flex items-start gap-3">
-                  <div className="p-2 bg-blue-100 dark:bg-blue-800 rounded-lg">
-                    <Building2 className="w-5 h-5 text-blue-600 dark:text-blue-400" />
+                    {/* Mobile stats - shown below on small screens */}
+                    <div className="sm:hidden mt-4 grid grid-cols-2 gap-3">
+                      <div className="text-center p-2 bg-gray-100 dark:bg-gray-700/50 rounded-lg">
+                        <div className="text-xs text-gray-500 dark:text-gray-400 mb-0.5">Managers</div>
+                        <span className="text-sm font-semibold text-gray-900 dark:text-white">
+                          {metrics.managers || 0}
+                        </span>
+                      </div>
+                      <div className="text-center p-2 bg-gray-100 dark:bg-gray-700/50 rounded-lg">
+                        <div className="text-xs text-gray-500 dark:text-gray-400 mb-0.5">Employees</div>
+                        <span className="text-sm font-semibold text-gray-900 dark:text-white">
+                          {metrics.employees || 0}
+                        </span>
+                      </div>
+                    </div>
                   </div>
-                  <div>
-                    <h4 className="font-semibold text-gray-900 dark:text-white mb-1">Performance Metrics</h4>
-                    <p className="text-sm text-gray-600 dark:text-gray-400">
-                      All metrics shown are based on the last 30 days of activity. Click <strong>Switch</strong> to change your active venue.
-                    </p>
-                  </div>
-                </div>
-              </div>
-            </>
-          )}
-        </ChartCard>
 
-        {/* Create Additional Venue */}
-        {userRole === 'master' && (
-          <ChartCard
-            title="Create Additional Venue"
-            subtitle="Expand your business by adding more venues to your account. New venues are added to your next billing cycle."
-          >
-            <form onSubmit={handleCreateVenueSubmit} className="space-y-6">
+                  {/* Expanded Details */}
+                  {isExpanded && (
+                    <div className="px-5 pb-5 border-t border-gray-200 dark:border-gray-700 pt-4">
+                      {!details ? (
+                        <div className="flex items-center justify-center py-6">
+                          <div className="w-5 h-5 border-2 border-gray-300 dark:border-gray-600 border-t-blue-500 rounded-full animate-spin" />
+                          <span className="ml-2 text-sm text-gray-500 dark:text-gray-400">Loading details...</span>
+                        </div>
+                      ) : (
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          {/* Manager Hierarchy Section */}
+                          <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-4 border border-gray-200 dark:border-gray-700">
+                            <div className="flex items-center gap-2 mb-3">
+                              <h4 className="text-sm font-semibold text-gray-900 dark:text-white">Manager Hierarchy</h4>
+                              <span className="text-xs text-gray-500 dark:text-gray-400">({details.rawManagers?.length || 0})</span>
+                            </div>
+                            {details.managers && details.managers.length > 0 ? (
+                              <div className="space-y-1">
+                                {details.managers.map(manager => (
+                                  <ManagerNode key={manager.id} manager={manager} />
+                                ))}
+                              </div>
+                            ) : (
+                              <p className="text-sm text-gray-500 dark:text-gray-400 italic">No managers assigned to this venue</p>
+                            )}
+                          </div>
+
+                          {/* Employees Section */}
+                          <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-4 border border-gray-200 dark:border-gray-700">
+                            <div className="flex items-center gap-2 mb-3">
+                              <h4 className="text-sm font-semibold text-gray-900 dark:text-white">Employees</h4>
+                              <span className="text-xs text-gray-500 dark:text-gray-400">({details.employees?.length || 0})</span>
+                            </div>
+                            {details.employees && details.employees.length > 0 ? (
+                              <div className="space-y-2 max-h-48 overflow-y-auto">
+                                {details.employees.map(employee => (
+                                  <div key={employee.id} className="flex items-center gap-2 py-1">
+                                    <div className="flex-1 min-w-0">
+                                      <span className="text-sm font-medium text-gray-900 dark:text-white truncate block">
+                                        {employee.first_name && employee.last_name
+                                          ? `${employee.first_name} ${employee.last_name}`
+                                          : employee.email || 'Unnamed Employee'}
+                                      </span>
+                                      {employee.role && (
+                                        <span className="text-xs text-gray-500 dark:text-gray-400">{employee.role}</span>
+                                      )}
+                                    </div>
+                                  </div>
+                                ))}
+                              </div>
+                            ) : (
+                              <p className="text-sm text-gray-500 dark:text-gray-400 italic">No employees at this venue</p>
+                            )}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </ModernCard>
+              );
+            })}
+          </div>
+        )}
+
+        {/* Create Additional Venue - shown if master OR has venue.create permission */}
+        {(userRole === 'master' || hasPermission('venue.create')) && (
+          <ModernCard padding="p-0" shadow="shadow-sm">
+            {/* Header */}
+            <div className="p-5 border-b border-gray-200 dark:border-gray-700">
+              <h3 className="text-base font-semibold text-gray-900 dark:text-white">Create Additional Venue</h3>
+              <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">Expand your business by adding more venues to your account.</p>
+            </div>
+
+            {/* Form */}
+            <form onSubmit={handleCreateVenueSubmit} className="p-5 space-y-6">
               {/* Venue Name */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">New Venue Name *</label>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Venue Name *</label>
                 <input
                   type="text"
                   value={newVenue.name}
                   onChange={(e) => setNewVenue(prev => ({ ...prev, name: e.target.value }))}
                   className="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 dark:bg-gray-800 dark:text-white dark:placeholder-gray-400 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm lg:text-base"
-                  placeholder="Enter the new venue name"
+                  placeholder="e.g. The Golden Lion"
                   required
                 />
               </div>
 
-              {/* Simplified Address for New Venue */}
+              {/* Address */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Address (Optional)</label>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Address *</label>
                 <div className="space-y-3">
                   <input
                     type="text"
-                    placeholder="Address Line 1"
+                    placeholder="Address Line 1 *"
                     value={newVenue.address.line1}
                     onChange={(e) => setNewVenue(prev => ({
                       ...prev,
                       address: { ...prev.address, line1: e.target.value }
                     }))}
                     className="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 dark:bg-gray-800 dark:text-white dark:placeholder-gray-400 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm lg:text-base"
+                    required
+                  />
+                  <input
+                    type="text"
+                    placeholder="Address Line 2 (optional)"
+                    value={newVenue.address.line2}
+                    onChange={(e) => setNewVenue(prev => ({
+                      ...prev,
+                      address: { ...prev.address, line2: e.target.value }
+                    }))}
+                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 dark:bg-gray-800 dark:text-white dark:placeholder-gray-400 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm lg:text-base"
                   />
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     <input
                       type="text"
-                      placeholder="City"
+                      placeholder="City *"
                       value={newVenue.address.city}
                       onChange={(e) => setNewVenue(prev => ({
                         ...prev,
                         address: { ...prev.address, city: e.target.value }
                       }))}
                       className="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 dark:bg-gray-800 dark:text-white dark:placeholder-gray-400 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm lg:text-base"
+                      required
                     />
                     <input
                       type="text"
-                      placeholder="Postal Code"
+                      placeholder="County (optional)"
+                      value={newVenue.address.county}
+                      onChange={(e) => setNewVenue(prev => ({
+                        ...prev,
+                        address: { ...prev.address, county: e.target.value }
+                      }))}
+                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 dark:bg-gray-800 dark:text-white dark:placeholder-gray-400 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm lg:text-base"
+                    />
+                  </div>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <input
+                      type="text"
+                      placeholder="Postal Code *"
                       value={newVenue.address.postalCode}
                       onChange={(e) => setNewVenue(prev => ({
                         ...prev,
                         address: { ...prev.address, postalCode: e.target.value }
                       }))}
                       className="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 dark:bg-gray-800 dark:text-white dark:placeholder-gray-400 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm lg:text-base"
+                      required
+                    />
+                    <input
+                      type="text"
+                      placeholder="Country *"
+                      value={newVenue.address.country}
+                      onChange={(e) => setNewVenue(prev => ({
+                        ...prev,
+                        address: { ...prev.address, country: e.target.value }
+                      }))}
+                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 dark:bg-gray-800 dark:text-white dark:placeholder-gray-400 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm lg:text-base"
+                      required
                     />
                   </div>
                 </div>
               </div>
 
+              {/* Assign Manager */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Assign Manager (optional)</label>
+                {(() => {
+                  // Helper: Check if targetId is a subordinate of managerId (reports to them directly or indirectly)
+                  const isSubordinate = (targetId, managerId, managersById) => {
+                    let current = managersById.get(targetId);
+                    const visited = new Set();
+                    while (current && !visited.has(current.id)) {
+                      visited.add(current.id);
+                      if (current.reports_to === managerId) {
+                        return true;
+                      }
+                      current = managersById.get(current.reports_to);
+                    }
+                    return false;
+                  };
+
+                  // Filter managers based on user role
+                  // Masters can see all managers, managers can only see their subordinates
+                  const managersById = new Map(availableManagers.map(m => [m.id, m]));
+                  const filteredManagers = userRole === 'master'
+                    ? availableManagers
+                    : availableManagers.filter(m => isSubordinate(m.id, userId, managersById));
+
+                  // Build hierarchy for dropdown display
+                  const buildHierarchyOptions = () => {
+                    const options = [];
+
+                    // Find root managers within the filtered set
+                    // For masters: managers who report to master or have no parent in the list
+                    // For managers: managers who report directly to them
+                    const rootManagers = filteredManagers.filter(m => {
+                      if (userRole === 'master') {
+                        return !m.reports_to || m.reports_to === userId || !managersById.has(m.reports_to);
+                      } else {
+                        // For non-masters, root managers are those who report directly to them
+                        return m.reports_to === userId;
+                      }
+                    });
+
+                    // Recursively add managers with their depth
+                    const addManagerWithChildren = (manager, depth) => {
+                      const displayName = manager.first_name && manager.last_name
+                        ? `${manager.first_name} ${manager.last_name}`
+                        : manager.email;
+
+                      options.push({
+                        id: manager.id,
+                        name: displayName,
+                        depth
+                      });
+
+                      // Find children (managers who report to this manager) within filtered set
+                      const children = filteredManagers.filter(m => m.reports_to === manager.id);
+                      children.forEach(child => addManagerWithChildren(child, depth + 1));
+                    };
+
+                    rootManagers.forEach(m => addManagerWithChildren(m, 0));
+                    return options;
+                  };
+
+                  const hierarchyOptions = buildHierarchyOptions();
+                  const selectedManager = filteredManagers.find(m => m.id === newVenue.assignedManagerId);
+                  const selectedDisplayName = selectedManager
+                    ? (selectedManager.first_name && selectedManager.last_name
+                        ? `${selectedManager.first_name} ${selectedManager.last_name}`
+                        : selectedManager.email)
+                    : 'No manager assigned';
+
+                  return (
+                    <div className="relative">
+                      <select
+                        value={newVenue.assignedManagerId}
+                        onChange={(e) => setNewVenue(prev => ({ ...prev, assignedManagerId: e.target.value }))}
+                        className="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 dark:bg-gray-800 dark:text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm lg:text-base appearance-none"
+                        style={{ color: 'transparent' }}
+                      >
+                        <option value="">No manager assigned</option>
+                        {hierarchyOptions.map(opt => {
+                          const indent = '\u00A0\u00A0\u00A0\u00A0'.repeat(opt.depth);
+                          const prefix = opt.depth > 0 ? '└ ' : '';
+                          return (
+                            <option key={opt.id} value={opt.id}>
+                              {`${indent}${prefix}${opt.name}`}
+                            </option>
+                          );
+                        })}
+                      </select>
+                      {/* Overlay to show clean name */}
+                      <div className="absolute inset-0 flex items-center px-3 pointer-events-none">
+                        <span className={`text-sm lg:text-base ${newVenue.assignedManagerId ? 'text-gray-900 dark:text-white' : 'text-gray-500 dark:text-gray-400'}`}>
+                          {selectedDisplayName}
+                        </span>
+                      </div>
+                      {/* Dropdown arrow */}
+                      <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                        <ChevronDown className="w-4 h-4 text-gray-500 dark:text-gray-400" />
+                      </div>
+                    </div>
+                  );
+                })()}
+                <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                  You can assign additional managers later from the venue details.
+                </p>
+                {/* Supervisor access note - only show if supervisor is another manager, not the master */}
+                {(() => {
+                  const selectedManager = availableManagers.find(m => m.id === newVenue.assignedManagerId);
+                  // Only show note if the manager reports to another manager (not to master/current user)
+                  if (selectedManager?.reports_to && selectedManager.reports_to !== userId) {
+                    const supervisor = availableManagers.find(m => m.id === selectedManager.reports_to);
+                    // Only show if we found the supervisor in the managers list (meaning they're a manager, not master)
+                    if (supervisor) {
+                      const supervisorName = supervisor.first_name && supervisor.last_name
+                        ? `${supervisor.first_name} ${supervisor.last_name}`
+                        : supervisor.email;
+                      return (
+                        <div className="mt-2 p-2.5 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg flex items-start gap-2">
+                          <Info className="w-4 h-4 text-blue-600 dark:text-blue-400 flex-shrink-0 mt-0.5" />
+                          <p className="text-xs text-blue-700 dark:text-blue-300">
+                            {supervisorName} does not have access to this venue. They will still see this manager in their hierarchy, but won't be able to manage their access to this venue until added.
+                          </p>
+                        </div>
+                      );
+                    }
+                  }
+                  return null;
+                })()}
+              </div>
+
               {/* Create Button */}
-              <div className="pt-4 border-t border-gray-200">
+              <div className="pt-4 border-t border-gray-200 dark:border-gray-700">
                 <button
                   type="submit"
                   disabled={venueLoading}
-                  className="bg-custom-green text-white px-6 py-2 rounded-lg hover:bg-custom-green-hover transition-colors duration-200 text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition-colors duration-200 text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   {venueLoading ? 'Creating Venue...' : 'Create New Venue'}
                 </button>
@@ -724,14 +940,14 @@ const VenueSettingsPage = () => {
               {venueMessage && (
                 <div className={`text-sm p-3 rounded-lg ${
                   venueMessage.includes('success')
-                    ? 'text-green-700 bg-green-50 border border-green-200'
-                    : 'text-red-700 bg-red-50 border border-red-200'
+                    ? 'text-green-700 bg-green-50 dark:text-green-400 dark:bg-green-900/30 border border-green-200 dark:border-green-800'
+                    : 'text-red-700 bg-red-50 dark:text-red-400 dark:bg-red-900/30 border border-red-200 dark:border-red-800'
                 }`}>
                   {venueMessage}
                 </div>
               )}
             </form>
-          </ChartCard>
+          </ModernCard>
         )}
 
         {/* Create Venue Confirmation Modal */}
@@ -853,7 +1069,6 @@ const VenueSettingsPage = () => {
         setCountry={setCountry}
         saveSettings={saveSettings}
         loading={loading}
-        message={message}
         venueId={venueId}
       />
     </div>

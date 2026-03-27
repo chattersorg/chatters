@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
 import { Button } from '../../ui/button';
+import toast from 'react-hot-toast';
 
-const NotificationsTab = ({ 
+const NotificationsTab = ({
   saveSettings,
-  loading,
-  message 
+  loading
 }) => {
   const [emailNotifications, setEmailNotifications] = useState(true);
   const [smsNotifications, setSmsNotifications] = useState(false);
@@ -129,17 +129,6 @@ const NotificationsTab = ({
             {loading ? 'Saving...' : 'Save Changes'}
           </Button>
         </div>
-
-        {/* Message Display */}
-        {message && (
-          <div className={`text-sm p-3 rounded-md ${
-            message.includes('success') 
-              ? 'text-green-700 bg-green-50 border border-green-200' 
-              : 'text-red-700 bg-red-50 border border-red-200'
-          }`}>
-            {message}
-          </div>
-        )}
       </div>
     </div>
   );

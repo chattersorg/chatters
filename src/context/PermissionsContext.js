@@ -177,14 +177,14 @@ export const PermissionsProvider = ({ children }) => {
       'ai-insights': ['ai.insights'],
       'ai-chat': ['ai.chat'],
       feedback: ['feedback.view'],
-      questions: ['questions.view'],
+      questions: ['feedback.view'], // Questions are viewed under feedback
       reports: ['reports.view'],
       nps: ['nps.view'],
       staff: ['staff.view'],
       'staff-leaderboard': ['staff.leaderboard'],
       managers: ['managers.view'],
       floorplan: ['floorplan.view'],
-      'venue-settings': ['venue.view'],
+      'venue-settings': ['venue.edit'],
       branding: ['venue.branding'],
       integrations: ['venue.integrations'],
       qr: ['qr.view'],
@@ -194,9 +194,8 @@ export const PermissionsProvider = ({ children }) => {
 
       // Actions
       'feedback-respond': ['feedback.respond'],
-      'feedback-delete': ['feedback.delete'],
       'feedback-export': ['feedback.export'],
-      'questions-edit': ['questions.edit'],
+      'feedback-settings': ['feedback.settings'], // Edit feedback questions/settings
       'reports-export': ['reports.export'],
       'reports-create': ['reports.create'],
       'staff-edit': ['staff.edit'],
@@ -204,9 +203,7 @@ export const PermissionsProvider = ({ children }) => {
       'managers-permissions': ['managers.permissions'],
       'floorplan-edit': ['floorplan.edit'],
       'venue-edit': ['venue.edit'],
-      'qr-generate': ['qr.generate'],
       'ai-regenerate': ['ai.regenerate'],
-      // 'reviews-respond': ['reviews.respond'], // Not implemented yet - no reply functionality
       'billing-manage': ['billing.manage']
     };
 

@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { supabase } from '../../../utils/supabase';
-import { BarChart3, Star } from 'lucide-react';
+import { BarChart3 } from 'lucide-react';
 
 function startOfDay(d) { const x = new Date(d); x.setHours(0,0,0,0); return x; }
 function endOfDay(d)   { const x = new Date(d); x.setHours(23,59,59,999); return x; }
@@ -109,7 +109,6 @@ export default function RatingDistributionTile({ venueId, timeframe = 'last30' }
 
   const maxCount = Math.max(0, ...rows.map(d => d.count));
 
-  // Response time analytics color scheme
   const fillWidth = (count) => (maxCount ? (count / maxCount) * 100 : 0);
   const getRatingColor = (rating) => {
     switch(rating) {
@@ -117,7 +116,7 @@ export default function RatingDistributionTile({ venueId, timeframe = 'last30' }
       case 4: return 'bg-green-400';
       case 3: return 'bg-yellow-500';
       case 2: return 'bg-orange-500';
-      case 1: return 'bg-red-600';
+      case 1: return 'bg-red-500';
       default: return 'bg-gray-200';
     }
   };
@@ -125,114 +124,72 @@ export default function RatingDistributionTile({ venueId, timeframe = 'last30' }
   const noData = !loading && total === 0;
 
   return (
-    <div className="bg-white dark:bg-gray-900 rounded-xl p-4 shadow-sm border border-gray-100 dark:border-gray-800">
+    <div className="h-full flex flex-col">
       {/* Header */}
-      <div className="flex items-start justify-between gap-3 mb-3">
+      <div className="flex items-start justify-between gap-4 mb-6">
         <div>
-          <h3 className="text-base font-semibold text-gray-900 dark:text-white">
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
             Customer Satisfaction
           </h3>
-          <p className="text-xs text-gray-600 dark:text-gray-400 mt-1">How guests rate their experience (1–5)</p>
+          <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">Rating distribution (1-5 stars)</p>
         </div>
-
-        {/* Compact overall card */}
-        <div className="rounded-md border border-gray-100 dark:border-gray-700 p-3 text-right min-w-[132px]">
-          <div className="flex items-center justify-end gap-1">
-            <span className="text-2xl font-bold text-gray-900 dark:text-white tabular-nums">{avg}</span>
-          </div>
-          <div className="text-[11px] text-gray-600 dark:text-gray-400 mt-1 flex items-center justify-end gap-1">
-            {total} reviews
-          </div>
+        <div className="text-right">
+          <div className="text-3xl font-bold text-gray-900 dark:text-white tabular-nums">{avg}</div>
+          <div className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">{total} reviews</div>
         </div>
       </div>
 
       {/* Body */}
       {loading ? (
-        <div className="space-y-3">
+        <div className="space-y-3 flex-1">
           {Array.from({ length: 5 }).map((_, i) => (
-            <div key={i} className="h-12 bg-gray-100 dark:bg-gray-800 rounded-md animate-pulse" />
+            <div key={i} className="h-10 bg-gray-100 dark:bg-gray-800 rounded-lg animate-pulse" />
           ))}
         </div>
       ) : noData ? (
-        <div className="text-center py-10">
+        <div className="text-center py-12 flex-1 flex flex-col items-center justify-center">
           <div className="w-12 h-12 bg-gray-100 dark:bg-gray-800 rounded-full flex items-center justify-center mx-auto mb-3">
             <BarChart3 className="w-6 h-6 text-gray-400 dark:text-gray-500" />
           </div>
-          <div className="text-sm text-gray-600 dark:text-gray-400">No ratings yet — distribution will appear once feedback comes in.</div>
+          <p className="text-sm text-gray-500 dark:text-gray-400">No ratings yet</p>
         </div>
       ) : (
-        <>
-          {/* Distribution rows 5 → 1 */}
-          <div className="space-y-2 mb-4">
+        <div className="flex-1 flex flex-col">
+          {/* Distribution rows */}
+          <div className="space-y-3 mb-6">
             {rows.map(({ rating, count, pct }) => (
-              <div key={rating} className="rounded-md border border-gray-100 dark:border-gray-700 p-2">
-                <div className="flex items-center justify-between mb-1">
-                  <div className="flex items-center gap-2">
-                    <div className="flex">
-                      {Array.from({ length: 5 }).map((_, i) => (
-                        <Star
-                          key={i}
-                          className={`w-4 h-4 ${i < rating ? 'text-gray-800 dark:text-gray-200' : 'text-gray-300 dark:text-gray-600'}`}
-                        />
-                      ))}
-                    </div>
-                    <span className="text-xs text-gray-600 dark:text-gray-400">{rating} star{rating > 1 ? 's' : ''}</span>
-                  </div>
-                  <div className="text-xs text-gray-700 dark:text-gray-300">
-                    <span className="font-semibold text-gray-900 dark:text-white tabular-nums">{count}</span>
-                    <span className="text-gray-500 dark:text-gray-400"> ({pct}%)</span>
-                  </div>
-                </div>
-                <div className="relative bg-gray-100 dark:bg-gray-700 rounded-full h-3 overflow-hidden">
+              <div key={rating} className="flex items-center gap-3">
+                <div className="w-8 text-sm font-medium text-gray-700 dark:text-gray-300">{rating}★</div>
+                <div className="flex-1 relative bg-gray-100 dark:bg-gray-800 rounded-full h-6 overflow-hidden">
                   <div
                     className={`h-full rounded-full transition-all duration-500 ${getRatingColor(rating)}`}
-                    style={{
-                      width: `${fillWidth(count)}%`
-                    }}
+                    style={{ width: `${fillWidth(count)}%` }}
                   />
+                </div>
+                <div className="w-16 text-right text-sm tabular-nums">
+                  <span className="font-medium text-gray-900 dark:text-white">{count}</span>
+                  <span className="text-gray-400 dark:text-gray-500 ml-1">({pct}%)</span>
                 </div>
               </div>
             ))}
           </div>
 
-          {/* Summary cards (neutral, compact) */}
-          <div className="grid grid-cols-3 gap-2">
-            <div className="rounded-md p-3 border border-gray-100 dark:border-gray-700">
-              <div className="text-xs text-gray-600 dark:text-gray-400 mb-1">Satisfied (4–5★)</div>
-              <div className="text-xl font-bold text-gray-900 dark:text-white tabular-nums">{satRate}%</div>
+          {/* Summary stats */}
+          <div className="grid grid-cols-3 gap-3 mt-auto pt-4 border-t border-gray-100 dark:border-gray-800">
+            <div className="text-center">
+              <div className="text-2xl font-bold text-green-600 dark:text-green-400 tabular-nums">{satRate}%</div>
+              <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">Satisfied (4-5★)</div>
             </div>
-            <div className="rounded-md p-3 border border-gray-100 dark:border-gray-700">
-              <div className="text-xs text-gray-600 dark:text-gray-400 mb-1">Neutral (3★)</div>
-              <div className="text-xl font-bold text-gray-900 dark:text-white tabular-nums">{neutral}</div>
+            <div className="text-center">
+              <div className="text-2xl font-bold text-yellow-600 dark:text-yellow-400 tabular-nums">{neutral}</div>
+              <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">Neutral (3★)</div>
             </div>
-            <div className="rounded-md p-3 border border-gray-100 dark:border-gray-700">
-              <div className="text-xs text-gray-600 dark:text-gray-400 mb-1">Detractors (1–2★)</div>
-              <div className="text-xl font-bold text-gray-900 dark:text-white tabular-nums">{detractors}</div>
-            </div>
-          </div>
-
-          {/* Legend / hint */}
-          <div className="flex items-center justify-between pt-3 mt-3 border-t border-gray-200 dark:border-gray-700">
-            <div className="flex items-center gap-2 text-[11px] text-gray-600 dark:text-gray-400">
-              <span>Rating colors:</span>
-              <div className="flex items-center gap-1">
-                <span className="inline-block w-3 h-3 rounded bg-green-500" />
-                <span>5★</span>
-                <span className="inline-block w-3 h-3 rounded bg-green-400" />
-                <span>4★</span>
-                <span className="inline-block w-3 h-3 rounded bg-yellow-500" />
-                <span>3★</span>
-                <span className="inline-block w-3 h-3 rounded bg-orange-500" />
-                <span>2★</span>
-                <span className="inline-block w-3 h-3 rounded bg-red-600" />
-                <span>1★</span>
-              </div>
-            </div>
-            <div className="text-[11px] text-gray-600 dark:text-gray-400">
-              Bars scale to the most common rating.
+            <div className="text-center">
+              <div className="text-2xl font-bold text-red-600 dark:text-red-400 tabular-nums">{detractors}</div>
+              <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">Detractors (1-2★)</div>
             </div>
           </div>
-        </>
+        </div>
       )}
     </div>
   );

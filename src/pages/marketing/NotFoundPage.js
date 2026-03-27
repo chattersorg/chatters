@@ -1,6 +1,7 @@
 import React from 'react';
 import { Helmet } from 'react-helmet';
 import { Link } from 'react-router-dom';
+import { getDashboardUrl } from '../../utils/domainUtils';
 import Navbar from '../../components/marketing/layout/Navbar';
 import Footer from '../../components/marketing/layout/Footer';
 
@@ -103,9 +104,9 @@ const NotFoundPage = () => {
               <Link to="/pricing" className="px-4 py-2 text-sm text-gray-600 bg-gray-100 rounded-full hover:bg-[#2F5CFF] hover:text-white transition-all">
                 Pricing
               </Link>
-              <Link to="/demo" className="px-4 py-2 text-sm text-gray-600 bg-gray-100 rounded-full hover:bg-[#2F5CFF] hover:text-white transition-all">
-                Book a Demo
-              </Link>
+              <a href={getDashboardUrl('/signup')} className="px-4 py-2 text-sm text-gray-600 bg-gray-100 rounded-full hover:bg-[#2F5CFF] hover:text-white transition-all">
+                Start Free Trial
+              </a>
               <Link to="/help" className="px-4 py-2 text-sm text-gray-600 bg-gray-100 rounded-full hover:bg-[#2F5CFF] hover:text-white transition-all">
                 Help Center
               </Link>

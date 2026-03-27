@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { supabase } from '../../../../utils/supabase';
 import { ChevronDown, ChevronUp, Copy, Plus, X } from 'lucide-react';
 import { Button } from '../../../ui/button';
+import toast from 'react-hot-toast';
 
 const FeedbackTimeSelection = ({ currentVenueId }) => {
   // Feedback hours state
@@ -16,7 +17,6 @@ const FeedbackTimeSelection = ({ currentVenueId }) => {
   });
 
   const [loading, setLoading] = useState(false);
-  const [message, setMessage] = useState('');
   const [expandedDays, setExpandedDays] = useState({});
 
   const dayNames = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'];
@@ -127,7 +127,6 @@ const FeedbackTimeSelection = ({ currentVenueId }) => {
 
   const saveFeedbackHours = async () => {
     setLoading(true);
-    setMessage('');
 
     try {
       if (!currentVenueId) {
@@ -141,18 +140,11 @@ const FeedbackTimeSelection = ({ currentVenueId }) => {
 
       if (error) throw error;
 
-      setMessage('Feedback hours saved successfully!');
-      
-      // Clear success message after 3 seconds
-      setTimeout(() => {
-        setMessage('');
-      }, 3000);
-
+      toast.success('Feedback hours saved successfully!');
     } catch (error) {
       console.error('Error saving feedback hours:', error);
-      // Show detailed error info to user for support purposes
       const errorDetails = error.code ? `Error ${error.code}: ${error.message}` : error.message;
-      setMessage(`Failed to save feedback hours: ${errorDetails}. Please contact support with this error code.`);
+      toast.error(`Failed to save feedback hours: ${errorDetails}`);
     } finally {
       setLoading(false);
     }
@@ -289,7 +281,7 @@ const FeedbackTimeSelection = ({ currentVenueId }) => {
       </div>
       </div>
 
-      {/* Save button and messages */}
+      {/* Save button */}
       <div className="px-6 py-4 border-t border-gray-100 dark:border-gray-800">
         <div className="flex items-center justify-between">
           <div className="text-xs text-gray-500 dark:text-gray-400">Changes are saved per venue</div>
@@ -301,16 +293,6 @@ const FeedbackTimeSelection = ({ currentVenueId }) => {
             {loading ? 'Saving...' : 'Save'}
           </Button>
         </div>
-
-        {message && (
-          <div className={`text-xs p-2 rounded-lg mt-3 ${
-            message.includes('success')
-              ? 'text-green-700 dark:text-green-300 bg-green-50 dark:bg-green-900/30 border border-green-200 dark:border-green-800'
-              : 'text-red-700 dark:text-red-300 bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-800'
-          }`}>
-            {message}
-          </div>
-        )}
       </div>
     </div>
   );

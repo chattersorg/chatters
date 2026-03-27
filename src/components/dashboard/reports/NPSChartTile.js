@@ -1,14 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { supabase, logQuery } from '../../../utils/supabase';
 import { useVenue } from '../../../context/VenueContext';
-import { X, Settings as SettingsIcon, RefreshCw } from 'lucide-react';
+import { X, Settings as SettingsIcon, RefreshCw, TrendingUp, TrendingDown, Users, ArrowUp, ArrowDown } from 'lucide-react';
 import { getDateRangeFromPreset } from '../../../utils/dateRangePresets';
-
-// Import visualization components
-import NPSDonutChart from './nps/NPSDonutChart';
-import NPSBarChart from './nps/NPSBarChart';
-import NPSLineChart from './nps/NPSLineChart';
-import NPSKPITile from './nps/NPSKPITile';
+import ModernCard from '../layout/ModernCard';
+import { AreaChart, Area, ResponsiveContainer, YAxis } from 'recharts';
 
 const NPSChartTile = ({ config = {}, onRemove, onConfigure }) => {
   const { venueId, allVenues } = useVenue();
@@ -21,22 +17,19 @@ const NPSChartTile = ({ config = {}, onRemove, onConfigure }) => {
     detractors: 0,
     total: 0,
     trend: null,
-    trendDirection: 'neutral'
+    trendDirection: 'neutral',
+    sparklineData: []
   });
-  // Cache data by date range and venue to avoid refetching when only chart type changes
   const [cachedData, setCachedData] = useState({});
 
   const dateRangePreset = config.date_range_preset || 'all_time';
-  const chartType = config.chart_type || 'donut';
-  // Default to current venue if venue_ids is null, undefined, or empty array
+  const chartType = config.chart_type || 'kpi';
   const selectedVenueId = (config.venue_ids && config.venue_ids.length > 0)
     ? config.venue_ids[0]
     : venueId;
-  const prevChartTypeRef = React.useRef(chartType);
 
   useEffect(() => {
     if (selectedVenueId) {
-      // Check if we have cached data for this date range and venue
       const cacheKey = `${selectedVenueId}_${dateRangePreset}`;
       if (cachedData[cacheKey]) {
         setNpsData(cachedData[cacheKey]);
@@ -48,19 +41,6 @@ const NPSChartTile = ({ config = {}, onRemove, onConfigure }) => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedVenueId, dateRangePreset]);
 
-  // Handle chart type changes with refreshing state
-  useEffect(() => {
-    if (prevChartTypeRef.current !== chartType) {
-      setRefreshing(true);
-      // Short delay to show transition
-      const timer = setTimeout(() => {
-        setRefreshing(false);
-        prevChartTypeRef.current = chartType;
-      }, 300);
-      return () => clearTimeout(timer);
-    }
-  }, [chartType]);
-
   const fetchNPSData = async () => {
     try {
       setLoading(true);
@@ -69,7 +49,6 @@ const NPSChartTile = ({ config = {}, onRemove, onConfigure }) => {
       const startDate = dateRange.from.toISOString();
       const endDate = dateRange.to.toISOString();
 
-      // Fetch NPS responses for the selected date range
       const currentResult = await logQuery(
         'nps_submissions:current_period',
         supabase
@@ -131,9 +110,8 @@ const NPSChartTile = ({ config = {}, onRemove, onConfigure }) => {
         }
       }
 
-      // Generate time-series data for line chart
-      // Group by appropriate interval based on date range
-      const timeSeries = generateTimeSeries(currentData || [], dateRange.from, dateRange.to, daysDiff);
+      // Generate sparkline data
+      const sparklineData = generateSparklineData(currentData || [], dateRange.from, dateRange.to, daysDiff);
 
       const newData = {
         score: npsScore,
@@ -143,12 +121,11 @@ const NPSChartTile = ({ config = {}, onRemove, onConfigure }) => {
         total,
         trend,
         trendDirection,
-        timeSeries // Add time series data for line chart
+        sparklineData
       };
 
       setNpsData(newData);
 
-      // Cache the data for this date range and venue
       const cacheKey = `${selectedVenueId}_${dateRangePreset}`;
       setCachedData(prev => ({ ...prev, [cacheKey]: newData }));
     } catch (error) {
@@ -158,80 +135,40 @@ const NPSChartTile = ({ config = {}, onRemove, onConfigure }) => {
     }
   };
 
-  // Generate time-series data grouped by appropriate intervals
-  const generateTimeSeries = (data, startDate, endDate, daysDiff) => {
+  const generateSparklineData = (data, startDate, endDate, daysDiff) => {
     if (!data || data.length === 0) return [];
 
-    // Determine grouping interval based on date range
     let interval = 'day';
-    if (daysDiff > 365) {
-      interval = 'month';
-    } else if (daysDiff > 90) {
-      interval = 'week';
-    }
+    if (daysDiff > 365) interval = 'month';
+    else if (daysDiff > 90) interval = 'week';
 
-    // Group submissions by interval
     const groups = {};
-
     data.forEach(submission => {
       const date = new Date(submission.responded_at);
       let key;
-
       if (interval === 'month') {
         key = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
       } else if (interval === 'week') {
-        // Get the Monday of the week
         const monday = new Date(date);
         monday.setDate(date.getDate() - date.getDay() + 1);
         key = monday.toISOString().split('T')[0];
       } else {
         key = date.toISOString().split('T')[0];
       }
-
-      if (!groups[key]) {
-        groups[key] = [];
-      }
+      if (!groups[key]) groups[key] = [];
       groups[key].push(submission.score);
     });
 
-    // Calculate NPS for each group
-    const timeSeries = Object.entries(groups)
+    return Object.entries(groups)
       .map(([date, scores]) => {
         const promoters = scores.filter(s => s >= 9).length;
         const detractors = scores.filter(s => s <= 6).length;
         const total = scores.length;
         const nps = total > 0 ? Math.round(((promoters - detractors) / total) * 100) : 0;
-
-        return {
-          date,
-          nps,
-          responses: total
-        };
+        // Normalize NPS (-100 to 100) to (0 to 100) for chart
+        return { date, value: ((nps + 100) / 200) * 100 };
       })
       .sort((a, b) => a.date.localeCompare(b.date));
-
-    return timeSeries;
-  };
-
-  // Render different chart types
-  const renderChart = () => {
-    const commonProps = {
-      npsData,
-      loading,
-      dateRangePreset
-    };
-
-    switch (chartType) {
-      case 'kpi':
-        return <NPSKPITile {...commonProps} />;
-      case 'bar':
-        return <NPSBarChart {...commonProps} />;
-      case 'line':
-        return <NPSLineChart {...commonProps} />;
-      case 'donut':
-      default:
-        return <NPSDonutChart {...commonProps} />;
-    }
   };
 
   const getPresetLabel = (preset) => {
@@ -252,7 +189,6 @@ const NPSChartTile = ({ config = {}, onRemove, onConfigure }) => {
   };
 
   const handleRefresh = () => {
-    // Clear cache for this date range and venue, then refetch
     const cacheKey = `${selectedVenueId}_${dateRangePreset}`;
     setCachedData(prev => {
       const newCache = { ...prev };
@@ -262,59 +198,161 @@ const NPSChartTile = ({ config = {}, onRemove, onConfigure }) => {
     fetchNPSData();
   };
 
+  // Get score color class
+  const getScoreColor = (score) => {
+    if (score >= 50) return 'text-emerald-600 dark:text-emerald-400';
+    if (score >= 0) return 'text-amber-600 dark:text-amber-400';
+    return 'text-rose-600 dark:text-rose-400';
+  };
+
+  const getSparklineColor = (score) => {
+    if (score >= 50) return '#10b981';
+    if (score >= 0) return '#f59e0b';
+    return '#f43f5e';
+  };
+
+  const promoterPercent = npsData.total > 0 ? Math.round((npsData.promoters / npsData.total) * 100) : 0;
+  const passivePercent = npsData.total > 0 ? Math.round((npsData.passives / npsData.total) * 100) : 0;
+  const detractorPercent = npsData.total > 0 ? Math.round((npsData.detractors / npsData.total) * 100) : 0;
+
   return (
-    <div className="bg-white dark:bg-gray-900 rounded-xl shadow-sm border border-gray-200 dark:border-gray-800 p-6 h-full flex flex-col">
-      {/* Header */}
-      <div className="flex items-start justify-between mb-4">
-        <div className="flex-1 flex items-center gap-2">
+    <ModernCard padding="p-0" shadow="shadow-sm" className="h-full flex flex-col">
+      {/* Compact Header */}
+      <div className="px-5 pt-5 pb-3 flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <div className="w-8 h-8 bg-purple-100 dark:bg-purple-900/30 rounded-lg flex items-center justify-center">
+            <span className="text-sm font-bold text-purple-600 dark:text-purple-400">N</span>
+          </div>
+          <div>
+            <h3 className="text-sm font-semibold text-gray-900 dark:text-white">NPS Score</h3>
+            <p className="text-xs text-gray-500 dark:text-gray-400">{getVenueLabel()}</p>
+          </div>
+        </div>
+        <div className="flex items-center gap-0.5">
           <button
             onClick={handleRefresh}
             disabled={loading}
-            className={`p-1.5 text-gray-400 dark:text-gray-500 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/30 rounded-lg transition-colors ${
-              loading ? 'animate-spin cursor-not-allowed' : ''
-            }`}
-            title="Refresh data"
+            className={`p-1.5 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors ${loading ? 'animate-spin' : ''}`}
           >
-            <RefreshCw className="w-4 h-4" />
+            <RefreshCw className="w-3.5 h-3.5" />
           </button>
-          <div>
-            <h3 className="text-lg font-semibold text-gray-900 dark:text-white">NPS Score</h3>
-            <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
-              {getVenueLabel()} • {getPresetLabel(dateRangePreset)}
-            </p>
-          </div>
-        </div>
-        <div className="flex items-center gap-2">
-          <button
-            onClick={onConfigure}
-            className="p-1.5 text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors"
-            title="Configure chart"
-          >
-            <SettingsIcon className="w-4 h-4" />
+          <button onClick={onConfigure} className="p-1.5 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors">
+            <SettingsIcon className="w-3.5 h-3.5" />
           </button>
-          <button
-            onClick={onRemove}
-            className="p-1.5 text-gray-400 dark:text-gray-500 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/30 rounded-lg transition-colors"
-            title="Remove tile"
-          >
-            <X className="w-4 h-4" />
+          <button onClick={onRemove} className="p-1.5 text-gray-400 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/30 rounded-lg transition-colors">
+            <X className="w-3.5 h-3.5" />
           </button>
         </div>
       </div>
 
-      {/* Chart Content */}
-      <div className="flex-1 flex flex-col min-h-0 relative">
-        {refreshing && (
-          <div className="absolute inset-0 bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm z-10 flex items-center justify-center rounded-lg">
-            <div className="text-center">
-              <div className="w-6 h-6 border-2 border-gray-300 dark:border-gray-700 border-t-blue-600 dark:border-t-blue-400 rounded-full animate-spin mx-auto mb-2" />
-              <p className="text-xs text-gray-600 dark:text-gray-400">Updating view...</p>
+      {/* Main Content */}
+      <div className="flex-1 px-5 pb-4">
+        {loading ? (
+          <div className="flex items-center justify-center h-full min-h-[180px]">
+            <div className="w-8 h-8 border-2 border-gray-200 dark:border-gray-700 border-t-purple-600 rounded-full animate-spin" />
+          </div>
+        ) : npsData.total === 0 ? (
+          <div className="flex flex-col items-center justify-center h-full min-h-[180px] text-center">
+            <Users className="w-10 h-10 text-gray-300 dark:text-gray-600 mb-2" />
+            <p className="text-sm text-gray-500 dark:text-gray-400">No responses yet</p>
+          </div>
+        ) : (
+          <div className="space-y-4">
+            {/* Score Row */}
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <span className={`text-4xl font-black ${getScoreColor(npsData.score)}`}>
+                  {npsData.score}
+                </span>
+                {npsData.trend && (
+                  <span className={`inline-flex items-center gap-0.5 px-2 py-1 rounded-full text-xs font-semibold ${
+                    npsData.trendDirection === 'up'
+                      ? 'bg-emerald-100 dark:bg-emerald-900/40 text-emerald-700 dark:text-emerald-400'
+                      : npsData.trendDirection === 'down'
+                      ? 'bg-rose-100 dark:bg-rose-900/40 text-rose-700 dark:text-rose-400'
+                      : 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400'
+                  }`}>
+                    {npsData.trendDirection === 'up' && <ArrowUp className="w-3 h-3" />}
+                    {npsData.trendDirection === 'down' && <ArrowDown className="w-3 h-3" />}
+                    {npsData.trend}
+                  </span>
+                )}
+              </div>
+
+              {/* Sparkline */}
+              {npsData.sparklineData.length > 1 && (
+                <div className="w-24 h-10">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <AreaChart data={npsData.sparklineData}>
+                      <defs>
+                        <linearGradient id="npsGradient" x1="0" y1="0" x2="0" y2="1">
+                          <stop offset="0%" stopColor={getSparklineColor(npsData.score)} stopOpacity={0.3} />
+                          <stop offset="100%" stopColor={getSparklineColor(npsData.score)} stopOpacity={0.05} />
+                        </linearGradient>
+                      </defs>
+                      <YAxis domain={[0, 100]} hide />
+                      <Area
+                        type="monotone"
+                        dataKey="value"
+                        stroke={getSparklineColor(npsData.score)}
+                        strokeWidth={2}
+                        fill="url(#npsGradient)"
+                        dot={false}
+                        isAnimationActive={false}
+                      />
+                    </AreaChart>
+                  </ResponsiveContainer>
+                </div>
+              )}
+            </div>
+
+            {/* Stacked Bar */}
+            <div className="h-2 rounded-full overflow-hidden flex bg-gray-100 dark:bg-gray-800">
+              {promoterPercent > 0 && (
+                <div className="bg-emerald-500 transition-all" style={{ width: `${promoterPercent}%` }} />
+              )}
+              {passivePercent > 0 && (
+                <div className="bg-amber-500 transition-all" style={{ width: `${passivePercent}%` }} />
+              )}
+              {detractorPercent > 0 && (
+                <div className="bg-rose-500 transition-all" style={{ width: `${detractorPercent}%` }} />
+              )}
+            </div>
+
+            {/* Legend Row */}
+            <div className="grid grid-cols-3 gap-2 text-center">
+              <div>
+                <div className="flex items-center justify-center gap-1 mb-0.5">
+                  <div className="w-2 h-2 rounded-full bg-emerald-500" />
+                  <span className="text-xs text-gray-500 dark:text-gray-400">Promoters</span>
+                </div>
+                <div className="text-sm font-semibold text-gray-900 dark:text-white">{npsData.promoters}</div>
+              </div>
+              <div>
+                <div className="flex items-center justify-center gap-1 mb-0.5">
+                  <div className="w-2 h-2 rounded-full bg-amber-500" />
+                  <span className="text-xs text-gray-500 dark:text-gray-400">Passives</span>
+                </div>
+                <div className="text-sm font-semibold text-gray-900 dark:text-white">{npsData.passives}</div>
+              </div>
+              <div>
+                <div className="flex items-center justify-center gap-1 mb-0.5">
+                  <div className="w-2 h-2 rounded-full bg-rose-500" />
+                  <span className="text-xs text-gray-500 dark:text-gray-400">Detractors</span>
+                </div>
+                <div className="text-sm font-semibold text-gray-900 dark:text-white">{npsData.detractors}</div>
+              </div>
             </div>
           </div>
         )}
-        {renderChart()}
       </div>
-    </div>
+
+      {/* Footer */}
+      <div className="px-5 py-2.5 bg-gray-50 dark:bg-gray-800/50 border-t border-gray-100 dark:border-gray-800 rounded-b-xl flex items-center justify-between">
+        <span className="text-xs text-gray-500 dark:text-gray-400">{getPresetLabel(dateRangePreset)}</span>
+        <span className="text-xs text-gray-400 dark:text-gray-500">{npsData.total} responses</span>
+      </div>
+    </ModernCard>
   );
 };
 

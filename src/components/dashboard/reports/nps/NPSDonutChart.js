@@ -7,9 +7,9 @@ ChartJS.register(ArcElement, Tooltip, Legend);
 
 const NPSDonutChart = ({ npsData, loading }) => {
   const getScoreColor = (score) => {
-    if (score >= 50) return 'text-green-600';
-    if (score >= 0) return 'text-yellow-600';
-    return 'text-red-600';
+    if (score >= 50) return 'text-green-600 dark:text-green-400';
+    if (score >= 0) return 'text-yellow-600 dark:text-yellow-400';
+    return 'text-red-600 dark:text-red-400';
   };
 
   const getScoreLabel = (score) => {
@@ -105,8 +105,8 @@ const NPSDonutChart = ({ npsData, loading }) => {
             </div>
             {npsData.trend && (
               <div className={`flex items-center gap-1 mt-2 text-xs font-medium ${
-                npsData.trendDirection === 'up' ? 'text-green-600' :
-                npsData.trendDirection === 'down' ? 'text-red-600' : 'text-gray-500 dark:text-gray-400'
+                npsData.trendDirection === 'up' ? 'text-green-600 dark:text-green-400' :
+                npsData.trendDirection === 'down' ? 'text-red-600 dark:text-red-400' : 'text-gray-500 dark:text-gray-400'
               }`}>
                 <TrendIcon className="w-3 h-3" />
                 <span>{npsData.trend}</span>

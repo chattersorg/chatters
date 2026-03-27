@@ -3,9 +3,10 @@ import { useNavigate } from 'react-router-dom';
 import { Button } from '../../ui/button';
 import { supabase } from '../../../utils/supabase';
 import { PermissionGate } from '../../../context/PermissionsContext';
-import { GripVertical, Plus, Trash2, ExternalLink, Eye, EyeOff, Link, FileText, Utensils, ChevronDown, ChevronUp, Upload, X, Tablet, Copy, Check, Loader2, AlertCircle, Settings, MapPin } from 'lucide-react';
+import { GripVertical, Plus, Trash2, ExternalLink, Eye, EyeOff, Link, FileText, ChevronDown, ChevronUp, Upload, X, Tablet, Copy, Check, Loader2, AlertCircle, Settings, MapPin } from 'lucide-react';
 import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
 import FilterSelect from '../../ui/FilterSelect';
+import toast from 'react-hot-toast';
 
 // Generate a random 6-character pairing code
 const generatePairingCode = () => {
@@ -39,13 +40,11 @@ const VenueTab = ({
   country, setCountry,
   saveSettings,
   loading,
-  message,
   venueId
 }) => {
   // Custom Links state
   const [links, setLinks] = useState([]);
   const [savingLinks, setSavingLinks] = useState(false);
-  const [linksMessage, setLinksMessage] = useState({ type: '', text: '' });
   const [showAddMenu, setShowAddMenu] = useState(false);
 
   // Menu settings state
@@ -188,17 +187,16 @@ const VenueTab = ({
     if (!file) return;
 
     if (file.type !== 'application/pdf') {
-      setLinksMessage({ type: 'error', text: 'Please upload a PDF file' });
+      toast.error('Please upload a PDF file');
       return;
     }
 
     if (file.size > 10 * 1024 * 1024) {
-      setLinksMessage({ type: 'error', text: 'File size must be less than 10MB' });
+      toast.error('File size must be less than 10MB');
       return;
     }
 
     setUploadingPdf(true);
-    setLinksMessage({ type: '', text: '' });
 
     try {
       const fileName = `${venueId}/menus/menu-${Date.now()}.pdf`;
@@ -217,11 +215,10 @@ const VenueTab = ({
         .getPublicUrl(fileName);
 
       setMenuPdfUrl(publicUrl);
-      setLinksMessage({ type: 'success', text: 'PDF uploaded successfully!' });
-      setTimeout(() => setLinksMessage({ type: '', text: '' }), 3000);
+      toast.success('PDF uploaded successfully!');
     } catch (error) {
       console.error('Error uploading PDF:', error);
-      setLinksMessage({ type: 'error', text: 'Failed to upload PDF. Make sure the storage bucket exists.' });
+      toast.error('Failed to upload PDF. Make sure the storage bucket exists.');
     } finally {
       setUploadingPdf(false);
     }
@@ -245,7 +242,6 @@ const VenueTab = ({
 
   const saveLinks = async () => {
     setSavingLinks(true);
-    setLinksMessage({ type: '', text: '' });
 
     const { error } = await supabase
       .from('venues')
@@ -261,11 +257,10 @@ const VenueTab = ({
     setSavingLinks(false);
 
     if (error) {
-      setLinksMessage({ type: 'error', text: 'Failed to save changes' });
+      toast.error('Failed to save changes');
       console.error('Error saving:', error);
     } else {
-      setLinksMessage({ type: 'success', text: 'Changes saved successfully!' });
-      setTimeout(() => setLinksMessage({ type: '', text: '' }), 3000);
+      toast.success('Menu & links saved successfully!');
     }
   };
 
@@ -280,6 +275,7 @@ const VenueTab = ({
         .from('zones')
         .select('id, name')
         .eq('venue_id', venueId)
+        .is('deleted_at', null)
         .order('order');
 
       if (error) throw error;
@@ -609,15 +605,6 @@ const VenueTab = ({
                 </Button>
               </PermissionGate>
             </div>
-            {message && (
-              <div className={`text-xs p-2 rounded-lg mt-3 ${
-                message.includes('success')
-                  ? 'text-green-700 dark:text-green-400 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800'
-                  : 'text-red-700 dark:text-red-400 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800'
-              }`}>
-                {message}
-              </div>
-            )}
           </div>
         </div>
 
@@ -994,17 +981,6 @@ const VenueTab = ({
                 </Button>
               </PermissionGate>
             </div>
-            {linksMessage.text && (
-              <div
-                className={`text-xs p-2 rounded-lg mt-3 ${
-                  linksMessage.type === 'success'
-                    ? 'text-green-700 dark:text-green-400 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800'
-                    : 'text-red-700 dark:text-red-400 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800'
-                }`}
-              >
-                {linksMessage.text}
-              </div>
-            )}
           </div>
         </div>
 
