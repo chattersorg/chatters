@@ -160,7 +160,7 @@ const DashboardRoutes = () => {
     <Routes>
       {/* Auth (no VenueProvider, no DashboardFrame) */}
       <Route path="/signin" element={<SignInPage />} />
-      {/* <Route path="/signup" element={<SignUpPage />} /> */}
+      <Route path="/signup" element={<SignUpPage />} />
       <Route path="/reset-password" element={<ResetPassword />} />
       <Route path="/forgot-password" element={<ForgotPassword />} />
       <Route path="/set-password" element={<SetPasswordPage />} />

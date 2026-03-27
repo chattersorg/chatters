@@ -2,6 +2,18 @@ import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { ArrowRight, Loader2, Eye, EyeOff } from 'lucide-react';
 import { getMarketingUrl } from '../../utils/domainUtils';
+import { supabase } from '../../utils/supabase';
+
+const VENUE_TYPES = [
+  { value: 'pub', label: 'Pub' },
+  { value: 'gastropub', label: 'Gastropub' },
+  { value: 'bar', label: 'Bar' },
+  { value: 'cafe', label: 'Cafe' },
+  { value: 'hotel', label: 'Hotel' },
+  { value: 'restaurant', label: 'Restaurant' },
+  { value: 'fine_dining', label: 'Fine Dining' },
+  { value: 'competitive_socialising', label: 'Competitive Socialising' }
+];
 
 const SignUpPage = () => {
   const [email, setEmail] = useState('');
@@ -12,6 +24,7 @@ const SignUpPage = () => {
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
   const [venueName, setVenueName] = useState('');
+  const [venueType, setVenueType] = useState('');
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
@@ -27,15 +40,33 @@ const SignUpPage = () => {
       return;
     }
 
+    if (password.length < 6) {
+      setError('Password must be at least 6 characters.');
+      setIsLoading(false);
+      return;
+    }
+
     try {
       const response = await fetch('/api/create-trial-account', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password, firstName, lastName, venueName }),
+        body: JSON.stringify({ email, password, firstName, lastName, venueName, venueType }),
       });
 
       const result = await response.json();
       if (!response.ok) throw new Error(result.error);
+
+      // Auto-login after account creation
+      const { error: signInError } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
+
+      if (signInError) {
+        // Account created but auto-login failed — send to signin
+        navigate('/signin');
+        return;
+      }
 
       navigate('/dashboard');
     } catch (err) {
@@ -76,7 +107,7 @@ const SignUpPage = () => {
               Create your account
             </h1>
             <p className="text-gray-500">
-              Start your free trial today
+              Start your 14-day free trial
             </p>
           </div>
 
@@ -134,6 +165,24 @@ const SignUpPage = () => {
                 className="w-full px-4 py-3 border border-gray-300 bg-white text-gray-900 rounded-lg focus:ring-2 focus:ring-[#4E74FF] focus:border-transparent outline-none transition-all placeholder:text-gray-400"
                 placeholder="Enter your venue name"
               />
+            </div>
+
+            <div>
+              <label htmlFor="venue-type" className="block text-sm font-medium text-gray-700 mb-2">
+                Venue Type
+              </label>
+              <select
+                id="venue-type"
+                value={venueType}
+                onChange={(e) => setVenueType(e.target.value)}
+                required
+                className="w-full px-4 py-3 border border-gray-300 bg-white text-gray-900 rounded-lg focus:ring-2 focus:ring-[#4E74FF] focus:border-transparent outline-none transition-all"
+              >
+                <option value="">Select venue type...</option>
+                {VENUE_TYPES.map(type => (
+                  <option key={type.value} value={type.value}>{type.label}</option>
+                ))}
+              </select>
             </div>
 
             <div>

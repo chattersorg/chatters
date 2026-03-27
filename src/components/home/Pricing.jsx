@@ -1,6 +1,6 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
 import { ArrowRight, CheckCircle2, ShieldCheck, Sparkles } from 'lucide-react';
+import { getDashboardUrl } from '../../utils/domainUtils';
 
 const Pricing = () => {
   return (
@@ -77,13 +77,13 @@ const Pricing = () => {
                 </div>
               </div>
 
-              <Link
-                to="/demo"
+              <a
+                href={getDashboardUrl('/signup')}
                 className="mt-8 inline-flex w-full items-center justify-center gap-2 rounded-xl bg-[#4E74FF] hover:bg-[#3D5BD9] px-8 py-4 text-lg font-semibold text-white shadow-lg shadow-[#4E74FF]/40 transition-all duration-200 hover:scale-[1.01] hover:shadow-xl"
               >
-                Book a Demo
+                Start Free Trial
                 <ArrowRight className="w-5 h-5" />
-              </Link>
+              </a>
             </div>
           </div>
         </div>

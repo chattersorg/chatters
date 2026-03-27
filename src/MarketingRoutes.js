@@ -13,7 +13,7 @@ import TermsAndConditionsPage from './pages/marketing/Terms';
 import PrivacyPolicyPage from './pages/marketing/Privacy';
 import AboutPage from './pages/marketing/AboutPage';
 import DemoPage from './pages/marketing/DemoPage';
-import TryPage from './pages/marketing/TryPage';
+
 
 import BlogPage from './pages/marketing/BlogPage';
 import BlogPost from './pages/marketing/BlogPost';
@@ -58,7 +58,7 @@ const MarketingRoutes = () => {
       <Route path="/privacy" element={<PrivacyPolicyPage />} />
       <Route path="/about" element={<AboutPage />} />
       <Route path="/demo" element={<DemoPage />} />
-      <Route path="/try" element={<TryPage />} />
+
 
       {/* 📝 Blog Pages */}
       <Route path="/blog" element={<BlogPage />} />
