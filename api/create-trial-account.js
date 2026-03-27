@@ -2,59 +2,190 @@ import { createClient } from '@supabase/supabase-js';
 
 const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY);
 
+// Default questions based on venue type (mirrors admin create-account flow)
+const DEFAULT_QUESTIONS = {
+  pub: [
+    { question: 'How was the quality of your drinks?', type: 'rating' },
+    { question: 'How was the atmosphere?', type: 'rating' },
+    { question: 'How was the service from our staff?', type: 'rating' },
+    { question: 'Was the pub clean and well-maintained?', type: 'rating' },
+    { question: 'Any additional feedback?', type: 'text' }
+  ],
+  gastropub: [
+    { question: 'How was the quality of your food?', type: 'rating' },
+    { question: 'How was the quality of your drinks?', type: 'rating' },
+    { question: 'How was the service from our staff?', type: 'rating' },
+    { question: 'How was the atmosphere?', type: 'rating' },
+    { question: 'Any additional feedback?', type: 'text' }
+  ],
+  bar: [
+    { question: 'How was the quality of your drinks?', type: 'rating' },
+    { question: 'How was the atmosphere and music?', type: 'rating' },
+    { question: 'How was the service from our bar staff?', type: 'rating' },
+    { question: 'How was the cleanliness?', type: 'rating' },
+    { question: 'Any additional feedback?', type: 'text' }
+  ],
+  cafe: [
+    { question: 'How was the quality of your food and drinks?', type: 'rating' },
+    { question: 'How was the service?', type: 'rating' },
+    { question: 'How was the atmosphere?', type: 'rating' },
+    { question: 'Was the cafe clean and comfortable?', type: 'rating' },
+    { question: 'Any additional feedback?', type: 'text' }
+  ],
+  hotel: [
+    { question: 'How was your check-in experience?', type: 'rating' },
+    { question: 'How was the cleanliness of your room?', type: 'rating' },
+    { question: 'How was the service from our staff?', type: 'rating' },
+    { question: 'How were the hotel facilities?', type: 'rating' },
+    { question: 'Any additional feedback?', type: 'text' }
+  ],
+  restaurant: [
+    { question: 'How was the quality of your food?', type: 'rating' },
+    { question: 'How was the service from our staff?', type: 'rating' },
+    { question: 'How was the atmosphere?', type: 'rating' },
+    { question: 'How was the value for money?', type: 'rating' },
+    { question: 'Any additional feedback?', type: 'text' }
+  ],
+  fine_dining: [
+    { question: 'How was the quality and presentation of your food?', type: 'rating' },
+    { question: 'How was the wine and drinks selection?', type: 'rating' },
+    { question: 'How was the service from our staff?', type: 'rating' },
+    { question: 'How was the overall dining experience?', type: 'rating' },
+    { question: 'Any additional feedback?', type: 'text' }
+  ],
+  competitive_socialising: [
+    { question: 'How was your activity experience?', type: 'rating' },
+    { question: 'How was the quality of food and drinks?', type: 'rating' },
+    { question: 'How was the service from our staff?', type: 'rating' },
+    { question: 'Was the venue clean and well-maintained?', type: 'rating' },
+    { question: 'Any additional feedback?', type: 'text' }
+  ]
+};
+
 export default async function handler(req, res) {
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
 
-  const { email, password, firstName, lastName, venueName } = req.body;
+  const { email, password, firstName, lastName, venueName, venueType } = req.body;
 
-  if (!email || !password || !firstName || !lastName || !venueName) {
+  if (!email || !password || !firstName || !lastName || !venueName || !venueType) {
     return res.status(400).json({ error: 'Missing required fields' });
   }
 
   try {
-    // 1. Create auth user
-    const { data: authData, error: authError } = await supabase.auth.signUp({ email, password });
+    // 1. Check if email already exists
+    const { data: existingUser } = await supabase
+      .from('users')
+      .select('id')
+      .eq('email', email.toLowerCase())
+      .single();
+
+    if (existingUser) {
+      return res.status(400).json({ error: 'An account with this email already exists' });
+    }
+
+    // 2. Create auth user
+    const { data: authData, error: authError } = await supabase.auth.signUp({
+      email: email.toLowerCase(),
+      password
+    });
     if (authError) throw new Error(authError.message);
 
-    // 2. Create account with trial billing info
+    // 3. Create account with trial
     const trialEndsAt = new Date();
     trialEndsAt.setDate(trialEndsAt.getDate() + 14);
 
     const { data: account, error: accountError } = await supabase
       .from('accounts')
-      .insert([{
-        trial_ends_at: trialEndsAt.toISOString(),
+      .insert({
+        name: venueName,
+        billing_email: email.toLowerCase(),
+        country: 'GB',
         is_paid: false,
+        trial_ends_at: trialEndsAt.toISOString(),
+        demo_account: false,
         stripe_customer_id: null,
         stripe_subscription_id: null
-      }])
+      })
       .select()
       .single();
 
     if (accountError) throw new Error(accountError.message);
 
-    // 3. Create venue linked to account
-    const { error: venueError } = await supabase
+    // 4. Enable feedback module
+    const { error: moduleError } = await supabase
+      .from('account_modules')
+      .insert({
+        account_id: account.id,
+        module_code: 'feedback',
+        enabled_at: new Date().toISOString(),
+        disabled_at: null,
+        stripe_subscription_item_id: null
+      });
+
+    if (moduleError) {
+      console.error('Error enabling feedback module:', moduleError);
+    }
+
+    // 5. Create user record
+    const { error: userError } = await supabase
+      .from('users')
+      .insert({
+        id: authData.user.id,
+        email: email.toLowerCase(),
+        first_name: firstName,
+        last_name: lastName,
+        role: 'master',
+        account_id: account.id
+      });
+
+    if (userError) throw new Error(userError.message);
+
+    // 6. Create venue
+    const { data: venue, error: venueError } = await supabase
       .from('venues')
-      .insert([{
+      .insert({
         name: venueName,
         account_id: account.id,
-        email: email,
-      }]);
+        email: email.toLowerCase(),
+        table_count: 1,
+        country: 'GB',
+        primary_color: '#000000'
+      })
+      .select()
+      .single();
 
     if (venueError) throw new Error(venueError.message);
 
-    // 4. Create user record linking auth user to account
-    const { error: userError } = await supabase
-      .from('users')
-      .insert([{
-        id: authData.user.id,
-        email: email,
-        role: 'master',
-        account_id: account.id
-      }]);
+    // 7. Create default feedback questions based on venue type
+    const questions = DEFAULT_QUESTIONS[venueType] || DEFAULT_QUESTIONS.restaurant;
+    const questionsToInsert = questions.map((q, index) => ({
+      venue_id: venue.id,
+      question_text: q.question,
+      question_type: q.type,
+      order_index: index,
+      is_active: true
+    }));
 
-    if (userError) throw new Error(userError.message);
+    const { error: questionsError } = await supabase
+      .from('feedback_questions')
+      .insert(questionsToInsert);
+
+    if (questionsError) {
+      console.error('Error creating feedback questions:', questionsError);
+    }
+
+    // 8. Create initial table with QR code
+    const { error: tableError } = await supabase
+      .from('tables')
+      .insert({
+        venue_id: venue.id,
+        table_number: '1',
+        qr_code: `${venue.id}-1`
+      });
+
+    if (tableError) {
+      console.error('Error creating table:', tableError);
+    }
 
     return res.status(200).json({ message: 'Account created with trial' });
   } catch (err) {

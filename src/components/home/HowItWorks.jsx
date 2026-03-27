@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
 import { QrCode, Star, Bell, CheckCircle, ArrowRight, Smartphone, MessageSquare } from 'lucide-react';
+import { getDashboardUrl } from '../../utils/domainUtils';
 
 // ─────────────────────────────────────────────────────────────
 // STEP 1: Scan QR Code Mockup
@@ -331,13 +331,13 @@ const HowItWorks = () => {
 
         {/* CTA Link */}
         <div className="text-center">
-          <Link
-            to="/demo"
+          <a
+            href={getDashboardUrl('/signup')}
             className="inline-flex items-center text-[#4E74FF] font-semibold hover:text-[#2F5CFF] transition-colors"
           >
-            See It In Action
+            Start Free Trial
             <ArrowRight className="ml-2 w-5 h-5" />
-          </Link>
+          </a>
         </div>
       </div>
 

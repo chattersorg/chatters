@@ -278,7 +278,12 @@ const Navbar = ({ overlay = false }) => {
             >
               Log in
             </Link>
-            <PrimaryButton text="Book a Demo" to="/demo" size="sm" />
+            <a
+              href={getDashboardUrl('/signup')}
+              className="inline-flex items-center justify-center px-4 py-2 text-sm font-semibold text-white bg-[#4E74FF] rounded-lg hover:bg-[#2F5CFF] transition-all duration-200"
+            >
+              Start Free Trial
+            </a>
           </div>
 
           {/* Mobile toggle */}
@@ -393,9 +398,13 @@ const Navbar = ({ overlay = false }) => {
               >
                 Log in
               </Link>
-              <div onClick={() => setIsMobileMenuOpen(false)} className="flex-1">
-                <PrimaryButton text="Book a Demo" to="/demo" size="sm" className="w-full justify-center py-3" />
-              </div>
+              <a
+                href={getDashboardUrl('/signup')}
+                onClick={() => setIsMobileMenuOpen(false)}
+                className="flex-1 text-center bg-[#4E74FF] text-white px-4 py-3 rounded-lg text-sm font-semibold hover:bg-[#2F5CFF] transition-colors"
+              >
+                Start Free Trial
+              </a>
             </div>
           </div>
         </div>

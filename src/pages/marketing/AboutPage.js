@@ -1,7 +1,8 @@
 import React from 'react';
 import { Helmet } from 'react-helmet';
 import { Link } from 'react-router-dom';
-import { 
+import { getDashboardUrl } from '../../utils/domainUtils';
+import {
   Smartphone, 
   AlertTriangle, 
   ShieldCheck, 
@@ -396,12 +397,12 @@ const AboutUsPage = () => {
             Join hundreds of UK restaurants, pubs, and hotels that have eliminated bad TripAdvisor reviews and recovered unhappy guests with Chatters' real-time feedback platform. See our <a href="/features" className="text-blue-600 hover:text-blue-700 underline">complete feature list</a> for UK hospitality.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Link
-              to="/demo"
+            <a
+              href={getDashboardUrl('/signup')}
               className="inline-block bg-black text-white font-semibold px-8 py-4 rounded-lg hover:bg-gray-800 transition-colors duration-200"
             >
-              Book a Demo
-            </Link>
+              Start Free Trial
+            </a>
             <Link
               to="/pricing"
               className="inline-block border-2 border-gray-300 text-gray-700 font-semibold px-8 py-4 rounded-lg hover:border-gray-400 transition-colors duration-200"

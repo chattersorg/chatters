@@ -1,6 +1,7 @@
 import React from 'react';
 import { Helmet } from 'react-helmet';
 import { Link } from 'react-router-dom';
+import { getDashboardUrl } from '../../../utils/domainUtils';
 import {
   ArrowRight,
   TrendingUp,
@@ -38,19 +39,19 @@ const Hero = () => (
             See exactly who loves your venue, who's on the fence, and who's at risk of leaving a bad review. NPS shows intent, and Chatters makes it measurable.
           </p>
           <div className="flex flex-col sm:flex-row gap-4">
-            <Link
-              to="/try"
+            <a
+              href={getDashboardUrl('/signup')}
               className="inline-flex items-center justify-center px-8 py-4 text-lg font-semibold text-white bg-[#4E74FF] rounded-lg hover:bg-[#2F5CFF] transition-all duration-200 shadow-lg hover:shadow-xl group"
             >
               Start Free Trial
               <ArrowRight className="ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform" />
-            </Link>
-            <Link
-              to="/demo"
+            </a>
+            <a
+              href={getDashboardUrl('/signup')}
               className="inline-flex items-center justify-center px-8 py-4 text-lg font-semibold text-gray-700 bg-white border-2 border-gray-200 rounded-lg hover:border-gray-300 hover:bg-gray-50 transition-all duration-200"
             >
-              Book a Demo
-            </Link>
+              Start Free Trial
+            </a>
           </div>
         </div>
 
@@ -517,19 +518,19 @@ const FinalCTA = () => (
         Join hundreds of UK hospitality venues using NPS to turn satisfied guests into loyal advocates.
       </p>
       <div className="flex flex-col sm:flex-row gap-4 justify-center">
-        <Link
-          to="/try"
+        <a
+          href={getDashboardUrl('/signup')}
           className="inline-flex items-center justify-center px-8 py-4 text-lg font-semibold text-white bg-[#4E74FF] rounded-lg hover:bg-[#2F5CFF] transition-all duration-200 shadow-lg hover:shadow-xl group"
         >
           Start Free Trial
           <ArrowRight className="ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform" />
-        </Link>
-        <Link
-          to="/demo"
+        </a>
+        <a
+          href={getDashboardUrl('/signup')}
           className="inline-flex items-center justify-center px-8 py-4 text-lg font-semibold text-white border-2 border-white/30 rounded-lg hover:bg-white/10 transition-all duration-200"
         >
-          Book a Demo
-        </Link>
+          Start Free Trial
+        </a>
       </div>
     </div>
   </section>

@@ -1,6 +1,7 @@
 import React from 'react';
 import { Helmet } from 'react-helmet';
 import { Link } from 'react-router-dom';
+import { getDashboardUrl } from '../../utils/domainUtils';
 import {
   ArrowRight,
   CheckCircle2,
@@ -108,13 +109,13 @@ const PricingCard = () => (
               </div>
             </div>
 
-            <Link
-              to="/demo"
+            <a
+              href={getDashboardUrl('/signup')}
               className="mt-8 inline-flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-indigo-600 via-indigo-500 to-sky-500 px-8 py-4 text-lg font-semibold text-white shadow-lg shadow-indigo-300/40 transition-transform duration-200 hover:scale-[1.01] hover:shadow-xl"
             >
-              Book a Demo
+              Start Free Trial
               <ArrowRight className="w-5 h-5" />
-            </Link>
+            </a>
           </div>
         </div>
       </div>
@@ -253,21 +254,21 @@ const FinalCTA = () => (
         Ready to Get Started?
       </h2>
       <p className="text-xl text-slate-300 mb-8 max-w-2xl mx-auto">
-        Book a demo and we'll walk through pricing tailored to your venue. No pressure, no hidden fees.
+        Start your 14-day free trial. No credit card required, no hidden fees.
       </p>
       <div className="flex flex-col sm:flex-row gap-4 justify-center">
-        <Link
-          to="/demo"
+        <a
+          href={getDashboardUrl('/signup')}
           className="inline-flex items-center justify-center px-8 py-4 text-lg font-semibold text-white bg-[#4E74FF] rounded-lg hover:bg-[#2F5CFF] transition-all duration-200 shadow-lg hover:shadow-xl group"
         >
-          Book a Demo
+          Start Free Trial
           <ArrowRight className="ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform" />
-        </Link>
+        </a>
         <Link
-          to="/try"
+          to="/pricing"
           className="inline-flex items-center justify-center px-8 py-4 text-lg font-semibold text-white border-2 border-white/30 rounded-lg hover:bg-white/10 transition-all duration-200"
         >
-          Start Free Trial
+          See Pricing
         </Link>
       </div>
     </div>
