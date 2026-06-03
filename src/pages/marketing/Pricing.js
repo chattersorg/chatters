@@ -109,13 +109,10 @@ const PricingCard = () => (
               </div>
             </div>
 
-            <a
-              href={getDashboardUrl('/signup')}
-              className="mt-8 inline-flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-indigo-600 via-indigo-500 to-sky-500 px-8 py-4 text-lg font-semibold text-white shadow-lg shadow-indigo-300/40 transition-transform duration-200 hover:scale-[1.01] hover:shadow-xl"
-            >
+            <span className="mt-8 inline-flex w-full items-center justify-center gap-2 rounded-xl bg-gray-400 px-8 py-4 text-lg font-semibold text-white cursor-default">
               Start Free Trial
               <ArrowRight className="w-5 h-5" />
-            </a>
+            </span>
           </div>
         </div>
       </div>
@@ -257,13 +254,10 @@ const FinalCTA = () => (
         Start your 14-day free trial. No credit card required, no hidden fees.
       </p>
       <div className="flex flex-col sm:flex-row gap-4 justify-center">
-        <a
-          href={getDashboardUrl('/signup')}
-          className="inline-flex items-center justify-center px-8 py-4 text-lg font-semibold text-white bg-[#4E74FF] rounded-lg hover:bg-[#2F5CFF] transition-all duration-200 shadow-lg hover:shadow-xl group"
-        >
+        <span className="inline-flex items-center justify-center px-8 py-4 text-lg font-semibold text-white bg-slate-600 rounded-lg cursor-default">
           Start Free Trial
-          <ArrowRight className="ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform" />
-        </a>
+          <ArrowRight className="ml-2 w-5 h-5" />
+        </span>
         <Link
           to="/pricing"
           className="inline-flex items-center justify-center px-8 py-4 text-lg font-semibold text-white border-2 border-white/30 rounded-lg hover:bg-white/10 transition-all duration-200"

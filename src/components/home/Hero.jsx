@@ -178,13 +178,10 @@ const Hero = () => {
                 See Pricing
                 <ArrowRight className="ml-2 w-5 h-5" />
               </Link>
-              <a
-                href={getDashboardUrl('/signup')}
-                className="inline-flex items-center justify-center px-8 py-4 text-lg font-semibold text-white bg-white/10 border border-white/20 rounded-xl hover:bg-white/20 transition-all duration-200"
-              >
+              <span className="inline-flex items-center justify-center px-8 py-4 text-lg font-semibold text-white/50 bg-white/5 border border-white/10 rounded-xl cursor-default">
                 Start Free Trial
                 <ArrowRight className="ml-2 w-5 h-5" />
-              </a>
+              </span>
             </div>
 
             {/* Microcopy */}

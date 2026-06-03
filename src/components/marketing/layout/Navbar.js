@@ -272,18 +272,12 @@ const Navbar = ({ overlay = false }) => {
 
           {/* Right: Auth */}
           <div className="hidden lg:flex lg:items-center lg:space-x-4">
-            <Link
-              to={getDashboardUrl('/signin')}
-              className="text-sm font-medium text-gray-700 hover:text-[#4E74FF] transition-colors duration-150"
-            >
+            <span className="text-sm font-medium text-gray-400 cursor-default">
               Log in
-            </Link>
-            <a
-              href={getDashboardUrl('/signup')}
-              className="inline-flex items-center justify-center px-4 py-2 text-sm font-semibold text-white bg-[#4E74FF] rounded-lg hover:bg-[#2F5CFF] transition-all duration-200"
-            >
+            </span>
+            <span className="inline-flex items-center justify-center px-4 py-2 text-sm font-semibold text-white bg-gray-400 rounded-lg cursor-default">
               Start Free Trial
-            </a>
+            </span>
           </div>
 
           {/* Mobile toggle */}
@@ -391,20 +385,12 @@ const Navbar = ({ overlay = false }) => {
           {/* Sticky bottom CTA bar */}
           <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 px-4 py-4 shadow-[0_-4px_20px_rgba(0,0,0,0.1)]">
             <div className="flex gap-3">
-              <Link
-                to={getDashboardUrl('/signin')}
-                onClick={() => setIsMobileMenuOpen(false)}
-                className="flex-1 text-center border border-gray-300 text-gray-700 px-4 py-3 rounded-lg text-sm font-medium hover:bg-gray-50 transition-colors"
-              >
+              <span className="flex-1 text-center border border-gray-200 text-gray-400 px-4 py-3 rounded-lg text-sm font-medium cursor-default">
                 Log in
-              </Link>
-              <a
-                href={getDashboardUrl('/signup')}
-                onClick={() => setIsMobileMenuOpen(false)}
-                className="flex-1 text-center bg-[#4E74FF] text-white px-4 py-3 rounded-lg text-sm font-semibold hover:bg-[#2F5CFF] transition-colors"
-              >
+              </span>
+              <span className="flex-1 text-center bg-gray-400 text-white px-4 py-3 rounded-lg text-sm font-semibold cursor-default">
                 Start Free Trial
-              </a>
+              </span>
             </div>
           </div>
         </div>

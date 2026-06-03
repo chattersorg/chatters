@@ -331,13 +331,10 @@ const HowItWorks = () => {
 
         {/* CTA Link */}
         <div className="text-center">
-          <a
-            href={getDashboardUrl('/signup')}
-            className="inline-flex items-center text-[#4E74FF] font-semibold hover:text-[#2F5CFF] transition-colors"
-          >
+          <span className="inline-flex items-center text-gray-400 font-semibold cursor-default">
             Start Free Trial
             <ArrowRight className="ml-2 w-5 h-5" />
-          </a>
+          </span>
         </div>
       </div>
 

@@ -20,13 +20,10 @@ const FinalCTA = () => {
 
           {/* Buttons */}
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-            <a
-              href={getDashboardUrl('/signup')}
-              className="inline-flex items-center justify-center px-8 py-4 text-lg font-semibold text-white bg-[#4E74FF] rounded-lg hover:bg-[#2F5CFF] transition-all duration-200 shadow-lg hover:shadow-xl"
-            >
+            <span className="inline-flex items-center justify-center px-8 py-4 text-lg font-semibold text-white bg-slate-600 rounded-lg cursor-default">
               Start Free Trial
               <ArrowRight className="ml-2 w-5 h-5" />
-            </a>
+            </span>
             <Link
               to="/pricing"
               className="inline-flex items-center justify-center px-8 py-4 text-lg font-semibold text-white bg-transparent border-2 border-white rounded-lg hover:bg-white/10 transition-all duration-200"

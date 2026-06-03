@@ -77,13 +77,10 @@ const Pricing = () => {
                 </div>
               </div>
 
-              <a
-                href={getDashboardUrl('/signup')}
-                className="mt-8 inline-flex w-full items-center justify-center gap-2 rounded-xl bg-[#4E74FF] hover:bg-[#3D5BD9] px-8 py-4 text-lg font-semibold text-white shadow-lg shadow-[#4E74FF]/40 transition-all duration-200 hover:scale-[1.01] hover:shadow-xl"
-              >
+              <span className="mt-8 inline-flex w-full items-center justify-center gap-2 rounded-xl bg-gray-400 px-8 py-4 text-lg font-semibold text-white cursor-default">
                 Start Free Trial
                 <ArrowRight className="w-5 h-5" />
-              </a>
+              </span>
             </div>
           </div>
         </div>
