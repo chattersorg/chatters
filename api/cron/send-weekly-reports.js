@@ -13,6 +13,19 @@ const resend = new Resend(process.env.RESEND_API_KEY);
 const APP_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://my.getchatters.com';
 
 module.exports = async function handler(req, res) {
+  // STOPPED 2026-08-23: weekly performance report emails are disabled.
+  // This guard blocks every entry path (Vercel cron and ?test=true alike).
+  // To re-enable: set WEEKLY_REPORTS_ENABLED=true in the Vercel project env
+  // AND restore the /api/cron/send-weekly-reports entry in vercel.json.
+  if (process.env.WEEKLY_REPORTS_ENABLED !== 'true') {
+    console.log('⏸️ Weekly performance report emails are disabled — no emails sent.');
+    return res.status(503).json({
+      status: 'disabled',
+      message: 'Weekly performance report emails are disabled',
+      emails_sent: 0
+    });
+  }
+
   // Check if this is a test request
   const isTestMode = req.query.test === 'true';
   const testUserId = req.query.userId;
